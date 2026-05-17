@@ -25,6 +25,12 @@ Active phases:
 - ONE RESPONSE MAY COMPLETE ONLY THE CURRENT PHASE ACTION.
 - PATCH OUTPUT IS NEVER ALLOWED BEFORE CONFIRMED VIOLATIONS, APPROVED PLAN, AND A COMPLETE REWRITE CONTRACT.
 
+## Token budget rule
+
+Every response must use the full available token budget for the current phase.
+Do not truncate output. Do not summarize early. Do not skip fields in the active template.
+If a phase output would exceed one response, continue in the next turn under the same phase header before transitioning.
+
 ## Phase order
 
 Normal order:
