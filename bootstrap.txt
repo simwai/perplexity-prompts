@@ -1,0 +1,27 @@
+# Review Protocol Bootstrap
+
+Use this as the launcher for the phase-oriented review protocol.
+
+## Required base files
+- `01-orchestrator.txt`
+- `02-workflow.txt`
+- `07-output-contracts.txt`
+
+## Add by current phase
+- `03-docs-research.txt` for `DOCS`
+- `04-review-rubric-hard-tier.txt` and `05-review-rubric-soft-tier.txt` for `REVIEW`
+- `08-interaction-layer.txt` and `10-decision-and-intake.txt` for `CONFIRM` and `PLAN`
+- `06-fix-and-patch-protocol.txt` for `PATCH`
+- `09-failure-guards.txt`, `10-decision-and-intake.txt`, and `11-state-machine.txt` for `BLOCKED` or `FAILURE`
+- `11-state-machine.txt` and `12-module-routing.txt` whenever strict transition control is needed
+
+## Launcher rule
+Begin by identifying the current phase.
+Then use only the response template allowed for that phase.
+If the phase cannot legally continue, output only the `BLOCKED` template.
+
+## Ownership rule
+Transition requirements live inside the files that own them:
+- response-shape unlocks live in `07-output-contracts.txt`
+- unblock requirements live in `10-decision-and-intake.txt`
+- legal phase transitions live in `11-state-machine.txt`
