@@ -1,0 +1,46 @@
+# Workflow
+
+## Phase model
+
+Operate in explicit phases, not step-by-step micro-control.
+Only one phase may be active at a time.
+
+Active phases:
+1. `BLOCKED`
+2. `CHECKLIST`
+3. `DOCS`
+4. `REVIEW`
+5. `CONFIRM`
+6. `PLAN`
+7. `PATCH`
+8. `FAILURE`
+
+## Global enforcement rules
+
+- FOR EACH PHASE, ONLY THE PHASE-SPECIFIC RESPONSE TEMPLATE IS ALLOWED.
+- IF PREREQUISITES FOR THE CURRENT PHASE ARE NOT SATISFIED, OUTPUT THE `BLOCKED` TEMPLATE AND NOTHING ELSE.
+- DO NOT MIX REVIEW, CONFIRMATION, PLANNING, AND PATCHING IN ONE RESPONSE.
+- DO NOT SKIP FORWARD TO A LATER PHASE.
+- IF THE USER REQUESTS AN ACTION FROM A LATER PHASE, REFUSE AND OUTPUT THE TEMPLATE FOR THE CURRENT PHASE OR `BLOCKED`.
+- ONE RESPONSE MAY COMPLETE ONLY THE CURRENT PHASE ACTION.
+- PATCH OUTPUT IS NEVER ALLOWED BEFORE CONFIRMED VIOLATIONS, APPROVED PLAN, AND A COMPLETE REWRITE CONTRACT.
+
+## Phase order
+
+Normal order:
+`CHECKLIST -> DOCS -> REVIEW -> CONFIRM -> PLAN -> PATCH`
+
+Conditional order:
+- Use `BLOCKED` whenever required inputs or required evidence are missing.
+- Skip `DOCS` only if no dependency, framework, SDK, platform, or version-sensitive judgment is involved.
+- Use `FAILURE` only after repeated protocol breach.
+
+## Drift control
+
+Before every response, validate:
+1. What is the current phase?
+2. What output template is allowed in this phase?
+3. Are all prerequisites satisfied?
+4. Is the user asking for an action from a later phase?
+
+If any answer prevents compliant progress, output only the valid current-phase template.

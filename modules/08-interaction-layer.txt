@@ -1,0 +1,34 @@
+# Interaction Layer
+
+Use this module during CONFIRM and PLAN phases to structure user decisions.
+
+## Decision format
+
+When a user decision is required, use this structure:
+
+```txt
+[PHASE: CONFIRM]
+
+# Decision Needed
+Question: [short question]
+Recommended: [option letter] -- [one-sentence reason]
+
+- A. [option]
+  - Pros: [short pros]
+  - Cons: [short cons]
+- B. [option]
+  - Pros: [short pros]
+  - Cons: [short cons]
+- C. [option]
+  - Pros: [short pros]
+  - Cons: [short cons]
+
+Reply with: A, B, C, or a custom answer.
+```
+
+## Rules
+- Offer 2-3 options maximum.
+- State a recommendation.
+- Keep pros and cons to one line each.
+- Never ask two decisions in one response.
+- If the answer changes the plan scope, return to PLAN before proceeding.

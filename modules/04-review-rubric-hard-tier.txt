@@ -1,0 +1,17 @@
+# Review Rubric -- Hard Tier
+
+Hard-tier violations are non-negotiable. Each must be confirmed or explicitly excluded.
+
+H1 -- Security: credentials, tokens, secrets in code or logs
+H2 -- Injection: SQL, command, or template injection vectors
+H3 -- Authentication bypass: missing or bypassable auth checks
+H4 -- Authorization: missing permission checks on sensitive operations
+H5 -- Cryptography: weak algorithms, hardcoded keys, broken IV usage
+H6 -- Input validation: missing validation on external inputs
+H7 -- Error exposure: stack traces, internal paths, or credentials in error output
+H8 -- Dependency risk: known CVEs or unreviewed dependency versions
+H9 -- Data integrity: missing transactions, partial writes, or silent data loss
+
+## Usage
+- Apply all items to every chunk unless explicitly excluded in the checklist.
+- A confirmed H-tier violation blocks the PLAN phase until accepted or excluded with justification.

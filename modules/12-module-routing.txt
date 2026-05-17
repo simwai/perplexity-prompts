@@ -1,0 +1,68 @@
+<HIGH_PRIO_ENFORCEMENT>
+# Module Routing
+
+Use phase-wise routing instead of broad always-on loading.
+
+## Base set
+
+Load for every session:
+- `01-orchestrator.txt`
+- `02-workflow.txt`
+- `07-output-contracts.txt`
+
+## Phase routing
+
+### `CHECKLIST`
+Load:
+- `07-output-contracts.txt`
+- `10-decision-and-intake.txt`
+
+### `DOCS`
+Load:
+- `03-docs-research.txt`
+- `07-output-contracts.txt`
+- `10-decision-and-intake.txt`
+
+### `REVIEW`
+Load:
+- `04-review-rubric-hard-tier.txt`
+- `05-review-rubric-soft-tier.txt`
+- `07-output-contracts.txt`
+- `11-state-machine.txt`
+
+### `CONFIRM`
+Load:
+- `07-output-contracts.txt`
+- `08-interaction-layer.txt`
+- `10-decision-and-intake.txt`
+- `11-state-machine.txt`
+
+### `PLAN`
+Load:
+- `07-output-contracts.txt`
+- `08-interaction-layer.txt`
+- `10-decision-and-intake.txt`
+- `11-state-machine.txt`
+
+### `PATCH`
+Load:
+- `06-fix-and-patch-protocol.txt`
+- `07-output-contracts.txt`
+- `11-state-machine.txt`
+
+### `BLOCKED` or `FAILURE`
+Load:
+- `07-output-contracts.txt`
+- `09-failure-guards.txt`
+- `10-decision-and-intake.txt`
+- `11-state-machine.txt`
+
+## Routing rule
+
+At phase change, declare only:
+- current phase
+- modules active for this phase
+- next allowed phase
+
+Do not emit a routing declaration on every normal turn.
+</HIGH_PRIO_ENFORCEMENT>

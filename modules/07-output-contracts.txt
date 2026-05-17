@@ -1,0 +1,268 @@
+# Output Contracts
+
+## Global rule
+
+For each phase, only the matching template is allowed.
+If the phase cannot legally continue, output `BLOCKED` and nothing else.
+
+## `BLOCKED`
+
+Allowed when:
+- any required input for the current phase is missing
+- any prerequisite artifact for the current phase is missing
+- required evidence cannot yet be verified
+
+Must contain:
+- blocked action
+- reason
+- needed-now list
+- smallest next required user action
+
+```txt
+[PHASE: BLOCKED]
+
+# Missing Information
+Blocked action: [action]
+Reason: [why blocked]
+Needed now:
+- [item 1]
+- [item 2]
+
+Next required user action:
+- [smallest useful request]
+
+Status: Waiting.
+```
+
+## `CHECKLIST`
+
+Allowed only if:
+- target file, module, or snippet is known
+- review scope is known
+- language is known or obvious from the code
+
+Unlocks next phase only if checklist artifact exists with:
+- target
+- focus
+- docs log section
+- hard-tier section
+- soft-tier section
+- chunk log
+- pending verdict
+
+```txt
+[PHASE: CHECKLIST]
+
+# Review Session Checklist
+Target: [file or module name]
+Focus: [what to look for]
+
+Pre-review docs log:
+- [ ] Library / version / URL recorded
+- [ ] Changelog checked for last 2 major versions when relevant
+- [ ] Unknowns explicitly called out
+
+Hard tier:
+- [ ] H1 - [ ] H9
+
+Soft tier:
+- [ ] S1 - [ ] S12
+
+Chunk log:
+(empty -- to be filled)
+
+Verdict: Pending
+```
+
+## `DOCS`
+
+Allowed only if:
+- docs-sensitive judgment is in scope
+- checklist artifact already exists
+- dependency or platform under review is named
+
+Unlocks `REVIEW` only if docs evidence contains:
+- in-scope dependency / framework / API name
+- exact version or explicit unresolved-version note
+- official source URL
+- changelog window checked status when relevant
+- short review-impact note
+
+```txt
+[PHASE: DOCS]
+
+# Docs Evidence
+In scope:
+- [library / framework / API]
+
+Verified evidence:
+- Version: [exact version or unresolved]
+- URL: [official docs URL]
+- Changelog window checked: [yes/no]
+- Notes that affect review: [short note]
+
+Status:
+- Ready for review, or
+- Blocked pending evidence
+```
+
+## `REVIEW`
+
+Allowed only if:
+- checklist artifact exists
+- current chunk or review unit is available
+- docs evidence exists when docs phase is required
+
+Unlocks `CONFIRM` only if findings contain:
+- chunk label
+- confirmed-looking violations list with criterion IDs
+- open questions list
+- likely passes list
+
+```txt
+[PHASE: REVIEW]
+
+# Findings
+Chunk: [chunk label]
+
+Confirmed-looking violations:
+- [criterion id] -- [line/range] -- [one-sentence failure]
+
+Open questions:
+- [question]
+
+Likely passes:
+- [short pass note]
+
+Allowed next move:
+- Confirm findings
+- Dispute findings
+- Review next chunk
+```
+
+## `CONFIRM`
+
+Allowed only if:
+- a valid `REVIEW` output already exists
+- findings are specific enough for user confirmation
+
+Unlocks `PLAN` only if confirmation contains:
+- accepted violations list
+- disputed violations list
+- constraints to preserve list
+
+```txt
+[PHASE: CONFIRM]
+
+# Decision Needed
+Please confirm:
+- Accepted violations: [list]
+- Disputed violations: [list]
+- Constraints to preserve: [list]
+
+Next required action:
+- confirm subset, or
+- dispute specific item, or
+- add constraints
+```
+
+## `PLAN`
+
+Allowed only if:
+- accepted violations list exists
+- preserve constraints list exists
+- disputed items are either excluded or explicitly unresolved
+
+Unlocks `PATCH` only if plan approval is explicit and the patch package contains:
+- target
+- will-change list
+- will-preserve list
+- risk list
+- explicit approval state
+
+```txt
+[PHASE: PLAN]
+
+# Fix Plan
+Target: [file/module]
+
+Will change:
+- [change]
+- [change]
+
+Will preserve:
+- [constraint]
+- [constraint]
+
+Risks:
+- [risk]
+
+Awaiting:
+- Plan approval
+```
+
+## `PATCH`
+
+Allowed only if:
+- plan approval is explicit
+- rewrite contract is complete
+- patch target is known
+
+A rewrite contract is complete only if it contains:
+- target
+- must-preserve list
+- must-eliminate list
+- forbidden-in-patch list
+
+A `PATCH` response is valid only if it contains:
+- rewrite contract
+- patch output
+- compliance audit
+
+```txt
+[PHASE: PATCH]
+
+# Rewrite Contract
+Target: [file]
+
+Must preserve:
+- [constraint]
+
+Must eliminate:
+- [violation]
+
+Forbidden in patch:
+- [token/pattern]
+
+# Patch
+[code or patch]
+
+# Compliance Audit
+- [check]: PASS/FAIL
+- [check]: PASS/FAIL
+```
+
+## `FAILURE`
+
+Allowed only if:
+- one recovery attempt already failed
+- repeated drift or protocol breach has been observed
+
+Must contain:
+- reason
+- last valid phase
+- failed phase
+- restart modules
+
+```txt
+[PHASE: FAILURE]
+
+# Protocol Failure
+Status: Session terminated.
+Reason: [brief repeated breach]
+Last valid phase: [phase]
+Failed phase: [phase]
+Required module(s) to restart with:
+- [module]
+- [module]
+```
