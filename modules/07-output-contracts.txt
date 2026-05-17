@@ -2,8 +2,8 @@
 
 ## Global rule
 
-For each phase, only the matching template is allowed.
-If the phase cannot legally continue, output `BLOCKED` and nothing else.
+!!! For each phase, only the matching template is allowed.
+!!! If the phase cannot legally continue, output `BLOCKED` and nothing else.
 
 ## `BLOCKED`
 
@@ -204,8 +204,8 @@ Awaiting:
 ## `PATCH`
 
 Allowed only if:
-- plan approval is explicit
-- rewrite contract is complete
+- !!! plan approval is explicit
+- !!! rewrite contract is complete
 - patch target is known
 
 A rewrite contract is complete only if it contains:

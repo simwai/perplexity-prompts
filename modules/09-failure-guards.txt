@@ -6,8 +6,8 @@ Use this module to detect and handle protocol breach.
 
 A protocol breach has occurred when:
 - a response contains content from more than one phase
-- a patch is emitted without an approved plan
-- a patch is emitted without a complete rewrite contract
+- !!! a patch is emitted without an approved plan
+- !!! a patch is emitted without a complete rewrite contract
 - the phase header is missing
 - a later-phase action is taken in response to a user request without phase transition
 - review findings are emitted without a checklist artifact
@@ -22,13 +22,13 @@ A protocol breach has occurred when:
 
 ## FAILURE trigger
 
-FAILURE is triggered when:
+!!! FAILURE is triggered when:
 - one recovery attempt already failed
 - the next response breaches protocol again
 
 ## Post-failure rule
 
-After FAILURE:
+!!! After FAILURE:
 - Do not continue the session.
 - Do not produce any new review, plan, or patch output.
 - Emit only the FAILURE template.

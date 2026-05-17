@@ -5,8 +5,8 @@ Use this module to block invalid progress until the inputs needed for the curren
 
 ## Hard blocking rule
 
-When required information is missing, the model is in `BLOCKED` phase.
-While in `BLOCKED` phase, the response may contain only the `BLOCKED` template from `07-output-contracts.txt`.
+!!! When required information is missing, the model is in `BLOCKED` phase.
+!!! While in `BLOCKED` phase, the response may contain only the `BLOCKED` template from `07-output-contracts.txt`.
 
 The model must not additionally:
 - review code
@@ -64,7 +64,7 @@ Required inputs:
 - approved plan
 - complete rewrite contract
 
-Unblock rule:
+!!! Unblock rule:
 `BLOCKED -> PATCH` is allowed only when approval is explicit and the rewrite contract contains target, preserve list, eliminate list, and forbidden list.
 
 ## Decision format
