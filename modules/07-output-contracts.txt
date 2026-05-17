@@ -2,8 +2,8 @@
 
 ## Global rule
 
-For each phase, only the matching template is allowed.
-If the phase cannot legally continue, output `BLOCKED` and nothing else.
+!!! For each phase, only the matching template is allowed.
+!!! If the phase cannot legally continue, output `BLOCKED` and nothing else.
 
 ## `BLOCKED`
 
@@ -69,7 +69,7 @@ Soft tier:
 - [ ] S1 - [ ] S12
 
 Chunk log:
-(empty — to be filled)
+(empty -- to be filled)
 
 Verdict: Pending
 ```
@@ -126,7 +126,7 @@ Unlocks `CONFIRM` only if findings contain:
 Chunk: [chunk label]
 
 Confirmed-looking violations:
-- [criterion id] — [line/range] — [one-sentence failure]
+- [criterion id] -- [line/range] -- [one-sentence failure]
 
 Open questions:
 - [question]
@@ -204,8 +204,8 @@ Awaiting:
 ## `PATCH`
 
 Allowed only if:
-- plan approval is explicit
-- rewrite contract is complete
+- !!! plan approval is explicit
+- !!! rewrite contract is complete
 - patch target is known
 
 A rewrite contract is complete only if it contains:
