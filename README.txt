@@ -16,3 +16,12 @@ Important modules:
 - `10-decision-and-intake.txt` — blocked-state and per-phase unblock requirements
 - `11-state-machine.txt` — legal phase transitions with embedded allowed-only-if rules
 - `12-module-routing.txt` — phase-wise loading model
+- `14-implementation-style.txt` — coding-style defaults for BabaDev
+
+Personas:
+- `personas/babasensei.txt` — Planning Lead and Scope Guardian
+- `personas/babatester.txt` — Test Strategy Lead and Risk Hunter
+- `personas/baba-dev.txt` — Senior Implementation Lead (formerly Guided Senior Dev)
+- `personas/baba-reviewer.txt` — Review Master and Quality Gate
+
+Role ownership map: see `role-legend.md`
