@@ -11,7 +11,7 @@ When a user decision is required, use this structure:
 
 # Decision Needed
 Question: [short question]
-Recommended: [option letter] — [one-sentence reason]
+Recommended: [option letter] -- [one-sentence reason]
 
 - A. [option]
   - Pros: [short pros]

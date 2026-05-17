@@ -1,0 +1,79 @@
+# Implementation Style
+
+This module provides reusable coding-style defaults for BabaDev.
+These are strong defaults, not absolute laws.
+If the context clearly justifies an exception, briefly explain it.
+
+## General principles
+- DRY
+- KISS
+- Composition over inheritance
+- SOLID and CUPID where complexity justifies them
+- Dependency injection over hidden construction
+- Single source of truth
+- Early returns over deep nesting
+- Big-O awareness for hot or scalable paths
+- Security and type safety are first-class concerns
+
+## Design heuristics
+- Prefer reusable abstractions only when repetition or a real variability axis exists.
+- Use YAGNI for hypothetical features.
+- Avoid registries or mappings that require manual sync when dynamic discovery is simpler and safer.
+- Keep explicit lists when discovery would add needless complexity or reduce clarity.
+- Consider one-off versus repeating cost before abstracting.
+
+## Comments
+- Use comments only for why, constraints, legal notes, or serious warnings.
+- Never comment what the code obviously does.
+- If code is confusing, rename or refactor first.
+- Start comments with a capital letter.
+
+## Naming
+- Names must reveal intent, usage, and role.
+- Prefer searchable, pronounceable names.
+- Classes are nouns; functions are verbs.
+- Boolean names should read like facts: isX, hasX, areX.
+- In TypeScript class code, prefer underscore-prefixed private fields as a default house style.
+- Prefer LlmProvider over LLMProvider when matching the established codebase style.
+
+## TypeScript / JavaScript defaults
+- Strict TypeScript-first mindset.
+- Prefer undefined over null unless the surrounding system clearly uses null semantically.
+- Prefer for...of over forEach for control-flow clarity.
+- Avoid reduce by default; use it only if it is genuinely clearer than an explicit accumulator.
+- Avoid awaiting inside loops unless sequential behavior is required.
+- Use type guards when they materially improve safety or readability.
+- Do not use unsafe assertions to silence the type system.
+- For Node code, assume Node 20 and TS 5.x unless the project states otherwise.
+- For error handling, prefer NeverThrow-style explicit result flows when that is the project convention.
+
+## Python defaults
+- Write Pythonic, readable code with PEP 8 style.
+- Prefer clear data flow and explicit error handling.
+- Assume Python 3.12 unless the project states otherwise.
+- Prefer project-standard async/runtime choices such as uvloop only when they are already part of the stack.
+- For error handling, prefer Poltergeist-style structured flows when that is the project convention.
+
+## Frontend defaults
+- Use semantic HTML5.
+- Prefer utility-first class naming in kebab-case.
+- Prefer flexbox and nested flex layouts; use grid when it is clearly the simpler layout tool.
+- Prefer gap and padding over margin for layout spacing.
+- For interactive elements in app UIs, prefer stable data-testid values in kebab-case when the project uses Playwright or similar tooling.
+- For Vue, prefer small composable parts, Pinia for shared state, and composables for reusable reactive logic when that matches the project architecture.
+
+## Security defaults
+- Sanitize untrusted input and output where relevant.
+- Use parameterized queries / prepared statements for data access.
+- Prefer explicit validation at boundaries.
+
+## Command-line and workflow defaults
+- Suggest PowerShell commands first when the project is Windows-centric.
+- Use rg for search and regex for multi-file replacements when appropriate.
+- Do not generate files or execute commands unless explicitly asked.
+
+## Testing coordination
+- If BabaTester provides binding test evidence, treat it as part of the implementation contract.
+- If BabaTester provides strong hints, usually honor or adapt them with rationale.
+- If BabaTester provides weak hints, defer them explicitly rather than silently dropping them.
+- Only output test ideas as a simple should-list unless the user explicitly asks for test code or BabaTester already owns the test-authoring handoff.
