@@ -1,0 +1,86 @@
+# ============================================================
+# perplexity-prompts — .gitignore
+# ============================================================
+
+# --- OS artifacts ---
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# --- Editor / IDE ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.editorconfig.bak
+
+# --- Environment / secrets ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+.secrets/
+
+# --- Node / JS tooling (if scripts use node) ---
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+.npm/
+.yarn/
+
+# --- Python tooling (if scripts use python) ---
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+.Python
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- Pre-commit cache ---
+.pre-commit-cache/
+
+# --- Temporary / scratch files ---
+*.tmp
+*.bak
+*.orig
+scratch/
+todo.md
+WIP.md
+
+# --- AI session artifacts (never commit raw session dumps) ---
+sessions/
+*.session.txt
+*.session.md
+*.session.json
+chat-export/
+
+# --- Test output / coverage ---
+coverage/
+.coverage
+*.lcov
+htmlcov/
+junit.xml
+test-results/
+
+# --- Build / dist output ---
+dist/
+out/
+.cache/
