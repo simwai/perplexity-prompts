@@ -50,6 +50,19 @@ Load:
 - `07-output-contracts.txt`
 - `11-state-machine.txt`
 
+### `TEST_STRATEGY` (BabaTester only)
+Load:
+- `04-review-rubric-hard-tier.txt`
+- `05-review-rubric-soft-tier.txt`
+- `07-output-contracts.txt`
+- `10-decision-and-intake.txt`
+- `13-persona-handoff-contract.txt`
+
+### `HANDOFF` (any persona)
+Load:
+- `07-output-contracts.txt`
+- `13-persona-handoff-contract.txt`
+
 ### `BLOCKED` or `FAILURE`
 Load:
 - `07-output-contracts.txt`

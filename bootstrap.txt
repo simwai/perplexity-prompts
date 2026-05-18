@@ -1,27 +1,85 @@
 # Review Protocol Bootstrap
 
 Use this as the launcher for the phase-oriented review protocol.
+Copy-paste the relevant section into your AI session as the first message.
 
-## Required base files
+---
+
+## Required base files (always load these first)
+
 - `01-orchestrator.txt`
 - `02-workflow.txt`
 - `07-output-contracts.txt`
 
-## Add by current phase
-- `03-docs-research.txt` for `DOCS`
-- `04-review-rubric-hard-tier.txt` and `05-review-rubric-soft-tier.txt` for `REVIEW`
-- `08-interaction-layer.txt` and `10-decision-and-intake.txt` for `CONFIRM` and `PLAN`
-- `06-fix-and-patch-protocol.txt` for `PATCH`
-- `09-failure-guards.txt`, `10-decision-and-intake.txt`, and `11-state-machine.txt` for `BLOCKED` or `FAILURE`
-- `11-state-machine.txt` and `12-module-routing.txt` whenever strict transition control is needed
+---
+
+## Single-persona sessions
+
+### BabaSensei (mentor review → plan)
+Load: `babasensei.txt` + base files above.
+Flow: CHECKLIST → DOCS (if needed) → REVIEW → CONFIRM → PLAN → HANDOFF
+Terminates at HANDOFF. Does not patch.
+
+### BabaTester (adversarial QA → test strategy)
+Load: `babatester.txt` + base files above.
+Flow: CHECKLIST → DOCS (if needed) → REVIEW → CONFIRM → TEST_STRATEGY → HANDOFF
+Terminates at HANDOFF. Does not fix or plan.
+
+### Guided Senior Dev (patch only — requires prior handoff)
+Load: `guided-senior-dev.txt` + base files above.
+Entry point: PLAN (from a completed HANDOFF contract).
+Flow: PLAN (validate rewrite contract) → PATCH
+If handed off from BabaSensei: verify rewrite contract before PATCH.
+If handed off from BabaTester: classify all test findings as BINDING / STRONG HINT / WEAK HINT before PATCH.
+
+---
+
+## Full multi-persona session (recommended for production reviews)
+
+Run personas in this order. Each session is independent — paste its persona file + base files fresh.
+
+```
+Step 1: BabaSensei
+  Load: babasensei.txt + 01 + 02 + 07
+  Goal: CHECKLIST → DOCS → REVIEW → CONFIRM → PLAN → HANDOFF
+  Output: Completed HANDOFF contract (save this)
+
+Step 2: BabaTester (run on same target in parallel or after Step 1)
+  Load: babatester.txt + 01 + 02 + 07
+  Goal: CHECKLIST → DOCS → REVIEW → CONFIRM → TEST_STRATEGY → HANDOFF
+  Output: Completed HANDOFF contract with test strategy (save this)
+
+Step 3: Guided Senior Dev
+  Load: guided-senior-dev.txt + 01 + 02 + 07
+  Paste: Both HANDOFF contracts from Steps 1 and 2
+  Goal: validate both contracts → PLAN → PATCH
+  Rule: GuidedSeniorDev must classify all BabaTester findings before entering PATCH
+```
+
+---
+
+## Phase-specific module additions
+
+- `03-docs-research.txt` — add for DOCS phase
+- `04-review-rubric-hard-tier.txt` + `05-review-rubric-soft-tier.txt` — add for REVIEW
+- `08-interaction-layer.txt` + `10-decision-and-intake.txt` — add for CONFIRM and PLAN
+- `06-fix-and-patch-protocol.txt` — add for PATCH
+- `09-failure-guards.txt` + `10-decision-and-intake.txt` + `11-state-machine.txt` — add for BLOCKED or FAILURE
+- `11-state-machine.txt` + `12-module-routing.txt` — add whenever strict transition control is needed
+- `13-persona-handoff-contract.txt` — add for any HANDOFF or multi-persona session
+
+---
 
 ## Launcher rule
+
 Begin by identifying the current phase.
 Then use only the response template allowed for that phase.
 If the phase cannot legally continue, output only the `BLOCKED` template.
 
 ## Ownership rule
+
 Transition requirements live inside the files that own them:
 - response-shape unlocks live in `07-output-contracts.txt`
 - unblock requirements live in `10-decision-and-intake.txt`
 - legal phase transitions live in `11-state-machine.txt`
+- handoff contract structure lives in `13-persona-handoff-contract.txt`

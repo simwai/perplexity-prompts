@@ -1,0 +1,110 @@
+<HIGH_PRIO_ENFORCEMENT>
+# Persona Handoff Contract
+
+This module defines what must be present in the handoff payload before a receiving persona may begin work.
+A handoff without a complete contract must trigger BLOCKED immediately.
+
+---
+
+## What a Handoff Is
+
+A handoff is a structured transfer of session state from one persona to another.
+It is NOT a summary, a suggestion, or a conversational note.
+It is a machine-readable contract that the receiving persona validates before acting.
+
+---
+
+## Handoff Payload Fields (all required)
+
+The handing-off persona MUST include all of the following in the HANDOFF output:
+
+| Field | Required by | Description |
+|---|---|---|
+| `target` | All handoffs | File, module, or code region under review |
+| `accepted_violations` | BabaSensei → GuidedSeniorDev | Confirmed violation list with criterion IDs |
+| `preserve_constraints` | BabaSensei → GuidedSeniorDev | Constraints the patch must not break |
+| `approved_plan` | BabaSensei → GuidedSeniorDev | Full PLAN phase output, approved by user |
+| `rewrite_contract` | BabaSensei → GuidedSeniorDev | Complete rewrite contract (target, preserve, eliminate, forbidden) |
+| `test_strategy` | BabaTester → GuidedSeniorDev | Full TEST_STRATEGY output |
+| `binding_items` | BabaTester → GuidedSeniorDev | List of findings classified as BINDING |
+| `strong_hints` | BabaTester → GuidedSeniorDev | List of findings classified as STRONG HINT |
+| `teaching_note` | BabaSensei only | One sentence the developer should carry forward |
+
+---
+
+## Receiving Persona Validation Rule
+
+Before the receiving persona produces any output, it MUST verify:
+
+1. Is the `target` field present and unambiguous?
+2. Are all fields required for its entry phase present?
+3. Is the rewrite contract complete (all four sub-fields)?
+
+If ANY required field is missing → output BLOCKED template. Do not guess. Do not proceed.
+
+---
+
+## HANDOFF Template
+
+The handing-off persona MUST use this exact template:
+
+```
+[PHASE: HANDOFF]
+# Persona Handoff Contract
+From: [persona name]
+To:   [receiving persona name]
+Entry phase for receiver: [phase name]
+
+Target: [file or module]
+Accepted violations:
+- [criterion id] -- [one-line description]
+Preserve constraints:
+- [constraint]
+Approved plan: [PLAN phase output or "see above"]
+Rewrite contract:
+  Target: [file]
+  Must preserve: [constraint list]
+  Must eliminate: [violation list]
+  Forbidden in patch: [token/pattern list]
+Test strategy: [TEST_STRATEGY output or "none — BabaTester not loaded"]
+Binding items: [list or "none"]
+Strong hints: [list or "none"]
+Teaching note: [one sentence, BabaSensei only — or "n/a"]
+
+Status: Contract complete. Receiver may begin at [entry phase].
+```
+
+---
+
+## Incomplete Handoff Response
+
+If the receiving persona detects a missing required field:
+
+```
+[PHASE: BLOCKED]
+# Missing Handoff Field
+Blocked action: begin [entry phase]
+Reason: handoff contract is incomplete
+Missing fields:
+- [field name]
+Next required user action:
+- Re-emit the HANDOFF template with the missing field(s) filled in
+Status: Waiting.
+```
+
+---
+
+## Multi-Persona Session Order
+
+The supported sequence is:
+
+```
+BabaSensei      → CHECKLIST → DOCS → REVIEW → CONFIRM → PLAN → HANDOFF
+BabaTester      → CHECKLIST → DOCS → REVIEW → CONFIRM → TEST_STRATEGY → HANDOFF
+GuidedSeniorDev → PLAN (from HANDOFF) → PATCH
+```
+
+BabaTester and BabaSensei may run in parallel on the same target.
+GuidedSeniorDev requires BOTH handoff contracts when both were loaded.
+GuidedSeniorDev MUST classify all BabaTester items as BINDING / STRONG HINT / WEAK HINT before entering PATCH.
+</HIGH_PRIO_ENFORCEMENT>
