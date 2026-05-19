@@ -11,13 +11,16 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 - `modules/13-persona-handoff-contract.txt` — structured handoff contract that any persona must emit before another persona may begin. Defines required payload fields, receiving-persona validation rules, and the HANDOFF template.
 - `modules/15-artifact-handling.txt` — LLM instructions for artifact hygiene: what counts as an artifact, `.gitignore` authoring rules, committed-credential H1 violation, and REVIEW/PLAN/PATCH enforcement.
 - `modules/16-pre-commit-behavior.txt` — LLM instructions for pre-commit reasoning: formatter-first order (`prettier --write` / `ruff format`), linter second, explicit `tsc --noEmit` for TypeScript, secret scanner as H1-adjacent, broken hook as hard-tier blocker.
-- `modules/17-cross-team-requirements.txt` — LLM instructions for cross-team handoffs: when and how to write `CHANGES_REQUIRED.md`, mandatory entry template (target, priority, context, exact change, acceptance criteria, contract delta), priority definitions, and audit-trail rules.
+- `modules/17-cross-team-requirements.txt` — LLM instructions for cross-team handoffs: when and how to write `CHANGES_REQUIRED.md`, mandatory entry template, priority definitions, and audit-trail rules.
+- `modules/18-discuss-mode.txt` — LLM instructions for the `DISCUSS` phase: protocol-free expert conversation mode, entry/exit triggers, promotion rules for carrying conclusions into formal phases.
+- `modules/19-session-state.txt` — LLM instructions for `SESSION_STATE.md`: temp per-session state file spec, read/write rules, mid-session persona switch protocol, cleanup rule.
 - `CHANGELOG.md` — this file.
-- `.gitignore` — artifact exclusions for the repo itself.
+- `.gitignore` — artifact exclusions for the repo itself, including `SESSION_STATE.md`.
 
 ### Fixed
-- `modules/12-module-routing.txt` — added `TEST_STRATEGY` and `HANDOFF` phase routing entries referencing module 13; added conditional loading of modules 15, 16, and 17 for REVIEW, PLAN, and PATCH phases.
-- `bootstrap.txt` — added explicit multi-persona session script (Step 1 → Step 2 → Step 3), clarified `GuidedSeniorDev` entry points, added modules 15/16/17 to phase-specific additions list and ownership rule.
+- `modules/11-state-machine.txt` — added `DISCUSS` to the phase set; added `ANY PHASE -> DISCUSS` and `DISCUSS -> <prior_phase>` transitions; added hard guards for DISCUSS.
+- `modules/12-module-routing.txt` — added `TEST_STRATEGY` and `HANDOFF` phase routing; added `DISCUSS` phase routing (modules 18 + 19); added conditional loading of modules 15, 16, 17; added multi-persona session additions (modules 13 + 19).
+- `bootstrap.txt` — added discussion-only session type; added Step 3 multi-persona script with DISCUSS handling; added Step 4 mid-session persona switch script; updated ownership rules for modules 13, 18, 19.
 
 ### Removed / Replaced
 - `scripts/pre-commit-check.sh` and `scripts/pre-commit-check.ps1` — replaced with LLM instruction module 16. Stub files remain to avoid broken references but carry no logic.

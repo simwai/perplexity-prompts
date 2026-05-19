@@ -1,90 +1,83 @@
-<HIGH_PRIO_ENFORCEMENT>
 # Module Routing
 
-Use phase-wise routing instead of broad always-on loading.
+This module defines which modules each persona loads per phase.
+Load only what the current phase requires. Do not preload future phases.
 
-## Base set
+## Always loaded (every phase, every persona)
 
-Load for every session:
 - `01-orchestrator.txt`
 - `02-workflow.txt`
-- `07-output-contracts.txt`
+- `09-failure-guards.txt`
+- `11-state-machine.txt`
+- `12-module-routing.txt` (this file)
 
-## Phase routing
+## Phase-specific loading
 
-### `CHECKLIST`
-Load:
-- `07-output-contracts.txt`
+### START
+- `10-decision-and-intake.txt`
+- `19-session-state.txt` (if continuing a prior session or switching persona)
+
+### DISCUSS
+- `18-discuss-mode.txt`
+- `19-session-state.txt`
+
+### CHECKLIST
 - `10-decision-and-intake.txt`
 
-### `DOCS`
-Load:
+### DOCS
 - `03-docs-research.txt`
-- `07-output-contracts.txt`
-- `10-decision-and-intake.txt`
 
-### `REVIEW`
-Load:
+### REVIEW
 - `04-review-rubric-hard-tier.txt`
 - `05-review-rubric-soft-tier.txt`
-- `07-output-contracts.txt`
-- `11-state-machine.txt`
-- `15-artifact-handling.txt` when repo hygiene or tooling is in scope
-- `16-pre-commit-behavior.txt` when scripts, hooks, or CI config is in scope
-- `17-cross-team-requirements.txt` when a finding cannot be resolved in the current repo
+- `15-artifact-handling.txt` (if repo or file artifacts are in scope)
+- `17-cross-team-requirements.txt` (if cross-team findings are identified)
 
-### `CONFIRM`
-Load:
+### CONFIRM
 - `07-output-contracts.txt`
-- `08-interaction-layer.txt`
-- `10-decision-and-intake.txt`
-- `11-state-machine.txt`
 
-### `PLAN`
-Load:
+### PLAN
 - `07-output-contracts.txt`
-- `08-interaction-layer.txt`
-- `10-decision-and-intake.txt`
-- `11-state-machine.txt`
-- `15-artifact-handling.txt` when the plan touches build config or environment setup
-- `16-pre-commit-behavior.txt` when the plan touches scripts or tooling
-- `17-cross-team-requirements.txt` when the plan has dependencies on another repo or team
+- `16-pre-commit-behavior.txt` (if pre-commit changes are in plan scope)
+- `17-cross-team-requirements.txt` (if cross-team changes are in plan scope)
 
-### `PATCH`
-Load:
+### PATCH
 - `06-fix-and-patch-protocol.txt`
 - `07-output-contracts.txt`
-- `11-state-machine.txt`
-- `15-artifact-handling.txt` when the patch adds or modifies tooling or config
-- `16-pre-commit-behavior.txt` when the patch adds or modifies hook config or scripts
-- `17-cross-team-requirements.txt` when the patch has unresolved cross-team dependencies
+- `14-implementation-style.txt`
+- `15-artifact-handling.txt` (if artifact hygiene changes are in patch scope)
+- `16-pre-commit-behavior.txt` (if pre-commit changes are in patch scope)
 
-### `TEST_STRATEGY` (BabaTester only)
-Load:
+### TEST_STRATEGY
 - `04-review-rubric-hard-tier.txt`
 - `05-review-rubric-soft-tier.txt`
 - `07-output-contracts.txt`
-- `10-decision-and-intake.txt`
 - `13-persona-handoff-contract.txt`
 
-### `HANDOFF` (any persona)
-Load:
+### HANDOFF
 - `07-output-contracts.txt`
 - `13-persona-handoff-contract.txt`
 
-### `BLOCKED` or `FAILURE`
-Load:
-- `07-output-contracts.txt`
+### BLOCKED
 - `09-failure-guards.txt`
-- `10-decision-and-intake.txt`
-- `11-state-machine.txt`
 
-## Routing rule
+### FAILURE
+- `09-failure-guards.txt`
 
-At phase change, declare only:
-- current phase
-- modules active for this phase
-- next allowed phase
+## Persona-specific additions
 
-Do not emit a routing declaration on every normal turn.
-</HIGH_PRIO_ENFORCEMENT>
+### BabaSensei
+- Always: `08-interaction-layer.txt`
+
+### BabaTester
+- Always: `08-interaction-layer.txt`
+
+### GuidedSeniorDev
+- Always: `14-implementation-style.txt`
+- On PATCH: `06-fix-and-patch-protocol.txt`
+
+## Multi-persona session additions
+
+When more than one persona is active in a session, or a mid-session switch occurs:
+- `13-persona-handoff-contract.txt`
+- `19-session-state.txt`
