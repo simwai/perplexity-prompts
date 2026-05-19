@@ -1,91 +1,86 @@
-# Review Protocol Bootstrap
+# Bootstrap
 
-Use this as the launcher for the phase-oriented review protocol.
-Copy-paste the relevant section into your AI session as the first message.
+This file is the entry point for any LLM session using the perplexity-prompts system.
+Read this file first. Then load the modules listed for your phase and persona.
 
----
+## Step 1 — Identify the session type
 
-## Required base files (always load these first)
+### Single-persona session
+One persona handles the full workflow from START to PATCH (or FAILURE).
+- Load: always-loaded modules + phase-specific modules for your persona
+- Read: `role-legend.md` to confirm persona role
+- Start at: `10-decision-and-intake.txt`
 
-- `01-orchestrator.txt`
-- `02-workflow.txt`
-- `07-output-contracts.txt`
+### Multi-persona session
+More than one persona is used in sequence or switched mid-session.
+- Load: always-loaded modules + `13-persona-handoff-contract.txt` + `19-session-state.txt`
+- Follow the multi-persona script in Step 3 below
+- Every persona reads `SESSION_STATE.md` before emitting its first response
 
----
+### Discussion-only session
+No formal review, plan, or patch. User wants expert exploration.
+- Load: always-loaded modules + `18-discuss-mode.txt` + `19-session-state.txt`
+- Start at: DISCUSS phase
+- Phase header: `[PHASE: DISCUSS]`
 
-## Single-persona sessions
+## Step 2 — Phase-specific module additions
 
-### BabaSensei (mentor review → plan)
-Load: `babasensei.txt` + base files above.
-Flow: CHECKLIST → DOCS (if needed) → REVIEW → CONFIRM → PLAN → HANDOFF
-Terminates at HANDOFF. Does not patch.
+See `modules/12-module-routing.txt` for the full routing table.
 
-### BabaTester (adversarial QA → test strategy)
-Load: `babatester.txt` + base files above.
-Flow: CHECKLIST → DOCS (if needed) → REVIEW → CONFIRM → TEST_STRATEGY → HANDOFF
-Terminates at HANDOFF. Does not fix or plan.
+Key additions by phase:
+- `DISCUSS` — `18-discuss-mode.txt`, `19-session-state.txt`
+- `REVIEW` — rubric files 04 + 05, optionally 15 + 17
+- `PLAN` — output contracts 07, optionally 16 + 17
+- `PATCH` — fix-and-patch 06, output contracts 07, implementation style 14, optionally 15 + 16
+- `TEST_STRATEGY` / `HANDOFF` — output contracts 07, handoff contract 13
+- Artifact hygiene in scope — `15-artifact-handling.txt`
+- Pre-commit changes in scope — `16-pre-commit-behavior.txt`
+- Cross-team changes in scope — `17-cross-team-requirements.txt`
+- Multi-persona or mid-session switch — `13-persona-handoff-contract.txt` + `19-session-state.txt`
 
-### Guided Senior Dev (patch only — requires prior handoff)
-Load: `guided-senior-dev.txt` + base files above.
-Entry point: PLAN (from a completed HANDOFF contract).
-Flow: PLAN (validate rewrite contract) → PATCH
-If handed off from BabaSensei: verify rewrite contract before PATCH.
-If handed off from BabaTester: classify all test findings as BINDING / STRONG HINT / WEAK HINT before PATCH.
+## Step 3 — Multi-persona session script
 
----
+Follow this script for a full BabaSensei → BabaTester → GuidedSeniorDev session:
 
-## Full multi-persona session (recommended for production reviews)
+### Step 3a — BabaSensei
+- Load: always-loaded + `08-interaction-layer.txt` + `10-decision-and-intake.txt` + `13-persona-handoff-contract.txt` + `19-session-state.txt`
+- Flow: START → CHECKLIST → (DOCS?) → REVIEW → CONFIRM → PLAN
+- On DISCUSS entry: load `18-discuss-mode.txt`, write prior phase to `SESSION_STATE.md`
+- On DISCUSS exit: restore prior phase from `SESSION_STATE.md`
+- At PLAN completion: write full `SESSION_STATE.md`, emit HANDOFF payload (module 13)
+- Save output as input for Step 3b
 
-Run personas in this order. Each session is independent — paste its persona file + base files fresh.
+### Step 3b — BabaTester
+- Load: always-loaded + `08-interaction-layer.txt` + `13-persona-handoff-contract.txt` + `19-session-state.txt`
+- Read `SESSION_STATE.md` before first response
+- Validate HANDOFF payload from Step 3a — go BLOCKED if incomplete
+- Flow: TEST_STRATEGY → HANDOFF
+- On DISCUSS entry: load `18-discuss-mode.txt`, write prior phase to `SESSION_STATE.md`
+- At HANDOFF completion: update `SESSION_STATE.md`, emit HANDOFF payload for Step 3c
+- Save output as input for Step 3c
 
-```
-Step 1: BabaSensei
-  Load: babasensei.txt + 01 + 02 + 07
-  Goal: CHECKLIST → DOCS → REVIEW → CONFIRM → PLAN → HANDOFF
-  Output: Completed HANDOFF contract (save this)
+### Step 3c — GuidedSeniorDev
+- Load: always-loaded + `14-implementation-style.txt` + `06-fix-and-patch-protocol.txt` + `13-persona-handoff-contract.txt` + `19-session-state.txt`
+- Read `SESSION_STATE.md` before first response
+- Validate HANDOFF payload from Step 3b — go BLOCKED if incomplete
+- Flow: PATCH
+- On DISCUSS entry: load `18-discuss-mode.txt`, write prior phase to `SESSION_STATE.md`
+- On session close: delete `SESSION_STATE.md` (unless FAILURE — preserve for post-mortem)
 
-Step 2: BabaTester (run on same target in parallel or after Step 1)
-  Load: babatester.txt + 01 + 02 + 07
-  Goal: CHECKLIST → DOCS → REVIEW → CONFIRM → TEST_STRATEGY → HANDOFF
-  Output: Completed HANDOFF contract with test strategy (save this)
+## Step 4 — Mid-session persona switch
 
-Step 3: Guided Senior Dev
-  Load: guided-senior-dev.txt + 01 + 02 + 07
-  Paste: Both HANDOFF contracts from Steps 1 and 2
-  Goal: validate both contracts → PLAN → PATCH
-  Rule: GuidedSeniorDev must classify all BabaTester findings before entering PATCH
-```
+When the user requests a persona switch mid-session:
+1. Active persona writes full state to `SESSION_STATE.md` including Persona Switch Log entry
+2. Active persona emits `[PERSONA SWITCH: <from> -> <to>]` and a one-line state summary
+3. Incoming persona reads `SESSION_STATE.md` in full before responding
+4. Incoming persona emits `[PERSONA: <name>] [PHASE: <current_phase>]` and confirms restored context
+5. Session continues from current phase — no restart
 
----
+See `modules/19-session-state.txt` for the full mid-session switch protocol.
 
-## Phase-specific module additions
+## Ownership rules
 
-- `03-docs-research.txt` — add for DOCS phase
-- `04-review-rubric-hard-tier.txt` + `05-review-rubric-soft-tier.txt` — add for REVIEW
-- `08-interaction-layer.txt` + `10-decision-and-intake.txt` — add for CONFIRM and PLAN
-- `06-fix-and-patch-protocol.txt` — add for PATCH
-- `09-failure-guards.txt` + `10-decision-and-intake.txt` + `11-state-machine.txt` — add for BLOCKED or FAILURE
-- `11-state-machine.txt` + `12-module-routing.txt` — add whenever strict transition control is needed
-- `13-persona-handoff-contract.txt` — add for any HANDOFF or multi-persona session
-- `15-artifact-handling.txt` — add when repo hygiene, .gitignore, or build config is in scope
-- `16-pre-commit-behavior.txt` — add when scripts, hooks, or CI tooling is in scope
-- `17-cross-team-requirements.txt` — add when any finding or fix cannot be resolved in the current repo
-
----
-
-## Launcher rule
-
-Begin by identifying the current phase.
-Then use only the response template allowed for that phase.
-If the phase cannot legally continue, output only the `BLOCKED` template.
-
-## Ownership rule
-
-Transition requirements live inside the files that own them:
-- response-shape unlocks live in `07-output-contracts.txt`
-- unblock requirements live in `10-decision-and-intake.txt`
-- legal phase transitions live in `11-state-machine.txt`
-- handoff contract structure lives in `13-persona-handoff-contract.txt`
-- artifact and gitignore rules live in `15-artifact-handling.txt`
-- pre-commit hook rules live in `16-pre-commit-behavior.txt`
-- cross-team requirement handoffs live in `17-cross-team-requirements.txt`
+Every module is owned by the system. Do not modify module files during a session.
+Modules 01, 09, 11, 12 are always active — they cannot be unloaded.
+Modules 13, 18, 19 activate on condition — load them only when the condition is met.
+Modules 15, 16, 17 activate on scope — load them only when their topic is in scope.

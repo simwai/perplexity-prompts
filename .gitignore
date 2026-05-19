@@ -1,86 +1,59 @@
-# ============================================================
-# perplexity-prompts — .gitignore
-# ============================================================
-
-# --- OS artifacts ---
+# OS artifacts
 .DS_Store
 .DS_Store?
 ._*
 .Spotlight-V100
 .Trashes
-Thumbs.db
 ehthumbs.db
-desktop.ini
+Thumbs.db
 
-# --- Editor / IDE ---
+# Editor / IDE
 .vscode/
 .idea/
-*.swp
-*.swo
-*~
-.editorconfig.bak
+*.sublime-workspace
+*.sublime-project
 
-# --- Environment / secrets ---
+# Secrets
 .env
 .env.*
 !.env.example
-*.pem
 *.key
+*.pem
 *.p12
 *.pfx
-secrets/
-.secrets/
 
-# --- Node / JS tooling (if scripts use node) ---
+# Node
 node_modules/
-package-lock.json
-yarn.lock
-pnpm-lock.yaml
-.npm/
-.yarn/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp.*
 
-# --- Python tooling (if scripts use python) ---
+# Python
 __pycache__/
 *.py[cod]
-*.pyo
-.venv/
-venv/
-env/
-.Python
 *.egg-info/
 dist/
 build/
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
+.venv/
+venv/
 
-# --- Pre-commit cache ---
-.pre-commit-cache/
-
-# --- Temporary / scratch files ---
-*.tmp
-*.bak
-*.orig
-scratch/
-todo.md
-WIP.md
-
-# --- AI session artifacts (never commit raw session dumps) ---
+# AI session artifacts
+SESSION_STATE.md
 sessions/
 *.session.txt
 *.session.md
 *.session.json
 chat-export/
 
-# --- Test output / coverage ---
+# Pre-commit cache
+.pre-commit-cache/
+
+# Test output
 coverage/
 .coverage
 *.lcov
-htmlcov/
-junit.xml
-test-results/
 
-# --- Build / dist output ---
+# Build output
 dist/
 out/
-.cache/

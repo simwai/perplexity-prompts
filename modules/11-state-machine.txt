@@ -7,6 +7,7 @@ Use this module to enforce phase-wise transitions and prevent mixed-phase output
 
 - `BLOCKED`
 - `CHECKLIST`
+- `DISCUSS`
 - `DOCS`
 - `REVIEW`
 - `CONFIRM`
@@ -21,6 +22,9 @@ Use this module to enforce phase-wise transitions and prevent mixed-phase output
 
 - `START -> CHECKLIST`
   - Allowed only if: target is known, scope is known, and language is known or obvious.
+
+- `START -> DISCUSS`
+  - Allowed only if: user input is exploratory rather than a concrete target for review or patch.
 
 - `CHECKLIST -> DOCS`
   - Allowed only if: checklist artifact exists and docs-sensitive judgment is in scope.
@@ -55,6 +59,15 @@ Use this module to enforce phase-wise transitions and prevent mixed-phase output
 - `ANY PHASE -> FAILURE`
   - !!! Allowed only if: one failed recovery attempt has already occurred and the next response breaches protocol again.
 
+- `ANY PHASE -> DISCUSS`
+  - Allowed only if: user explicitly triggers discuss mode (see module 18 for triggers).
+  - Prior phase is written to SESSION_STATE.md before entering DISCUSS.
+
+- `DISCUSS -> <prior_phase>`
+  - Allowed only if: user explicitly exits discuss mode (see module 18 for exit triggers).
+  - Prior phase is read from SESSION_STATE.md.
+  - !!! DISCUSS cannot transition directly to PATCH.
+
 ## Hard guards
 
 - !!! No review before checklist.
@@ -64,6 +77,8 @@ Use this module to enforce phase-wise transitions and prevent mixed-phase output
 - !!! No patch before complete rewrite contract.
 - !!! No mixed-phase response.
 - !!! No continuation after failure.
+- !!! No findings from DISCUSS without explicit user promotion.
+- !!! DISCUSS cannot transition directly to PATCH.
 
 ## Rewrite-contract completeness rule
 

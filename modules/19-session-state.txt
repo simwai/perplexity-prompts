@@ -1,0 +1,102 @@
+<HIGH_PRIO_ENFORCEMENT>
+# Session State
+
+Use this module in any multi-persona session or whenever a mid-session mode switch occurs.
+
+## Purpose
+
+`SESSION_STATE.md` is a temporary, machine-readable file written and read by the active persona at every phase transition and mode switch. It preserves context across:
+- Phase transitions within a session
+- DISCUSS mode entry and exit
+- Mid-session persona switches
+
+!!! `SESSION_STATE.md` must be listed in `.gitignore`. It is never committed.
+
+## File location
+
+Always at repo root: `SESSION_STATE.md`
+
+## Write rules
+
+The active persona writes or overwrites `SESSION_STATE.md` at every:
+- Phase transition
+- DISCUSS entry or exit
+- Persona switch
+- Promotion of a discuss item
+
+If the file does not exist, create it from scratch using the template below.
+
+## Read rules
+
+- Any incoming persona must read `SESSION_STATE.md` before emitting its first response.
+- If the file is missing and the session has a prior context, go BLOCKED and request the state file.
+- If the file is present but fields are missing, fill them from conversation context where unambiguous; otherwise go BLOCKED on the missing field.
+
+## Template
+
+```md
+# SESSION STATE
+<!-- Auto-written by active persona. Do not edit manually. -->
+
+## Meta
+active_persona: <persona name>
+current_phase: <phase>
+prior_phase: <phase or NONE>
+session_start: <ISO timestamp or UNKNOWN>
+last_updated: <ISO timestamp>
+
+## Target
+repo: <repo path or UNKNOWN>
+scope: <description or UNKNOWN>
+language: <language or UNKNOWN>
+
+## Findings
+<!-- Accepted violations carried forward from REVIEW/CONFIRM -->
+- <criterion_id>: <summary> [tier: hard|soft]
+
+## Open Questions
+<!-- Unresolved questions from any phase -->
+- <question>
+
+## Preservation Constraints
+<!-- Must-preserve items confirmed by user -->
+- <constraint>
+
+## Promoted From Discuss
+<!-- Items explicitly promoted by user from DISCUSS phase -->
+- <item> [from:DISCUSS]
+
+## Rewrite Contract
+<!-- Filled during PLAN phase -->
+target: <NONE or path>
+must_preserve: []
+must_eliminate: []
+forbidden_in_patch: []
+
+## Persona Switch Log
+<!-- Append only — never delete entries -->
+- <ISO timestamp>: <from_persona> -> <to_persona> at phase <phase>
+```
+
+## Mid-session persona switch protocol
+
+When the user explicitly requests a persona switch mid-session (e.g. "switch to BabaTester", "let BabaSensei look at this"):
+
+1. Active persona writes current full state to `SESSION_STATE.md` including a new entry in `Persona Switch Log`
+2. Active persona emits: `[PERSONA SWITCH: <from> -> <to>]` and a one-line state summary
+3. Incoming persona reads `SESSION_STATE.md` in full
+4. Incoming persona emits: `[PERSONA: <name>] [PHASE: <current_phase>]` and confirms restored context in one line
+5. Incoming persona continues from the current phase — it does NOT restart
+
+!!! A persona switch does not reset the phase.
+!!! A persona switch does not clear findings, constraints, or open questions.
+!!! If incoming persona cannot satisfy a hard constraint of the current phase, it goes BLOCKED.
+
+## Cleanup rule
+
+Delete `SESSION_STATE.md` when:
+- Session concludes with a successful PATCH or explicit user close
+- User says "close session", "end session", or "clean up"
+
+Do not delete on FAILURE — preserve for post-mortem.
+</HIGH_PRIO_ENFORCEMENT>
