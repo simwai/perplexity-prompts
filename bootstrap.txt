@@ -67,6 +67,9 @@ Step 3: Guided Senior Dev
 - `09-failure-guards.txt` + `10-decision-and-intake.txt` + `11-state-machine.txt` — add for BLOCKED or FAILURE
 - `11-state-machine.txt` + `12-module-routing.txt` — add whenever strict transition control is needed
 - `13-persona-handoff-contract.txt` — add for any HANDOFF or multi-persona session
+- `15-artifact-handling.txt` — add when repo hygiene, .gitignore, or build config is in scope
+- `16-pre-commit-behavior.txt` — add when scripts, hooks, or CI tooling is in scope
+- `17-cross-team-requirements.txt` — add when any finding or fix cannot be resolved in the current repo
 
 ---
 
@@ -83,3 +86,6 @@ Transition requirements live inside the files that own them:
 - unblock requirements live in `10-decision-and-intake.txt`
 - legal phase transitions live in `11-state-machine.txt`
 - handoff contract structure lives in `13-persona-handoff-contract.txt`
+- artifact and gitignore rules live in `15-artifact-handling.txt`
+- pre-commit hook rules live in `16-pre-commit-behavior.txt`
+- cross-team requirement handoffs live in `17-cross-team-requirements.txt`

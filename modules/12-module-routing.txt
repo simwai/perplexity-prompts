@@ -29,6 +29,9 @@ Load:
 - `05-review-rubric-soft-tier.txt`
 - `07-output-contracts.txt`
 - `11-state-machine.txt`
+- `15-artifact-handling.txt` when repo hygiene or tooling is in scope
+- `16-pre-commit-behavior.txt` when scripts, hooks, or CI config is in scope
+- `17-cross-team-requirements.txt` when a finding cannot be resolved in the current repo
 
 ### `CONFIRM`
 Load:
@@ -43,12 +46,18 @@ Load:
 - `08-interaction-layer.txt`
 - `10-decision-and-intake.txt`
 - `11-state-machine.txt`
+- `15-artifact-handling.txt` when the plan touches build config or environment setup
+- `16-pre-commit-behavior.txt` when the plan touches scripts or tooling
+- `17-cross-team-requirements.txt` when the plan has dependencies on another repo or team
 
 ### `PATCH`
 Load:
 - `06-fix-and-patch-protocol.txt`
 - `07-output-contracts.txt`
 - `11-state-machine.txt`
+- `15-artifact-handling.txt` when the patch adds or modifies tooling or config
+- `16-pre-commit-behavior.txt` when the patch adds or modifies hook config or scripts
+- `17-cross-team-requirements.txt` when the patch has unresolved cross-team dependencies
 
 ### `TEST_STRATEGY` (BabaTester only)
 Load:
