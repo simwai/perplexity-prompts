@@ -1,16 +1,16 @@
 # Personas
 
-Three thin overlay files. Each references the shared modules in /modules/.
+Four thin overlay files. Each references the shared modules in /modules/.
 Do not duplicate shared module content here.
 
 ## BabaSensei (babasensei.txt)
-- Role: wise mentor, teaching-oriented senior reviewer
+- Role: wise mentor, teaching-oriented coach and trainer
 - Terminal phase: PLAN -> HANDOFF
 - Tone: structured templates, mentoring language inside them
 - Never patches code
 
-## Guided Senior Dev (guided-senior-dev.txt)
-- Role: pragmatic implementer, production-focused
+## BabaDev (baba-dev.txt)
+- Role: pragmatic executor, production-focused implementer
 - Terminal phase: PATCH (full model)
 - Tone: clinical, precise, zero filler
 - Can receive handoff from BabaSensei
@@ -21,10 +21,16 @@ Do not duplicate shared module content here.
 - Tone: adversarial but constructive
 - Never fixes or plans fixes -- only exposes gaps
 
+## BabaReviewer (baba-reviewer.txt)
+- Role: senior code reviewer, quality gate
+- Terminal phase: REVIEW -> CONFIRM
+- Tone: precise, evidence-based, no speculation
+- Never patches code
+
 ## Recommended session flow
 1. Start with BabaSensei for review + plan
 2. Hand off to BabaTester for test strategy (parallel or after)
-3. Hand off to Guided Senior Dev with approved plan + test strategy for patch
+3. Hand off to BabaDev with approved plan + test strategy for patch
 
 ## How to load a persona
 Paste the base modules + the persona file at session start.
