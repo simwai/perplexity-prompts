@@ -3,7 +3,7 @@
 This file is the entry point for any LLM session using the perplexity-prompts system.
 Read this file first. Then load the modules listed for your phase and persona.
 
-## Step 1 — Identify the session type
+## Step 1 -- Identify the session type
 
 ### Single-persona session
 One persona handles the full workflow from START to PATCH (or FAILURE).
@@ -23,64 +23,64 @@ No formal review, plan, or patch. User wants expert exploration.
 - Start at: DISCUSS phase
 - Phase header: `[PHASE: DISCUSS]`
 
-## Step 2 — Phase-specific module additions
+## Step 2 -- Phase-specific module additions
 
 See `modules/12-module-routing.txt` for the full routing table.
 
 Key additions by phase:
-- `DISCUSS` — `18-discuss-mode.txt`, `19-session-state.txt`
-- `REVIEW` — rubric files 04 + 05, optionally 15 + 17
-- `PLAN` — output contracts 07, optionally 16 + 17
-- `PATCH` — fix-and-patch 06, output contracts 07, implementation style 14, optionally 15 + 16
-- `TEST_STRATEGY` / `HANDOFF` — output contracts 07, handoff contract 13
-- Artifact hygiene in scope — `15-artifact-handling.txt`
-- Pre-commit changes in scope — `16-pre-commit-behavior.txt`
-- Cross-team changes in scope — `17-cross-team-requirements.txt`
-- Multi-persona or mid-session switch — `13-persona-handoff-contract.txt` + `19-session-state.txt`
+- `DISCUSS` -- `18-discuss-mode.txt`, `19-session-state.txt`
+- `REVIEW` -- rubric files 04 + 05, optionally 15 + 17
+- `PLAN` -- output contracts 07, optionally 16 + 17
+- `PATCH` -- fix-and-patch 06, output contracts 07, implementation style 14, optionally 15 + 16
+- `TEST_STRATEGY` / `HANDOFF` -- output contracts 07, handoff contract 13
+- Artifact hygiene in scope -- `15-artifact-handling.txt`
+- Pre-commit changes in scope -- `16-pre-commit-behavior.txt`
+- Cross-team changes in scope -- `17-cross-team-requirements.txt`
+- Multi-persona or mid-session switch -- `13-persona-handoff-contract.txt` + `19-session-state.txt`
 
-## Step 3 — Multi-persona session script
+## Step 3 -- Multi-persona session script
 
-Follow this script for a full BabaSensei → BabaTester → GuidedSeniorDev session:
+Follow this script for a full BabaSensei -> BabaTester -> GuidedSeniorDev session:
 
-### Step 3a — BabaSensei
+### Step 3a -- BabaSensei
 - Load: always-loaded + `08-interaction-layer.txt` + `10-decision-and-intake.txt` + `13-persona-handoff-contract.txt` + `19-session-state.txt`
-- Flow: START → CHECKLIST → (DOCS?) → REVIEW → CONFIRM → PLAN
+- Flow: START -> CHECKLIST -> (DOCS?) -> REVIEW -> CONFIRM -> PLAN
 - On DISCUSS entry: load `18-discuss-mode.txt`, write prior phase to `SESSION_STATE.md`
 - On DISCUSS exit: restore prior phase from `SESSION_STATE.md`
 - At PLAN completion: write full `SESSION_STATE.md`, emit HANDOFF payload (module 13)
 - Save output as input for Step 3b
 
-### Step 3b — BabaTester
+### Step 3b -- BabaTester
 - Load: always-loaded + `08-interaction-layer.txt` + `13-persona-handoff-contract.txt` + `19-session-state.txt`
 - Read `SESSION_STATE.md` before first response
-- Validate HANDOFF payload from Step 3a — go BLOCKED if incomplete
-- Flow: TEST_STRATEGY → HANDOFF
+- Validate HANDOFF payload from Step 3a -- go BLOCKED if incomplete
+- Flow: TEST_STRATEGY -> HANDOFF
 - On DISCUSS entry: load `18-discuss-mode.txt`, write prior phase to `SESSION_STATE.md`
 - At HANDOFF completion: update `SESSION_STATE.md`, emit HANDOFF payload for Step 3c
 - Save output as input for Step 3c
 
-### Step 3c — GuidedSeniorDev
+### Step 3c -- GuidedSeniorDev
 - Load: always-loaded + `14-implementation-style.txt` + `06-fix-and-patch-protocol.txt` + `13-persona-handoff-contract.txt` + `19-session-state.txt`
 - Read `SESSION_STATE.md` before first response
-- Validate HANDOFF payload from Step 3b — go BLOCKED if incomplete
+- Validate HANDOFF payload from Step 3b -- go BLOCKED if incomplete
 - Flow: PATCH
 - On DISCUSS entry: load `18-discuss-mode.txt`, write prior phase to `SESSION_STATE.md`
-- On session close: delete `SESSION_STATE.md` (unless FAILURE — preserve for post-mortem)
+- On session close: delete `SESSION_STATE.md` (unless FAILURE -- preserve for post-mortem)
 
-## Step 4 — Mid-session persona switch
+## Step 4 -- Mid-session persona switch
 
 When the user requests a persona switch mid-session:
 1. Active persona writes full state to `SESSION_STATE.md` including Persona Switch Log entry
 2. Active persona emits `[PERSONA SWITCH: <from> -> <to>]` and a one-line state summary
 3. Incoming persona reads `SESSION_STATE.md` in full before responding
 4. Incoming persona emits `[PERSONA: <name>] [PHASE: <current_phase>]` and confirms restored context
-5. Session continues from current phase — no restart
+5. Session continues from current phase -- no restart
 
 See `modules/19-session-state.txt` for the full mid-session switch protocol.
 
 ## Ownership rules
 
 Every module is owned by the system. Do not modify module files during a session.
-Modules 01, 09, 11, 12 are always active — they cannot be unloaded.
-Modules 13, 18, 19 activate on condition — load them only when the condition is met.
-Modules 15, 16, 17 activate on scope — load them only when their topic is in scope.
+Modules 01, 09, 11, 12 are always active -- they cannot be unloaded.
+Modules 13, 18, 19 activate on condition -- load them only when the condition is met.
+Modules 15, 16, 17 activate on scope -- load them only when their topic is in scope.
