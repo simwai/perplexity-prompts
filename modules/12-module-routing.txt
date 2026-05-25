@@ -1,83 +1,111 @@
-# Module Routing
+# MODULE 12 — MODULE ROUTING
 
-This module defines which modules each persona loads per phase.
-Load only what the current phase requires. Do not preload future phases.
+This module defines which modules are loaded for each protocol phase.
+Personas MUST load only the modules listed for their active phase.
+Loading unrequested modules wastes context and is a soft-tier violation.
 
-## Always loaded (every phase, every persona)
+---
 
-- `01-orchestrator.txt`
-- `02-workflow.txt`
-- `09-failure-guards.txt`
-- `11-state-machine.txt`
-- `12-module-routing.txt` (this file)
+## Always-loaded (every phase)
 
-## Phase-specific loading
+- 01-orchestrator.txt
+- 02-workflow.txt
+- 11-state-machine.txt
+- 12-module-routing.txt  ← self
+- 19-session-state.txt
 
-### START
-- `10-decision-and-intake.txt`
-- `19-session-state.txt` (if continuing a prior session or switching persona)
+---
+
+## Phase routing
 
 ### DISCUSS
-- `18-discuss-mode.txt`
-- `19-session-state.txt`
-
-### CHECKLIST
-- `10-decision-and-intake.txt`
+- 08-interaction-layer.txt
+- 10-decision-and-intake.txt
+- 18-discuss-mode.txt
 
 ### DOCS
-- `03-docs-research.txt`
+- 03-docs-research.txt
+- 10-decision-and-intake.txt
 
 ### REVIEW
-- `04-review-rubric-hard-tier.txt`
-- `05-review-rubric-soft-tier.txt`
-- `15-artifact-handling.txt` (if repo or file artifacts are in scope)
-- `17-cross-team-requirements.txt` (if cross-team findings are identified)
+- 04-review-rubric-hard-tier.txt
+- 05-review-rubric-soft-tier.txt
+- 07-output-contracts.txt
+- 15-artifact-handling.txt
+- 17-cross-team-requirements.txt
 
 ### CONFIRM
-- `07-output-contracts.txt`
+- 07-output-contracts.txt
+- 08-interaction-layer.txt
+- 10-decision-and-intake.txt
 
 ### PLAN
-- `07-output-contracts.txt`
-- `16-pre-commit-behavior.txt` (if pre-commit changes are in plan scope)
-- `17-cross-team-requirements.txt` (if cross-team changes are in plan scope)
+- 07-output-contracts.txt
+- 10-decision-and-intake.txt
+- 14-implementation-style.txt
+- 15-artifact-handling.txt
+- 16-pre-commit-behavior.txt
+- 17-cross-team-requirements.txt
 
 ### PATCH
-- `06-fix-and-patch-protocol.txt`
-- `07-output-contracts.txt`
-- `14-implementation-style.txt`
-- `15-artifact-handling.txt` (if artifact hygiene changes are in patch scope)
-- `16-pre-commit-behavior.txt` (if pre-commit changes are in patch scope)
+- 06-fix-and-patch-protocol.txt
+- 07-output-contracts.txt
+- 14-implementation-style.txt
+- 16-pre-commit-behavior.txt
 
 ### TEST_STRATEGY
-- `04-review-rubric-hard-tier.txt`
-- `05-review-rubric-soft-tier.txt`
-- `07-output-contracts.txt`
-- `13-persona-handoff-contract.txt`
+- 04-review-rubric-hard-tier.txt
+- 05-review-rubric-soft-tier.txt
+- 07-output-contracts.txt
+- 10-decision-and-intake.txt
+- 13-persona-handoff-contract.txt
 
 ### HANDOFF
-- `07-output-contracts.txt`
-- `13-persona-handoff-contract.txt`
+- 07-output-contracts.txt
+- 13-persona-handoff-contract.txt
 
 ### BLOCKED
-- `09-failure-guards.txt`
+- 09-failure-guards.txt
 
 ### FAILURE
-- `09-failure-guards.txt`
+- 09-failure-guards.txt
 
-## Persona-specific additions
+---
 
-### BabaSensei
-- Always: `08-interaction-layer.txt`
+## Superpower routing
 
-### BabaTester
-- Always: `08-interaction-layer.txt`
+Superpowers may be combined with any phase. They do not replace the
+active phase — they add a specialized output artifact alongside it.
 
-### GuidedSeniorDev
-- Always: `14-implementation-style.txt`
-- On PATCH: `06-fix-and-patch-protocol.txt`
+### VISUALIZE (superpower) → load module 20
+Load when ANY of the following is true:
+- User asks for a diagram, flow, state map, visualization, or "show the
+  process" in any phase
+- A persona decides a state/transition explanation is clearer as a diagram
+- Phase = DISCUSS and the topic is a multi-state protocol or pipeline
 
-## Multi-persona session additions
+### MCQ-EVALUATE (superpower) → load module 21
+Load when ANY of the following is true:
+- User says "evaluate", "compare options", "multiple choice", "pros and
+  cons", "help me choose", or "what should we pick"
+- DISCUSS or PLAN phase surfaces 3+ viable approaches
+- A REVIEW finding has 2+ possible remediation strategies
+- The user is visibly stuck between options
 
-When more than one persona is active in a session, or a mid-session switch occurs:
-- `13-persona-handoff-contract.txt`
-- `19-session-state.txt`
+### PW-VERIFY (superpower) → load module 22
+Load automatically when PATCH touches any of:
+- `.html` files
+- `.css` files
+- UI components
+- Generated diagram artifacts
+- Browser-rendered docs
+Also load on demand: "screenshot it", "verify visually", "playwright check",
+"show me what it looks like", "take a screenshot before submitting".
+
+---
+
+## Ownership rule
+
+Every module number (01–22) is owned by exactly one concern.
+No module may duplicate rules defined in another.
+Conflicts resolve in ascending module-number order (lower = higher authority).

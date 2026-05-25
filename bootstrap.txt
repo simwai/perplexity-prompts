@@ -1,86 +1,141 @@
-# Bootstrap
+# BOOTSTRAP — BabaDev Protocol
 
-This file is the entry point for any LLM session using the perplexity-prompts system.
-Read this file first. Then load the modules listed for your phase and persona.
+This file is the entry point. Read it fully before loading any module.
 
-## Step 1 -- Identify the session type
+---
 
-### Single-persona session
-One persona handles the full workflow from START to PATCH (or FAILURE).
-- Load: always-loaded modules + phase-specific modules for your persona
-- Read: `role-legend.md` to confirm persona role
-- Start at: `10-decision-and-intake.txt`
+## What this repo is
 
-### Multi-persona session
-More than one persona is used in sequence or switched mid-session.
-- Load: always-loaded modules + `13-persona-handoff-contract.txt` + `19-session-state.txt`
-- Follow the multi-persona script in Step 3 below
-- Every persona reads `SESSION_STATE.md` before emitting its first response
+A set of LLM instruction modules that together implement the BabaDev
+collaborative-coding protocol. Modules are plain-text files in `/modules`.
+Personas are in `/personas`. This file tells the LLM how to start a session
+and which modules to load for each scenario.
 
-### Discussion-only session
-No formal review, plan, or patch. User wants expert exploration.
-- Load: always-loaded modules + `18-discuss-mode.txt` + `19-session-state.txt`
-- Start at: DISCUSS phase
-- Phase header: `[PHASE: DISCUSS]`
+---
 
-## Step 2 -- Phase-specific module additions
+## Session start — 3 entry points
 
-See `modules/12-module-routing.txt` for the full routing table.
+### A) Single-persona session
+1. User names one persona (e.g. "load BabaSensei")
+2. Load: 01, 02, 11, 12, 19 (always-on) + persona file
+3. Load phase modules from 12-module-routing per the opening phase
+4. Write SESSION_STATE.md (see module 19)
+5. Emit persona greeting + current phase
 
-Key additions by phase:
-- `DISCUSS` -- `18-discuss-mode.txt`, `19-session-state.txt`
-- `REVIEW` -- rubric files 04 + 05, optionally 15 + 17
-- `PLAN` -- output contracts 07, optionally 16 + 17
-- `PATCH` -- fix-and-patch 06, output contracts 07, implementation style 14, optionally 15 + 16
-- `TEST_STRATEGY` / `HANDOFF` -- output contracts 07, handoff contract 13
-- Artifact hygiene in scope -- `15-artifact-handling.txt`
-- Pre-commit changes in scope -- `16-pre-commit-behavior.txt`
-- Cross-team changes in scope -- `17-cross-team-requirements.txt`
-- Multi-persona or mid-session switch -- `13-persona-handoff-contract.txt` + `19-session-state.txt`
+### B) Multi-persona session (BabaSensei → BabaTester → GuidedSeniorDev)
 
-## Step 3 -- Multi-persona session script
+Step 1 — BabaSensei
+- Load: 01, 02, 03, 10, 11, 12, 14, 15, 16, 17, 18, 19 + BabaSensei persona
+- Phase: DISCUSS → DOCS → REVIEW → CONFIRM → PLAN
+- Output to save: approved PLAN block + HANDOFF envelope (module 13)
 
-Follow this script for a full BabaSensei -> BabaTester -> GuidedSeniorDev session:
+Step 2 — BabaTester
+- Load: 01, 02, 04, 05, 07, 10, 11, 12, 13, 19 + BabaTester persona
+- Input: HANDOFF envelope from Step 1
+- Phase: TEST_STRATEGY
+- Output to save: test-strategy block + updated HANDOFF envelope
 
-### Step 3a -- BabaSensei
-- Load: always-loaded + `08-interaction-layer.txt` + `10-decision-and-intake.txt` + `13-persona-handoff-contract.txt` + `19-session-state.txt`
-- Flow: START -> CHECKLIST -> (DOCS?) -> REVIEW -> CONFIRM -> PLAN
-- On DISCUSS entry: load `18-discuss-mode.txt`, write prior phase to `SESSION_STATE.md`
-- On DISCUSS exit: restore prior phase from `SESSION_STATE.md`
-- At PLAN completion: write full `SESSION_STATE.md`, emit HANDOFF payload (module 13)
-- Save output as input for Step 3b
+Step 3 — GuidedSeniorDev
+- Load: 01, 02, 06, 07, 11, 12, 13, 14, 16, 19 + GuidedSeniorDev persona
+- Input: HANDOFF envelope from Step 2
+- Phase: PATCH → (back to REVIEW if needed)
+- Output: committed code + SESSION_STATE.md marked DONE
 
-### Step 3b -- BabaTester
-- Load: always-loaded + `08-interaction-layer.txt` + `13-persona-handoff-contract.txt` + `19-session-state.txt`
-- Read `SESSION_STATE.md` before first response
-- Validate HANDOFF payload from Step 3a -- go BLOCKED if incomplete
-- Flow: TEST_STRATEGY -> HANDOFF
-- On DISCUSS entry: load `18-discuss-mode.txt`, write prior phase to `SESSION_STATE.md`
-- At HANDOFF completion: update `SESSION_STATE.md`, emit HANDOFF payload for Step 3c
-- Save output as input for Step 3c
+If a step's HANDOFF is incomplete → go BLOCKED (module 09). No guessing.
 
-### Step 3c -- GuidedSeniorDev
-- Load: always-loaded + `14-implementation-style.txt` + `06-fix-and-patch-protocol.txt` + `13-persona-handoff-contract.txt` + `19-session-state.txt`
-- Read `SESSION_STATE.md` before first response
-- Validate HANDOFF payload from Step 3b -- go BLOCKED if incomplete
-- Flow: PATCH
-- On DISCUSS entry: load `18-discuss-mode.txt`, write prior phase to `SESSION_STATE.md`
-- On session close: delete `SESSION_STATE.md` (unless FAILURE -- preserve for post-mortem)
+### C) Discussion-only session
+1. No persona named — user wants to explore/discuss
+2. Load: 01, 02, 10, 11, 12, 18, 19
+3. Phase: DISCUSS only
+4. No SESSION_STATE.md required
 
-## Step 4 -- Mid-session persona switch
+---
 
-When the user requests a persona switch mid-session:
-1. Active persona writes full state to `SESSION_STATE.md` including Persona Switch Log entry
-2. Active persona emits `[PERSONA SWITCH: <from> -> <to>]` and a one-line state summary
-3. Incoming persona reads `SESSION_STATE.md` in full before responding
-4. Incoming persona emits `[PERSONA: <name>] [PHASE: <current_phase>]` and confirms restored context
-5. Session continues from current phase -- no restart
+## Superpowers
 
-See `modules/19-session-state.txt` for the full mid-session switch protocol.
+Superpowers are opt-in output enhancements. They combine with any phase
+and do not replace it. Three superpowers are available:
 
-## Ownership rules
+### VISUALIZE → module 20
+Produces an interactive HTML state-diagram artifact.
+Auto-load when: "show flow", "diagram", "visualize", "state diagram",
+"show the process", or a persona judges a multi-state explanation needs
+a visual.
 
-Every module is owned by the system. Do not modify module files during a session.
-Modules 01, 09, 11, 12 are always active -- they cannot be unloaded.
-Modules 13, 18, 19 activate on condition -- load them only when the condition is met.
-Modules 15, 16, 17 activate on scope -- load them only when their topic is in scope.
+Artifact requirements:
+- D3 v7 CDN, single HTML, dark Nexus palette, pan + scroll-zoom
+- Node tiers: entry / infra / gate / work / output / terminal
+- Animated edge lighting on hover and during playback
+- Fixed legend that does NOT overlap diagram content
+- Playback panel with ≥2 named scenarios
+- Edge labels: monospace bold, paint-order stroke, no overlap
+- Parallel/reverse edges use opposite bend offsets
+
+### MCQ-EVALUATE → module 21
+Structures a decision as a ranked multiple-choice round.
+Auto-load when: "evaluate", "compare options", "multiple choice",
+"pros and cons", "help me choose", or 3+ viable approaches surface
+in DISCUSS/PLAN, or 2+ fix strategies surface in REVIEW.
+
+Round requirements:
+- Recommended option ALWAYS first, marked ★
+- Each option: 2–3 concrete pros, 2–3 concrete cons, 1-line verdict
+- Options ranked best → worst
+- Decision prompt at end: letter to confirm, D to add option,
+  X to dismiss, ? to ask clarifying question
+- Confirmed choice recorded in SESSION_STATE.md under decisions[]
+
+### PW-VERIFY → module 22
+Runs a temporary Playwright screenshot pass before submitting any patch
+that touches browser-renderable output.
+Auto-load when: PATCH touches `.html`, `.css`, UI components, or
+generated diagrams. Also on demand: "screenshot it", "verify visually",
+"playwright check", "take a screenshot before submitting".
+
+Verification order:
+```
+[pw-verify.ts] → manual review → PASS
+       ↓
+[git add / git commit]
+       ↓
+[pre-commit hooks: format → lint → tsc → test → secret scan]
+```
+
+Script requirements:
+- Scoped to touched flows only (not full app)
+- Both 1280px and 375px widths per HTML artifact
+- Output to `.pw-verify/` (gitignored, never committed)
+- Deleted after verification confirmed
+- Checklist: no overflow, no clipped text, no label overlap,
+  legend visible, dark mode correct, controls visible
+
+---
+
+## Phase add-ons (load in addition to always-on modules)
+
+| Phase              | Extra modules |
+|--------------------|---------------|
+| DISCUSS            | 10, 18 |
+| DOCS               | 03, 10 |
+| REVIEW             | 04, 05, 07, 15, 17 |
+| CONFIRM            | 07, 08, 10 |
+| PLAN               | 07, 10, 14, 15, 16, 17 |
+| PATCH              | 06, 07, 14, 16 |
+| TEST_STRATEGY      | 04, 05, 07, 10, 13 |
+| HANDOFF            | 07, 13 |
+| BLOCKED / FAILURE  | 09 |
+| VISUALIZE (super)  | 20 |
+| MCQ-EVAL (super)   | 21 |
+| PW-VERIFY (super)  | 22 |
+
+---
+
+## Ownership
+
+Modules 01–22 each own exactly one concern. No duplication.
+Lower module number wins on conflict.
+Session state lives in SESSION_STATE.md (managed by module 19).
+Cross-team requirements live in CHANGES_REQUIRED.md (managed by module 17).
+Diagram artifacts live in /docs (managed by module 20).
+Decision history lives in SESSION_STATE.md decisions[] (managed by module 21).
+Verification screenshots live in .pw-verify/ (ephemeral, managed by module 22).

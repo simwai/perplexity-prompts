@@ -1,0 +1,164 @@
+# MODULE 21 — SUPERPOWER: MULTI-CHOICE EVALUATOR
+
+## Purpose
+When a persona needs to help the user choose between multiple viable
+approaches, architectures, tools, or decisions, it MUST use this superpower
+to structure the evaluation as an interactive multiple-choice round instead
+of a prose comparison or flat list.
+
+The format forces explicit trade-off reasoning, surfaces the recommended
+answer first, and gives the user a clear decision path.
+
+Trigger keywords: "evaluate", "compare options", "which approach",
+"multiple choice", "what should we pick", "pros and cons", "let's decide",
+"help me choose".
+
+Also auto-trigger when:
+- A DISCUSS or PLAN phase surfaces 3+ viable approaches
+- A REVIEW finding has 2+ possible remediation strategies
+- The user is visibly stuck between options
+
+---
+
+## Output Format
+
+The evaluator output is a structured Markdown block emitted inline in the
+chat (not a separate file, unless the user asks to save it).
+
+---
+
+## Structure Template
+
+```
+╔══════════════════════════════════════════════════════════╗
+║  EVALUATION: <topic in ≤8 words>                         ║
+║  <N> options · recommended answer: <letter>              ║
+╚══════════════════════════════════════════════════════════╝
+
+★ RECOMMENDED
+─────────────────────────────────────────────────────────
+[A] <Option title>
+
+    <1–2 sentence description of this approach>
+
+    ✅ Pro: <concrete benefit 1>
+    ✅ Pro: <concrete benefit 2>
+    ⚠️  Con: <concrete trade-off 1>
+    ⚠️  Con: <concrete trade-off 2>
+
+    Verdict: <1 sentence why this is recommended given current constraints>
+
+─────────────────────────────────────────────────────────
+[B] <Option title>
+
+    <1–2 sentence description>
+
+    ✅ Pro: <benefit>
+    ✅ Pro: <benefit>
+    ⚠️  Con: <trade-off>
+    ⚠️  Con: <trade-off>
+
+    Verdict: <1 sentence when to pick this instead of A>
+
+─────────────────────────────────────────────────────────
+[C] <Option title>  (if applicable)
+
+    ... (same pattern)
+
+─────────────────────────────────────────────────────────
+
+DECISION PROMPT
+  → Type the letter to proceed with that option.
+  → Type "D" to add a new option to the round.
+  → Type "X" to dismiss and continue without deciding.
+  → Type "?" to ask a clarifying question before choosing.
+```
+
+---
+
+## Rules
+
+### Ordering
+- The RECOMMENDED option ALWAYS appears first, marked with ★.
+- Remaining options appear in descending order of suitability.
+- Never bury the recommended answer at the bottom.
+
+### Option count
+- Minimum 2 options, maximum 5.
+- If more than 5 viable options exist, consolidate similar ones before
+  presenting. State how many were merged and why.
+- If only 1 option exists, do NOT use this format — just recommend it
+  directly with rationale.
+
+### Pros / cons
+- Each option gets exactly 2–3 pros and 2–3 cons.
+- Pros and cons must be CONCRETE and SPECIFIC to this codebase / context.
+  No generic "easier to maintain" without saying what specifically.
+- Avoid repeating the same pro/con across multiple options.
+- If an option has more pros than cons, it should rank higher (likely ★).
+
+### Verdict line
+- The ★ option's verdict explains why it wins given the CURRENT constraints
+  (team size, existing stack, deadline, etc. from SESSION_STATE.md).
+- Other options' verdicts explain the ONE scenario where that option beats ★.
+
+### Decision prompt
+- Always close with the DECISION PROMPT block exactly as shown.
+- When the user replies with a letter, immediately:
+  1. Confirm: "Proceeding with [letter] — <option title>"
+  2. Record choice in SESSION_STATE.md under `decisions[]`
+  3. Continue the active phase with that option as the accepted approach
+- When the user replies "D", ask for the new option title + key
+  properties, then re-render the full round with the new entry inserted
+  in ranked order.
+- When the user replies "X", acknowledge and return to the active phase
+  without recording a decision.
+- When the user replies "?", answer the clarifying question, then
+  re-display the round (options may be re-ranked if new info changes the
+  recommendation).
+
+### Nested evaluation
+- If the chosen option itself has sub-decisions (e.g. choosing a library
+  within the chosen approach), spawn a new evaluation round for that
+  sub-decision before continuing.
+- Prefix nested rounds with the parent letter: [A.1], [A.2], etc.
+
+### Session recording
+```
+decisions:
+  - round: 1
+    topic: "<topic>"
+    chosen: "A"
+    title: "<option title>"
+    timestamp: <ISO 8601>
+    rationale: "<user's stated reason or 'default recommended'>"
+```
+This block is appended to SESSION_STATE.md after every confirmed decision.
+
+---
+
+## Integration with other phases
+
+| Phase   | When to trigger |
+|---------|-----------------|
+| DISCUSS | 3+ approaches surface in conversation |
+| DOCS    | Conflicting documentation found for same concept |
+| REVIEW  | 2+ valid remediation paths for a finding |
+| CONFIRM | User is unclear which acceptance criterion to relax |
+| PLAN    | Architecture or library choice with real trade-offs |
+| PATCH   | Multiple fix strategies for a hard-tier violation |
+
+---
+
+## Quality Checklist
+
+Before emitting a multi-choice round:
+
+- [ ] Recommended option is first and marked ★
+- [ ] All options have 2–3 concrete pros and 2–3 concrete cons
+- [ ] No generic/vague pros or cons ("more flexible", "harder to maintain")
+- [ ] Verdict lines reference actual project constraints
+- [ ] Options are ranked by suitability (best → worst)
+- [ ] Decision prompt block is present and complete
+- [ ] Option count is 2–5 (consolidate or split if outside range)
+- [ ] SESSION_STATE.md will be updated on user confirmation

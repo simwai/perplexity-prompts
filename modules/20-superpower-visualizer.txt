@@ -1,0 +1,208 @@
+# MODULE 20 — SUPERPOWER: STATE DIAGRAM VISUALIZER
+
+## Purpose
+When a persona needs to explain or document a multi-state flow (protocol
+state machine, CI/CD pipeline, data-transform pipeline, persona lifecycle,
+or any process with named states and conditional transitions), it MUST use
+this superpower to produce an interactive HTML state-diagram artifact
+instead of ASCII art or prose lists.
+
+Trigger keywords: "show flow", "state diagram", "visualize", "diagram",
+"draw the flow", "map the states", "show the process".
+
+---
+
+## Output Spec
+
+The artifact is a single self-contained `.html` file.
+
+### Stack
+- D3 v7 (CDN) — SVG rendering, zoom/pan
+- No external CSS frameworks
+- No build step
+- Dark-mode first (Nexus palette: bg #171614, surface #1c1b19,
+  text #cdccca, primary teal #4f98a3, muted #797876)
+
+### Canvas defaults
+- viewBox width: 1720, height: 1140
+- Pan + scroll-zoom via d3.zoom (extent [[0,0],[1720,1140]], scaleExtent [0.4,3])
+
+---
+
+## Node Spec
+
+Every state is a rounded-rect node (rx 10).
+
+| Property      | Value |
+|---------------|-------|
+| width         | 116px |
+| height        | 48px  |
+| corner radius | 10px  |
+| font          | 12px, Courier New, monospace, bold |
+| text          | centered, wraps to 2 lines max |
+| stroke width  | 1.5px |
+
+### Node color tiers (use exactly these classes)
+
+| Class / Tier    | Fill    | Stroke            | Use for |
+|-----------------|---------|-------------------|---------|
+| `node-entry`    | #1c1b19 | #4f98a3 (teal)    | Entry points, user input |
+| `node-infra`    | #1c1b19 | #7a39bb (purple)  | Session infra / meta |
+| `node-gate`     | #1c1b19 | #a12c7b (error)   | Blocking / gate states |
+| `node-work`     | #1c1b19 | #437a22 (green)   | Active work phases |
+| `node-output`   | #1c1b19 | #d19900 (gold)    | Output / plan states |
+| `node-terminal` | #1c1b19 | #a13544 (red)     | Failure / delete terminals |
+
+### Hover + active state
+```css
+node rect:hover  { filter: brightness(1.25); cursor: pointer; }
+node rect.active { filter: drop-shadow(0 0 8px currentStrokeColor); }
+```
+
+---
+
+## Edge Spec
+
+Every transition is a quadratic Bézier (`M sx,sy Q cx,cy ex,ey`).
+
+| Property          | Default value |
+|-------------------|---------------|
+| stroke            | #4f98a3 (teal, 0.5 opacity) |
+| stroke-width      | 1.8px         |
+| fill              | none          |
+| marker-end        | arrowhead (refX 6, refY 3, 6×6, same color) |
+| dashed (optional) | `stroke-dasharray: 5,4` for DISCUSS any-phase edges |
+
+### Active / hover lighting
+When an edge is highlighted (mouseover on source node OR during simulation
+playback), apply:
+```js
+.attr("stroke", "#f1efea")
+.attr("stroke-width", 3.4)
+.attr("opacity", 1)
+.attr("filter", "drop-shadow(0 0 7px rgba(255,255,255,.45))")
+```
+All non-highlighted edges drop to opacity 0.08 during hover.
+On mouseout restore all edges to default.
+
+### Bend offsets
+Edges between nodes that share a row (same y) or column (same x) must use
+a perpendicular bend so they never overlap node labels:
+- Same-row sibling: bend ±26px perpendicular
+- Parallel reverse edge (A→B and B→A): bend ±24px on opposite sides
+- Assign a unique `id` per edge (e.g. `e-src-dst`) and store bend in a
+  `bendMap` object keyed by that id
+
+### Label placement
+Label sits at the Bézier midpoint + a per-edge offset stored in
+`labelOffset` (same key as `bendMap`). Style:
+```css
+.edge-label {
+  font-size: 10px;
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  fill: #a4a19d;
+  paint-order: stroke;
+  stroke: #171614;
+  stroke-width: 4px;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+```
+Labels MUST NOT overlap each other or node bodies. If two labels would
+collide, move the shorter one 12px further along the perpendicular axis.
+
+---
+
+## Legend Spec
+
+The legend is a separate SVG `<g>` group rendered OUTSIDE the zoom layer
+(so it stays fixed) in the bottom-right reserved zone.
+
+| Property   | Value |
+|------------|-------|
+| position   | fixed bottom-right, 20px margin from canvas edge |
+| width      | 300px |
+| row height | 34px  |
+| swatch     | 20×20 rounded rect, rx 4 |
+| font       | 14px, Courier New |
+| background | #1c1b19, stroke #393836, rx 10, padding 14px |
+
+The legend MUST NOT overlap any node or edge in the main diagram area.
+If the default position collides, shift it left until clear.
+
+---
+
+## Simulation / Playback Panel
+
+A floating control panel (top-left, fixed, not in zoom layer) provides:
+- Dropdown: named scenario (e.g. "Happy path", "Review blocked",
+  "Multi-persona handoff")
+- Play / Pause / Step buttons
+- Speed slider (0.5× – 3×)
+
+During playback:
+1. Active node gets class `active` + glow filter
+2. Outgoing edges of active node light up (see Edge active spec above)
+3. After `delay` ms advance to next node in scenario array
+4. On scenario end, reset all highlights
+
+---
+
+## Mandatory Structure Template
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>[Diagram Title]</title>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+  <style>
+    /* 1. CSS variables (Nexus dark palette) */
+    /* 2. base.css resets */
+    /* 3. node / edge / label styles */
+    /* 4. legend styles */
+    /* 5. control panel styles */
+  </style>
+</head>
+<body>
+  <div id="controls"><!-- playback panel --></div>
+  <svg id="canvas" width="100%" height="100vh" viewBox="0 0 1720 1140">
+    <defs><!-- arrowhead marker --></defs>
+    <g id="zoom-layer">
+      <g id="edges"><!-- Bézier paths + labels --></g>
+      <g id="nodes"><!-- rounded-rect nodes --></g>
+    </g>
+    <g id="legend"><!-- fixed legend, outside zoom-layer --></g>
+  </svg>
+  <script>
+    // 1. Node data: [{id, x, y, label[], tier}, ...]
+    // 2. Edge data: [{id, src, dst, label, dashed}, ...]
+    // 3. bendMap + labelOffset objects
+    // 4. edgePath(src, dst, id) → {path, lx, ly}
+    // 5. Render nodes → edges → labels → legend
+    // 6. d3.zoom setup
+    // 7. Hover: highlight connected edges, dim others
+    // 8. Playback engine
+  </script>
+</body>
+</html>
+```
+
+---
+
+## Quality Checklist
+
+Before committing or handing off the HTML artifact:
+
+- [ ] All node labels are fully readable (no clip, no overflow)
+- [ ] No edge label overlaps another label or a node body
+- [ ] Parallel/reverse edges use opposite bend directions
+- [ ] Active edges glow and thicken correctly during simulation
+- [ ] Legend is fully visible and does NOT overlap diagram content
+- [ ] Pan + zoom works (d3.zoom, scroll wheel + drag)
+- [ ] At least 2 named scenarios in the playback dropdown
+- [ ] File is self-contained (single HTML, no external local assets)
+- [ ] Dark-mode Nexus palette used throughout
+- [ ] No hardcoded hex values outside the CSS variable block

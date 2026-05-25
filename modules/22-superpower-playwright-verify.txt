@@ -1,0 +1,171 @@
+# MODULE 22 — SUPERPOWER: PLAYWRIGHT PRE-SUBMIT VISUAL VERIFICATION
+
+## Purpose
+Before a persona submits a patch that touches any user-visible output
+(HTML artifacts, rendered UI, generated diagrams, docs pages, or any
+flow the user can see), it MUST run a temporary Playwright screenshot
+pass to manually verify the result looks correct.
+
+This is a manual verification gate — not an automated regression suite.
+The screenshots are reviewed by the developer (or the agent in context)
+before the commit is approved. They are NEVER committed to the repo.
+
+Trigger: any PATCH that modifies `.html`, `.css`, UI components,
+generated diagram artifacts, or docs rendered in a browser.
+
+Also trigger on demand via: "screenshot it", "show me what it looks like",
+"verify visually", "playwright check", "take a screenshot before submitting".
+
+---
+
+## When to skip
+
+- Change is purely logic / non-visual (TS type fix, config change, pure
+  backend code with no rendered output)
+- Change is a single-line comment or doc string update
+- No browser-renderable file is in the diff
+
+When skipping, state explicitly: "No visual output affected — skipping
+Playwright verification."
+
+---
+
+## Verification Script Spec
+
+Generate a temporary script at `scripts/pw-verify.ts` (or `.js` if the
+project has no TS setup). Delete or gitignore it after the session.
+
+### Script requirements
+
+```ts
+// scripts/pw-verify.ts
+// PURPOSE: pre-submit visual verification — TEMPORARY, do not commit
+// DELETE after: verification confirmed
+
+import { chromium } from 'playwright';
+import path from 'path';
+import fs from 'fs';
+
+const OUT_DIR = '.pw-verify';
+fs.mkdirSync(OUT_DIR, { recursive: true });
+
+const FLOWS: Array<{ name: string; url: string; widths: number[] }> = [
+  // List only the flows touched by the current patch.
+  // Do not screenshot the entire app — scope to what changed.
+  // Example:
+  { name: 'diagram-desktop', url: 'file://./docs/babadev-flow.html', widths: [1280] },
+  { name: 'diagram-mobile',  url: 'file://./docs/babadev-flow.html', widths: [375] },
+];
+
+(async () => {
+  const browser = await chromium.launch();
+  for (const flow of FLOWS) {
+    for (const width of flow.widths) {
+      const page = await browser.newPage();
+      await page.setViewportSize({ width, height: 800 });
+      await page.goto(flow.url, { waitUntil: 'networkidle' });
+      // Wait for any animations to settle
+      await page.waitForTimeout(600);
+      const file = path.join(OUT_DIR, `${flow.name}-${width}.png`);
+      await page.screenshot({ path: file, fullPage: false });
+      console.log(`captured: ${file}`);
+      await page.close();
+    }
+  }
+  await browser.close();
+  console.log(`\nVerification screenshots in ./${OUT_DIR}/`);
+  console.log('Review manually. If OK, proceed to commit.');
+  console.log('Delete .pw-verify/ and scripts/pw-verify.ts before pushing.');
+})();
+```
+
+### Run command
+```bash
+npx tsx scripts/pw-verify.ts
+# or if no tsx:
+npx ts-node scripts/pw-verify.ts
+# or plain JS:
+node scripts/pw-verify.js
+```
+
+---
+
+## Verification Checklist
+
+After screenshots are captured, review each one against:
+
+- [ ] No layout overflow or horizontal scroll at the target width
+- [ ] No text clipped or hidden behind other elements
+- [ ] No overlapping labels / controls
+- [ ] Legend (if present) is fully visible and does not overlap content
+- [ ] Dark mode renders correctly (no white flash, no invisible text)
+- [ ] Interactive controls are visible and not clipped (buttons, dropdowns)
+- [ ] Mobile width (375px): single-column layout, no broken grid
+- [ ] Desktop width (1280px): full layout with no collapsed/missing sections
+
+If any item fails → fix the issue → re-run `pw-verify.ts` → re-check.
+Do NOT proceed to commit until all checklist items pass.
+
+---
+
+## Cleanup Rules (MANDATORY)
+
+After verification is confirmed:
+1. Delete `.pw-verify/` directory (all screenshots)
+2. Delete `scripts/pw-verify.ts` (or `.js`)
+3. Confirm deletion before emitting the commit
+
+Alternatively, add both to `.gitignore` permanently:
+```
+# Playwright pre-submit verification (temporary)
+.pw-verify/
+scripts/pw-verify.ts
+scripts/pw-verify.js
+```
+
+Screenshots MUST NOT be committed. They are ephemeral verification
+artifacts. Committing them is a soft-tier S-artifact violation.
+
+---
+
+## Integration with module 16 (pre-commit)
+
+The Playwright verification pass sits BEFORE the pre-commit hook chain:
+
+```
+[pw-verify.ts] → manual review → PASS
+       ↓
+[git add / git commit]
+       ↓
+[pre-commit hooks: format → lint → tsc → test → secret scan]
+       ↓
+[commit accepted]
+```
+
+Failure at the Playwright step blocks the commit — do not proceed to
+`git commit` until the visual check passes.
+
+---
+
+## PATCH rule addition (supplements module 16)
+
+When producing a patch that includes any browser-renderable output:
+1. Generate `scripts/pw-verify.ts` scoped to the touched flows
+2. List the flows to screenshot (name + URL + widths)
+3. Run the script and present the checklist
+4. Wait for developer confirmation before emitting the final commit
+5. Include cleanup instructions in the patch summary
+
+---
+
+## Quality Checklist
+
+Before emitting the verification script:
+
+- [ ] FLOWS array contains only flows touched by the current patch
+- [ ] Both 1280px and 375px widths are included for any HTML artifact
+- [ ] `waitUntil: 'networkidle'` is set (catches lazy-loaded content)
+- [ ] `waitForTimeout(600)` is present (allows animations to settle)
+- [ ] Output dir is `.pw-verify/` (gitignored)
+- [ ] Cleanup reminder is included in script console output
+- [ ] Script is listed in `.gitignore` or deleted post-verification
