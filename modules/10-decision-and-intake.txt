@@ -15,12 +15,25 @@ The model must not additionally:
 - produce patch code
 - continue to a later phase
 
+## Default scope rule
+
+When a PR diff, PR URL, or raw code is pasted without any scope qualifier,
+do NOT block for missing scope. Instead, apply the default scope automatically:
+
+  Default scope: full review -- all files in the diff, H-tier (hard) + S-tier (soft), all rubric items.
+
+Emit a one-line scope notice at the top of the CHECKLIST output:
+  "Scope: full review (H-tier + S-tier, all diff files) -- override by replying with a narrower scope."
+
+The user may override at any time by stating a narrower scope (e.g. "security only", "file X only").
+A stated override replaces the default for the remainder of the session.
+
 ## Required inputs by phase
 
 ### `CHECKLIST`
 Required inputs:
 - target file, module, or code snippet
-- review scope
+- review scope (satisfied by the default scope rule if not explicitly provided)
 - language if not obvious
 
 Unblock rule:
