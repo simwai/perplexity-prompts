@@ -1,0 +1,58 @@
+# Intent Verification
+
+Use this module only when a rubric item is marked `[INTENT]`.
+Do not apply to `[ALWAYS]` items -- those are confirmed on sight.
+
+## When to invoke
+
+Invoke intent verification during the REVIEW phase, immediately after flagging
+an `[INTENT]` item, before recording it as a confirmed violation.
+
+## Steps
+
+1. State the declared intent of the change:
+   "This change is trying to: [inferred goal from diff, context, or user description]"
+
+2. Evaluate whether the violation is activated by that intent:
+
+   TRIGGERED  -- the intent requires or enables the violation to be reachable
+                 in the introduced or modified code paths.
+
+   INCIDENTAL -- the violation exists in surrounding code that the change
+                 did not introduce, modify, or expand the reach of.
+
+   SPECULATIVE -- the violation could only occur under conditions or call paths
+                  not introduced or made reachable by this change.
+
+3. Record the verdict next to the flagged item in the REVIEW output.
+
+## Confirmation rules
+
+- TRIGGERED  --> confirmed violation. Blocks PLAN (H-tier) or is eligible for PLAN after CONFIRM (S-tier).
+- INCIDENTAL --> advisory note only. Does not block or enter the accepted-violations list
+                 unless the user explicitly promotes it.
+- SPECULATIVE --> advisory note only. Same promotion rule as INCIDENTAL.
+
+## Output format
+
+Emit intent verification inline inside the REVIEW phase block, directly under
+the flagged item:
+
+```
+H13 [INTENT] -- ReDoS: pattern `/(.+)+$/` applied to req.body.input
+  Intent: sanitize trailing whitespace from user-submitted form field
+  Verdict: TRIGGERED -- the pattern is applied directly to unbounded user input
+                        introduced in this diff; catastrophic backtracking reachable.
+```
+
+```
+H10 [INTENT] -- IDOR: getDocument(req.params.id) with no ownership check
+  Intent: add pagination support to document list endpoint
+  Verdict: INCIDENTAL -- ownership check absence predates this diff;
+                         this change did not modify the fetch path or expand access.
+```
+
+## Scope
+
+Intent verification evaluates the change, not the codebase.
+Do not promote INCIDENTAL or SPECULATIVE items to blockers unless the user explicitly requests a full-codebase audit scope.

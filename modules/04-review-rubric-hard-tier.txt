@@ -2,16 +2,45 @@
 
 Hard-tier violations are non-negotiable. Each must be confirmed or explicitly excluded.
 
-H1 -- Security: credentials, tokens, secrets in code or logs
-H2 -- Injection: SQL, command, or template injection vectors
-H3 -- Authentication bypass: missing or bypassable auth checks
-H4 -- Authorization: missing permission checks on sensitive operations
-H5 -- Cryptography: weak algorithms, hardcoded keys, broken IV usage
-H6 -- Input validation: missing validation on external inputs
-H7 -- Error exposure: stack traces, internal paths, or credentials in error output
-H8 -- Dependency risk: known CVEs or unreviewed dependency versions
-H9 -- Data integrity: missing transactions, partial writes, or silent data loss
+## Violation flags
+
+Each item carries one of two confirmation modes:
+- `[ALWAYS]` -- violation is structural. Confirmed on sight, no intent analysis needed.
+- `[INTENT]` -- violation is context-dependent. Requires intent verification (see module 20) before confirming.
+
+## Items
+
+H1  [ALWAYS] -- Secrets: credentials, tokens, API keys, or secrets hardcoded in code or logs
+H2  [ALWAYS] -- Injection: SQL, command, LDAP, XPath, or template injection vectors
+H3  [ALWAYS] -- Authentication bypass: missing or bypassable auth checks
+H4  [INTENT] -- Authorization: missing permission checks on sensitive operations
+H5  [ALWAYS] -- Cryptography: weak algorithms, hardcoded keys, broken or static IV usage
+H6  [INTENT] -- Input validation: missing validation or sanitization on external inputs
+H7  [ALWAYS] -- Error exposure: stack traces, internal paths, or credentials in error output
+H8  [INTENT] -- Dependency risk: known CVEs or unreviewed dependency versions
+H9  [INTENT] -- Data integrity: missing transactions, partial writes, or silent data loss
+H10 [INTENT] -- IDOR/BOLA: object references (IDs, filenames, keys) accessible or mutable
+                without ownership or permission verification
+H11 [INTENT] -- SSRF: user-controlled URLs, hostnames, or IPs passed to internal
+                HTTP, DNS, or socket calls without allowlist enforcement
+H12 [INTENT] -- Path traversal: user input used in file paths without canonicalization
+                and boundary enforcement (e.g. missing realpath + prefix check)
+H13 [INTENT] -- ReDoS: regex patterns applied to user-controlled input without length
+                limits, complexity bounds, or backtracking analysis; includes
+                catastrophic patterns such as nested quantifiers and alternation on
+                overlapping character classes
+H14 [INTENT] -- Open redirect: redirect or forward targets derived from user input
+                without an explicit allowlist or relative-path enforcement
+H15 [ALWAYS] -- Security misconfiguration: debug mode enabled, default credentials,
+                permissive CORS (wildcard origin + credentials), directory listing,
+                or disabled security headers in non-development contexts
+H16 [INTENT] -- Insecure deserialization: untrusted data deserialized into objects
+                without type constraints, integrity checks, or sandboxing
 
 ## Usage
 - Apply all items to every chunk unless explicitly excluded in the checklist.
-- A confirmed H-tier violation blocks the PLAN phase until accepted or excluded with justification.
+- For `[ALWAYS]` items: confirm on sight. No intent analysis required.
+- For `[INTENT]` items: trigger intent verification (module 20) before confirming.
+  If intent verification returns INCIDENTAL or SPECULATIVE, the item does not block PLAN.
+- A confirmed H-tier violation (TRIGGERED or ALWAYS) blocks the PLAN phase
+  until accepted or explicitly excluded with justification.
