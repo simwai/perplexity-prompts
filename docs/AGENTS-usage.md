@@ -2,16 +2,29 @@
 
 ## What It Is
 
-`AGENTS.md` sits at the repo root. When an AI coding agent (Claude Code, Cursor Agent, Codex, etc.) starts a session, it reads the file first and automatically loads the persona, phase model, rubrics, and MCP configs — no manual prompting needed.
+`AGENTS.md` (or `AGENTS_WITHOUT_MCP.md`) sits at the repo root. When an AI coding agent (Claude Code, Cursor Agent, Codex, etc.) starts a session, it reads the file first and automatically loads the persona, phase model, rubrics, and (optionally) MCP configs — no manual prompting needed.
 
 It does three things:
-1. Tells the agent which **MCP servers to connect** and where to load tokens from
+1. (Full version only) Tells the agent which **MCP servers to connect** and where to load tokens from
 2. Defines the **five personas** (BabaSensei, BabaDev, BabaTester, BabaReviewer, Process Master)
 3. Enforces a **phase-gated workflow** — the agent can never patch without your approval
 
 ---
 
-## Prerequisites
+## Which Version to Use?
+
+This repository provides two flavors of the agent instructions:
+
+| File | Use case |
+|---|---|
+| `AGENTS.md` | **Recommended.** Best for agents that support MCP (Claude Code, Cursor Agent, etc.). Enables web search, GitHub integration, and library doc lookup. |
+| `AGENTS_WITHOUT_MCP.md` | Best for restricted environments or agents that don't support MCP. Provides the same persona and phase model without external tool requirements. |
+
+**To use either:** Copy the desired file to your project root and rename it to `AGENTS.md`.
+
+---
+
+## Prerequisites (MCP Version)
 
 **Node.js 20+** — required for the stdio MCP servers (`npx`).
 
@@ -88,10 +101,10 @@ Ask the agent: *"List the available MCP tools."* You should see tools from all f
 ## Starting a Session
 
 Open a session in a repo that has `AGENTS.md` at root and just describe the task. The agent will:
-1. Read `AGENTS.md`
+1. Read `AGENTS.md` (or `AGENTS_WITHOUT_MCP.md`)
 2. Pick the right persona for the task type
 3. Declare the starting phase in its first response
-4. Reach for MCP tools automatically — GitHub for file contents, Exa/Tavily/Google for docs, Context7 for library references
+4. (Full version only) Reach for MCP tools automatically — GitHub for file contents, Exa/Tavily/Google for docs, Context7 for library references
 
 **Examples:**
 
