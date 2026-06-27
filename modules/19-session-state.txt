@@ -52,7 +52,7 @@ language: <language or UNKNOWN>
 
 ## Findings
 <!-- Accepted violations carried forward from REVIEW/CONFIRM -->
-- <criterion_id>: <summary> [tier: hard|soft]
+- <criterion_id>: <summary> [tier: hard|soft] ([confidence]%)
 
 ## Open Questions
 <!-- Unresolved questions from any phase -->

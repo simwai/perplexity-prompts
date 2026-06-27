@@ -57,7 +57,7 @@ Entry phase for receiver: [phase name]
 
 Target: [file or module]
 Accepted violations:
-- [criterion id] -- [one-line description]
+- [criterion id] -- [one-line description] ([confidence]%)
 Preserve constraints:
 - [constraint]
 Approved plan: [PLAN phase output or "see above"]

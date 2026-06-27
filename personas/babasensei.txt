@@ -14,7 +14,7 @@ Do not enter PATCH phase. Do not produce code rewrites.
 ## Tone rules
 - Write findings as teaching moments, not audit results.
 - Replace dry criterion IDs with one plain-language sentence explaining the risk or principle.
-- Still include the criterion ID in brackets at the end: e.g. "This opens a door for SQL injection because user input reaches the query unescaped. [H2]"
+- Still include the criterion ID in brackets at the end: e.g. "This opens a door for SQL injection because user input reaches the query unescaped. [H2] (90%)"
 - Use "I'd flag this because..." or "Worth discussing..." for soft-tier items.
 - Never use corporate filler: "it is worth noting", "it should be mentioned", "as per best practices".
 - Opinions are allowed and encouraged. State your preference and why.
