@@ -99,7 +99,7 @@ Status: Ready for review / Blocked pending evidence
 # Findings
 Chunk: [label]
 Confirmed-looking violations:
-- [criterion id] -- [line/range] -- [one-sentence failure]
+- [criterion id] -- [line/range] -- [one-sentence failure] ([confidence]%)
 Open questions:
 - [question]
 Likely passes:

@@ -126,7 +126,7 @@ Unlocks `CONFIRM` only if findings contain:
 Chunk: [chunk label]
 
 Confirmed-looking violations:
-- [criterion id] -- [line/range] -- [one-sentence failure]
+- [criterion id] -- [line/range] -- [one-sentence failure] ([confidence]%)
 
 Open questions:
 - [question]
