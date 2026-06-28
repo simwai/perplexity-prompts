@@ -5,6 +5,7 @@ Use this module to enforce phase-wise transitions and prevent mixed-phase output
 
 ## Phase set
 
+- `UNDERSTAND`
 - `BLOCKED`
 - `CHECKLIST`
 - `DISCUSS`
@@ -17,11 +18,11 @@ Use this module to enforce phase-wise transitions and prevent mixed-phase output
 
 ## Transition rules
 
-- `START -> BLOCKED`
-  - Allowed only if: required starting context is missing.
+- `START -> UNDERSTAND`
+  - Mandatory first step to establish ground truth.
 
-- `START -> CHECKLIST`
-  - Allowed only if: target is known, scope is known, and language is known or obvious.
+- `UNDERSTAND -> CHECKLIST`
+  - Allowed only if: survey is complete, hypothesis formulated, and user confirms or target is obvious.
 
 - `START -> DISCUSS`
   - Allowed only if: user input is exploratory rather than a concrete target for review or patch.
@@ -70,6 +71,7 @@ Use this module to enforce phase-wise transitions and prevent mixed-phase output
 
 ## Hard guards
 
+- !!! No checklist before UNDERSTAND.
 - !!! No review before checklist.
 - !!! No docs-dependent judgment before docs evidence.
 - !!! No plan before confirmation.

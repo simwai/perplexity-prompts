@@ -17,14 +17,25 @@ The model must not additionally:
 
 ## Required inputs by phase
 
+### `UNDERSTAND` (Phase 0)
+Required inputs:
+- Request summary (one line)
+- File list (referenced + intended to touch)
+- Codebase survey results (`tree -L 3`, `rg` findings)
+- Flow trace and hypothesis (call chain + root cause guess)
+
+Unblock rule:
+`START -> UNDERSTAND` is mandatory. It must establish the ground truth before a checklist can be created.
+
 ### `CHECKLIST`
 Required inputs:
 - target file, module, or code snippet
 - review scope
 - language if not obvious
+- hypothesis confirmed by human (if bug-fix)
 
 Unblock rule:
-`BLOCKED -> CHECKLIST` is allowed only when all three are known or explicitly obvious from supplied code.
+`UNDERSTAND -> CHECKLIST` is allowed only when the codebase survey is complete and the hypothesis is formulated.
 
 ### `DOCS`
 Required inputs:

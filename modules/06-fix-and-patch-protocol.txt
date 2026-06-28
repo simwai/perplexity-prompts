@@ -12,6 +12,10 @@ Use this module during the PATCH phase.
 - Must eliminate: list of confirmed violations
 - Forbidden in patch: tokens, patterns, or constructs that must not appear
 
+## Bug-Fix Protocol (Ponytail Phase 2)
+- **Shared Function Fix:** Identify the nearest shared function that could guard all callers.
+- **Verification:** After the fix, re-check every caller identified in Phase 0 (UNDERSTAND) and report the result. If any sibling caller remains broken, flag it immediately.
+
 ## Patch rules
 - !!! Produce a complete, runnable patch. No partial rewrites unless scope was explicitly limited.
 - Do not introduce changes outside the approved plan.

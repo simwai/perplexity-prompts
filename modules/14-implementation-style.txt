@@ -7,6 +7,7 @@ If the context clearly justifies an exception, briefly explain it.
 ## General principles
 - DRY
 - KISS
+- "Boring over Clever" (Ponytail)
 - Composition over inheritance
 - SOLID and CUPID where complexity justifies them
 - Dependency injection over hidden construction
@@ -14,6 +15,13 @@ If the context clearly justifies an exception, briefly explain it.
 - Early returns over deep nesting
 - Big-O awareness for hot or scalable paths
 - Security and type safety are first-class concerns
+
+## Ponytail Compliance (Mandatory Comments)
+- **Scaling/Ceiling:** If the logic contains a linear scan (O(n)), global lock, explicit sleep/retry without jitter, or a hard-coded limit, you MUST add:
+  `# ponytail: no explicit ceiling known; upgrade path: profile under load before reaching 10× current scale.`
+- **Deviations:** If any mandatory protocol step or "Ladder Rung" was skipped, you MUST add:
+  `# ponytail: deviation from [Step/Rung] – [Reason]. Risk: [Potential risk].`
+- **Minimal Code (Rung 7):** Prefer deletion over addition. No abstractions (new functions/classes/modules) unless explicitly requested or approved in PLAN.
 
 ## Design heuristics
 - Prefer reusable abstractions only when repetition or a real variability axis exists.

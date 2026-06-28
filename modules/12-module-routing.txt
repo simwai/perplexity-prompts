@@ -13,7 +13,7 @@ Load only what the current phase requires. Do not preload future phases.
 
 ## Phase-specific loading
 
-### START
+### START / UNDERSTAND
 - `10-decision-and-intake.txt`
 - `19-session-state.txt` (if continuing a prior session or switching persona)
 
@@ -72,7 +72,7 @@ Load only what the current phase requires. Do not preload future phases.
 ### BabaTester
 - Always: `08-interaction-layer.txt`
 
-### GuidedSeniorDev
+### BabaDev
 - Always: `14-implementation-style.txt`
 - On PATCH: `06-fix-and-patch-protocol.txt`
 

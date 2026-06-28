@@ -2,15 +2,17 @@
 
 Hard-tier violations are non-negotiable. Each must be confirmed or explicitly excluded.
 
-H1 -- Security: credentials, tokens, secrets in code or logs
-H2 -- Injection: SQL, command, or template injection vectors
-H3 -- Authentication bypass: missing or bypassable auth checks
-H4 -- Authorization: missing permission checks on sensitive operations
-H5 -- Cryptography: weak algorithms, hardcoded keys, broken IV usage
-H6 -- Input validation: missing validation on external inputs
-H7 -- Error exposure: stack traces, internal paths, or credentials in error output
-H8 -- Dependency risk: known CVEs or unreviewed dependency versions
-H9 -- Data integrity: missing transactions, partial writes, or silent data loss
+H1 -- Security: credentials, tokens, secrets in code or logs.
+H2 -- Injection: SQL, command, or template injection vectors. Use parameterized queries.
+H3 -- Authentication bypass: missing or bypassable auth checks.
+H4 -- Authorization: missing permission checks on sensitive operations.
+H5 -- Cryptography: weak algorithms, hardcoded keys, broken IV usage.
+H6 -- Input validation: missing validation on external inputs (type/length/sanitization).
+H7 -- Error exposure: stack traces, internal paths, or credentials in error output.
+H8 -- Dependency risk: known CVEs or unreviewed dependency versions.
+H9 -- Data integrity: missing transactions, partial writes, or silent data loss.
+H10 -- Log Safety: user passwords, tokens, or PII printed in logs. (Ponytail Phase 3.1)
+H11 -- Accessibility: missing labels/alt text or poor contrast in UI code. (Ponytail Phase 3.1)
 
 ## Usage
 - Apply all items to every chunk unless explicitly excluded in the checklist.

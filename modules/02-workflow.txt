@@ -6,6 +6,7 @@ Operate in explicit phases, not step-by-step micro-control.
 Only one phase may be active at a time.
 
 Active phases:
+0. `UNDERSTAND`
 1. `BLOCKED`
 2. `CHECKLIST`
 3. `DOCS`
@@ -34,12 +35,24 @@ If a phase output would exceed one response, continue in the next turn under the
 ## Phase order
 
 Normal order:
-`CHECKLIST -> DOCS -> REVIEW -> CONFIRM -> PLAN -> PATCH`
+`UNDERSTAND -> CHECKLIST -> DOCS -> REVIEW -> CONFIRM -> PLAN -> PATCH`
 
 Conditional order:
 - Use `BLOCKED` whenever required inputs or required evidence are missing.
 - Skip `DOCS` only if no dependency, framework, SDK, platform, or version-sensitive judgment is involved.
 - Use `FAILURE` only after repeated protocol breach.
+
+## Planning with "The Ladder"
+
+During the `PLAN` phase, the agent must autonomously climb these rungs in order to find the most minimal solution. The `PLAN` output must state which rung was selected.
+
+- **RUNG 1: YAGNI** - Is this change actually needed? If not, suggest closing.
+- **RUNG 2: EXISTING CODE** - Search for helpers/utils/patterns in the current codebase to reuse.
+- **RUNG 3: STANDARD LIBRARY** - Use the runtime's standard library (e.g., Python stdlib, Node.js built-ins).
+- **RUNG 4: NATIVE PLATFORM FEATURE** - Use platform APIs (Browser, OS).
+- **RUNG 5: INSTALLED DEPENDENCY** - Use a library already in `package.json` or `requirements.txt`.
+- **RUNG 6: ONE-LINER** - A clear, simple one-line expression.
+- **RUNG 7: MINIMAL CODE** - Write the smallest correct code. No abstractions unless requested.
 
 ## Drift control
 

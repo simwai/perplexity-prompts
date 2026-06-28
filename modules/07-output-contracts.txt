@@ -34,12 +34,53 @@ Next required user action:
 Status: Waiting.
 ```
 
+## `UNDERSTAND` (Phase 0)
+
+Allowed when:
+- the request is received
+- codebase survey tools (tree, rg) are available
+
+Must contain:
+- One-line request summary
+- File list (referenced + intended to touch)
+- Codebase survey results summary
+- Callers list for each symbol to be touched
+- Flow trace and hypothesis (call chain + root cause guess)
+- Confirmation request for hypothesis
+
+```txt
+[PHASE: UNDERSTAND]
+
+# Request Summary
+[one-line summary]
+
+# Scope
+Referenced files: [list]
+Intended changes: [list]
+
+# Codebase Survey
+Tree level 3: [summary of structure]
+Key findings: [rg/grep results]
+
+# Symbol Analysis
+- [symbol]: [callers found or "none"]
+
+# Trace & Hypothesis
+Flow: [one sentence per caller invocation/expectation]
+Symptom: [bug symptom or feature gap]
+Call chain: [chain]
+Root cause hypothesis: [guess]
+
+Does this hypothesis seem correct? Should I proceed to find a fix, or do you need more investigation?
+```
+
 ## `CHECKLIST`
 
 Allowed only if:
 - target file, module, or snippet is known
 - review scope is known
 - language is known or obvious from the code
+- Phase 0 (UNDERSTAND) is complete
 
 Unlocks next phase only if checklist artifact exists with:
 - target
@@ -179,12 +220,15 @@ Unlocks `PATCH` only if plan approval is explicit and the patch package contains
 - will-preserve list
 - risk list
 - explicit approval state
+- ladder source rung
 
 ```txt
 [PHASE: PLAN]
 
 # Fix Plan
 Target: [file/module]
+
+Ladder source: [Rung N - Description]
 
 Will change:
 - [change]

@@ -72,6 +72,7 @@ target: <NONE or path>
 must_preserve: []
 must_eliminate: []
 forbidden_in_patch: []
+ladder_rung: <NONE or Rung N>
 
 ## Persona Switch Log
 <!-- Append only — never delete entries -->
