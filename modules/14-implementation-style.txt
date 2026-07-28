@@ -9,7 +9,7 @@ If the context clearly justifies an exception, briefly explain it.
 - KISS
 - Composition over inheritance
 - SOLID and CUPID where complexity justifies them
-- Dependency injection over hidden construction
+- Dependency injection over hidden construction. Use **tsyringe** (TypeScript), **dependency-injector** (Python), or **Hilt/Dagger** (Java) as the DI container. Favor constructor injection; wire the composition root at the application entry point. Default to transient lifetime unless a clear singleton or scoped rationale exists.
 - Single source of truth
 - Early returns over deep nesting
 - Big-O awareness for hot or scalable paths
@@ -22,11 +22,21 @@ If the context clearly justifies an exception, briefly explain it.
 - Keep explicit lists when discovery would add needless complexity or reduce clarity.
 - Consider one-off versus repeating cost before abstracting.
 
+## Project structure
+- Start new projects with a flat `src/` directory.
+- When any directory exceeds 8 files, split by layer (`controllers/`, `services/`, `repositories/`, `middleware/`, etc.).
+- Do not split preemptively.
+
 ## Comments
 - Use comments only for why, constraints, legal notes, or serious warnings.
 - Never comment what the code obviously does.
 - If code is confusing, rename or refactor first.
 - Start comments with a capital letter.
+
+## Region tags (new projects only)
+- Use `// #region LABEL` / `// #endregion` (or language-equivalent syntax) to group related code in new projects.
+- Do not add region tags to existing codebases unless the file already uses them.
+- Labels should be short, descriptive Title Case, e.g. `// #region Database Layer`.
 
 ## Naming
 - Names must reveal intent, usage, and role.
@@ -45,14 +55,60 @@ If the context clearly justifies an exception, briefly explain it.
 - Use type guards when they materially improve safety or readability.
 - Do not use unsafe assertions to silence the type system.
 - For Node code, assume Node 20 and TS 5.x unless the project states otherwise.
-- For error handling, prefer NeverThrow-style explicit result flows when that is the project convention.
+- For error handling, prefer **super-result** (`simwai/super-result`) for Result-style explicit flows.
+  - **Style: caller-handled, no chaining.** Use `if (result.ok)` / `if (result.err)` type narrowing.
+  - Factory calls wrap a single expression: `result = from(() => riskyOp())` — no statement blocks inside the factory.
+  - Do not use `.map()`, `.andThen()`, `.match()`, `.unwrapOr()` or other chaining methods on results.
+  - If `neverthrow` is already established in the codebase, continue using it — do not mix both.
 
 ## Python defaults
 - Write Pythonic, readable code with PEP 8 style.
-- Prefer clear data flow and explicit error handling.
 - Assume Python 3.12 unless the project states otherwise.
-- Prefer project-standard async/runtime choices such as uvloop only when they are already part of the stack.
-- For error handling, prefer Poltergeist-style structured flows when that is the project convention.
+- **Type annotations are required** on all function signatures (parameters + return type). `Any` requires an inline `# pyright: ignore` comment with a written reason.
+- **New data classes default to `@dataclass(slots=True)`** from `dataclasses`. Use `slots=False` only when inheritance conflicts (document why).
+- **Package manager: `pdm`**. Use `pyproject.toml` exclusively (no `setup.py`/`setup.cfg`). Virtualenv mode enabled. Lockfile (`pdm.lock`) committed.
+- **PDM scripts** defined under `[tool.pdm.scripts]`:
+  - `lint` — `ruff check src`
+  - `format` — `ruff format src`
+  - `typecheck` — `pyright`
+  - `test` — `pytest`
+  - `dev` — `python -m src.index`
+- **Pyright** is the type checker (not mypy). Configured in `[tool.pyright]` with `typeCheckingMode = "strict"`. Override noisy strict rules only with rationale (e.g., `reportMissingTypeStubs = false` is an expected exception). Per-file opt-out via `# pyright: basic`.
+- **Result pattern library: `rustico`** with the `safe()` convention:
+  - A project-level `safe()` helper wraps a throwing expression into a `Result`:
+    ```python
+    from rustico import Ok, Err, Result
+    from typing import Callable, TypeVar
+
+    T = TypeVar("T")
+
+    def safe(fn: Callable[[], T]) -> Result[T, Exception]:
+        try:
+            return Ok(fn())
+        except Exception as e:
+            return Err(e)
+    ```
+  - Usage: `result = safe(lambda: risky_op())` — wraps a single expression.
+  - Caller narrows with `if result.is_ok()` / `elif result.is_err()` or `match/case`.
+  - **No `.map()`, `.and_then()`, `.or_else()`, `.inspect()`, `.match()` method chaining allowed.**
+  - `.unwrap()` / `.unwrap_or()` only at boundary points where exiting the Result pattern into exception land.
+  - Do not mix `rustico` with another result library in the same project.
+- **Preferred typed library stack** (fully typed, reduce manual code):
+  - Validation/models: **Pydantic v2** for API boundaries; `@dataclass(slots=True)` for internal data.
+  - HTTP: **httpx** (fully typed, async).
+  - CLI: **typer** (typed via annotation inference).
+  - ORM: **SQLAlchemy 2.0** with `Mapped[]` syntax.
+  - Lint/format: **ruff** (single binary, replaces flake8/black/isort).
+  - Testing: **pytest** + **pytest-asyncio**.
+  - Prefer libs that ship `py.typed` marker or have typeshed stubs over untyped alternatives.
+
+## Java defaults
+- Write idiomatic Java following the Google Java Style Guide.
+- Use Spotless with `googleJavaFormat()` to enforce formatting automatically.
+- Prefer constructor injection via Dagger/Hilt over field injection.
+- Use records for simple data carriers, sealed classes for restricted hierarchies.
+- Prefer immutable objects; mark fields `final` by default.
+- Assume Java 21 LTS unless the project states otherwise.
 
 ## Frontend defaults
 - Use semantic HTML5.
