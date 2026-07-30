@@ -55,6 +55,7 @@ If the context clearly justifies an exception, briefly explain it.
 - Use type guards when they materially improve safety or readability.
 - Do not use unsafe assertions to silence the type system.
 - For Node code, assume Node 20 and TS 5.x unless the project states otherwise.
+- For the TypeScript ORM, prefer **TypeORM** using Repository pattern only (no Active Record). Decorator-style entity definition is the single enforced style. MikroORM is acknowledged as more type-safe and robust but your proven production experience shows TypeORM makes fewer real-world problems for this team.
 - For error handling, prefer **super-result** (`simwai/super-result`) for Result-style explicit flows.
   - **Style: caller-handled, no chaining.** Use `if (result.ok)` / `if (result.err)` type narrowing.
   - Factory calls wrap a single expression: `result = from(() => riskyOp())` — no statement blocks inside the factory.

@@ -15,6 +15,70 @@ The model must not additionally:
 - produce patch code
 - continue to a later phase
 
+## Pre-flight stack compatibility check
+
+When a large project specification is submitted listing infrastructure technologies,
+automatically check if each technology is *AI-manageable* — meaning the agent can
+set it up, configure it, and run it within a code session without real cloud
+accounts, daemon processes, or external infrastructure provisioning.
+
+### Non-manageable technologies
+
+The following technologies are **not AI-manageable** in a standard code session:
+
+| Technology | Problem | Suggested alternative |
+|---|---|---|
+| PostgreSQL, MySQL | Requires a running database server with auth, port config, data dir | SQLite (embedded, zero-setup, file-based) |
+| Amazon S3 (or any S3-compatible) | Requires AWS account, bucket creation, IAM credentials | Local filesystem (fs/path) or SQLite BLOB storage |
+| Redis | Requires a running server process with network config | In-memory `Map` or a file-based cache module |
+| Docker, Docker Compose | Requires a daemon running on the host machine | Local dev process, direct script, or build tool |
+| Cloud message queues (SQS, RabbitMQ, Kafka) | Requires broker setup, account, or cluster | In-process pub/sub, simple array buffer, or EventEmitter |
+| Cloud-specific services (SES, Cognito, Lambda, SNS, etc.) | Requires cloud account + permissions + SDK config | Local mock, stub, or library-dependency switch |
+| MongoDB | Requires a running server or Atlas cluster | SQLite with JSON column or a local document-store lib |
+
+### Check flow
+
+1. On receiving a spec that lists 2+ technologies:
+   - Scan the specification for any technology in the non-manageable table.
+   - If none found, proceed normally to `CHECKLIST`.
+   - If any found, emit a compatibility notice.
+
+2. Compatibility notice format:
+   ```txt
+   [PHASE: BLOCKED]
+
+   # Stack Compatibility Notice
+   Blocked action: enter CHECKLIST with unresolved technology risk
+   Reason: the specification includes technologies that are not
+   fully AI-manageable in a standard code session.
+
+   Flagged technologies:
+   - [tech] -- [short problem] -> Suggested: [alternative]
+
+   If you already have these services running or available
+   and want to proceed with the spec as-is, confirm below.
+   Otherwise, consider the suggested replacement(s).
+
+   Reply with:
+   - "confirm" to proceed with the original stack as-is
+   - "switch" to adopt the suggested alternative(s) and continue
+   ```
+
+3. On user response:
+   - `confirm` → proceed to `CHECKLIST` with a note `[stack accepted as-is]` in the session state.
+   - `switch` → replace flagged technologies with their alternatives,
+     update the spec, and proceed to `CHECKLIST`.
+   - Any other input → re-explain the option, remain in `BLOCKED`.
+
+### Scope note
+
+This check applies to *infrastructure and storage technologies* only.
+It does not apply to:
+- programming languages
+- frameworks and libraries
+- build tools and package managers
+- testing frameworks
+
 ## Required inputs by phase
 
 ### `CHECKLIST`
