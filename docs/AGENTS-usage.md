@@ -148,6 +148,34 @@ concrete target; a concrete target skips it entirely.
 
 ---
 
+## opencode Support
+
+The core deploy unit (`AGENTS.md` + `system/`) is model-agnostic. opencode gets an
+additional native layer that other agents (Claude Code, Cursor, Codex) ignore.
+
+### Files
+
+| Path | Purpose |
+|---|---|
+| `opencode.jsonc` | opencode config: auto-loads `AGENTS.md` + `system/bootstrap.txt` via `instructions`, registers the MCP servers from the fallback tiers. |
+| `.opencode/agent/baba-*.md` | The five personas as opencode agents (`mode: primary`, selectable in the TUI). `edit: deny` on all but `baba-dev`, so "scope creep is structurally impossible" is enforced by permission rules, not just prompts. |
+| `.opencode/command/baba.md` | `/baba <persona>` — activates a persona and starts the phase flow. |
+| `.opencode/command/phase.md` | `/phase <NAME>` — declares the active phase and enforces its template. |
+
+### Notes
+
+- **Restart after changes**: opencode loads config once at startup. After editing
+  `opencode.jsonc`, `.opencode/agent/*`, or `.opencode/command/*`, quit and
+  restart opencode — running sessions keep the already-loaded config.
+- **Env interpolation**: opencode uses `{env:VAR}`, not `${VAR}`. The `exa`
+  server header is `{env:EXA_API_KEY}`; remove the `exa` entry if the key is absent.
+- **Trello OAuth**: run `opencode mcp auth trello` once, then restart the session.
+- **Switching persona**: switch the agent in the TUI, or run `/baba <persona>`.
+  Persona modules remain the single source of truth — agent files reference
+  `system/modules/` and do not duplicate their content.
+
+---
+
 ## Troubleshooting
 
 | Symptom | Cause | Fix |
