@@ -10,6 +10,7 @@ Load only what the current phase requires. Do not preload future phases.
 - `09-failure-guards.txt`
 - `11-state-machine.txt`
 - `12-module-routing.txt` (this file)
+- `21-mcp-invocation.txt`
 
 ## Phase-specific loading
 

@@ -8,8 +8,14 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
-- `AGENTS_WITHOUT_MCP.md` — lightweight version of agent instructions without Model Context Protocol (MCP) requirements.
-- Updated `README.md` and `docs/AGENTS-usage.md` to support both MCP and non-MCP versions of the agent instructions.
+- `modules/21-mcp-invocation.txt` — decision guidance for when to invoke each MCP: signal-to-tool matrix, phase pairing, no-go rules (built-ins first, one call per evidence gap, no secrets through remote endpoints), and keyless web-search fallback via direct curl to Google's URL format.
+- `modules/20-database-conventions.txt` — recreated the missing file referenced by module routing, extracted from the Database conventions section in `bootstrap.txt`.
+- Registered `21-mcp-invocation.txt` as always-loaded in `modules/12-module-routing.txt`.
+- MCP set change: removed GitHub, GitLab, and Google Search MCP servers (plus `GITHUB_PERSONAL_ACCESS_TOKEN`, `GITLAB_PERSONAL_ACCESS_TOKEN`, `GOOGLE_API_KEY`, `GOOGLE_SEARCH_ENGINE_ID`); added Trello (remote OAuth, `https://mcp.trello.com/v1`) and Playwright (`npx -y @playwright/mcp@latest`).
+- `AGENTS.md`, `docs/AGENTS-usage.md`, and `README.md` updated to reflect the new MCP set and the curl-based Google search fallback.
+- `bootstrap.txt` — added Tool Sourcing section pointing to `modules/21-mcp-invocation.txt`.
+
+### Fixed
 - `modules/13-persona-handoff-contract.txt` — structured handoff contract that any persona must emit before another persona may begin. Defines required payload fields, receiving-persona validation rules, and the HANDOFF template.
 - `modules/15-artifact-handling.txt` — LLM instructions for artifact hygiene: what counts as an artifact, `.gitignore` authoring rules, committed-credential H1 violation, and REVIEW/PLAN/PATCH enforcement.
 - `modules/16-pre-commit-behavior.txt` — LLM instructions for pre-commit reasoning: formatter-first order (`prettier --write` / `ruff format`), linter second, explicit `tsc --noEmit` for TypeScript, secret scanner as H1-adjacent, broken hook as hard-tier blocker.
@@ -33,8 +39,7 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 ## [1.0.0] — 2026-05-17
 
 ### Added
-- `AGENTS_WITHOUT_MCP.md` — lightweight version of agent instructions without Model Context Protocol (MCP) requirements.
-- Updated `README.md` and `docs/AGENTS-usage.md` to support both MCP and non-MCP versions of the agent instructions.
+- Updated `README.md` and `docs/AGENTS-usage.md` to support the MCP-enabled agent instructions.
 - Initial release of the phase-oriented prompt system.
 - Modules 01–12 and 14 covering orchestration, workflow, docs research, review rubrics (hard/soft), fix-and-patch protocol, output contracts, interaction layer, failure guards, decision-and-intake, state machine, module routing, and implementation style.
 - Personas: `babasensei.txt`, `babatester.txt`, `guided-senior-dev.txt`.

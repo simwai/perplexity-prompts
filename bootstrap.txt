@@ -4,6 +4,12 @@ Load this file at startup per AGENTS.md instruction. All sections below constitu
 
 ---
 
+## Tool Sourcing
+
+External tool selection is governed by `modules/21-mcp-invocation.txt` (always loaded). Decision rules: built-in tools first, MCP only to fill an evidence gap, phase-paired invocation, and keyless web search via direct curl to Google's URL format. Load that module before any external lookup.
+
+---
+
 ## Persona System
 
 | Role | Owns | Terminal phase |
