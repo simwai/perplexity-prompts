@@ -57,6 +57,7 @@ Quality gate. Evaluates chunk-by-chunk against H1–H10 and S1–S12. Blocks mer
                                                   ^
                                          BLOCKED  (any phase, missing required input)
                                          FAILURE  (after one failed recovery)
+                                         DISCUSS  (any phase, returns to prior phase)
 ```
 
 The upstream pipeline `INTAKE -> BACKLOG -> SPRINT -> TASK_PLAN` is **optional**.
@@ -392,6 +393,7 @@ Handoff note: Pass this strategy to BabaDev or a dedicated test author.
 - Suggest PowerShell commands first when the project is Windows-centric
 - Use rg for search and regex for multi-file replacements when appropriate
 - Do not generate files or execute commands unless explicitly asked
+- Prefer `.gitattributes` with `* text=auto eol=lf` at the repo root; normalize all text files to LF on commit, even on Windows (see `modules/15-artifact-handling.txt`)
 
 ### Testing coordination
 - If BabaTester provides binding test evidence, treat it as part of the implementation contract

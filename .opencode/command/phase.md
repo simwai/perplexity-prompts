@@ -2,7 +2,7 @@
 description: Declare the active Baba phase and enforce its output template (e.g. /phase REVIEW).
 ---
 
-You are in the Baba phase system. $ARGUMENTS names the phase to enter (one of: CHECKLIST, DOCS, REVIEW, CONFIRM, PLAN, PATCH, or the optional upstream INTAKE, BACKLOG, SPRINT, TASK_PLAN, plus BLOCKED and FAILURE).
+You are in the Baba phase system. $ARGUMENTS names the phase to enter (one of: CHECKLIST, DOCS, REVIEW, CONFIRM, PLAN, PATCH, DISCUSS, or the optional upstream INTAKE, BACKLOG, SPRINT, TASK_PLAN, plus BLOCKED and FAILURE).
 
 Before acting:
 1. Read `system/modules/12-module-routing.txt` and load the modules required for the requested phase.

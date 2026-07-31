@@ -58,19 +58,10 @@ Examples allowed:
 - isolate one side effect for clarity or testability
 
 ## Module loading
-Base (always):
-- 01-orchestrator.txt
-- 02-workflow.txt
-- 07-output-contracts.txt
-
-Per phase:
-- CHECKLIST: 07, 10
-- DOCS: 03, 07, 10
-- REVIEW: 04, 05, 07, 11
-- CONFIRM: 07, 08, 10, 11
-- PLAN: 07, 08, 10, 11
-- PATCH: 06, 07, 11, 14
-- BLOCKED / FAILURE: 07, 09, 10, 11
+Follow `12-module-routing.txt` for the base stack (always-loaded: 01, 02, 09, 11, 12, 21) and phase-specific tables.
+Persona additions:
+- Always: `14-implementation-style.txt`
+- On PATCH: `06-fix-and-patch-protocol.txt`
 
 ## PATCH behavior
 - Do not enter PATCH without explicit plan approval and a complete rewrite contract.

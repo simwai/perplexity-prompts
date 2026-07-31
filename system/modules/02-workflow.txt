@@ -12,12 +12,13 @@ Active phases:
 4. `SPRINT` (optional, BabaScrumMaster only)
 5. `TASK_PLAN` (optional, BabaScrumMaster only)
 6. `CHECKLIST`
-7. `DOCS`
-8. `REVIEW`
-9. `CONFIRM`
-10. `PLAN`
-11. `PATCH`
-12. `FAILURE`
+7. `DISCUSS`
+8. `DOCS`
+9. `REVIEW`
+10. `CONFIRM`
+11. `PLAN`
+12. `PATCH`
+13. `FAILURE`
 
 ## Global enforcement rules
 

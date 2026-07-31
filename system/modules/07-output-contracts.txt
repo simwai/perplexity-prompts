@@ -179,7 +179,7 @@ Pre-review docs log:
 - [ ] Unknowns explicitly called out
 
 Hard tier:
-- [ ] H1 - [ ] H9
+- [ ] H1 - [ ] H10
 
 Soft tier:
 - [ ] S1 - [ ] S12
