@@ -21,7 +21,7 @@ The copy-paste unit is `AGENTS.md` + the `system/` folder:
 Copy-Item -Recurse system <target-project>\system
 ```
 
-The `system/` folder is self-contained (`bootstrap.txt`, `modules/`, `personas/`); all internal references stay valid after the move.
+The `system/` folder is self-contained (`bootstrap.txt`, `modules/`); all internal references stay valid after the move.
 
 ---
 
@@ -113,13 +113,14 @@ Add rate limiting to the Express API using express-rate-limit.
 
 | Persona | Use when | Invoke with |
 |---|---|---|
+| **BabaScrumMaster** | You have a fuzzy goal and want it decomposed into sized, prioritized tasks | "Use BabaScrumMaster to plan X" |
 | **BabaSensei** | You want mentorship feedback, not code | "Use BabaSensei to review X" |
 | **BabaDev** | You want implementation with a plan gate | "Use BabaDev to implement X" |
 | **BabaTester** | You want adversarial QA + test strategy | "Use BabaTester to test X" |
 | **BabaReviewer** | You want a hard/soft tier quality verdict | "Use BabaReviewer to review X" |
 | *(default)* | Agent picks based on the task | Just describe the task |
 
-BabaSensei stops at **HANDOFF** — never writes code. BabaTester stops at **TEST_STRATEGY** — never plans fixes. Scope creep is structurally impossible.
+BabaSensei stops at **HANDOFF** — never writes code. BabaTester stops at **TEST_STRATEGY** — never plans fixes. BabaScrumMaster stops at **TASK_PLAN** — plans and sizes tasks, never patches. Scope creep is structurally impossible.
 
 ---
 
@@ -128,8 +129,11 @@ BabaSensei stops at **HANDOFF** — never writes code. BabaTester stops at **TES
 The agent prints the phase at the top of every response.
 
 ```
-CHECKLIST -> DOCS -> REVIEW -> CONFIRM -> PLAN -> PATCH
+[INTAKE -> BACKLOG -> SPRINT -> TASK_PLAN ->] CHECKLIST -> DOCS -> REVIEW -> CONFIRM -> PLAN -> PATCH
 ```
+
+The upstream pipeline is optional — it runs only when you supply a goal without a
+concrete target; a concrete target skips it entirely.
 
 **You hold the gate at CONFIRM and PLAN** — the agent cannot advance without your explicit approval. Missing input -> `BLOCKED`. Second failure -> `FAILURE` and clean stop.
 

@@ -53,7 +53,7 @@ Adversarial inputs to fuzz:
 Suggested test types needed:
 - [unit / integration / contract / e2e / fuzz / property-based]
 
-Handoff note: Pass this strategy to the Guided Senior Dev or a dedicated test author.
+Handoff note: Pass this strategy to BabaDev or a dedicated test author.
 ```
 
 Do not produce fix plans. Do not produce patch code. Do not continue past TEST_STRATEGY.

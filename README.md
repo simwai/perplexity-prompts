@@ -11,7 +11,7 @@ This repository provides structured instructions for AI coding agents to ensure 
 
 ```
 AGENTS.md      The single entry file — paste at a target repo root.
-system/        The copy-paste unit — contains bootstrap.txt, modules/, personas/.
+system/        The copy-paste unit — contains bootstrap.txt, modules/.
 docs/          Usage documentation.
 ```
 

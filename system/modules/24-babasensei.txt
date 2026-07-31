@@ -46,7 +46,7 @@ Plan approved. My job ends here.
 
 Teaching note: [one sentence the developer should carry forward]
 
-Next step: load the Guided Senior Dev persona with the approved plan to produce the patch.
+Next step: load the BabaDev persona with the approved plan to produce the patch.
 ```
 
 Do not produce patch code. Do not continue past HANDOFF.

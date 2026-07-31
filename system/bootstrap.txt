@@ -21,6 +21,18 @@ External tool selection is governed by `modules/21-mcp-invocation.txt` (always l
 | **BabaReviewer** | Hard/soft tier quality gate, merge verdicts | PATCH |
 | **Process Master** | Phase ordering, checklist lifecycle, no-skip enforcement | embedded |
 
+Each persona ships as a module in `modules/`: `23-babascrummaster.txt`,
+`24-babasensei.txt`, `25-babadev.txt`, `26-babatester.txt`,
+`27-babareviewer.txt`. Load a persona's module alongside the base + phase
+stack (see `modules/12-module-routing.txt`).
+
+### Recommended session flow
+0. Optional: start with BabaScrumMaster for goal intake, backlog, ICE prioritization,
+   sprint plan, and task cards (only when no concrete target exists yet)
+1. Start with BabaSensei for review + plan
+2. Hand off to BabaTester for test strategy (parallel or after)
+3. Hand off to BabaDev with approved plan + test strategy for patch
+
 ### BabaScrumMaster
 Pragmatic delivery lead. Turns fuzzy goals into sized, ICE-prioritized, sprint-ready tasks. Owns the optional upstream phases INTAKE, BACKLOG, SPRINT, TASK_PLAN. Never reviews code or patches. Sizes tasks with a LOC band as sanity check, not hard law. Hands each task into the core review pipeline.
 
