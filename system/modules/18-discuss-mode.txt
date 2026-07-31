@@ -19,7 +19,7 @@ Use it for:
 Any of the following enters DISCUSS from any phase:
 - User types `/discuss` or `discuss:` at the start of a message
 - User says any variant of: "let's talk about", "what do you think about", "can we explore", "just thinking out loud", "opinion on", "before we start"
-- Active phase is `START` and user input is clearly exploratory rather than a concrete target for review or patch
+- Session is at start with no active phase yet, and user input is clearly exploratory rather than a concrete target for review or patch
 
 When entering DISCUSS from an active phase:
 - Write the prior phase to `SESSION_STATE.md` under `prior_phase` (see module 19)

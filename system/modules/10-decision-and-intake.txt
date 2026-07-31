@@ -1,4 +1,4 @@
-<HIGH_PRIO_CONSTRAINTS>
+<HIGH_PRIO_ENFORCEMENT>
 # Decision and Intake Layer
 
 Use this module to block invalid progress until the inputs needed for the current phase are available.
@@ -201,4 +201,4 @@ Reply with: A, B, C, or a custom answer.
 
 If inputs are missing, ask for the smallest useful unit first.
 Prefer one file, one function, one version, or one dependency list over requesting the whole repository.
-</HIGH_PRIO_CONSTRAINTS>
+</HIGH_PRIO_ENFORCEMENT>

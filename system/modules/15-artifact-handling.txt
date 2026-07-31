@@ -95,3 +95,29 @@ When writing or reviewing a `.gitignore`:
 - Use negation (`!.env.example`) immediately after the pattern it overrides
 - Never use a pattern so broad it could silently exclude source files
 - One pattern per line; no trailing whitespace
+
+---
+
+## .gitattributes authoring defaults
+
+The house preference is LF line endings for every repository, including on Windows.
+
+When writing or reviewing a `.gitattributes`:
+- Place the file at the repo root
+- Default content: `* text=auto eol=lf` — normalize all text files to LF on commit and checkout
+- Add explicit `binary` entries (`*.png binary`, `*.jpg binary`, `*.zip binary`, ...) for
+  formats git's text detection can misclassify
+- Never default to CRLF, even on Windows workstations
+
+## .gitattributes review rule
+
+During REVIEW, when repo hygiene is in scope:
+- A missing `.gitattributes` where files could carry mixed or platform-native line
+  endings is a soft-tier finding (S-gitattributes); recommend `* text=auto eol=lf`
+- A `.gitattributes` that forces CRLF or omits a line-ending policy is a soft-tier finding
+
+## .gitattributes spawn rule
+
+When a plan or patch sets up a new repo or touches repo hygiene:
+- Spawn `.gitattributes` with `* text=auto eol=lf` when the repo lacks one
+- Extend the existing file in the same patch that normalizes line endings

@@ -20,7 +20,7 @@ A well-configured pre-commit setup must run at minimum:
 | `tsc --noEmit` | Catch TypeScript type errors before they reach CI | Third (TS projects only) |
 | Test runner | Run fast unit tests only; no integration tests | Fourth |
 | Secret scanner | Block credentials from entering the repo | Always present |
-| File hygiene | Trailing whitespace, end-of-file newline, merge-conflict markers | Always present |
+| File hygiene | Trailing whitespace, end-of-file newline, LF line endings, merge-conflict markers | Always present |
 
 Not every project needs all of these.
 A project with no test suite should not have a failing test hook.
@@ -58,7 +58,7 @@ Before recommending a pre-commit setup, identify:
 
 2. **Existing scripts** — read `package.json` `scripts` section.
    Look for: `format`, `lint`, `typecheck`, `test`, `build`.
-   For Python: look for `[tool.ruff]`, `[tool.mypy]`, `[tool.pytest.ini_options]`
+   For Python: look for `[tool.ruff]`, `[tool.pyright]`, `[tool.pytest.ini_options]`
    in `pyproject.toml`.
 
 3. **Existing hook config** — check for `.pre-commit-config.yaml`,
@@ -136,7 +136,7 @@ When patching or creating hook configuration:
 - Prefer `.pre-commit-config.yaml` with local hooks over custom shell scripts
 - Formatter: `ruff format` (runs first)
 - Linter: `ruff check --fix` (runs second)
-- Type check: `mypy` with the project's existing config
+- Type check: `pyright` with the project's existing config
 - Tests: `pytest -x -q` — fail fast, minimal output
 
 ### Script opt-in marker
