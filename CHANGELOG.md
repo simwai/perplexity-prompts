@@ -7,12 +7,19 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Removed
+- `role-legend.md` — obsolete root-level role table, superseded by the Persona System section in `bootstrap.txt` and the persona modules. Was stale (five roles, missing BabaScrumMaster) and referenced nothing.
+
 ### Changed
 - Personas are now modules: `system/personas/` removed, personas moved into `system/modules/` as `23-babascrummaster.txt`, `24-babasensei.txt`, `25-babadev.txt`, `26-babatester.txt`, `27-babareviewer.txt`. The deployable unit is now just `bootstrap.txt` + `modules/`. `AGENTS.md`, `README.md`, `docs/AGENTS-usage.md`, and `modules/12-module-routing.txt` updated to the new layout. Session flow folded into `bootstrap.txt`.
 - `modules/12-module-routing.txt` and `modules/13-persona-handoff-contract.txt` — stale `GuidedSeniorDev` references aligned to `BabaDev`.
 - `docs/AGENTS-usage.md` — added BabaScrumMaster to the Persona Reference table and the optional upstream pipeline to the Phase Flow.
 
 ### Added
+- `opencode.jsonc` — opencode-native config: `instructions` auto-loads `AGENTS.md` and `system/bootstrap.txt`; `mcp` registers context7, tavily, playwright, exa (`{env:EXA_API_KEY}`), and trello (remote OAuth). Inert for non-opencode agents; `AGENTS.md` + `system/` remain the portable deploy unit.
+- `.opencode/agent/baba-scrummaster.md`, `baba-sensei.md`, `baba-dev.md`, `baba-tester.md`, `baba-reviewer.md` — the five personas as opencode agents (`mode: primary`). `edit: deny` on all but `baba-dev`. Each references `system/modules/` instead of duplicating persona content.
+- `.opencode/command/baba.md` (`/baba <persona>`) and `.opencode/command/phase.md` (`/phase <NAME>`) — opencode command entry points.
+- `README.md` and `docs/AGENTS-usage.md` — document the optional opencode layer.
 - Restructured into a one-file + one-folder deployable layout: `bootstrap.txt`, `modules/`, and `personas/` moved under `system/`; `AGENTS.md` is now a slim entry pointer with a Deploy section. `README.md`, `docs/AGENTS-usage.md`, and `.pre-commit-config.yaml` updated to the new paths.
 - `modules/21-mcp-invocation.txt` — decision guidance for when to invoke each MCP: signal-to-tool matrix, phase pairing, no-go rules (built-ins first, one call per evidence gap, no secrets through remote endpoints), and keyless web-search fallback via direct curl to Google's URL format.
 - `modules/20-database-conventions.txt` — recreated the missing file referenced by module routing, extracted from the Database conventions section in `bootstrap.txt`.
