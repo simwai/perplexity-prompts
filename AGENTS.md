@@ -16,7 +16,7 @@ Tool-assisted AI coding agent for a sandbox with full execution rights. Follow t
 
 ## MCP Fallback Tiers
 
-Servers are grouped by what works when env keys are missing. Configure the ones you can; the agent adapts.
+Servers are grouped by what works when env keys are missing. Configure the ones you can; the agent adapts. Decision guidance for *when* to invoke each server: `modules/21-mcp-invocation.txt`.
 
 ### Tier 1 — Always works (no keys required)
 
@@ -29,56 +29,55 @@ Servers are grouped by what works when env keys are missing. Configure the ones 
   "tavily": {
     "command": "npx",
     "args": ["-y", "tavily-mcp"]
+  },
+  "playwright": {
+    "command": "npx",
+    "args": ["-y", "@playwright/mcp@latest"]
   }
 }
 ```
 
 **Context7** — library docs (stdio: `npx -y @upstash/context7-mcp`)
 **Tavily** — web search (verified: works without key, package is `tavily-mcp` not `@tavily/mcp`)
+**Playwright** — browser automation for live UI verification and e2e walk-throughs (Node 20+; headed by default, add `--headless` for automation)
 
 ### Tier 2 — Requires env keys
 
 ```json
 {
-  "github": {
-    "command": "npx",
-    "args": ["-y", "@modelcontextprotocol/server-github"],
-    "env": { "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}" }
-  },
-  "gitlab": {
-    "command": "npx",
-    "args": ["-y", "@modelcontextprotocol/server-gitlab"],
-    "env": {
-      "GITLAB_PERSONAL_ACCESS_TOKEN": "${GITLAB_PERSONAL_ACCESS_TOKEN}",
-      "GITLAB_API_URL": "${GITLAB_API_URL:-https://gitlab.com/api/v4}"
-    }
-  },
   "exa": {
     "type": "http",
     "url": "https://mcp.exa.ai/mcp",
     "headers": { "x-api-key": "${EXA_API_KEY}" }
-  },
-  "google-search": {
-    "command": "npx",
-    "args": ["-y", "@adenot/mcp-google-search"],
-    "env": {
-      "GOOGLE_API_KEY": "${GOOGLE_API_KEY}",
-      "GOOGLE_SEARCH_ENGINE_ID": "${GOOGLE_SEARCH_ENGINE_ID}"
-    }
   }
 }
 ```
 
-### Tier 3 — CLI fallbacks (when MCP unavailable)
+### Trello — Remote OAuth (no env keys)
 
-| Missing key | Fallback |
-|---|---|
-| `GITHUB_PERSONAL_ACCESS_TOKEN` | `gh` CLI commands (`gh repo view`, `gh pr`, etc.) — auth via `gh auth login` |
-| `GITLAB_PERSONAL_ACCESS_TOKEN` | `glab` CLI or `curl` with a personal access token |
+```json
+{
+  "trello": {
+    "type": "remote",
+    "url": "https://mcp.trello.com/v1",
+    "oauth": {}
+  }
+}
+```
+
+Work tracking (cards, boards, lists, tasks, PR/issue/CI status) lives in Trello. One-time browser OAuth consent, workspace-scoped. No API key.
+
+### Web search without keys
+
+Google web search must never require `GOOGLE_API_KEY` / `GOOGLE_SEARCH_ENGINE_ID`. Default is direct curl to Google's URL format:
+
+```bash
+curl -s "https://www.google.com/search?q=<url-encoded-query>"
+```
 
 ### Full combined config (`mcp.json`)
 
-Combine all Tier 1 + Tier 2 blocks above. Omit any Tier 2 servers whose keys you lack — the agent falls back to Tier 3.
+Combine all Tier 1 + Tier 2 + Trello blocks above. Omit any Tier 2 servers whose keys you lack — the agent adapts via the fallback ladder in `modules/21-mcp-invocation.txt`.
 
 ---
 
@@ -86,10 +85,7 @@ Combine all Tier 1 + Tier 2 blocks above. Omit any Tier 2 servers whose keys you
 
 | Variable | Server | Required |
 |---|---|---|
-| `GITHUB_PERSONAL_ACCESS_TOKEN` | GitHub | No (fallback: `gh` CLI) |
-| `GITLAB_PERSONAL_ACCESS_TOKEN` | GitLab | No (fallback: `glab` CLI / curl) |
 | `EXA_API_KEY` | Exa | No (skipped if missing) |
-| `GOOGLE_API_KEY` + `GOOGLE_SEARCH_ENGINE_ID` | Google Search | No (skipped if missing) |
 
 ---
 

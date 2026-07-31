@@ -6,7 +6,7 @@
 1. **MCP server configs** — organized by fallback tiers (Tier 1 works without keys)
 2. A pointer to `bootstrap.txt` — which contains the full persona system, phase model, rubrics, and implementation style
 
-This replaces the old two-file approach (`AGENTS.md` vs `AGENTS_WITHOUT_MCP.md`). A single file now handles both cases via the fallback tier system.
+This is the single entry point for AI coding agents; MCP servers are covered by the fallback tier system.
 
 ---
 
@@ -14,11 +14,11 @@ This replaces the old two-file approach (`AGENTS.md` vs `AGENTS_WITHOUT_MCP.md`)
 
 | Tier | Description | Examples |
 |---|---|---|
-| 1 | Always works, no keys needed | Context7 (library docs), Tavily (web search) |
-| 2 | Requires env keys | GitHub, GitLab, Exa, Google Search |
-| 3 | CLI fallbacks when MCP unavailable | `gh` CLI, `glab` CLI / curl |
+| 1 | Always works, no keys needed | Context7 (library docs), Tavily (web search), Playwright (browser automation) |
+| 2 | Requires env keys | Exa |
+| OAuth | Remote server, browser consent instead of a key | Trello (work tracking) |
 
-Configure what you can in `mcp.json`. Servers with missing keys are skipped silently — the agent adapts.
+Web search falls back to direct `curl` against Google's URL format — no API key, no MCP. Configure what you can. Servers with missing keys are skipped silently — the agent adapts.
 
 ---
 
@@ -28,11 +28,7 @@ Configure what you can in `mcp.json`. Servers with missing keys are skipped sile
 
 **`.env` file** at project root — never hardcode tokens:
 ```bash
-GITHUB_PERSONAL_ACCESS_TOKEN=ghp_xxx
-GITLAB_PERSONAL_ACCESS_TOKEN=glpat-xxx
 EXA_API_KEY=exa-xxx
-GOOGLE_API_KEY=AIzaSy_xxx
-GOOGLE_SEARCH_ENGINE_ID=xxx
 ```
 Load before starting: `source .env` — and add `.env` to `.gitignore` immediately.
 
@@ -40,57 +36,40 @@ Load before starting: `source .env` — and add `.env` to `.gitignore` immediate
 
 | Service | Where |
 |---|---|
-| GitHub PAT | Settings -> Developer settings -> Personal access tokens (`repo`, `read:org`, `workflow`) |
-| GitLab PAT | Settings -> Access Tokens (`api`, `read_api`) |
-| Google API Key | console.cloud.google.com -> Credentials (enable Custom Search API) |
-| Google Search Engine ID | cse.google.com -> Create engine |
 | Exa | exa.ai -> Dashboard |
 | Context7 | No key needed |
 | Tavily | No key needed |
+| Playwright | No key needed (Node 20+ required) |
+| Trello | No key needed (one-time OAuth consent, workspace-scoped) |
 
 ---
 
 ## MCP Configuration
 
-### Example `mcp.json` (Tier 1 + Tier 2 combined)
+### Example `mcp.json` (Tier 1 + Tier 2 + Trello combined)
 
 ```json
 {
   "mcpServers": {
     "context7": { "type": "http", "url": "https://mcp.context7.com/mcp" },
     "tavily": { "command": "npx", "args": ["-y", "tavily-mcp"] },
-    "github": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"],
-      "env": { "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}" }
-    },
-    "gitlab": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-gitlab"],
-      "env": {
-        "GITLAB_PERSONAL_ACCESS_TOKEN": "${GITLAB_PERSONAL_ACCESS_TOKEN}",
-        "GITLAB_API_URL": "${GITLAB_API_URL:-https://gitlab.com/api/v4}"
-      }
-    },
+    "playwright": { "command": "npx", "args": ["-y", "@playwright/mcp@latest"] },
     "exa": {
       "type": "http",
       "url": "https://mcp.exa.ai/mcp",
       "headers": { "x-api-key": "${EXA_API_KEY}" }
     },
-    "google-search": {
-      "command": "npx",
-      "args": ["-y", "@adenot/mcp-google-search"],
-      "env": {
-        "GOOGLE_API_KEY": "${GOOGLE_API_KEY}",
-        "GOOGLE_SEARCH_ENGINE_ID": "${GOOGLE_SEARCH_ENGINE_ID}"
-      }
+    "trello": {
+      "type": "remote",
+      "url": "https://mcp.trello.com/v1",
+      "oauth": {}
     }
   }
 }
 ```
 
 ### Verify it works
-Ask the agent: *"List the available MCP tools."* You should see tools from Context7 and Tavily at minimum. If GitHub/GitLab are missing, the env vars aren't exported.
+Ask the agent: *"List the available MCP tools."* You should see tools from Context7 and Tavily at minimum. If Exa is missing, the env var isn't exported. Trello appears after one-time OAuth consent.
 
 ---
 
@@ -144,9 +123,9 @@ CHECKLIST -> DOCS -> REVIEW -> CONFIRM -> PLAN -> PATCH
 ## Security Notes
 
 - Never commit `.env`
-- Give GitHub PAT only the scopes it needs — not a full-access token
 - H1 in the hard-tier rubric will flag the agent's own output if it accidentally echoes credentials
-- Context7 and Tavily are remote endpoints — don't send proprietary code as search queries
+- Context7, Tavily, Exa, and Trello are remote endpoints — don't send proprietary code as search queries
+- Playwright `browser_run_code_unsafe` runs arbitrary JS — trusted sessions only
 
 ---
 
@@ -154,9 +133,10 @@ CHECKLIST -> DOCS -> REVIEW -> CONFIRM -> PLAN -> PATCH
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| MCP server missing | Token not exported | `echo $GITHUB_PERSONAL_ACCESS_TOKEN` — re-run `source .env` if empty |
+| MCP server missing | Token not exported | `echo $EXA_API_KEY` — re-run `source .env` if empty |
 | Agent ignores phases | `AGENTS.md` not read | Confirm it's at repo root; some agents need `--context AGENTS.md` |
 | Immediate `BLOCKED` | Missing library/version info | Include the library name + version in your task description |
-| GitHub 404 | Wrong branch name | Default branch is `master` — check with `git branch` |
+| Trello tools absent | OAuth not completed | Run `opencode mcp auth trello` once, then restart the session |
+| Playwright won't launch | Node too old or browser missing | Use Node 20+; first run downloads browsers via `npx playwright install` |
 | Exa auth error | Wrong header key | Exa: `x-api-key` |
 | Tavily still broken | Wrong package name | Use `tavily-mcp` (not `@tavily/mcp`) |

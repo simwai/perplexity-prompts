@@ -1,0 +1,43 @@
+# MCP Invocation Decision Guidance
+
+Use this module in every phase, every persona. Tool selection is a per-response decision: built-in tools first, MCP only to fill an evidence gap.
+
+## Signal -> tool matrix
+
+| Signal | Tool | Setup |
+|---|---|---|
+| Official/versioned library, framework, SDK, or API docs needed | `context7` | remote, no key |
+| Current web info beyond docs (news, RFCs, pricing, ecosystem landscape) | `tavily` | no key |
+| Unknown dependency/API name or version discovery | `tavily` / `exa` / direct `curl` | no key / env key / no key |
+| Work tracking: cards, boards, lists, tasks, PR/issue/CI status | `trello` | remote OAuth |
+| Live browser: navigate, click, fill, screenshot, UI verification, e2e walk-through | `playwright` | local, no key |
+
+## Phase pairing
+
+- `CHECKLIST`: no MCP unless the task references Trello cards/boards.
+- `DOCS`: `context7` primary (official source, exact version); `tavily`/`exa`/`curl` for discovery. MCP output is evidence input only — the DOCS template fields (name, version, URL, changelog window) must still be recorded per module 03.
+- `REVIEW`: `playwright` when the target is a web app needing live UI checks; `trello` when review scope references tracked work.
+- `TEST_STRATEGY`: `playwright` for e2e/UI exploration and verification.
+- `CONFIRM` / `PLAN` / `PATCH`: `trello` for tracked-task status updates; `playwright` for verification; otherwise built-in tools.
+- `DISCUSS`: MCP allowed for exploration, but never emits findings without explicit user promotion (module 18).
+
+## No-go rules
+
+- If built-in tools (`read`, `grep`, `glob`, `bash`) can answer from local context, do NOT invoke an MCP.
+- One MCP call per evidence gap — no exploratory firehose.
+- Never send secrets, tokens, or proprietary code through remote endpoints (`context7`, `tavily`, `exa`, `trello`) — H1 guard.
+- `playwright` `browser_run_code_unsafe` is RCE-equivalent — trusted sessions only, never run untrusted code.
+
+## Web search without keys
+
+General web lookup must never require `GOOGLE_API_KEY` / `GOOGLE_SEARCH_ENGINE_ID`. Default is direct curl to Google's URL format:
+
+```bash
+curl -s "https://www.google.com/search?q=<url-encoded-query>"
+```
+
+## Fallback ladder
+
+1. MCP unavailable (server missing, key absent, OAuth declined) -> fall back, do not stall.
+2. `curl` to the official source URL or direct web search (above).
+3. If evidence still cannot be verified -> `BLOCKED` / explicit unresolved-version note per module 03. Never guess a version or URL from memory.
