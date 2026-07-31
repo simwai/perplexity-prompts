@@ -7,7 +7,7 @@
 
 This file is the copy-paste unit. Deploying the system into a target project takes two steps:
 1. **Paste this file** as `AGENTS.md` at the target repo root.
-2. **Copy the `system/` folder** next to it (contains `bootstrap.txt`, `modules/`, `personas/`).
+2. **Copy the `system/` folder** next to it (contains `bootstrap.txt`, `modules/`).
 
 ```powershell
 Copy-Item -Recurse system <target-project>\system
