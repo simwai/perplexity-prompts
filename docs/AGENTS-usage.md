@@ -4,9 +4,24 @@
 
 `AGENTS.md` sits at the repo root. When an AI coding agent (Claude Code, Cursor Agent, Codex, etc.) starts a session, it reads the file first and loads:
 1. **MCP server configs** — organized by fallback tiers (Tier 1 works without keys)
-2. A pointer to `bootstrap.txt` — which contains the full persona system, phase model, rubrics, and implementation style
+2. A pointer to `system/bootstrap.txt` — which contains the full persona system, phase model, rubrics, and implementation style
 
 This is the single entry point for AI coding agents; MCP servers are covered by the fallback tier system.
+
+---
+
+## Deploying to a Target Project
+
+The copy-paste unit is `AGENTS.md` + the `system/` folder:
+
+1. Paste this file as `AGENTS.md` at the target repo root.
+2. Copy the `system/` folder next to it:
+
+```powershell
+Copy-Item -Recurse system <target-project>\system
+```
+
+The `system/` folder is self-contained (`bootstrap.txt`, `modules/`, `personas/`); all internal references stay valid after the move.
 
 ---
 
@@ -76,8 +91,8 @@ Ask the agent: *"List the available MCP tools."* You should see tools from Conte
 ## Starting a Session
 
 Open a session in a repo that has `AGENTS.md` at root and just describe the task. The agent will:
-1. Read `AGENTS.md` — bootstrap identity, MCP tiers, reference to `bootstrap.txt`
-2. Read `bootstrap.txt` — persona system, phase model, rubrics, implementation style
+1. Read `AGENTS.md` — bootstrap identity, MCP tiers, reference to `system/bootstrap.txt`
+2. Read `system/bootstrap.txt` — persona system, phase model, rubrics, implementation style
 3. Pick the right persona for the task type
 4. Declare the starting phase in its first response
 5. Reach for MCP tools (those available based on your configured keys)

@@ -8,6 +8,7 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- Restructured into a one-file + one-folder deployable layout: `bootstrap.txt`, `modules/`, and `personas/` moved under `system/`; `AGENTS.md` is now a slim entry pointer with a Deploy section. `README.md`, `docs/AGENTS-usage.md`, and `.pre-commit-config.yaml` updated to the new paths.
 - `modules/21-mcp-invocation.txt` — decision guidance for when to invoke each MCP: signal-to-tool matrix, phase pairing, no-go rules (built-ins first, one call per evidence gap, no secrets through remote endpoints), and keyless web-search fallback via direct curl to Google's URL format.
 - `modules/20-database-conventions.txt` — recreated the missing file referenced by module routing, extracted from the Database conventions section in `bootstrap.txt`.
 - Registered `21-mcp-invocation.txt` as always-loaded in `modules/12-module-routing.txt`.
