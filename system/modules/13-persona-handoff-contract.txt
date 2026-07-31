@@ -29,6 +29,11 @@ The handing-off persona MUST include all of the following in the HANDOFF output:
 | `binding_items` | BabaTester → GuidedSeniorDev | List of findings classified as BINDING |
 | `strong_hints` | BabaTester → GuidedSeniorDev | List of findings classified as STRONG HINT |
 | `teaching_note` | BabaSensei only | One sentence the developer should carry forward |
+| `task_card` | BabaScrumMaster → review persona | Full TASK_PLAN output |
+| `task_size` | BabaScrumMaster → review persona | XS/S/M/L size label |
+| `ice_score` | BabaScrumMaster → review persona | ICE rank of the task |
+| `milestone` | BabaScrumMaster → review persona | Milestone tag the task serves |
+| `definition_of_done` | BabaScrumMaster → review persona | Task definition-of-done list |
 
 ---
 
@@ -70,6 +75,11 @@ Test strategy: [TEST_STRATEGY output or "none — BabaTester not loaded"]
 Binding items: [list or "none"]
 Strong hints: [list or "none"]
 Teaching note: [one sentence, BabaSensei only — or "n/a"]
+Task card: [TASK_PLAN output or "n/a — not a scrum session"]
+Task size: [XS/S/M/L or "n/a"]
+ICE score: [I*C*E or "n/a"]
+Milestone: [id or "n/a"]
+Definition of done: [list or "n/a"]
 
 Status: Contract complete. Receiver may begin at [entry phase].
 ```
@@ -99,11 +109,15 @@ Status: Waiting.
 The supported sequence is:
 
 ```
-BabaSensei      → CHECKLIST → DOCS → REVIEW → CONFIRM → PLAN → HANDOFF
-BabaTester      → CHECKLIST → DOCS → REVIEW → CONFIRM → TEST_STRATEGY → HANDOFF
-GuidedSeniorDev → PLAN (from HANDOFF) → PATCH
+BabaScrumMaster  → INTAKE → BACKLOG → SPRINT → TASK_PLAN → HANDOFF   (optional, full mode only)
+BabaSensei       → CHECKLIST → DOCS → REVIEW → CONFIRM → PLAN → HANDOFF
+BabaTester       → CHECKLIST → DOCS → REVIEW → CONFIRM → TEST_STRATEGY → HANDOFF
+GuidedSeniorDev  → PLAN (from HANDOFF) → PATCH
 ```
 
+BabaScrumMaster runs upstream of the core pipeline and only when the user supplies
+a goal or project spec without a concrete target. Its HANDOFF carries the approved
+task card, and the receiving review persona enters `CHECKLIST` with that task as target.
 BabaTester and BabaSensei may run in parallel on the same target.
 GuidedSeniorDev requires BOTH handoff contracts when both were loaded.
 GuidedSeniorDev MUST classify all BabaTester items as BINDING / STRONG HINT / WEAK HINT before entering PATCH.

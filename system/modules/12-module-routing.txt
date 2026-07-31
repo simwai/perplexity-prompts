@@ -22,6 +22,21 @@ Load only what the current phase requires. Do not preload future phases.
 - `18-discuss-mode.txt`
 - `19-session-state.txt`
 
+### INTAKE
+- `10-decision-and-intake.txt`
+- `22-scrum-planning.txt`
+
+### BACKLOG
+- `22-scrum-planning.txt`
+
+### SPRINT
+- `22-scrum-planning.txt`
+
+### TASK_PLAN
+- `07-output-contracts.txt`
+- `22-scrum-planning.txt`
+- `13-persona-handoff-contract.txt`
+
 ### CHECKLIST
 - `10-decision-and-intake.txt`
 
@@ -68,6 +83,10 @@ Load only what the current phase requires. Do not preload future phases.
 - `09-failure-guards.txt`
 
 ## Persona-specific additions
+
+### BabaScrumMaster
+- Always: `22-scrum-planning.txt`
+- On TASK_PLAN: `13-persona-handoff-contract.txt`
 
 ### BabaSensei
 - Always: `08-interaction-layer.txt`

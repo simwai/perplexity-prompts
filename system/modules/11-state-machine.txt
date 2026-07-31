@@ -6,6 +6,10 @@ Use this module to enforce phase-wise transitions and prevent mixed-phase output
 ## Phase set
 
 - `BLOCKED`
+- `INTAKE` (optional, BabaScrumMaster only)
+- `BACKLOG` (optional, BabaScrumMaster only)
+- `SPRINT` (optional, BabaScrumMaster only)
+- `TASK_PLAN` (optional, BabaScrumMaster only)
 - `CHECKLIST`
 - `DISCUSS`
 - `DOCS`
@@ -20,11 +24,29 @@ Use this module to enforce phase-wise transitions and prevent mixed-phase output
 - `START -> BLOCKED`
   - Allowed only if: required starting context is missing.
 
+- `START -> INTAKE`
+  - Allowed only if: user supplied a goal or project spec without a concrete target (full mode).
+
 - `START -> CHECKLIST`
   - Allowed only if: target is known, scope is known, and language is known or obvious.
 
 - `START -> DISCUSS`
   - Allowed only if: user input is exploratory rather than a concrete target for review or patch.
+
+- `INTAKE -> BACKLOG`
+  - Allowed only if: goal and at least one success criterion are recorded; milestone set is defined (catch-all allowed).
+
+- `BACKLOG -> SPRINT`
+  - Allowed only if: backlog is non-empty, every item is sized, ICE-scored, milestone-tagged, and split candidates are listed.
+
+- `BACKLOG -> TASK_PLAN`
+  - Allowed only if: user explicitly skips SPRINT and the next task is unambiguous.
+
+- `SPRINT -> TASK_PLAN`
+  - Allowed only if: selected items are pulled by ICE priority and the board shows one clear next task.
+
+- `TASK_PLAN -> CHECKLIST`
+  - Allowed only if: task card contains target, size, ICE, milestone, and definition of done, and the task is approved.
 
 - `CHECKLIST -> DOCS`
   - Allowed only if: checklist artifact exists and docs-sensitive judgment is in scope.
@@ -79,6 +101,8 @@ Use this module to enforce phase-wise transitions and prevent mixed-phase output
 - !!! No continuation after failure.
 - !!! No findings from DISCUSS without explicit user promotion.
 - !!! DISCUSS cannot transition directly to PATCH.
+- !!! No CHECKLIST in full mode before an approved task card.
+- !!! No task card without a sized, ICE-scored backlog (or an approved skip note).
 
 ## Rewrite-contract completeness rule
 

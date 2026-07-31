@@ -42,6 +42,7 @@ If the file does not exist, create it from scratch using the template below.
 active_persona: <persona name>
 current_phase: <phase>
 prior_phase: <phase or NONE>
+planning_mode: <direct|full|NONE>
 session_start: <ISO timestamp or UNKNOWN>
 last_updated: <ISO timestamp>
 
@@ -49,6 +50,31 @@ last_updated: <ISO timestamp>
 repo: <repo path or UNKNOWN>
 scope: <description or UNKNOWN>
 language: <language or UNKNOWN>
+
+## Backlog
+<!-- Filled during BACKLOG phase (BabaScrumMaster, full mode only) -->
+- <item_id>: <description> [size: XS|S|M|L] [ICE: I*C*E] [milestone: <id>] [DoD]
+
+## Milestones
+<!-- Declared during INTAKE -->
+- <id>: <name> -- <target> -- <definition of done>
+
+## Current Sprint
+<!-- Filled during SPRINT phase (BabaScrumMaster, full mode only) -->
+sprint: <# or NONE>
+goal: <sprint goal>
+board:
+- To do: []
+- In progress: []
+- Done: []
+
+## Current Task
+<!-- Task card approved during TASK_PLAN, handed into CHECKLIST -->
+target: <NONE or path>
+size: <XS|S|M|L or NONE>
+ice: <I*C*E or NONE>
+milestone: <id or NONE>
+definition_of_done: []
 
 ## Findings
 <!-- Accepted violations carried forward from REVIEW/CONFIRM -->
