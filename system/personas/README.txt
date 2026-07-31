@@ -1,6 +1,6 @@
 # Personas
 
-Four thin overlay files. Each references the shared modules in /modules/.
+Four thin overlay files. Each references the shared modules in `modules/` (sibling folder).
 Do not duplicate shared module content here.
 
 ## BabaSensei (babasensei.txt)
