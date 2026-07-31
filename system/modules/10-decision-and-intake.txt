@@ -81,6 +81,48 @@ It does not apply to:
 
 ## Required inputs by phase
 
+### `START` routing
+
+Route on the first input:
+
+- Concrete target (file, module, or code snippet) -> direct mode -> `CHECKLIST`.
+- Goal or project spec without a concrete target -> full mode -> `INTAKE`.
+- Exploratory question -> `DISCUSS`.
+
+Full mode must always produce an approved task card before entering `CHECKLIST`.
+
+### `INTAKE`
+Required inputs:
+- goal or feature request (full mode only)
+- target repo if known
+
+Unblock rule:
+`BLOCKED -> INTAKE` is allowed only when the user supplied a goal or project spec without a concrete target.
+
+### `BACKLOG`
+Required inputs:
+- valid `INTAKE` output with goal and at least one success criterion
+- milestone set (defaults to a single catch-all milestone)
+
+Unblock rule:
+`BLOCKED -> BACKLOG` is allowed only when goal, success criteria, and milestone set are recorded.
+
+### `SPRINT`
+Required inputs:
+- valid `BACKLOG` output
+- at least one selected item or the smallest selection question answered
+
+Unblock rule:
+`BLOCKED -> SPRINT` is allowed only when the backlog is non-empty, sized, ICE-scored, and milestone-tagged.
+
+### `TASK_PLAN`
+Required inputs:
+- valid `SPRINT` output (or valid `BACKLOG` output when SPRINT is skipped)
+- next task is unambiguous
+
+Unblock rule:
+`BLOCKED -> TASK_PLAN` is allowed only when the next task is unambiguous and its size/ICE/milestone/DoD are known or explicitly left as user follow-up.
+
 ### `CHECKLIST`
 Required inputs:
 - target file, module, or code snippet

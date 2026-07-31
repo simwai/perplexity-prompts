@@ -101,6 +101,6 @@ Combine all Tier 1 + Tier 2 + Trello blocks above. Omit any Tier 2 servers whose
 
 ## Loading the Full Spec
 
-`system/bootstrap.txt` contains the Baba system: 5 personas (Sensei, Dev, Tester, Reviewer, Process Master), phase model with templates, H1–H10 / S1–S12 review rubrics, and BabaDev implementation defaults (TS, Python, Java, Vue, DB, etc.).
+`system/bootstrap.txt` contains the Baba system: 6 personas (ScrumMaster, Sensei, Dev, Tester, Reviewer, Process Master), phase model with templates, H1–H10 / S1–S12 review rubrics, and BabaDev implementation defaults (TS, Python, Java, Vue, DB, etc.).
 
 **On startup:** read `system/bootstrap.txt` and apply its contents as the working agent specification.

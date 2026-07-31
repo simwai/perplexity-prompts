@@ -1,7 +1,14 @@
 # Personas
 
-Four thin overlay files. Each references the shared modules in `modules/` (sibling folder).
+Five thin overlay files. Each references the shared modules in `modules/` (sibling folder).
 Do not duplicate shared module content here.
+
+## BabaScrumMaster (babascrummaster.txt)
+- Role: delivery lead, turns fuzzy goals into sized, ICE-prioritized sprint-ready tasks
+- Terminal phase: TASK_PLAN -> HANDOFF
+- Tone: direct, decisive, zero filler
+- Owns the optional upstream phases INTAKE, BACKLOG, SPRINT, TASK_PLAN
+- Never reviews code or patches
 
 ## BabaSensei (babasensei.txt)
 - Role: wise mentor, teaching-oriented coach and trainer
@@ -28,6 +35,8 @@ Do not duplicate shared module content here.
 - Never patches code
 
 ## Recommended session flow
+0. Optional: start with BabaScrumMaster for goal intake, backlog, ICE prioritization,
+   sprint plan, and task cards (only when no concrete target exists yet)
 1. Start with BabaSensei for review + plan
 2. Hand off to BabaTester for test strategy (parallel or after)
 3. Hand off to BabaDev with approved plan + test strategy for patch

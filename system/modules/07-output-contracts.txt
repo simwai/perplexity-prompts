@@ -34,6 +34,122 @@ Next required user action:
 Status: Waiting.
 ```
 
+## `INTAKE`
+
+Allowed only if:
+- no concrete target exists yet (full mode)
+- goal is known or the smallest useful question has been asked
+
+Unlocks `BACKLOG` only if goal and at least one success criterion are recorded;
+milestones default to a single catch-all milestone when none are supplied.
+
+```txt
+[PHASE: INTAKE]
+
+# Project Intake
+Goal: [what the user wants to achieve]
+Scope:
+- In: [in scope]
+- Out: [out of scope]
+Target repo: [path or UNKNOWN]
+Success criteria:
+- [criterion]
+Milestones:
+- [id] -- [name] -- [target] -- [definition of done]
+Open questions:
+- [question]
+Status: Ready for backlog / Blocked pending input
+```
+
+## `BACKLOG`
+
+Allowed only if:
+- a valid `INTAKE` output exists
+- goal, success criteria, and milestone set are recorded
+
+Unlocks `SPRINT` (or `TASK_PLAN` when SPRINT is skipped) only if the backlog is
+non-empty, every item is sized, ICE-scored, milestone-tagged, and split candidates
+are listed.
+
+```txt
+[PHASE: BACKLOG]
+
+# Backlog
+Milestone map:
+- [id] -- [name] -- [definition of done] -- [item ids]
+
+Items (sorted by ICE, highest first):
+- [id] -- [one-line description] -- [milestone] -- [size XS/S/M/L] -- [ICE I*C*E] -- [DoD]
+
+Split candidates (L size or multiple deliverables):
+- [id] -- [proposed split]
+
+Allowed next move:
+- Approve backlog
+- Adjust ICE scores
+- Split or merge items
+- Open sprint / Skip sprint, pull first task
+```
+
+## `SPRINT`
+
+Allowed only if:
+- a valid `BACKLOG` output exists
+- at least one selected item is approved or the smallest selection question has been asked
+
+Unlocks `TASK_PLAN` only if selected items are pulled by ICE priority and the
+sprint board shows one clear next task.
+
+```txt
+[PHASE: SPRINT]
+
+# Sprint Plan
+Sprint: [#] -- [duration] -- [sprint goal]
+Serves milestone: [id -- name]
+Selected items (by ICE priority):
+- [id] -- [description] -- [size] -- [ICE] -- [DoD]
+
+Board:
+- To do: [item ids]
+- In progress: [none]
+- Done: [none]
+
+Completion criteria:
+- [criterion]
+
+Allowed next move:
+- Approve sprint / Pull first task
+```
+
+## `TASK_PLAN`
+
+Allowed only if:
+- a valid `SPRINT` output exists (or a valid `BACKLOG` output when SPRINT is skipped)
+- the next task is unambiguous
+
+Unlocks `CHECKLIST` only if the task card contains target, size, ICE, milestone,
+and definition of done.
+
+```txt
+[PHASE: TASK_PLAN]
+
+# Task Card
+Task: [id] -- [one-line description]
+Target: [file/module or TBD]
+Scope:
+- In: [in scope]
+- Out: [out of scope]
+Size: [XS/S/M/L] -- [LOC band sanity check]
+ICE: [I*C*E]
+Milestone: [id]
+Definition of done:
+- [criterion]
+
+Allowed next move:
+- Approve task -> enter CHECKLIST
+- Pick different task
+```
+
 ## `CHECKLIST`
 
 Allowed only if:
