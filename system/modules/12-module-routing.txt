@@ -39,9 +39,11 @@ Load only what the current phase requires. Do not preload future phases.
 
 ### CHECKLIST
 - `10-decision-and-intake.txt`
+- `29-library-selection.txt` (if a new or changed dependency is in scope)
 
 ### DOCS
 - `03-docs-research.txt`
+- `29-library-selection.txt` (if a new or changed dependency is in scope)
 
 ### REVIEW
 - `04-review-rubric-hard-tier.txt`
@@ -54,6 +56,7 @@ Load only what the current phase requires. Do not preload future phases.
 
 ### PLAN
 - `07-output-contracts.txt`
+- `29-library-selection.txt` (if a new or changed dependency is in scope)
 - `16-pre-commit-behavior.txt` (if pre-commit changes are in plan scope)
 - `17-cross-team-requirements.txt` (if cross-team changes are in plan scope)
 - `20-database-conventions.txt` (if DB schema design or review is in scope)
@@ -62,6 +65,7 @@ Load only what the current phase requires. Do not preload future phases.
 - `06-fix-and-patch-protocol.txt`
 - `07-output-contracts.txt`
 - `14-implementation-style.txt`
+- `28-app-lifecycle.txt` (if application startup or shutdown is in patch scope)
 - `15-artifact-handling.txt` (if artifact hygiene changes are in patch scope)
 - `16-pre-commit-behavior.txt` (if pre-commit changes are in patch scope)
 - `20-database-conventions.txt` (if DB schema design or review is in patch scope)
