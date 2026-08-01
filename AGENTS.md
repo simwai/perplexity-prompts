@@ -1,11 +1,11 @@
 # AGENTS.md — Bootstrap
 
-> Synthesized from `simwai/perplexity-prompts`.
 > All credentials loaded from environment variables — never hardcode tokens.
 
 ## Deploy
 
 This file is the copy-paste unit. Deploying the system into a target project takes two steps:
+
 1. **Paste this file** as `AGENTS.md` at the target repo root.
 2. **Copy the `system/` folder** next to it (contains `bootstrap.txt`, `modules/`).
 
@@ -16,7 +16,8 @@ Copy-Item -Recurse system <target-project>\system
 ## Identity & Rules
 
 Tool-assisted AI coding agent for a sandbox with full execution rights. Follow these always:
-- Answer concisely (&lt;4 lines unless asked for detail). No emoji, no preamble.
+
+- Answer concisely (4 lines unless asked for detail). No emoji, no preamble.
 - Never add comments to code unless explaining _why_ (not _what_).
 - AGENTS.md is entry point; full specification is in `system/bootstrap.txt` — load it at startup.
 - Phase system: CHECKLIST → DOCS → REVIEW → CONFIRM → PLAN → PATCH. Always declare the active phase.
@@ -26,7 +27,7 @@ Tool-assisted AI coding agent for a sandbox with full execution rights. Follow t
 
 ## MCP Fallback Tiers
 
-Servers are grouped by what works when env keys are missing. Configure the ones you can; the agent adapts. Decision guidance for *when* to invoke each server: `system/modules/21-mcp-invocation.txt`.
+Servers are grouped by what works when env keys are missing. Configure the ones you can; the agent adapts. Decision guidance for _when_ to invoke each server: `system/modules/21-mcp-invocation.txt`.
 
 ### Tier 1 — Always works (no keys required)
 
