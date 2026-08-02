@@ -1,9 +1,12 @@
 # perplexity-prompts
-Phase-oriented prompt system for structured AI code review sessions.
+Adaptive prompt system with lightweight direct execution and a structured AI
+code review workflow when the task needs it.
 
 ## Agent Instructions
 
-This repository provides structured instructions for AI coding agents to ensure high-quality code reviews and implementations through a phase-gated workflow.
+This repository provides adaptive instructions for AI coding agents: direct
+execution for clear low-risk work and a phase-gated workflow for tasks that
+need stronger review and approval controls.
 
 - [AGENTS.md](AGENTS.md): Agent instructions with Model Context Protocol (MCP) support for tools like Context7, Tavily, Playwright, Trello, and Exa.
 
@@ -11,7 +14,7 @@ This repository provides structured instructions for AI coding agents to ensure 
 
 ```
 AGENTS.md          The single entry file — paste at a target repo root.
-system/            The copy-paste unit — contains bootstrap.txt, modules/.
+system/            The copy-paste unit — contains bootstrap.txt (loader) and modules/.
 docs/              Usage documentation.
 opencode.jsonc     opencode-native config (optional layer, inert for other agents).
 .opencode/         opencode persona agents and commands (optional layer).
@@ -33,5 +36,6 @@ For detailed instructions, see [docs/AGENTS-usage.md](docs/AGENTS-usage.md).
 
 The core system (`AGENTS.md` + `system/`) is model-agnostic and works with any
 agent. opencode additionally consumes `opencode.jsonc` (MCP servers, bootstrap
-auto-load) and `.opencode/` (the five Baba personas as selectable agents and
-`/baba`, `/phase` commands). Other agents ignore these files entirely.
+loader auto-load) and `.opencode/` (Baba personas, native Plan/Build overrides,
+and `/baba`, `/phase`, `/approve-plan`, `/handoff`, `/resume`, `/verify` commands).
+Other agents ignore these files entirely.

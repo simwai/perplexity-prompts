@@ -16,4 +16,4 @@ H10 -- Python type safety (Python only): missing type annotations on function si
 
 ## Usage
 - Apply all items to every chunk unless explicitly excluded in the checklist.
-- A confirmed H-tier violation blocks the PLAN phase until accepted or excluded with justification.
+- A confirmed H-tier violation blocks the PLAN phase until accepted or excluded with justification in the REVIEW decision section.

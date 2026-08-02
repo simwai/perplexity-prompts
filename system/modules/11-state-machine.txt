@@ -3,6 +3,9 @@
 
 Use this module to enforce phase-wise transitions and prevent mixed-phase outputs.
 
+Mode selection is handled by `30-execution-modes.txt` before phase transitions.
+`DIRECT` is an execution mode, not a state-machine phase.
+
 ## Phase set
 
 - `BLOCKED`
@@ -14,8 +17,9 @@ Use this module to enforce phase-wise transitions and prevent mixed-phase output
 - `DISCUSS`
 - `DOCS`
 - `REVIEW`
-- `CONFIRM`
+- `TEST_STRATEGY` (BabaTester only)
 - `PLAN`
+- `HANDOFF` (transition artifact)
 - `PATCH`
 - `FAILURE`
 
@@ -60,17 +64,32 @@ Use this module to enforce phase-wise transitions and prevent mixed-phase output
 - `DOCS -> REVIEW`
   - Allowed only if: docs evidence records the dependency name, version or unresolved-version note, official URL, and review-impact note.
 
-- `REVIEW -> CONFIRM`
-  - Allowed only if: findings include chunk label, criterion IDs for violations, open questions, and likely passes.
-
-- `CONFIRM -> REVIEW`
+- `REVIEW -> REVIEW`
   - Allowed only if: user explicitly requests another chunk before confirming review completion.
 
-- `CONFIRM -> PLAN`
-  - Allowed only if: accepted violations list exists, disputed violations list exists, and preservation constraints list exists.
+- `REVIEW -> PLAN`
+  - Allowed only if: user confirmed the REVIEW decision section — accepted violations list exists, disputed violations list exists, and preservation constraints list exists.
+
+- `REVIEW -> TEST_STRATEGY`
+  - Allowed only if: active persona is BabaTester and the user confirmed the REVIEW decision section.
+
+- `TEST_STRATEGY -> HANDOFF`
+  - Allowed only if: TEST_STRATEGY output is complete and the receiving persona is identified.
 
 - `PLAN -> PATCH`
   - !!! Allowed only if: user approval is explicit and rewrite contract is complete.
+
+- `PLAN -> HANDOFF`
+  - Allowed only if: active persona is BabaSensei and plan approval is explicit.
+
+- `TASK_PLAN -> HANDOFF`
+  - Allowed only if: active persona is BabaScrumMaster and task card is approved.
+
+- `HANDOFF -> CHECKLIST`
+  - Allowed only if: receiving persona validates the handoff contract and enters CHECKLIST.
+
+- `HANDOFF -> PLAN`
+  - Allowed only if: receiving persona is BabaDev and the handoff includes an approved plan.
 
 - `PATCH -> FAILURE`
   - Allowed only if: repeated breach occurs during patch generation after one recovery attempt.
@@ -94,7 +113,8 @@ Use this module to enforce phase-wise transitions and prevent mixed-phase output
 
 - !!! No review before checklist.
 - !!! No docs-dependent judgment before docs evidence.
-- !!! No plan before confirmation.
+- !!! No plan before user-confirmed REVIEW decision.
+- !!! No standalone CONFIRM phase — confirmation lives inside REVIEW.
 - !!! No patch before approved plan.
 - !!! No patch before complete rewrite contract.
 - !!! No mixed-phase response.
@@ -116,6 +136,9 @@ Use this module to enforce phase-wise transitions and prevent mixed-phase output
 
 !!! Use a visible phase marker at the top of every response:
 `[PHASE: <phase>]`
+
+This header rule applies only in `STRUCTURED` mode. Direct responses use
+`[MODE: DIRECT]`.
 
 Do not emit step-wise headers.
 Only emit the current phase marker and the corresponding phase template.

@@ -16,6 +16,16 @@ Use this module in any multi-persona session or whenever a mid-session mode swit
 
 Always at repo root: `SESSION_STATE.md`
 
+## Initialization
+
+When `SESSION_STATE.md` is first required (phase transition, DISCUSS entry,
+persona switch, or mode switch) and does not yet exist:
+
+1. Create it from the template below with all fields set to their default values.
+2. Verify that `.gitignore` contains `SESSION_STATE.md`. If not, append it and
+   note the addition in the session log.
+3. Do not commit `SESSION_STATE.md`. It is a temporary working artifact.
+
 ## Write rules
 
 The active persona writes or overwrites `SESSION_STATE.md` at every:
@@ -43,6 +53,9 @@ active_persona: <persona name>
 current_phase: <phase>
 prior_phase: <phase or NONE>
 planning_mode: <direct|full|NONE>
+execution_mode: <AUTO|DIRECT|STRUCTURED>
+mode_reason: <short reason>
+mode_override: <auto|direct|structured|NONE>
 session_start: <ISO timestamp or UNKNOWN>
 last_updated: <ISO timestamp>
 
@@ -77,7 +90,7 @@ milestone: <id or NONE>
 definition_of_done: []
 
 ## Findings
-<!-- Accepted violations carried forward from REVIEW/CONFIRM -->
+<!-- Accepted violations carried forward from REVIEW decision -->
 - <criterion_id>: <summary> [tier: hard|soft] ([confidence]%)
 
 ## Open Questions
@@ -92,12 +105,32 @@ definition_of_done: []
 <!-- Items explicitly promoted by user from DISCUSS phase -->
 - <item> [from:DISCUSS]
 
+## Review Decision
+<!-- Filled when user confirms the REVIEW decision section -->
+status: pending|confirmed|disputed
+accepted_violations: []
+disputed_violations: []
+confirmed_at: <ISO timestamp or NONE>
+
+## Plan Approval
+<!-- Filled when user explicitly approves PLAN -->
+status: pending|approved|rejected
+approved_at: <ISO timestamp or NONE>
+approved_plan_summary: <NONE or short summary>
+
 ## Rewrite Contract
 <!-- Filled during PLAN phase -->
 target: <NONE or path>
 must_preserve: []
 must_eliminate: []
 forbidden_in_patch: []
+
+## Verification
+<!-- Filled during/after PATCH -->
+diff_inspected: false
+checks_run: []
+results: NONE|PASS|FAIL|SKIPPED
+notes: []
 
 ## Persona Switch Log
 <!-- Append only — never delete entries -->

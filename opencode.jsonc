@@ -4,9 +4,15 @@
   // remain the portable copy-paste unit. This file only affects opencode.
   "$schema": "https://opencode.ai/config.json",
 
-  // Guarantees bootstrap.txt is in every opencode session without relying on
-  // the model choosing to read it. Mirrors the AGENTS.md startup instruction.
+  // Guarantees the module loader is in every opencode session without relying
+  // on the model choosing to read it. Mirrors the AGENTS.md startup instruction.
+  // bootstrap.txt is a loader only; canonical rules live in system/modules/.
   "instructions": ["AGENTS.md", "system/bootstrap.txt"],
+
+  // Prefer BabaDev-aligned Build by default. Plan is available via Tab /
+  // switch_agent and is overridden by .opencode/agents/plan.md.
+  // Markdown agents under .opencode/agents/ also override native plan/build.
+  "default_agent": "build",
 
   // MCP servers mirror the fallback tiers in AGENTS.md, adapted to opencode's
   // schema. Note: opencode interpolates {env:VAR}, NOT ${VAR}.

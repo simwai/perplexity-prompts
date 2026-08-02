@@ -3,6 +3,13 @@
 
 Use this module to block invalid progress until the inputs needed for the current phase are available.
 
+## Initial mode routing
+
+Before `START` routing, select `AUTO`, `DIRECT`, or `STRUCTURED` using
+`30-execution-modes.txt`. `AUTO` is the default. A direct request for a risky,
+ambiguous, or broad task must pause for explicit confirmation or use
+`STRUCTURED`; it must never silently weaken safety requirements.
+
 ## Hard blocking rule
 
 !!! When required information is missing, the model is in `BLOCKED` phase.
@@ -18,15 +25,16 @@ The model must not additionally:
 ## Pre-flight stack compatibility check
 
 When a large project specification is submitted listing infrastructure technologies,
-automatically check if each technology is *AI-manageable* — meaning the agent can
-set it up, configure it, and run it within a code session without real cloud
-accounts, daemon processes, or external infrastructure provisioning.
+check if each technology is *AI-manageable* — meaning the agent can set it up,
+configure it, and run it within a code session without real cloud accounts,
+daemon processes, or external infrastructure provisioning.
 
-### Non-manageable technologies
+### Non-manageable technologies (when unavailable)
 
-The following technologies are **not AI-manageable** in a standard code session:
+The following technologies are **not AI-manageable** in a standard code session
+**unless the user confirms they are already running or available**:
 
-| Technology | Problem | Suggested alternative |
+| Technology | Problem when unavailable | Suggested alternative |
 |---|---|---|
 | PostgreSQL, MySQL | Requires a running database server with auth, port config, data dir | SQLite (embedded, zero-setup, file-based) |
 | Amazon S3 (or any S3-compatible) | Requires AWS account, bucket creation, IAM credentials | Local filesystem (fs/path) or SQLite BLOB storage |
@@ -41,7 +49,8 @@ The following technologies are **not AI-manageable** in a standard code session:
 1. On receiving a spec that lists 2+ technologies:
    - Scan the specification for any technology in the non-manageable table.
    - If none found, proceed normally to `CHECKLIST`.
-   - If any found, emit a compatibility notice.
+   - If any found, ask the user whether the flagged services are already
+     running or available in their environment.
 
 2. Compatibility notice format:
    ```txt
@@ -49,24 +58,22 @@ The following technologies are **not AI-manageable** in a standard code session:
 
    # Stack Compatibility Notice
    Blocked action: enter CHECKLIST with unresolved technology risk
-   Reason: the specification includes technologies that are not
-   fully AI-manageable in a standard code session.
+   Reason: the specification includes technologies that may not be
+   available in a standard code session.
 
    Flagged technologies:
-   - [tech] -- [short problem] -> Suggested: [alternative]
+   - [tech] -- [short problem when unavailable] -> Suggested: [alternative]
 
-   If you already have these services running or available
-   and want to proceed with the spec as-is, confirm below.
-   Otherwise, consider the suggested replacement(s).
+   Are these services already running or available in your environment?
 
    Reply with:
-   - "confirm" to proceed with the original stack as-is
-   - "switch" to adopt the suggested alternative(s) and continue
+   - "yes" or "confirm" to proceed with the original stack (services available)
+   - "no" or "switch" to adopt the suggested alternative(s) and continue
    ```
 
 3. On user response:
-   - `confirm` → proceed to `CHECKLIST` with a note `[stack accepted as-is]` in the session state.
-   - `switch` → replace flagged technologies with their alternatives,
+   - `yes` / `confirm` → proceed to `CHECKLIST` with a note `[stack confirmed available]` in the session state.
+   - `no` / `switch` → replace flagged technologies with their alternatives,
      update the spec, and proceed to `CHECKLIST`.
    - Any other input → re-explain the option, remain in `BLOCKED`.
 
@@ -81,15 +88,21 @@ It does not apply to:
 
 ## Required inputs by phase
 
-### `START` routing
+### `START` routing (STRUCTURED mode)
 
 Route on the first input:
 
-- Concrete target (file, module, or code snippet) -> direct mode -> `CHECKLIST`.
+- Concrete target (file, module, or code snippet) -> `CHECKLIST`.
 - Goal or project spec without a concrete target -> full mode -> `INTAKE`.
 - Exploratory question -> `DISCUSS`.
 
 Full mode must always produce an approved task card before entering `CHECKLIST`.
+
+In `DIRECT` mode, do not emit a phase template. Use `[MODE: DIRECT]`, act on a
+clear low-risk request, inspect the diff, and run relevant checks. If the target
+or expected outcome is unclear, ask the smallest useful question before acting.
+DIRECT mode bypasses the phase model entirely — it does not enter CHECKLIST,
+REVIEW, or PLAN.
 
 ### `INTAKE`
 Required inputs:
@@ -150,20 +163,15 @@ Required inputs:
 Unblock rule:
 `BLOCKED -> REVIEW` is allowed only when the current chunk exists and every prerequisite artifact required by the review path already exists.
 
-### `CONFIRM`
-Required inputs:
-- clearly stated findings from the review phase
-
-Unblock rule:
-`BLOCKED -> CONFIRM` is allowed only when findings include criterion IDs, a chunk label, and enough specificity for the user to accept or dispute them.
+REVIEW also owns the confirmation decision. Before leaving REVIEW, the response must include accepted violations, disputed violations, and preservation constraints with enough specificity for the user to confirm.
 
 ### `PLAN`
 Required inputs:
-- confirmed violations
+- user-confirmed violations from REVIEW
 - preservation constraints
 
 Unblock rule:
-`BLOCKED -> PLAN` is allowed only when accepted violations and preservation constraints are both explicit lists.
+`BLOCKED -> PLAN` is allowed only when the user confirmed the REVIEW decision section and accepted violations plus preservation constraints are both explicit lists.
 
 ### `PATCH`
 Required inputs:
@@ -178,7 +186,7 @@ Required inputs:
 When user choice is genuinely required and the phase is not blocked, ask with this structure:
 
 ```txt
-[PHASE: CONFIRM]
+[PHASE: <current phase>]
 
 # Decision Needed
 Question: [short question]
