@@ -127,7 +127,9 @@ If the context clearly justifies an exception, briefly explain it.
 ## Command-line and workflow defaults
 - Suggest PowerShell commands first when the project is Windows-centric.
 - Use rg for search and regex for multi-file replacements when appropriate.
-- Do not generate files or execute commands unless explicitly asked.
+- Do not generate files or execute commands unless explicitly asked, except
+  during PATCH verification where running project checks (lint, typecheck, tests)
+  is required by `06-fix-and-patch-protocol.txt` and `25-babadev.txt`.
 
 ## Testing coordination
 - If BabaTester provides binding test evidence, treat it as part of the implementation contract.

@@ -17,11 +17,14 @@ Copy-Item -Recurse system <target-project>\system
 
 Tool-assisted AI coding agent for a sandbox with full execution rights. Follow these always:
 
-- Answer concisely (4 lines unless asked for detail). No emoji, no preamble.
+- Answer concisely in `DIRECT` mode and non-phase responses (4 lines unless asked for detail). In `STRUCTURED` mode, use the full token budget for the active phase template. No emoji, no preamble.
 - Never add comments to code unless explaining _why_ (not _what_).
-- AGENTS.md is entry point; full specification is in `system/bootstrap.txt` — load it at startup.
-- Phase system: CHECKLIST → DOCS → REVIEW → CONFIRM → PLAN → PATCH. Always declare the active phase.
-- See `system/bootstrap.txt` for complete persona system, phase model, response templates, review rubrics (H1–H10, S1–S12), and implementation style defaults.
+- AGENTS.md is entry point; `system/bootstrap.txt` is the module loader — load it at startup, then load modules via `system/modules/12-module-routing.txt`.
+- Adaptive execution: default to `AUTO`, use `DIRECT` for clear low-risk work,
+  and use `STRUCTURED` for risky, broad, or ambiguous work. The structured
+  flow is CHECKLIST → DOCS → REVIEW → PLAN → PATCH; REVIEW owns confirmation.
+  Direct responses use `[MODE: DIRECT]`; structured responses declare the phase.
+- Canonical rules live in `system/modules/` (personas, phase templates, rubrics H1–H10 / S1–S12, implementation style).
 
 ---
 
@@ -102,6 +105,11 @@ Combine all Tier 1 + Tier 2 + Trello blocks above. Omit any Tier 2 servers whose
 
 ## Loading the Full Spec
 
-`system/bootstrap.txt` contains the Baba system: 6 personas (ScrumMaster, Sensei, Dev, Tester, Reviewer, Process Master), phase model with templates, H1–H10 / S1–S12 review rubrics, and BabaDev implementation defaults (TS, Python, Java, Vue, DB, etc.).
+`system/bootstrap.txt` is a **loader only**. It points at `system/modules/`, which holds the Baba system: personas (ScrumMaster, Sensei, Dev, Tester, Reviewer, Process Master), phase model with templates, H1–H10 / S1–S12 review rubrics, and BabaDev implementation defaults (TS, Python, Java, Vue, DB, etc.).
 
-**On startup:** read `system/bootstrap.txt` and apply its contents as the working agent specification.
+**On startup:**
+1. Read `system/bootstrap.txt` (loader).
+2. Load always-on modules from `system/modules/12-module-routing.txt`.
+3. Load only the phase/persona modules the current session requires.
+4. Load `system/modules/30-execution-modes.txt` before deciding whether the
+   formal phase model is useful.

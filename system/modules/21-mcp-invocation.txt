@@ -18,7 +18,8 @@ Use this module in every phase, every persona. Tool selection is a per-response 
 - `DOCS`: `context7` primary (official source, exact version); `tavily`/`exa`/`curl` for discovery. MCP output is evidence input only — the DOCS template fields (name, version, URL, changelog window) must still be recorded per module 03.
 - `REVIEW`: `playwright` when the target is a web app needing live UI checks; `trello` when review scope references tracked work.
 - `TEST_STRATEGY`: `playwright` for e2e/UI exploration and verification.
-- `CONFIRM` / `PLAN` / `PATCH`: `trello` for tracked-task status updates; `playwright` for verification; otherwise built-in tools.
+- `PLAN` / `PATCH`: `trello` for tracked-task status updates; `playwright` for verification; otherwise built-in tools.
+- `REVIEW`: decision lives in this phase; no separate CONFIRM MCP pairing.
 - `DISCUSS`: MCP allowed for exploration, but never emits findings without explicit user promotion (module 18).
 
 ## No-go rules

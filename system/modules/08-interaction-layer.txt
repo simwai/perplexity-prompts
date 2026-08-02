@@ -1,13 +1,13 @@
 # Interaction Layer
 
-Use this module during CONFIRM and PLAN phases to structure user decisions.
+Use this module during REVIEW and PLAN phases to structure user decisions.
 
 ## Decision format
 
-When a user decision is required, use this structure:
+When a user decision is required inside the active phase, keep the current phase header and use this structure:
 
 ```txt
-[PHASE: CONFIRM]
+[PHASE: <current phase>]
 
 # Decision Needed
 Question: [short question]
@@ -31,4 +31,5 @@ Reply with: A, B, C, or a custom answer.
 - State a recommendation.
 - Keep pros and cons to one line each.
 - Never ask two decisions in one response.
+- Never invent a standalone CONFIRM phase — confirmation lives in REVIEW.
 - If the answer changes the plan scope, return to PLAN before proceeding.

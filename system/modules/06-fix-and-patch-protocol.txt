@@ -26,3 +26,10 @@ Use this module during the PATCH phase.
 - For each must-eliminate item: PASS or FAIL.
 - For each forbidden token: PASS or FAIL.
 - !!! If any audit item is FAIL, do not emit the patch. Return to PLAN phase.
+
+## Verification gate
+- !!! After a successful compliance audit, inspect the resulting diff.
+- Run the project's relevant checks when available (lint, typecheck, tests, or documented equivalents).
+- Do not invent commands. If none exist, record SKIPPED with reason.
+- Write verification results to the PATCH template and `SESSION_STATE.md`.
+- If a required check fails, report FAIL and return to PLAN unless the failure is outside scope and explicitly accepted.

@@ -110,8 +110,8 @@ The supported sequence is:
 
 ```
 BabaScrumMaster  → INTAKE → BACKLOG → SPRINT → TASK_PLAN → HANDOFF   (optional, full mode only)
-BabaSensei       → CHECKLIST → DOCS → REVIEW → CONFIRM → PLAN → HANDOFF
-BabaTester       → CHECKLIST → DOCS → REVIEW → CONFIRM → TEST_STRATEGY → HANDOFF
+BabaSensei       → CHECKLIST → DOCS → REVIEW → PLAN → HANDOFF
+BabaTester       → CHECKLIST → DOCS → REVIEW → TEST_STRATEGY → HANDOFF
 BabaDev  → PLAN (from HANDOFF) → PATCH
 ```
 

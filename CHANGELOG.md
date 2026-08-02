@@ -8,6 +8,13 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- `modules/30-execution-modes.txt` — adaptive `AUTO`, `DIRECT`, and `STRUCTURED` routing with explicit low-risk direct execution and safety-preserving verification.
+- OpenCode `/direct`, `/structured`, and `/auto` commands for overriding adaptive mode selection.
+- `modules/00-persona-system.txt` — always-loaded persona overview and recommended session flow (content moved out of bootstrap).
+- OpenCode native Plan/Build overrides: `.opencode/agents/plan.md` (BabaSensei, read-only) and `.opencode/agents/build.md` (BabaDev, approval-gated).
+- OpenCode commands: `/approve-plan`, `/handoff`, `/resume`, `/verify` under `.opencode/commands/`.
+- `SESSION_STATE.md` fields for review decision, plan approval, and verification results.
+- BabaDev PATCH verification gate: inspect diff, run relevant project checks when available, record results.
 - `modules/28-app-lifecycle.txt` — startup validation, fail-fast configuration errors, and bounded graceful shutdown guidance.
 - `modules/29-library-selection.txt` — value density, maintenance, security, type safety, dependency footprint, migration, and distribution-aware license selection criteria.
 - Restructured into a one-file + one-folder deployable layout: `bootstrap.txt`, `modules/`, and `personas/` moved under `system/`; `AGENTS.md` is now a slim entry pointer with a Deploy section. `README.md`, `docs/AGENTS-usage.md`, and `.pre-commit-config.yaml` updated to the new paths.
@@ -39,6 +46,11 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 - `bootstrap.txt` — command-line and workflow defaults note the `.gitattributes` LF preference, cross-referencing module 15.
 
 ### Changed
+- `system/bootstrap.txt` is now a **module loader only**; canonical rules live in `system/modules/`.
+- Removed standalone `CONFIRM` phase. Core flow is `CHECKLIST -> DOCS -> REVIEW -> PLAN -> PATCH`. REVIEW owns the confirmation decision section.
+- OpenCode discovery paths moved to documented plurals: `.opencode/agents/` and `.opencode/commands/`.
+- Read-only Baba agents now deny both `edit` and `bash`.
+- `opencode.jsonc` sets `default_agent: "build"` and continues auto-loading `AGENTS.md` + loader.
 - `modules/12-module-routing.txt` and `modules/13-persona-handoff-contract.txt` — stale `GuidedSeniorDev` references aligned to `BabaDev`.
 - `docs/AGENTS-usage.md` — added BabaScrumMaster to the Persona Reference table and the optional upstream pipeline to the Phase Flow.
 - `AGENTS.md`, `system/`, and all shared modules remain portable and model-agnostic; the opencode layer adds no dependencies for other agents.

@@ -8,7 +8,7 @@ A protocol breach has occurred when:
 - a response contains content from more than one phase
 - !!! a patch is emitted without an approved plan
 - !!! a patch is emitted without a complete rewrite contract
-- the phase header is missing
+- the phase header is missing (in `STRUCTURED` mode only; `DIRECT` mode uses `[MODE: DIRECT]`)
 - a later-phase action is taken in response to a user request without phase transition
 - review findings are emitted without a checklist artifact
 - docs-dependent judgment is emitted without docs evidence

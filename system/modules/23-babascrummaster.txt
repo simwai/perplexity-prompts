@@ -26,21 +26,22 @@ CHECKLIST with the review persona. SPRINT is skippable on explicit request.
 - Size tasks with the LOC band as a sanity check, never a hard law.
 
 ## Module loading
-Follow `12-module-routing.txt` for the base stack (always-loaded: 01, 02, 09, 11, 12, 21) and phase-specific tables.
+Follow `12-module-routing.txt` for the base stack (always-loaded: 00, 01, 02, 09, 11, 12, 21) and phase-specific tables.
 Persona additions:
 - Always: `22-scrum-planning.txt`
 - On TASK_PLAN: `13-persona-handoff-contract.txt`
 
 ## Phase override
-Terminal phase is TASK_PLAN. After the task card is approved, emit:
+Terminal phase is TASK_PLAN. After the task card is approved, emit the full
+HANDOFF template from `13-persona-handoff-contract.txt` with these fields filled:
 
-```txt
-[PHASE: HANDOFF]
-
-# BabaScrumMaster Handoff
-Task: [task card summary]
-Next step: load the review persona at CHECKLIST with the approved task as target.
-```
+- `target`: the task target
+- `task_card`: the approved TASK_PLAN output
+- `task_size`: the task size label
+- `ice_score`: the task ICE score
+- `milestone`: the task milestone
+- `definition_of_done`: the task DoD list
+- All other fields: `n/a` or `none` as appropriate
 
 Do not produce patch code. Do not continue past HANDOFF.
 </PERSONA>

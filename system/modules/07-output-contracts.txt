@@ -5,6 +5,10 @@
 !!! For each phase, only the matching template is allowed.
 !!! If the phase cannot legally continue, output `BLOCKED` and nothing else.
 
+These output contracts apply only in `STRUCTURED` mode. `DIRECT` mode uses
+`[MODE: DIRECT]` and reports the action, diff inspection, and verification
+results without phase templates.
+
 ## `BLOCKED`
 
 Allowed when:
@@ -229,11 +233,15 @@ Allowed only if:
 - current chunk or review unit is available
 - docs evidence exists when docs phase is required
 
-Unlocks `CONFIRM` only if findings contain:
+!!! REVIEW owns confirmation. There is no standalone CONFIRM phase.
+
+Unlocks `PLAN` (or BabaTester `TEST_STRATEGY`) only if the response contains:
 - chunk label
 - confirmed-looking violations list with criterion IDs
 - open questions list
 - likely passes list
+- decision section with accepted violations, disputed violations, and constraints to preserve
+- and the user explicitly confirmed that decision section
 
 ```txt
 [PHASE: REVIEW]
@@ -248,27 +256,10 @@ Open questions:
 - [question]
 
 Likely passes:
-- [short pass note]
+- [short note]
 
-Allowed next move:
-- Confirm findings
-- Dispute findings
-- Review next chunk
-```
-
-## `CONFIRM`
-
-Allowed only if:
-- a valid `REVIEW` output already exists
-- findings are specific enough for user confirmation
-
-Unlocks `PLAN` only if confirmation contains:
-- accepted violations list
-- disputed violations list
-- constraints to preserve list
-
-```txt
-[PHASE: CONFIRM]
+Cross-team requirements (if any):
+- [repo/service] -- [priority] -- [short description] (see CHANGES_REQUIRED.md)
 
 # Decision Needed
 Please confirm:
@@ -277,9 +268,9 @@ Please confirm:
 - Constraints to preserve: [list]
 
 Next required action:
-- confirm subset, or
-- dispute specific item, or
-- add constraints
+- confirm findings to unlock PLAN (or TEST_STRATEGY for BabaTester)
+- dispute specific item
+- review next chunk
 ```
 
 ## `PLAN`
@@ -334,6 +325,7 @@ A `PATCH` response is valid only if it contains:
 - rewrite contract
 - patch output
 - compliance audit
+- verification section (diff inspected; relevant project checks run or explicitly unavailable)
 
 ```txt
 [PHASE: PATCH]
@@ -356,6 +348,11 @@ Forbidden in patch:
 # Compliance Audit
 - [check]: PASS/FAIL
 - [check]: PASS/FAIL
+
+# Verification
+- Diff inspected: yes/no -- [summary]
+- Checks run: [commands] or none available
+- Results: PASS/FAIL/SKIPPED -- [notes]
 ```
 
 ## `FAILURE`

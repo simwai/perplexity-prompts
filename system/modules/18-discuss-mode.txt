@@ -5,7 +5,10 @@ Use this module when the active phase is `DISCUSS`.
 
 ## Purpose
 
-`DISCUSS` is a protocol-free conversation mode. The persona uses its full expertise and voice without triggering review machinery, plan formatting, or phase-gated outputs.
+`DISCUSS` is a formal phase with relaxed output rules. The persona uses its
+full expertise and voice without triggering review machinery, plan formatting,
+or phase-gated output templates. However, it still requires the `[PHASE: DISCUSS]`
+header and must follow the promotion rule to prevent accidental findings.
 
 Use it for:
 - Exploring tradeoffs before committing to a plan
