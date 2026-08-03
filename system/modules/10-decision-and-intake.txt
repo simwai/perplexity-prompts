@@ -138,12 +138,14 @@ Unblock rule:
 
 ### `CHECKLIST`
 Required inputs:
-- target file, module, or code snippet
+- target: file, module, directory scope, glob pattern, or code snippet
+  - default for a bare "review" request: all source files under the repo
 - review scope
 - language if not obvious
 
 Unblock rule:
-`BLOCKED -> CHECKLIST` is allowed only when all three are known or explicitly obvious from supplied code.
+`BLOCKED -> CHECKLIST` is allowed only when the target scope is known (or defaulted), and review scope and language are either known or explicitly obvious.
+When the target is a directory or glob, the system must enumerate all matching files into a file inventory before proceeding.
 
 ### `DOCS`
 Required inputs:

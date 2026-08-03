@@ -157,25 +157,31 @@ Allowed next move:
 ## `CHECKLIST`
 
 Allowed only if:
-- target file, module, or snippet is known
+- target scope is known (file, module, directory, glob, or defaulted to all source files)
 - review scope is known
 - language is known or obvious from the code
 
 Unlocks next phase only if checklist artifact exists with:
-- target
+- target scope description
+- file inventory (all matching files enumerated with LOC and status)
 - focus
 - docs log section
 - hard-tier section
 - soft-tier section
-- chunk log
+- batch log
 - pending verdict
 
 ```txt
 [PHASE: CHECKLIST]
 
 # Review Session Checklist
-Target: [file or module name]
+Target scope: [scope description, e.g. "src/" or "all .ts files"]
 Focus: [what to look for]
+
+File inventory:
+- [ ] [file path] -- [LOC] -- pending
+- [ ] [file path] -- [LOC] -- pending (large, will chunk)
+(status: pending | reviewing | complete)
 
 Pre-review docs log:
 - [ ] Library / version / URL recorded
@@ -188,7 +194,7 @@ Hard tier:
 Soft tier:
 - [ ] S1 - [ ] S12
 
-Chunk log:
+Batch log:
 (empty -- to be filled)
 
 Verdict: Pending
@@ -229,25 +235,31 @@ Status:
 ## `REVIEW`
 
 Allowed only if:
-- checklist artifact exists
-- current chunk or review unit is available
+- checklist artifact with file inventory exists
+- current file and batch are available (first file, first batch if starting fresh)
 - docs evidence exists when docs phase is required
 
 !!! REVIEW owns confirmation. There is no standalone CONFIRM phase.
 
 Unlocks `PLAN` (or BabaTester `TEST_STRATEGY`) only if the response contains:
-- chunk label
+- file and batch label
 - confirmed-looking violations list with criterion IDs
 - open questions list
 - likely passes list
 - decision section with accepted violations, disputed violations, and constraints to preserve
 - and the user explicitly confirmed that decision section
 
+Each REVIEW response covers one batch from one file. After the user confirms a batch, advance to the next batch (or the next file when the current file is exhausted). When all files are reviewed, aggregate all confirmed violations and present them before transitioning to PLAN.
+
 ```txt
 [PHASE: REVIEW]
 
+# Multi-file progress
+Reviewed: [X/Y] files -- [Z] batches complete
+
 # Findings
-Chunk: [chunk label]
+File: [file path]
+Batch: [lines X-Y or FULL] ([N] of [M] for this file)
 
 Confirmed-looking violations:
 - [criterion id] -- [line/range] -- [one-sentence failure] ([confidence]%)
@@ -267,10 +279,8 @@ Please confirm:
 - Disputed violations: [list]
 - Constraints to preserve: [list]
 
-Next required action:
-- confirm findings to unlock PLAN (or TEST_STRATEGY for BabaTester)
-- dispute specific item
-- review next chunk
+Next batch:
+- [file path] -- [lines X-Y or FULL] -- [next batch, or "all files complete — aggregate violations and proceed to PLAN"]
 ```
 
 ## `PLAN`
