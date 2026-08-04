@@ -2,6 +2,39 @@
 
 Use this module in every phase, every persona. Tool selection is a per-response decision: built-in tools first, MCP only to fill an evidence gap.
 
+## Mandatory session setup and preflight
+
+Before the first invocation of any MCP server in a session, inspect whether that
+server is configured for the current environment. If it is not configured, set
+it up in the current session before checking readiness. Do not invoke the
+server's task operation before setup and verification complete.
+
+- For a local server, inspect its configured command, package/runtime, and
+  required environment. Automatically install a declared dependency, create a
+  missing non-secret local config, and start the server when those steps are
+  safe and deterministic. Then use a harmless health, metadata, or list
+  operation if the server exposes one.
+- For a remote server, verify that the connection is available and required
+  authentication is accepted. Complete non-interactive setup automatically;
+  pause only when an API key, OAuth consent, account action, or other user
+  authorization is required. Never invent credentials or send task data during
+  setup.
+- If setup requires a project-file change, make it only when the server's
+  documented configuration and target are unambiguous; otherwise report the
+  exact missing setup step and ask for confirmation.
+- Record one result per server in the session's MCP preflight ledger as
+  `ready`, `unavailable`, or `not_checked`.
+- A successful preflight is valid for the rest of the session. Do not repeat it
+  for every call unless the server fails, its configuration changes, or the
+  session changes environment.
+- If setup or the preflight fails, do not make the requested MCP call. Apply the
+  fallback ladder below and record the failure; never treat an untested server
+  as ready.
+
+When `SESSION_STATE.md` is active, persist the setup and verification evidence
+in its `MCP Preflight` section. Otherwise keep the ledger in session context and
+report the setup and preflight result when MCP is used.
+
 ## Signal -> tool matrix
 
 | Signal | Tool | Setup |
@@ -39,6 +72,6 @@ curl -s "https://www.google.com/search?q=<url-encoded-query>"
 
 ## Fallback ladder
 
-1. MCP unavailable (server missing, key absent, OAuth declined) -> fall back, do not stall.
+1. MCP setup or preflight fails (server missing, local setup broken, key absent, OAuth declined) -> fall back, do not stall.
 2. `curl` to the official source URL or direct web search (above).
 3. If evidence still cannot be verified -> `BLOCKED` / explicit unresolved-version note per module 03. Never guess a version or URL from memory.

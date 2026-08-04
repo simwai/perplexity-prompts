@@ -132,6 +132,10 @@ checks_run: []
 results: NONE|PASS|FAIL|SKIPPED
 notes: []
 
+## MCP Preflight
+<!-- One setup/readiness result per MCP server for this session; do not repeat successful checks. -->
+- <server>: <ready|unavailable|not_checked> -- <short evidence> -- checked_at: <ISO timestamp>
+
 ## Persona Switch Log
 <!-- Append only — never delete entries -->
 - <ISO timestamp>: <from_persona> -> <to_persona> at phase <phase>
