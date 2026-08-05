@@ -29,7 +29,7 @@ A protocol breach has occurred when:
 ## Post-failure rule
 
 !!! After FAILURE:
-- Do not continue the session.
-- Do not produce any new review, plan, or patch output.
-- Emit only the FAILURE template.
-- Instruct the user on which modules to reload to restart.
+- Do not continue until the user explicitly requests a retry.
+- Emit only the FAILURE template while waiting for that retry request.
+- On an explicit retry, resume from the recorded last valid phase.
+- Do not require a module reload or force a `BLOCKED` phase to retry.

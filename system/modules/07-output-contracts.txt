@@ -375,17 +375,15 @@ Must contain:
 - reason
 - last valid phase
 - failed phase
-- restart modules
+- retry instruction
 
 ```txt
 [PHASE: FAILURE]
 
 # Protocol Failure
-Status: Session terminated.
+Status: Awaiting explicit retry.
 Reason: [brief repeated breach]
 Last valid phase: [phase]
 Failed phase: [phase]
-Required module(s) to restart with:
-- [module]
-- [module]
+Retry: Reply with "retry" to resume at the last valid phase.
 ```
