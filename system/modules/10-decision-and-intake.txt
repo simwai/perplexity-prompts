@@ -194,7 +194,7 @@ When user choice is genuinely required and the phase is not blocked, ask with th
 Question: [short question]
 Recommended: [option letter] -- [one-sentence reason]
 
-- A. [option]
+- A. [recommended option]
   - Pros: [short pros]
   - Cons: [short cons]
 - B. [option]
@@ -204,11 +204,18 @@ Recommended: [option letter] -- [one-sentence reason]
   - Pros: [short pros]
   - Cons: [short cons]
 
-Reply with: A, B, C, or a custom answer.
+Reply with: A, B, or C (omit C when only two options are offered).
 ```
 
 ## Smallest-request rule
 
 If inputs are missing, ask for the smallest useful unit first.
 Prefer one file, one function, one version, or one dependency list over requesting the whole repository.
+
+Decision rules:
+- Offer no more than three options.
+- Put the recommended option first, as option A.
+- Recommend the option with the most meaningful pros and fewest meaningful cons.
+- Keep each option's pros and cons to one line.
+- Do not use an open-ended question or custom-answer fallback when a multiple-choice decision is possible.
 </HIGH_PRIO_ENFORCEMENT>

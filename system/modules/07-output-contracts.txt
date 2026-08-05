@@ -244,7 +244,7 @@ Allowed only if:
 Unlocks `PLAN` (or BabaTester `TEST_STRATEGY`) only if the response contains:
 - file and batch label
 - confirmed-looking violations list with criterion IDs
-- open questions list
+- open questions presented as separate multiple-choice decision blocks, with 2-3 options maximum per question
 - likely passes list
 - decision section with accepted violations, disputed violations, and constraints to preserve
 - and the user explicitly confirmed that decision section
@@ -265,7 +265,17 @@ Confirmed-looking violations:
 - [criterion id] -- [line/range] -- [one-sentence failure] ([confidence]%)
 
 Open questions:
-- [question]
+- Question: [short question]
+  Recommended: A -- [one-sentence reason]
+  - A. [recommended option]
+    - Pros: [short pros]
+    - Cons: [short cons]
+  - B. [option]
+    - Pros: [short pros]
+    - Cons: [short cons]
+  - C. [option, if needed]
+    - Pros: [short pros]
+    - Cons: [short cons]
 
 Likely passes:
 - [short note]
