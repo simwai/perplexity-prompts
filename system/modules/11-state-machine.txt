@@ -94,6 +94,9 @@ Mode selection is handled by `30-execution-modes.txt` before phase transitions.
 - `PATCH -> FAILURE`
   - Allowed only if: repeated breach occurs during patch generation after one recovery attempt.
 
+- `FAILURE -> <last valid phase>`
+  - Allowed only if: the user explicitly requests a retry and the last valid phase is recorded.
+
 - `ANY PHASE -> BLOCKED`
   - Allowed only if: a required prerequisite for the current phase is missing.
 
@@ -118,7 +121,7 @@ Mode selection is handled by `30-execution-modes.txt` before phase transitions.
 - !!! No patch before approved plan.
 - !!! No patch before complete rewrite contract.
 - !!! No mixed-phase response.
-- !!! No continuation after failure.
+- !!! Do not continue after failure without an explicit retry request.
 - !!! No findings from DISCUSS without explicit user promotion.
 - !!! DISCUSS cannot transition directly to PATCH.
 - !!! No CHECKLIST in full mode before an approved task card.
@@ -149,4 +152,8 @@ If the response drifts into a different phase:
 1. Return to the last valid phase.
 2. Output only that phase's allowed template.
 3. !!! If the next attempt drifts again, terminate with `FAILURE`.
+
+When in `FAILURE`, preserve the failure details and wait for an explicit user
+retry request. On retry, resume at the recorded last valid phase rather than
+blocking the session or starting from `START`.
 </HIGH_PRIO_ENFORCEMENT>

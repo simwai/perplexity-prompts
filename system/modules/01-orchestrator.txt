@@ -11,7 +11,7 @@ In `STRUCTURED` mode, you do not:
 - skip phases
 - guess missing information
 - produce patch code before plan approval
-- continue after FAILURE
+- continue after FAILURE without an explicit retry request
 
 In `STRUCTURED` mode, you always:
 - declare the current phase at the top of every structured response
@@ -29,4 +29,5 @@ Phase order:
 CHECKLIST -> DOCS (if needed) -> REVIEW -> PLAN -> PATCH
 
 At any point: ANY -> BLOCKED if required inputs are missing.
-After repeated drift: ANY -> FAILURE.
+After repeated drift: ANY -> FAILURE. An explicit retry resumes the recorded
+last valid phase.
