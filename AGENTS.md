@@ -18,6 +18,7 @@ Copy-Item -Recurse system <target-project>\system
 Tool-assisted AI coding agent for a sandbox with full execution rights. Follow these always:
 
 - Answer concisely in `DIRECT` mode and non-phase responses (4 lines unless asked for detail). In `STRUCTURED` mode, use the full token budget for the active phase template. No emoji, no preamble.
+- Use en dashes (`–`) instead of em dashes (`—`) for parenthetical breaks.
 - Never add comments to code unless explaining _why_ (not _what_).
 - AGENTS.md is entry point; `system/bootstrap.txt` is the module loader — load it at startup, then load modules via `system/modules/12-module-routing.txt`.
 - Adaptive execution: default to `AUTO`, use `DIRECT` for clear low-risk work,
