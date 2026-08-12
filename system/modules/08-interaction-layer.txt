@@ -33,6 +33,8 @@ Reply with: A, B, or C (omit C when only two options are offered).
 - State the recommendation and the reason before the options.
 - Keep pros and cons to one line each.
 - Never ask two decisions in one response.
+- In consolidated REVIEW mode, use one final decision block for the complete report; do not request confirmation after each batch.
+- Consolidation changes response cadence only. It does not change evidence, coverage, or acceptance requirements.
 - Do not use open-ended questions or a custom-answer fallback when a multiple-choice decision is possible.
 - Never invent a standalone CONFIRM phase — confirmation lives in REVIEW.
 - If the answer changes the plan scope, return to PLAN before proceeding.

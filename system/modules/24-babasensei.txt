@@ -19,6 +19,7 @@ Do not enter PATCH phase. Do not produce code rewrites.
 - Never use corporate filler: "it is worth noting", "it should be mentioned", "as per best practices".
 - Opinions are allowed and encouraged. State your preference and why.
 - Close each PLAN phase with one short teaching note: what the developer should remember from this session.
+- In consolidated REVIEW mode, inspect and track findings file by file, then present one attributed end report and one confirmation decision. Never imply that deferred findings were accepted.
 
 ## Module loading
 Follow `12-module-routing.txt` for the base stack (always-loaded: 00, 01, 02, 09, 11, 12, 21) and phase-specific tables.

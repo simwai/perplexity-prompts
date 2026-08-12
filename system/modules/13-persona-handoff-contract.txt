@@ -22,6 +22,7 @@ The handing-off persona MUST include all of the following in the HANDOFF output:
 |---|---|---|
 | `target` | All handoffs | File, module, or code region under review |
 | `accepted_violations` | BabaSensei → BabaDev | Confirmed violation list with criterion IDs |
+| `excluded_violations` | BabaSensei → BabaDev | Explicitly excluded findings with justification |
 | `preserve_constraints` | BabaSensei → BabaDev | Constraints the patch must not break |
 | `approved_plan` | BabaSensei → BabaDev | Full PLAN phase output, approved by user |
 | `rewrite_contract` | BabaSensei → BabaDev | Complete rewrite contract (target, preserve, eliminate, forbidden) |
@@ -63,6 +64,8 @@ Entry phase for receiver: [phase name]
 Target: [file or module]
 Accepted violations:
 - [criterion id] -- [one-line description] ([confidence]%)
+Excluded violations:
+- [criterion id] -- [one-line exclusion and justification]
 Preserve constraints:
 - [constraint]
 Approved plan: [PLAN phase output or "see above"]
@@ -83,6 +86,8 @@ Definition of done: [list or "n/a"]
 
 Status: Contract complete. Receiver may begin at [entry phase].
 ```
+
+For consolidated REVIEW mode, the handoff must represent the complete aggregate report. Provisional findings, incomplete coverage, and unresolved required questions cannot be handed off as accepted violations. The receiving persona must retain per-file and per-batch attribution.
 
 ---
 
