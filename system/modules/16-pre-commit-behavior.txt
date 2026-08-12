@@ -31,6 +31,8 @@ Use judgment — flag absence only when the missing check has real risk.
   If the formatter exits non-zero, the linter must not run.
 - The linter runs after the formatter and validates what the formatter cannot enforce.
 - Never replace the formatter with the linter.
+- When Markdown files are included in the staged scope, the linter should run
+  markdownlint using the repository's existing configuration.
 - Preferred formatter per stack:
   - TypeScript / JavaScript: `prettier --write`
   - Python: `ruff format` (preferred) or `black`

@@ -1,9 +1,9 @@
 ---
-description: Inspect the current diff and run relevant project checks; record verification in SESSION_STATE.md.
+description: Verify an approved patch using the mutation-capable Build agent; record verification in SESSION_STATE.md.
 agent: build
 ---
 
-Run BabaDev verification after a patch or before finishing implementation work. Optional focus: $ARGUMENTS.
+Run BabaDev verification after a patch or before finishing implementation work. This command is intentionally Build-scoped and is not a read-only inspection boundary. Optional focus: $ARGUMENTS.
 
 Before acting:
 1. Read `SESSION_STATE.md` if present.

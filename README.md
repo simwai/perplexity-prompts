@@ -32,6 +32,17 @@ Then paste `AGENTS.md` content as `AGENTS.md` at the target repo root.
 
 For detailed instructions, see [docs/AGENTS-usage.md](docs/AGENTS-usage.md).
 
+### Syncing multiple projects
+
+Add project paths to `targets.json`, then run:
+
+```powershell
+.\sync.ps1 -All
+```
+
+Configured paths are included in the sync menu even before they contain
+`AGENTS.md` and `system/`.
+
 ## opencode support
 
 The core system (`AGENTS.md` + `system/`) is model-agnostic and works with any

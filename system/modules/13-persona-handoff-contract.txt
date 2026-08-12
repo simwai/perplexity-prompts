@@ -14,9 +14,11 @@ It is a machine-readable contract that the receiving persona validates before ac
 
 ---
 
-## Handoff Payload Fields (all required)
+## Handoff Payload Fields
 
-The handing-off persona MUST include all of the following in the HANDOFF output:
+The handing-off persona MUST include the fields required by the receiver's entry
+phase. Do not require review-time or patch-time fields from an upstream task
+planning handoff.
 
 | Field | Required by | Description |
 |---|---|---|
@@ -44,9 +46,20 @@ Before the receiving persona produces any output, it MUST verify:
 
 1. Is the `target` field present and unambiguous?
 2. Are all fields required for its entry phase present?
-3. Is the rewrite contract complete (all four sub-fields)?
+3. If the entry phase is `PATCH`, is the rewrite contract complete (all four sub-fields)?
 
 If ANY required field is missing → output BLOCKED template. Do not guess. Do not proceed.
+
+Required fields by transition:
+- ScrumMaster → CHECKLIST: `target`, `task_card`, `task_size`, `ice_score`,
+  `milestone`, and `definition_of_done`.
+- Sensei → PLAN/HANDOFF: `target`, `accepted_violations`,
+  `excluded_violations`, `preserve_constraints`, `approved_plan`,
+  `rewrite_contract`, and `teaching_note`.
+- Tester → HANDOFF: `target`, `test_strategy`, `binding_items`, and
+  `strong_hints`.
+- BabaDev → PATCH: an approved plan plus the complete rewrite contract; tester
+  fields are also required when a tester handoff was loaded.
 
 ---
 

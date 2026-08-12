@@ -7,12 +7,11 @@
   // Guarantees the module loader is in every opencode session without relying
   // on the model choosing to read it. Mirrors the AGENTS.md startup instruction.
   // bootstrap.txt is a loader only; canonical rules live in system/modules/.
-  "instructions": ["AGENTS.md"],
+  "instructions": ["AGENTS.md", "system/bootstrap.txt"],
 
-  // Prefer BabaDev-aligned Build by default. Plan is available via Tab /
-  // switch_agent and is overridden by .opencode/agents/plan.md.
-  // Markdown agents under .opencode/agents/ also override native plan/build.
-  "default_agent": "build",
+  // Prefer the read-only BabaSensei planning path by default. The native Build
+  // and Plan overrides in .opencode/agents/ orchestrate the role subagents below.
+  "default_agent": "plan",
 
   // MCP servers mirror the fallback tiers in AGENTS.md, adapted to opencode's
   // schema. Note: opencode interpolates {env:VAR}, NOT ${VAR}.
@@ -26,11 +25,11 @@
     },
     "tavily": {
       "type": "local",
-      "command": ["npx", "-y", "tavily-mcp"]
+      "command": ["npx", "-y", "tavily-mcp@0.2.22"]
     },
     "playwright": {
       "type": "local",
-      "command": ["npx", "-y", "@playwright/mcp@latest"]
+      "command": ["npx", "-y", "@playwright/mcp@0.0.79"]
     },
     // Tier 2 — requires env key
     "exa": {

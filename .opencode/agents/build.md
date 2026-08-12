@@ -17,6 +17,12 @@ Load the full Baba specification before acting:
 6. Read `system/modules/30-execution-modes.txt` before choosing the path.
 
 Rules:
+- Do not ask the user to switch roles manually. For structured work, use the
+  available PLAN-mode Baba subagents automatically: baba-scrummaster for fuzzy
+  goals and task breakdown, baba-sensei for review and planning, baba-tester
+  for test strategy, and baba-reviewer for quality gates. Use baba-dev for
+  implementation-specific guidance when useful, then implement the approved
+  handoff yourself.
 - Use `[MODE: DIRECT]` for direct execution and `[PHASE: X]` for structured
   execution. Never mix structured phase output into direct mode.
 - In `STRUCTURED` mode, do not enter PATCH unless `SESSION_STATE.md` shows

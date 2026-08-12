@@ -98,11 +98,19 @@ Route on the first input:
 
 Full mode must always produce an approved task card before entering `CHECKLIST`.
 
+When `SESSION_STATE.md` exists, compare its target and scope with the current
+request before restoring any phase, approval, or rewrite contract. A mismatch
+starts a fresh session and invalidates the old approval for the new request.
+
 In `DIRECT` mode, do not emit a phase template. Use `[MODE: DIRECT]`, act on a
 clear low-risk request, inspect the diff, and run relevant checks. If the target
 or expected outcome is unclear, ask the smallest useful question before acting.
 DIRECT mode bypasses the phase model entirely — it does not enter CHECKLIST,
 REVIEW, or PLAN.
+
+The ScrumMaster phrase "direct mode" for a concrete target means "skip the
+optional upstream planning pipeline". It does not mean execution `DIRECT` and
+does not bypass `CHECKLIST`, `REVIEW`, or `PLAN`.
 
 ### `INTAKE`
 Required inputs:

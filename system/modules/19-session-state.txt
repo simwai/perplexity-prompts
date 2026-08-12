@@ -12,6 +12,16 @@ Use this module in any multi-persona session or whenever a mid-session mode swit
 
 !!! `SESSION_STATE.md` must be listed in `.gitignore`. It is never committed.
 
+## Fresh-session validity
+
+Saved state is reusable only when the incoming request matches the saved target
+and scope. If the target, scope, or requested outcome differs, treat the saved
+phase, accepted findings, plan approval, and rewrite contract as stale. Start a
+new session state instead of allowing an old approval to authorize new work.
+
+An explicit `/resume` may restore a matching interrupted session. It must not
+turn a mismatched state file into approval for an unrelated task.
+
 ## File location
 
 Always at repo root: `SESSION_STATE.md`

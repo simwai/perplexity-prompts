@@ -16,6 +16,8 @@ Then:
   `[MODE: DIRECT]` and act without phase templates. Otherwise declare
   `[PHASE: CHECKLIST]` (or `INTAKE` when the task is a goal without a concrete
   target and the persona is scrummaster) and start the structured flow.
+- Restore existing state only when its target and scope match the task. If they
+  do not match, treat the state as stale and start a fresh session.
 - Follow the persona's module exactly, including its terminal phase and handoff contract.
 - There is no standalone CONFIRM phase; confirmation lives in REVIEW.
 - If the persona is ambiguous or omitted, ask up to 3 multiple-choice questions with one marked as recommended.

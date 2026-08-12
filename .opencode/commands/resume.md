@@ -10,6 +10,9 @@ Before acting:
 3. Read `system/modules/30-execution-modes.txt`.
 
 Then:
+- Verify that the saved target and scope match the task being resumed. If they
+  do not match, remain blocked and request a fresh session instead of restoring
+  old approval or rewrite-contract data.
 - If `execution_mode` is `DIRECT`, declare `[MODE: DIRECT]` and continue the
   direct task. Otherwise declare `[PHASE: <prior_phase>]` from session state,
   or CHECKLIST if prior_phase is NONE.

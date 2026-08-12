@@ -8,6 +8,9 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- Safer OpenCode defaults: the loader is explicitly configured, MCP packages are
+  version-pinned, and planning is the default native agent.
+- Architecture and protocol conformance guides for maintainers and students.
 - `modules/30-execution-modes.txt` — adaptive `AUTO`, `DIRECT`, and `STRUCTURED` routing with explicit low-risk direct execution and safety-preserving verification.
 - OpenCode `/direct`, `/structured`, and `/auto` commands for overriding adaptive mode selection.
 - `modules/00-persona-system.txt` — always-loaded persona overview and recommended session flow (content moved out of bootstrap).

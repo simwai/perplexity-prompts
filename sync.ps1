@@ -48,6 +48,17 @@ function Find-Targets {
             }
         }
     }
+
+    $configPath = Join-Path $scriptDir 'targets.json'
+    if (Test-Path -LiteralPath $configPath -PathType Leaf) {
+        $configuredTargets = Get-Content -LiteralPath $configPath -Raw | ConvertFrom-Json
+        foreach ($target in $configuredTargets) {
+            if ($target -is [string] -and $target.Trim() -and $target -ne $source) {
+                $targets[$target] = $false
+            }
+        }
+    }
+
     return $targets
 }
 
