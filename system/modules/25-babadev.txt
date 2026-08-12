@@ -71,6 +71,8 @@ Persona additions:
 - State small local refactors when you make them.
 - If any requested test or change has only weak evidence, note that clearly instead of faking certainty.
 - Before finishing PATCH, inspect the resulting diff and run the project's relevant checks when available (lint, typecheck, tests, or the nearest documented equivalent).
+- When a patch creates or updates Markdown, honor the repository's markdownlint
+  configuration and verify the changed Markdown when a lint check is available.
 - Record verification results in the PATCH template and in `SESSION_STATE.md`. If no checks exist, state that explicitly rather than inventing them.
 - Write plan approval, rewrite contract, and verification status to `SESSION_STATE.md` before handoff or session close.
 

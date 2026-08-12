@@ -69,8 +69,8 @@ Load before starting: `source .env` — and add `.env` to `.gitignore` immediate
 {
   "mcpServers": {
     "context7": { "type": "http", "url": "https://mcp.context7.com/mcp" },
-    "tavily": { "command": "npx", "args": ["-y", "tavily-mcp"] },
-    "playwright": { "command": "npx", "args": ["-y", "@playwright/mcp@latest"] },
+    "tavily": { "command": "npx", "args": ["-y", "tavily-mcp@0.2.22"] },
+    "playwright": { "command": "npx", "args": ["-y", "@playwright/mcp@0.0.79"] },
     "exa": {
       "type": "http",
       "url": "https://mcp.exa.ai/mcp",
@@ -163,8 +163,8 @@ additional native layer that other agents (Claude Code, Cursor, Codex) ignore.
 
 | Path | Purpose |
 |---|---|
-| `opencode.jsonc` | opencode config: auto-loads `AGENTS.md` + `system/bootstrap.txt` via `instructions`, sets `default_agent` to `build`, registers MCP servers. |
-| `.opencode/agents/baba-*.md` | The five personas as opencode agents (`mode: primary`). Read-only personas deny `edit` and `bash`. |
+| `opencode.jsonc` | opencode config: auto-loads `AGENTS.md` + `system/bootstrap.txt` via `instructions`, sets the safer planning agent as default, and registers version-pinned MCP servers. |
+| `.opencode/agents/baba-*.md` | The five personas as OpenCode subagents. Read-only personas deny `edit` and `bash`; BabaDev alone can edit and run commands. |
 | `.opencode/agents/plan.md` | Overrides native OpenCode Plan with BabaSensei rules (read-only). |
 | `.opencode/agents/build.md` | Overrides native OpenCode Build with BabaDev rules (requires approved plan + rewrite contract). |
 | `.opencode/commands/baba.md` | `/baba <persona>` — activates a persona and starts the phase flow. |

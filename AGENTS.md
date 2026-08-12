@@ -47,7 +47,7 @@ Servers are grouped by what works when env keys are missing. Configure the ones 
   },
   "playwright": {
     "command": "npx",
-    "args": ["-y", "@playwright/mcp@latest"]
+    "args": ["-y", "@playwright/mcp@0.0.79"]
   }
 }
 ```

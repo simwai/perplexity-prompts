@@ -8,7 +8,11 @@ H3 -- Authentication bypass: missing or bypassable auth checks
 H4 -- Authorization: missing permission checks on sensitive operations
 H5 -- Cryptography: weak algorithms, hardcoded keys, broken IV usage
 H6 -- Input validation: missing validation on external inputs
-H7 -- Error exposure: stack traces, internal paths, or credentials in error output
+H7 -- Error exposure: stack traces, internal paths, or raw exception details exposed
+  through user-facing responses, client-visible APIs, or other untrusted output.
+  Trusted internal diagnostic logs and error objects that remain within trusted
+  process boundaries are excluded unless they contain credentials or secrets
+  (H1) or are otherwise mishandled.
 H8 -- Dependency risk: known CVEs or unreviewed dependency versions
 H9 -- Data integrity: missing transactions, partial writes, or silent data loss
 H10 -- Python type safety (Python only): missing type annotations on function signatures.
