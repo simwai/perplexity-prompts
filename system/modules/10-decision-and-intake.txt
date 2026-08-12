@@ -161,11 +161,14 @@ Required inputs:
 - current chunk or review unit
 - prior checklist artifact
 - docs evidence if docs are in scope
+- review mode: `interactive` or `consolidated`; default is `interactive` when unspecified
 
 Unblock rule:
 `BLOCKED -> REVIEW` is allowed only when the current chunk exists and every prerequisite artifact required by the review path already exists.
 
 REVIEW also owns the confirmation decision. Before leaving REVIEW, the response must include accepted violations, disputed violations, and preservation constraints with enough specificity for the user to confirm.
+
+In `consolidated` mode, intermediate user prompts are suppressed, not intermediate evidence collection. Every file and batch must be recorded, including units with no findings. Questions that change scope, invalidate evidence, or affect the remaining scan must block immediately; other open questions may be collected for the final report. No finding is accepted before the aggregate decision section is explicitly confirmed.
 
 ### `PLAN`
 Required inputs:

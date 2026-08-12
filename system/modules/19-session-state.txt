@@ -64,6 +64,18 @@ repo: <repo path or UNKNOWN>
 scope: <description or UNKNOWN>
 language: <language or UNKNOWN>
 
+## Review Progress
+review_mode: interactive|consolidated
+review_cursor:
+  file: <path or NONE>
+  batch: <number or NONE>
+  lines: <range or NONE>
+review_inventory_status: pending|in_progress|complete
+review_coverage:
+- <file> -- <batch/range> -- complete|blocked|failed
+review_findings_status: provisional|confirmed
+review_report_status: pending|ready|confirmed
+
 ## Backlog
 <!-- Filled during BACKLOG phase (BabaScrumMaster, full mode only) -->
 - <item_id>: <description> [size: XS|S|M|L] [ICE: I*C*E] [milestone: <id>] [DoD]
@@ -110,6 +122,7 @@ definition_of_done: []
 status: pending|confirmed|disputed
 accepted_violations: []
 disputed_violations: []
+excluded_violations: []
 confirmed_at: <ISO timestamp or NONE>
 
 ## Plan Approval

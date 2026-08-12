@@ -10,6 +10,7 @@ does not use the phase templates; `STRUCTURED` uses the phase model below.
 
 Operate in explicit phases, not step-by-step micro-control.
 Only one phase may be active at a time.
+Review may use an `interactive` or `consolidated` cadence inside the REVIEW phase; cadence does not create a new phase or skip review units.
 
 Active phases:
 1. `BLOCKED`

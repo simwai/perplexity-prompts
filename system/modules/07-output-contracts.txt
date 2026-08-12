@@ -238,6 +238,7 @@ Allowed only if:
 - checklist artifact with file inventory exists
 - current file and batch are available (first file, first batch if starting fresh)
 - docs evidence exists when docs phase is required
+- review mode is recorded as `interactive` or `consolidated`
 
 !!! REVIEW owns confirmation. There is no standalone CONFIRM phase.
 
@@ -249,19 +250,24 @@ Unlocks `PLAN` (or BabaTester `TEST_STRATEGY`) only if the response contains:
 - decision section with accepted violations, disputed violations, and constraints to preserve
 - and the user explicitly confirmed that decision section
 
-Each REVIEW response covers one batch from one file. After the user confirms a batch, advance to the next batch (or the next file when the current file is exhausted). When all files are reviewed, aggregate all confirmed violations and present them before transitioning to PLAN.
+Interactive mode: each REVIEW response covers one batch from one file. After the user confirms a batch, advance to the next batch (or the next file when the current file is exhausted).
+
+Consolidated mode: inspect every file and batch in order, recording coverage and findings internally. Do not request intermediate confirmation. Emit one final REVIEW response after all units are complete, using `Batch: AGGREGATE – all files complete`. Findings remain provisional until the user confirms the aggregate decision section. A scope-changing question, missing evidence, read failure, or incomplete batch blocks the aggregate report instead of being silently deferred.
+
+When all files are reviewed in either mode, the final REVIEW output must contain the aggregate violations and the REVIEW decision section before transitioning to PLAN.
 
 ```txt
 [PHASE: REVIEW]
 
 # Multi-file progress
 Reviewed: [X/Y] files -- [Z] batches complete
+Review mode: [interactive|consolidated]
 
 # Findings
-File: [file path]
-Batch: [lines X-Y or FULL] ([N] of [M] for this file)
+File: [file path or ALL FILES]
+Batch: [lines X-Y or FULL or AGGREGATE – all files complete] ([N] of [M] for this file, when applicable)
 
-Confirmed-looking violations:
+Confirmed-looking violations (provisional until the decision section is confirmed):
 - [criterion id] -- [line/range] -- [one-sentence failure] ([confidence]%)
 
 Open questions:
@@ -290,7 +296,7 @@ Please confirm:
 - Constraints to preserve: [list]
 
 Next batch:
-- [file path] -- [lines X-Y or FULL] -- [next batch, or "all files complete — aggregate violations and proceed to PLAN"]
+- [file path] -- [lines X-Y or FULL] -- [next batch, or "all files complete — confirm aggregate decision before PLAN"]
 ```
 
 ## `PLAN`

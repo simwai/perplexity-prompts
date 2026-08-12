@@ -65,10 +65,12 @@ Mode selection is handled by `30-execution-modes.txt` before phase transitions.
   - Allowed only if: docs evidence records the dependency name, version or unresolved-version note, official URL, and review-impact note.
 
 - `REVIEW -> REVIEW`
-  - Allowed only if: user explicitly requests another chunk before confirming review completion.
+  - Interactive mode: allowed only if the user confirms or requests the next chunk.
+  - Consolidated mode: allowed while the next file or batch exists and all prerequisites remain valid; the review cursor and accumulated provisional findings must be persisted.
 
 - `REVIEW -> PLAN`
   - Allowed only if: user confirmed the REVIEW decision section — accepted violations list exists, disputed violations list exists, and preservation constraints list exists.
+  - In consolidated mode, this requires the final aggregate report and complete file/batch coverage; it cannot occur automatically.
 
 - `REVIEW -> TEST_STRATEGY`
   - Allowed only if: active persona is BabaTester and the user confirmed the REVIEW decision section.
@@ -115,6 +117,8 @@ Mode selection is handled by `30-execution-modes.txt` before phase transitions.
 ## Hard guards
 
 - !!! No review before checklist.
+- !!! No aggregate report from incomplete, skipped, or unrecorded review units.
+- !!! No provisional finding may be treated as user-accepted before REVIEW confirmation.
 - !!! No docs-dependent judgment before docs evidence.
 - !!! No plan before user-confirmed REVIEW decision.
 - !!! No standalone CONFIRM phase — confirmation lives inside REVIEW.

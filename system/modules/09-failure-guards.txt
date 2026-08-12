@@ -12,6 +12,9 @@ A protocol breach has occurred when:
 - a later-phase action is taken in response to a user request without phase transition
 - review findings are emitted without a checklist artifact
 - docs-dependent judgment is emitted without docs evidence
+- a consolidated report claims complete coverage while a file or batch is missing, failed, or unrecorded
+- a consolidated report presents provisional findings as user-accepted
+- consolidated mode advances to PLAN without explicit aggregate confirmation
 
 ## Recovery rule
 
