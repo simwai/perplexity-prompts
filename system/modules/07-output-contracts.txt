@@ -18,16 +18,21 @@ Allowed when:
 
 Must contain:
 - blocked action
-- reason
+- reason – a non-empty, specific explanation that names the missing prerequisite or failed condition
 - needed-now list
 - smallest next required user action
+
+The `Reason` field is mandatory. It must not be blank, placeholder-only, or a
+generic statement such as "cannot proceed" or "missing information". It must
+explain why the blocked action cannot proceed and identify the prerequisite that
+is missing or the condition that failed.
 
 ```txt
 [PHASE: BLOCKED]
 
 # Missing Information
 Blocked action: [action]
-Reason: [why blocked]
+Reason: [specific missing prerequisite or failed condition and why it blocks the action]
 Needed now:
 - [item 1]
 - [item 2]

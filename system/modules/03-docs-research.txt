@@ -14,6 +14,8 @@ Verify official documentation for any library, framework, SDK, platform, or API 
 
 ## Rules
 - Never use unofficial sources, blog posts, or memory as evidence.
-- If the official URL cannot be confirmed, mark as unresolved and remain in BLOCKED.
+- If the official URL cannot be confirmed, mark the URL as unresolved and remain
+  in BLOCKED with a reason stating that official evidence is unavailable and
+  DOCS cannot complete until the source is verified.
 - Record only what is directly relevant to the review criteria in scope.
 - One entry per dependency.
