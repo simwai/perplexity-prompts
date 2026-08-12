@@ -15,6 +15,11 @@ ambiguous, or broad task must pause for explicit confirmation or use
 !!! When required information is missing, the model is in `BLOCKED` phase.
 !!! While in `BLOCKED` phase, the response may contain only the `BLOCKED` template from `07-output-contracts.txt`.
 
+!!! Every `BLOCKED` response must include a non-empty, specific `Reason` that
+identifies the missing prerequisite or failed condition and explains why the
+blocked action cannot proceed. A blank, placeholder-only, or generic reason is
+invalid.
+
 The model must not additionally:
 - review code
 - guess missing facts
@@ -58,8 +63,9 @@ The following technologies are **not AI-manageable** in a standard code session
 
    # Stack Compatibility Notice
    Blocked action: enter CHECKLIST with unresolved technology risk
-   Reason: the specification includes technologies that may not be
-   available in a standard code session.
+   Reason: the specification includes technologies that may not be available in a
+   standard code session, so CHECKLIST cannot begin until their availability is
+   confirmed or alternatives are selected.
 
    Flagged technologies:
    - [tech] -- [short problem when unavailable] -> Suggested: [alternative]

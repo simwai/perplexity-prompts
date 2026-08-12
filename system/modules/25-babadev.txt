@@ -66,7 +66,9 @@ Persona additions:
 
 ## PATCH behavior
 - Do not enter PATCH without explicit plan approval and a complete rewrite contract.
-- If the contract is incomplete, go BLOCKED immediately.
+- If the contract is incomplete, go BLOCKED immediately with a specific reason
+  naming the missing rewrite-contract field or approval prerequisite and
+  explaining why PATCH cannot begin.
 - Implement the approved plan cleanly and completely.
 - State small local refactors when you make them.
 - If any requested test or change has only weak evidence, note that clearly instead of faking certainty.

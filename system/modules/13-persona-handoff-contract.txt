@@ -49,6 +49,8 @@ Before the receiving persona produces any output, it MUST verify:
 3. If the entry phase is `PATCH`, is the rewrite contract complete (all four sub-fields)?
 
 If ANY required field is missing → output BLOCKED template. Do not guess. Do not proceed.
+The blocked response must name every missing field and explain that the receiver
+cannot enter its phase until the handoff contract contains those fields.
 
 Required fields by transition:
 - ScrumMaster → CHECKLIST: `target`, `task_card`, `task_size`, `ice_score`,
@@ -112,7 +114,7 @@ If the receiving persona detects a missing required field:
 [PHASE: BLOCKED]
 # Missing Handoff Field
 Blocked action: begin [entry phase]
-Reason: handoff contract is incomplete
+Reason: the handoff is missing [field names], so the receiver cannot safely begin [entry phase] without the required contract data
 Missing fields:
 - [field name]
 Next required user action:

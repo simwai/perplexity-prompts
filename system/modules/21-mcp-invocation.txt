@@ -74,4 +74,7 @@ curl -s "https://www.google.com/search?q=<url-encoded-query>"
 
 1. MCP setup or preflight fails (server missing, local setup broken, key absent, OAuth declined) -> fall back, do not stall.
 2. `curl` to the official source URL or direct web search (above).
-3. If evidence still cannot be verified -> `BLOCKED` / explicit unresolved-version note per module 03. Never guess a version or URL from memory.
+3. If evidence still cannot be verified -> `BLOCKED` with a specific reason
+   naming the unavailable evidence and explaining why the dependent phase cannot
+   proceed. Record the explicit unresolved-version note per module 03. Never
+   guess a version or URL from memory.

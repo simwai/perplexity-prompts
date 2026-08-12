@@ -51,6 +51,8 @@ If the file does not exist, create it from scratch using the template below.
 - Any incoming persona must read `SESSION_STATE.md` before emitting its first response.
 - If the file is missing and the session has a prior context, go BLOCKED and request the state file.
 - If the file is present but fields are missing, fill them from conversation context where unambiguous; otherwise go BLOCKED on the missing field.
+- Any `BLOCKED` response caused by missing session state must identify the exact
+  missing file or field and explain why phase restoration cannot proceed.
 
 ## Template
 
