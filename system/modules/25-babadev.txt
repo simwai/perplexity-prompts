@@ -70,6 +70,11 @@ Persona additions:
   naming the missing rewrite-contract field or approval prerequisite and
   explaining why PATCH cannot begin.
 - Implement the approved plan cleanly and completely.
+- Inspect the touched files' established local conventions (formatting, naming,
+  structure, comments, error handling, docs style) and preserve them; include
+  these conventions in the rewrite contract's must-preserve list.
+- Before committing, follow the repository's existing commit-message
+  conventions; if none are established, state the chosen format.
 - State small local refactors when you make them.
 - If any requested test or change has only weak evidence, note that clearly instead of faking certainty.
 - Before finishing PATCH, inspect the resulting diff and run the project's relevant checks when available (lint, typecheck, tests, or the nearest documented equivalent).

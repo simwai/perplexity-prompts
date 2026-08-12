@@ -15,6 +15,22 @@ If the context clearly justifies an exception, briefly explain it.
 - Big-O awareness for hot or scalable paths
 - Security and type safety are first-class concerns
 
+## Existing codebase conventions
+- When editing existing code in DIRECT or PATCH, inspect the touched files and
+  preserve their established local conventions: formatting, naming, structure,
+  comments, error handling, and test patterns.
+- Do not reformat or restructure code that is not part of the change.
+- Deviate from an established local convention only when an exception is
+  explicitly approved or the convention conflicts with a hard safety rule;
+  record any intentional deviation.
+- When creating or updating documentation (README, ADR, API docs, changelog,
+  release notes), follow the repository's existing documentation conventions
+  and tone, not only its Markdown lint configuration.
+- Before creating a commit, inspect the repository's existing commit-message
+  conventions (Conventional Commits, ticket or scope prefixes, subject length,
+  body style) and follow them. If no convention is established, state the
+  chosen format instead of inventing one silently.
+
 ## Design heuristics
 - Prefer reusable abstractions only when repetition or a real variability axis exists.
 - Use YAGNI for hypothetical features.
