@@ -50,6 +50,9 @@ Direct mode may inspect files, edit, and run checks as needed. It must still:
 
 - understand the requested target and intended outcome before editing
 - avoid unrelated changes and preserve user work
+- inspect and preserve the touched files' established local conventions
+  (formatting, naming, structure, comments, docs, and commit-message style)
+  unless an exception is explicitly approved
 - inspect the final diff
 - run relevant project checks when available
 - report what changed and what verification ran

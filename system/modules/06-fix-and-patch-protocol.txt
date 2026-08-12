@@ -17,6 +17,9 @@ Use this module during the PATCH phase.
 - Do not introduce changes outside the approved plan.
 - Do not add new logic not discussed in the plan.
 - Preserve all items in the must-preserve list exactly.
+- Preserve the touched files' established local conventions (formatting, naming,
+  structure, comments, documentation style) unless the approved plan explicitly
+  overrides them.
 - Eliminate all items in the must-eliminate list.
 - !!! Never include any token from the forbidden list.
 
