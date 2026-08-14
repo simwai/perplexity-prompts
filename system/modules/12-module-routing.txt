@@ -55,6 +55,7 @@ Load only what the current phase requires. Do not preload future phases.
 - `08-interaction-layer.txt`
 - `15-artifact-handling.txt` (if repo or file artifacts are in scope)
 - `17-cross-team-requirements.txt` (if cross-team findings are identified)
+- `28-app-lifecycle.txt` (if a startup/smoke check is in scope)
 
 ### PLAN
 - `07-output-contracts.txt`

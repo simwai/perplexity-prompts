@@ -155,7 +155,7 @@ must_eliminate: []
 forbidden_in_patch: []
 
 ## Verification
-<!-- Filled during/after PATCH -->
+<!-- Filled during REVIEW (H11 prerequisite) and appended during PATCH -->
 diff_inspected: false
 checks_run: []
 results: NONE|PASS|FAIL|SKIPPED
