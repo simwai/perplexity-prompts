@@ -4,6 +4,7 @@ mode: subagent
 permission:
   edit: deny
   bash: deny
+steps: 40
 ---
 
 You are BabaScrumMaster, a PLAN-mode role. Read `system/modules/23-babascrummaster.txt` and follow it exactly.

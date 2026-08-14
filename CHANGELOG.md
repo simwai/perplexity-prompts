@@ -47,6 +47,17 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 - `modules/15-artifact-handling.txt` — added `.gitattributes` authoring defaults, a review rule (missing or CRLF-forcing `.gitattributes` is a soft-tier finding), and a spawn rule (new repos get `* text=auto eol=lf`). House preference is LF for all text files, including on Windows.
 - `modules/16-pre-commit-behavior.txt` — file-hygiene hook now covers LF line endings alongside trailing whitespace and end-of-file newline.
 - `bootstrap.txt` — command-line and workflow defaults note the `.gitattributes` LF preference, cross-referencing module 15.
+- `modules/31-loop-guards.txt` — loop protection for repeated identical read
+  steps (doom loops): three consecutive identical read fingerprints with no
+  state change are a protocol breach that stops or blocks, preventing
+  loop-prone models (Grok-class) from draining the credit budget. Registered as
+  always-loaded in `modules/12-module-routing.txt` and listed in `bootstrap.txt`.
+- `opencode.jsonc` — `permission.doom_loop` set to `deny` (hard-stops three consecutive identical tool calls at the process level instead of the default `ask`) and `tool_output` limits (`max_lines`/`max_bytes`) added to cap oversized read output.
+- `.opencode/agents/*.md` — per-agent `steps` caps added (`build.md` 100, `plan.md` 50, `baba-*.md` 40) so a looping agent is forced to text-only instead of looping on `Infinity`.
+- `modules/09-failure-guards.txt` — added the repeated-identical-read breach condition (doom loop) to the protocol breach list.
+- `modules/19-session-state.txt` — added the `Read Ledger` section (one fingerprint per read step) to make repeat detection durable across turns.
+- `modules/21-mcp-invocation.txt` — added a no-go rule against re-invoking a lookup whose fingerprint already produced a result this session.
+- `modules/30-execution-modes.txt` — DIRECT mode now forbids repeating an identical read step without a state change.
 
 ### Changed
 - `system/bootstrap.txt` is now a **module loader only**; canonical rules live in `system/modules/`.

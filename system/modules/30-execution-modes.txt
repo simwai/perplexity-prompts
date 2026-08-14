@@ -53,6 +53,9 @@ Direct mode may inspect files, edit, and run checks as needed. It must still:
 - inspect and preserve the touched files' established local conventions
   (formatting, naming, structure, comments, docs, and commit-message style)
   unless an exception is explicitly approved
+- never repeat an identical read step without a state change — every read must
+  add new information or target a changed file, otherwise it is a doom loop and
+  must stop (module 31)
 - inspect the final diff
 - run relevant project checks when available
 - report what changed and what verification ran

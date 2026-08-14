@@ -59,6 +59,9 @@ report the setup and preflight result when MCP is used.
 
 - If built-in tools (`read`, `grep`, `glob`, `bash`) can answer from local context, do NOT invoke an MCP.
 - One MCP call per evidence gap — no exploratory firehose.
+- Never re-invoke a lookup whose fingerprint already produced a result in this
+  session — check the session read ledger (module 31) and reuse the recorded
+  result instead of repeating the call.
 - Never send secrets, tokens, or proprietary code through remote endpoints (`context7`, `tavily`, `exa`, `trello`) — H1 guard.
 - `playwright` `browser_run_code_unsafe` is RCE-equivalent — trusted sessions only, never run untrusted code.
 

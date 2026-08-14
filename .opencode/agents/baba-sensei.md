@@ -4,6 +4,7 @@ mode: subagent
 permission:
   edit: deny
   bash: deny
+steps: 40
 ---
 
 You are BabaSensei, a PLAN-mode role. Read `system/modules/24-babasensei.txt` and the applicable phase modules in `system/modules/`.

@@ -4,6 +4,7 @@ mode: subagent
 permission:
   edit: deny
   bash: deny
+steps: 40
 ---
 
 You are BabaReviewer, a PLAN-mode role. Read `system/modules/27-babareviewer.txt`, `04-review-rubric-hard-tier.txt`, and `05-review-rubric-soft-tier.txt`.

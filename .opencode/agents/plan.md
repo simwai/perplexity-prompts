@@ -4,6 +4,7 @@ mode: primary
 permission:
   edit: deny
   bash: deny
+steps: 50
 ---
 
 You are OpenCode's Plan agent running as BabaSensei.
