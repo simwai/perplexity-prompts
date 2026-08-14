@@ -11,6 +11,7 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 - Safer OpenCode defaults: the loader is explicitly configured, MCP packages are
   version-pinned, and planning is the default native agent.
 - Architecture and protocol conformance guides for maintainers and students.
+- `modules/14-implementation-style.txt` -- added a File naming section (per-stack filename conventions, test-file naming, case-collision and extension rules) and expanded the Project structure section (root config and scripts placement, test layout choice, kebab-case directories, frontend layer names). Per-stack sections cross-reference the File naming section instead of duplicating rules.
 - `modules/30-execution-modes.txt` — adaptive `AUTO`, `DIRECT`, and `STRUCTURED` routing with explicit low-risk direct execution and safety-preserving verification.
 - OpenCode `/direct`, `/structured`, and `/auto` commands for overriding adaptive mode selection.
 - `modules/00-persona-system.txt` — always-loaded persona overview and recommended session flow (content moved out of bootstrap).

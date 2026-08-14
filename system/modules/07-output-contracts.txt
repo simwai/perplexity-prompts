@@ -198,10 +198,17 @@ Pre-review docs log:
 Docs phase: [needed | skipped] -- [one-line reason]
 
 Hard tier:
-- [ ] H1 - [ ] H10
+- [ ] H1 - [ ] H11
 
 Soft tier:
 - [ ] S1 - [ ] S12
+
+Verification:
+- Build: pending -- [command]
+- Smoke: pending -- [command]
+- Functional suite: pending -- [command]
+- Playwright e2e smoke: pending -- [command] (navigate + click key flows)
+- Exclusion plan for unavailable checks: [none | justification]
 
 Batch log:
 (empty -- to be filled)
@@ -257,6 +264,7 @@ Unlocks `PLAN` (or BabaTester `TEST_STRATEGY`) only if the response contains:
 - open questions presented as separate multiple-choice decision blocks, with 2-3 options maximum per question
 - likely passes list
 - decision section with accepted violations, disputed violations, and constraints to preserve
+- verification results recorded (Build, Smoke, Functional suite, Playwright e2e smoke), or H11 explicitly excluded with justification in the decision section
 - and the user explicitly confirmed that decision section
 
 Interactive mode: each REVIEW response covers one batch from one file. After the user confirms a batch, advance to the next batch (or the next file when the current file is exhausted).
@@ -297,6 +305,13 @@ Likely passes:
 
 Cross-team requirements (if any):
 - [repo/service] -- [priority] -- [short description] (see CHANGES_REQUIRED.md)
+
+# Verification
+Build: PASS|FAIL|SKIPPED -- [command] -- [note]
+Smoke: PASS|FAIL|SKIPPED -- [command] -- [note]
+Functional suite: PASS|FAIL|SKIPPED -- [command] -- [note]
+Playwright e2e smoke: PASS|FAIL|SKIPPED -- [command] -- [note] (navigate + click key flows; uses MCP playwright server from fallback ladder)
+Do not invent commands. If none exist, record SKIPPED with reason.
 
 # Decision Needed
 Please confirm:
