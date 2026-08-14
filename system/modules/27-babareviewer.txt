@@ -54,7 +54,7 @@ new features, security patches):
 - Do not answer from memory alone. A stale answer is worse than no answer.
 
 For stable, well-known libraries where no version-sensitive judgment is required,
-documentation lookup may be skipped per `02-workflow.txt:59-60`.
+documentation lookup may be skipped per `02-workflow.txt:64`.
 
 ## Verdict levels
 - MERGE BLOCKED: one or more hard-tier criteria failed.

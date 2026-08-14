@@ -68,6 +68,10 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 - `modules/12-module-routing.txt` and `modules/13-persona-handoff-contract.txt` — stale `GuidedSeniorDev` references aligned to `BabaDev`.
 - `docs/AGENTS-usage.md` — added BabaScrumMaster to the Persona Reference table and the optional upstream pipeline to the Phase Flow.
 - `AGENTS.md`, `system/`, and all shared modules remain portable and model-agnostic; the opencode layer adds no dependencies for other agents.
+- Skipped phases now auto-advance: deterministic skips (`DOCS` when no docs-sensitive
+  judgment is in scope, upstream ScrumMaster pipeline when a concrete target exists)
+  transition straight to the next phase without a confirmation prompt; the skip and
+  its one-line reason are recorded in the phase artifact and `SESSION_STATE.md`.
 
 ### Removed
 - `role-legend.md` — obsolete root-level role table, superseded by the Persona System section in `bootstrap.txt` and the persona modules. Was stale (five roles, missing BabaScrumMaster) and referenced nothing.
@@ -80,6 +84,7 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 - Persona modules 23–27 — module-loading sections de-duplicated: they now defer to `12-module-routing.txt` and list only persona-specific additions, eliminating the contradiction with the always-loaded set.
 - `modules/16-pre-commit-behavior.txt` — Python pre-commit type check and detection now use `pyright` instead of `mypy`, matching the house stack.
 - `modules/02-workflow.txt` — `DISCUSS` added to the Active phases list; `bootstrap.txt` phase diagram now annotates `DISCUSS`; `.opencode/command/phase.md` accepts `DISCUSS`.
+- `modules/27-babareviewer.txt` — docs-skip reference corrected from `02-workflow.txt:59-60` to `02-workflow.txt:64`.
 - `CHANGELOG.md` — merged duplicate `[Unreleased]` sections.
 
 ---

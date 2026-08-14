@@ -13,6 +13,10 @@ The Baba system has five layers:
 `AUTO` chooses the execution mode. A broad or risky request enters
 `CHECKLIST → DOCS (when needed) → REVIEW → PLAN → PATCH`.
 
+Deterministic skips advance without user confirmation: `DOCS` when no version-sensitive judgment is in
+scope, and the upstream ScrumMaster pipeline when a concrete target exists at session start. The skip
+reason is recorded.
+
 `REVIEW` owns confirmation. `PLAN` requires explicit approval and a complete
 rewrite contract. `PATCH` is the only implementation phase. The optional
 ScrumMaster pipeline runs only when the user provides a goal without a concrete

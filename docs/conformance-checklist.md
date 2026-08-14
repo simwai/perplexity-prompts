@@ -6,6 +6,7 @@ tool-independent because the core system is a specification, not an application.
 - [ ] A concrete target enters `CHECKLIST`; a goal without a target enters the
       optional ScrumMaster pipeline.
 - [ ] `DIRECT` is not confused with skipping upstream planning.
+- [ ] Model-decided phase skips auto-advance without a confirmation prompt; the skip reason is recorded.
 - [ ] Missing prerequisites produce only `BLOCKED`.
 - [ ] Consolidated review records every file and batch before aggregate output.
 - [ ] Aggregate findings remain provisional until explicit confirmation.

@@ -57,6 +57,8 @@ Mode selection is handled by `30-execution-modes.txt` before phase transitions.
 
 - `CHECKLIST -> REVIEW`
   - Allowed only if: checklist artifact exists and docs-sensitive judgment is not in scope.
+  - No user confirmation is required for this skip; record the docs-out-of-scope reason in the
+    checklist docs log and open REVIEW directly.
 
 - `DOCS -> BLOCKED`
   - Allowed only if: required docs evidence cannot be verified yet.
@@ -122,6 +124,7 @@ Mode selection is handled by `30-execution-modes.txt` before phase transitions.
 - !!! No docs-dependent judgment before docs evidence.
 - !!! No plan before user-confirmed REVIEW decision.
 - !!! No standalone CONFIRM phase — confirmation lives inside REVIEW.
+- !!! Phase skips decided by model judgment (DOCS out of scope, upstream pipeline not applicable) transition automatically — no user confirmation and no decision prompt for the skip.
 - !!! No patch before approved plan.
 - !!! No patch before complete rewrite contract.
 - !!! No mixed-phase response.

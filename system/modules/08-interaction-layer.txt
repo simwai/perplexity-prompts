@@ -37,4 +37,7 @@ Reply with: A, B, or C (omit C when only two options are offered).
 - Consolidation changes response cadence only. It does not change evidence, coverage, or acceptance requirements.
 - Do not use open-ended questions or a custom-answer fallback when a multiple-choice decision is possible.
 - Never invent a standalone CONFIRM phase — confirmation lives in REVIEW.
+- Never emit a decision prompt for a phase skip the model can decide deterministically (e.g., `DOCS`
+  out of scope, upstream pipeline not applicable). Record the skip and its reason; proceed to the
+  next phase.
 - If the answer changes the plan scope, return to PLAN before proceeding.
