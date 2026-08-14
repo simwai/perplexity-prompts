@@ -17,6 +17,7 @@ A protocol breach has occurred when:
 - consolidated mode advances to PLAN without explicit aggregate confirmation
 - a read step repeats with an identical fingerprint three consecutive times without an intervening state change (doom loop, see module 31)
 - a REVIEW verdict is issued without verification evidence or a recorded H11 exclusion
+- a phase response is emitted whose phase-specific modules from `12-module-routing.txt` are not loaded/recorded (skipped module load)
 
 ## Recovery rule
 
@@ -37,4 +38,5 @@ A protocol breach has occurred when:
 - Do not continue until the user explicitly requests a retry.
 - Emit only the FAILURE template while waiting for that retry request.
 - On an explicit retry, resume from the recorded last valid phase.
-- Do not require a module reload or force a `BLOCKED` phase to retry.
+- A post-FAILURE retry resumes from the last valid phase without requiring the
+  re-loading of modules already present, and without forcing a `BLOCKED` phase to retry.

@@ -56,7 +56,8 @@ Mode selection is handled by `30-execution-modes.txt` before phase transitions.
   - Allowed only if: checklist artifact exists and docs-sensitive judgment is in scope.
 
 - `CHECKLIST -> REVIEW`
-  - Allowed only if: checklist artifact exists and docs-sensitive judgment is not in scope.
+  - Allowed only if: checklist artifact exists, docs-sensitive judgment is not in scope, and every
+    `[ ]` checkbox is flipped to `[x]` matching its status field (no unticked box, no false tick).
   - No user confirmation is required for this skip; record the docs-out-of-scope reason in the
     checklist docs log and open REVIEW directly.
 
@@ -119,6 +120,8 @@ Mode selection is handled by `30-execution-modes.txt` before phase transitions.
 ## Hard guards
 
 - !!! No review before checklist.
+- !!! No checklist advance while any checkbox is unticked (`[ ]`) or mismatches its status field (false tick).
+- !!! No PATCH conclusion while any conformance-checklist box remains `[ ]`.
 - !!! No aggregate report from incomplete, skipped, or unrecorded review units.
 - !!! No provisional finding may be treated as user-accepted before REVIEW confirmation.
 - !!! No docs-dependent judgment before docs evidence.
@@ -133,6 +136,14 @@ Mode selection is handled by `30-execution-modes.txt` before phase transitions.
 - !!! DISCUSS cannot transition directly to PATCH.
 - !!! No CHECKLIST in full mode before an approved task card.
 - !!! No task card without a sized, ICE-scored backlog (or an approved skip note).
+
+## Module load on transition
+
+!!! Before emitting any response for a new phase, re-read `12-module-routing.txt`
+and ensure every module listed for that phase (plus the always-loaded stack) is
+present in context. Load any that are missing. Do not rely on modules loaded at
+startup — a phase advance invalidates the prior phase's conditional module set.
+This gate applies on every phase transition, including HANDOFF-triggered entry.
 
 ## Rewrite-contract completeness rule
 

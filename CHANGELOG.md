@@ -73,6 +73,12 @@ Versioning follows [Semantic Versioning](https://semver.org/).
   judgment is in scope, upstream ScrumMaster pipeline when a concrete target exists)
   transition straight to the next phase without a confirmation prompt; the skip and
   its one-line reason are recorded in the phase artifact and `SESSION_STATE.md`.
+- Checkbox ticking is now mandatory and tied to status: every `[ ]` in a phase artifact
+  must flip to `[x]` and match its `complete`/`reviewed` status field before the next
+  phase opens, and `PATCH` cannot conclude with an unticked conformance box. A `[x]`
+  on work still `pending` is a false tick and a protocol breach (`02-workflow.txt`,
+  `07-output-contracts.txt`, `11-state-machine.txt`, `25-babadev.txt`,
+  `docs/conformance-checklist.md`).
 
 ### Removed
 - `role-legend.md` — obsolete root-level role table, superseded by the Persona System section in `bootstrap.txt` and the persona modules. Was stale (five roles, missing BabaScrumMaster) and referenced nothing.

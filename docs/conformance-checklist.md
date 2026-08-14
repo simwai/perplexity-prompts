@@ -13,6 +13,8 @@ tool-independent because the core system is a specification, not an application.
 - [ ] A mismatched `SESSION_STATE.md` cannot restore old approval.
 - [ ] Each persona handoff contains only the fields required by its receiver.
 - [ ] PATCH requires explicit approval and all four rewrite-contract fields.
+- [ ] `[ ]` checkboxes in phase artifacts are flipped to `[x]` only when their status field
+      reflects completed work; no phase advances and no PATCH concludes with an unticked box.
 - [ ] Tester guidance is classified as binding, strong hint, or weak hint.
 - [ ] MCP packages are version-pinned or their update policy is documented.
 - [ ] Portable deployment and OpenCode adapter scope are documented consistently.
