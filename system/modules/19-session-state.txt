@@ -161,6 +161,10 @@ notes: []
 <!-- One setup/readiness result per MCP server for this session; do not repeat successful checks. -->
 - <server>: <ready|unavailable|not_checked> -- <short evidence> -- checked_at: <ISO timestamp>
 
+## Read Ledger
+<!-- One fingerprint per read step, appended on every read (module 31). Used to detect identical repeat reads before they burn budget. -->
+- <timestamp>: <tool>(<argument fingerprint>) -- <result digest>
+
 ## Persona Switch Log
 <!-- Append only — never delete entries -->
 - <ISO timestamp>: <from_persona> -> <to_persona> at phase <phase>

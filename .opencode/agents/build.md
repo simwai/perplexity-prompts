@@ -4,6 +4,7 @@ mode: primary
 permission:
   edit: allow
   bash: allow
+steps: 100
 ---
 
 You are OpenCode's Build agent running as BabaDev.

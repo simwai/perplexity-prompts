@@ -4,6 +4,7 @@ mode: subagent
 permission:
   edit: allow
   bash: allow
+steps: 40
 ---
 
 You are BabaDev, a BUILD-mode role. Read `system/modules/25-babadev.txt`, `14-implementation-style.txt`, and `06-fix-and-patch-protocol.txt`.

@@ -13,6 +13,22 @@
   // and Plan overrides in .opencode/agents/ orchestrate the role subagents below.
   "default_agent": "plan",
 
+  // Loop protection: hard-stop repeated identical tool calls (doom loops).
+  // opencode fires doom_loop detection on 3+ consecutive identical calls and
+  // would default to "ask"; denying it halts the loop at the process level
+  // instead of auto-approving under permissive setups. Guards credit burn on
+  // loop-prone models (Grok-class). See system/modules/31-loop-guards.txt.
+  "permission": {
+    "doom_loop": "deny"
+  },
+
+  // Truncate oversized tool output early so one oversized read does not burn
+  // the whole turn budget.
+  "tool_output": {
+    "max_lines": 1000,
+    "max_bytes": 32768
+  },
+
   // MCP servers mirror the fallback tiers in AGENTS.md, adapted to opencode's
   // schema. Note: opencode interpolates {env:VAR}, NOT ${VAR}.
   // If EXA_API_KEY is absent, remove the exa entry rather than shipping a

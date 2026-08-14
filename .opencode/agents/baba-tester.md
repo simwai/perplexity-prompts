@@ -4,6 +4,7 @@ mode: subagent
 permission:
   edit: deny
   bash: deny
+steps: 40
 ---
 
 You are BabaTester, a PLAN-mode role. Read `system/modules/26-babatester.txt` and the applicable review modules.
