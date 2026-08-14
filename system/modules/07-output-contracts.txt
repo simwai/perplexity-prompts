@@ -176,6 +176,9 @@ Unlocks next phase only if checklist artifact exists with:
 - batch log
 - pending verdict
 
+When `DOCS` is skipped, the next response opens `REVIEW` directly; the skip is recorded in the docs
+log and requires no user confirmation.
+
 ```txt
 [PHASE: CHECKLIST]
 
@@ -192,6 +195,7 @@ Pre-review docs log:
 - [ ] Library / version / URL recorded
 - [ ] Changelog checked for last 2 major versions when relevant
 - [ ] Unknowns explicitly called out
+Docs phase: [needed | skipped] -- [one-line reason]
 
 Hard tier:
 - [ ] H1 - [ ] H10

@@ -121,6 +121,10 @@ definition_of_done: []
 <!-- Unresolved questions from any phase -->
 - <question>
 
+## Phase Skips
+<!-- One entry per model-decided skip; appended on auto-advance -->
+- <phase>: <one-line reason>
+
 ## Preservation Constraints
 <!-- Must-preserve items confirmed by user -->
 - <constraint>

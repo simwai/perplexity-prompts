@@ -204,6 +204,10 @@ Required inputs:
 
 When user choice is genuinely required and the phase is not blocked, ask with this structure:
 
+Decision prompts cover user-owned choices only: scope, findings confirmation, plan approval, and
+cadence. Deterministic phase skips (`DOCS` out of scope, upstream pipeline not applicable) are
+recorded and auto-advanced; they are never framed as decision prompts.
+
 ```txt
 [PHASE: <current phase>]
 

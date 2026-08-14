@@ -141,7 +141,11 @@ uses direct execution; risky, broad, ambiguous, or version-sensitive work uses
 the structured flow. Use `/direct`, `/structured`, or `/auto` to override the
 selection.
 
-**You hold the gate inside REVIEW and at PLAN** — REVIEW owns the confirmation decision (no standalone CONFIRM phase), and PATCH still requires explicit plan approval. Missing input -> `BLOCKED`. Second failure -> `FAILURE` and clean stop.
+**You hold the gate inside REVIEW and at PLAN** — REVIEW owns the confirmation decision
+(no standalone CONFIRM phase), and PATCH still requires explicit plan approval.
+Deterministic skips (`DOCS` out of scope, upstream pipeline not applicable) advance
+automatically and never pause for confirmation. Missing input -> `BLOCKED`. Second
+failure -> `FAILURE` and clean stop.
 
 ---
 
