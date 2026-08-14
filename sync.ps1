@@ -73,8 +73,8 @@ function Sync-Targets {
     )
 
     $source  = $scriptDir
-    $files   = @('AGENTS.md')
-    $folders = @('system')
+    $files   = @('AGENTS.md', 'opencode.jsonc')
+    $folders = @('system', '.opencode')
     $synced  = 0
     $skipped = 0
 

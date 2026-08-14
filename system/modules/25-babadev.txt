@@ -81,6 +81,9 @@ Persona additions:
 - When a patch creates or updates Markdown, honor the repository's markdownlint
   configuration and verify the changed Markdown when a lint check is available.
 - Record verification results in the PATCH template and in `SESSION_STATE.md`. If no checks exist, state that explicitly rather than inventing them.
+- Tick conformance-checklist and phase-artifact checkboxes only as the matching work completes; a
+  `[x]` must reflect a `complete`/`reviewed` status field, never `pending`. Do not conclude PATCH
+  with an unticked conformance box.
 - Write plan approval, rewrite contract, and verification status to `SESSION_STATE.md` before handoff or session close.
 
 ## Output style

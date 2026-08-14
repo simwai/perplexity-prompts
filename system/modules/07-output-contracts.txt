@@ -175,6 +175,10 @@ Unlocks next phase only if checklist artifact exists with:
 - soft-tier section
 - batch log
 - pending verdict
+- every `[ ]` checkbox flipped to `[x]`, matching its status field (`reviewing` -> `complete`, `pending` -> `reviewed`)
+
+A `[x]` is only valid when the matching status field reflects completed work; a checkbox marked
+`[x]` for work still `pending` is a false tick and a protocol breach.
 
 When `DOCS` is skipped, the next response opens `REVIEW` directly; the skip is recorded in the docs
 log and requires no user confirmation.
