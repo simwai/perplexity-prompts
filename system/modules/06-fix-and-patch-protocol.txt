@@ -44,6 +44,9 @@ Use this module during the PATCH phase.
 - Record the exact command and its real output per step in the session's own
   state file (module 19); never record an assumed-clean pass. If no lint command
   exists, record SKIPPED with the reason.
+- At the same recording step, append each edited path to the session's own
+  state file `## Edited Files` section (module 19) — this list is the staging
+  source for the commit/push gate (module 33).
 - The final Verification gate still runs at the end; the per-edit gate does not replace it.
 
 ## Compliance audit
@@ -62,3 +65,12 @@ Use this module during the PATCH phase.
 - Write verification results to the PATCH template and the session's own state
   file (module 19).
 - If a required check fails, report FAIL and return to PLAN unless the failure is outside scope and explicitly accepted.
+
+## Commit/push gate
+
+- !!! After the Verification gate, when the session made file edits, apply
+  `33-commit-and-push-gate.txt` before concluding PATCH.
+- !!! No commit or push without the module-33 ask (breach per module 09).
+- Stage the session's edited files only; push origin then `*-mirror` remotes
+  per module 33, with per-remote reporting and no force-push.
+- Emit the `# Commit/Push Gate` block in the PATCH template (module 07).

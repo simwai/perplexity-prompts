@@ -25,6 +25,10 @@ tool-independent because the core system is a specification, not an application.
       and no step concludes with an assumed-clean pass.
 - [ ] Before each code edit, `14-implementation-style.txt` defaults are consulted and
       applied, in DIRECT and PATCH alike.
+- [ ] End-of-session commit/push runs through the module-33 gate: the user is
+      asked first, staging is limited to the session's edited files, remote
+      URLs are never printed, and per-remote push failures are reported
+      without becoming protocol failures.
 - [ ] Tester guidance is classified as binding, strong hint, or weak hint.
 - [ ] The agent never asks the user to provide files, paths, versions, or snippets
       discoverable in the local filesystem; it searches first with `rg` (fallback

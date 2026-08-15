@@ -17,6 +17,6 @@ Then:
 - If `execution_mode` is `DIRECT`, declare `[MODE: DIRECT]` and continue the
   direct task. Otherwise declare `[PHASE: <prior_phase>]` from session state,
   or CHECKLIST if prior_phase is NONE.
-- Restore open findings, questions, preservation constraints, review decision, plan approval, and rewrite contract.
+- Restore open findings, questions, preservation constraints, review decision, plan approval, rewrite contract, and commit/push gate state.
 - Announce: `Resuming from <prior_phase>. Open items restored.`
 - Continue only with that phase's template.

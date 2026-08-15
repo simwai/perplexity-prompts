@@ -52,6 +52,7 @@ must be kept in sync:
 - `02-workflow.txt` — phase-skip recording
 - `06-fix-and-patch-protocol.txt` — lint and verification recording
 - `32-filesystem-first.txt` — SESSION_STATE recovery cross-reference
+- `33-commit-and-push-gate.txt` — edited-file staging source and gate outcome writes
 - `.opencode/commands/` — approve-plan, resume, handoff, phase, verify, baba
 - `.opencode/agents/` — build, plan
 - `docs/AGENTS-usage.md`, `docs/conformance-checklist.md`
@@ -257,6 +258,20 @@ diff_inspected: false
 checks_run: []
 results: NONE|PASS|FAIL|SKIPPED
 notes: []
+
+## Edited Files
+<!-- Append only — one path per edit step, at the per-edit lint-gate recording
+point (modules 06/30). Staging source for the commit/push gate (module 33). -->
+- <path>
+
+## Commit/Push Gate
+<!-- Filled when the session made file edits, at end of PATCH/DIRECT per module 33 -->
+decision: A|B|C|NONE
+commit_sha: <sha or NONE>
+message_subject: <subject or NONE>
+push_results:
+- <remote> -- <pushed|skipped-duplicate|skipped-detached|failed>
+gate_checked_at: <ISO timestamp or NONE>
 
 ## MCP Preflight
 <!-- One setup/readiness result per MCP server for this session; do not repeat successful checks. -->

@@ -67,6 +67,12 @@ Direct mode may inspect files, edit, and run checks as needed. It must still:
   of files changed in one go), run the project's configured lint on the touched files
   and fix reported issues (auto-fix first, then manual fixes), recording the exact
   command and its real result; never record an assumed-clean pass
+- append each edited path to the session's own state file `## Edited Files`
+  section (module 19) alongside the lint recording
+- when edits were made, apply the commit/push gate (`33-commit-and-push-gate.txt`)
+  before reporting completion: ask the user first, stage the session's edited
+  files only, push origin then `*-mirror` remotes with per-remote reporting;
+  never print remote URLs
 - report what changed and what verification ran
 
 Do not emit phase templates, ask for formal plan approval, or invent review

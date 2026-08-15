@@ -8,6 +8,17 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- `modules/33-commit-and-push-gate.txt` — end-of-session commit/push gate: when
+  a session made file edits (end of PATCH after verification, end of DIRECT
+  work), the agent asks the user first (A. commit+push / B. commit / C. skip),
+  stages only the session's edited files (new append-only `Edited Files` ledger
+  in module 19, fed by the per-edit lint-gate recording points in modules 06
+  and 30), and pushes to `origin` then every `*-mirror` remote with duplicate-URL
+  skip and per-remote continue-and-report. Remote URLs are never printed —
+  `.git/config` URLs embed live credentials (H1). No force-push, no destructive
+  git ops; two new breach conditions in module 09; gate state restores via
+  `resume.md`; wired into 12-module-routing (always-loaded), bootstrap,
+  06/25/30/07/16, opencode agents and commands, and docs.
 - `modules/32-filesystem-first.txt` — filesystem-first rule: agents never ask the
   user to provide files, paths, versions, or snippets discoverable in the local
   filesystem; content search prefers `rg` over `grep`. Cross-referenced from

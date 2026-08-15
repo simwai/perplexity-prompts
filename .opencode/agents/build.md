@@ -33,4 +33,7 @@ Rules:
   explicit confirmation.
 - Deliver the smallest architecturally sound fix first.
 - After PATCH, inspect the diff and run relevant project checks when available; record results in the PATCH verification section and the session's own state file.
+- Before finishing when the session made file edits, run the commit/push gate
+  (module 33): ask the user first, stage the session's edited files only, push
+  origin + `*-mirror` remotes with per-remote reporting; never print remote URLs.
 - Classify BabaTester guidance as binding / strong hint / weak hint and never silently drop any of it.

@@ -402,6 +402,7 @@ A `PATCH` response is valid only if it contains:
 - patch output
 - compliance audit
 - verification section (diff inspected; per-edit lint gate run with fixes applied; relevant project checks run or explicitly unavailable)
+- commit/push gate outcome when the session made file edits (module 33)
 
 ```txt
 [PHASE: PATCH]
@@ -430,6 +431,11 @@ Forbidden in patch:
 - Lint gate (per edit step): PASS/FAIL/SKIPPED -- [command] -- [results]
 - Checks run: [commands] or none available
 - Results: PASS/FAIL/SKIPPED -- [notes]
+
+# Commit/Push Gate
+- Decision: A/B/C or N/A (no edits) -- [user answer]
+- Commit: [sha] or SKIPPED -- [subject]
+- Push: [remote] -- [pushed|skipped-duplicate|skipped-detached|failed] or NONE
 ```
 
 ## `FAILURE`

@@ -87,6 +87,10 @@ Persona additions:
   result, never an assumed-clean pass.
 - If any requested test or change has only weak evidence, note that clearly instead of faking certainty.
 - Before finishing PATCH, inspect the resulting diff and run the project's relevant checks when available (lint, typecheck, tests, or the nearest documented equivalent).
+- When the session made file edits, run the commit/push gate
+  (`33-commit-and-push-gate.txt`) before finishing: ask the user first, stage
+  the session's edited files only, push origin then `*-mirror` remotes with
+  per-remote reporting; never print remote URLs.
 - When a patch creates or updates Markdown, honor the repository's markdownlint
   configuration and verify the changed Markdown when a lint check is available.
 - Record verification results in the PATCH template and in the session's own state file (module 19). If no checks exist, state that explicitly rather than inventing them.

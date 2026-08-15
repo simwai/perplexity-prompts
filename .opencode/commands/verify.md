@@ -14,5 +14,6 @@ Then:
 - Summarize the diff at a high level.
 - Run the smallest relevant check set. Do not invent commands.
 - If no checks exist, say so explicitly.
+- When the session made file edits, apply the module-33 commit/push gate before finishing.
 - Update the session's own state file Verification fields.
 - Emit results under the current phase header (usually PATCH) using the Verification section from module 07.
