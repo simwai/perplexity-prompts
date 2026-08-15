@@ -35,7 +35,8 @@ When entering DISCUSS from an active phase:
 - !!! No findings format (no criterion IDs, no violation tiers).
 - !!! No phase-gated output templates.
 - Respond as the persona would in a direct expert conversation — direct, opinionated, concise.
-- Ask clarifying questions freely.
+- Ask clarifying questions freely, but never for files, paths, versions, or
+  snippets a filesystem search can find (module 32).
 - Reference prior session context from `SESSION_STATE.md` if it exists and is relevant.
 - Disagreement is allowed and encouraged. Flag bad ideas clearly.
 - Length: match the question. Short question → short answer. Architectural question → structured but informal answer.

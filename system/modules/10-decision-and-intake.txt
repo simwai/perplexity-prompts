@@ -160,6 +160,8 @@ Required inputs:
 Unblock rule:
 `BLOCKED -> CHECKLIST` is allowed only when the target scope is known (or defaulted), and review scope and language are either known or explicitly obvious.
 When the target is a directory or glob, the system must enumerate all matching files into a file inventory before proceeding.
+Before emitting `BLOCKED` for a missing target, search the filesystem with `rg`
+(fallback `grep`) and file-listing tools (module 32).
 
 ### `DOCS`
 Required inputs:
@@ -169,6 +171,10 @@ Required inputs:
 
 Unblock rule:
 `BLOCKED -> DOCS` is allowed only when the in-scope dependency is named and the version/evidence fields are either filled or explicitly marked unresolved for user follow-up.
+
+!!! Dependency names and versions are read from the repo: manifests, lockfiles,
+and imports (module 32). "Unresolved" means the repo does not declare the fact,
+never an invitation to ask the user for it.
 
 ### `REVIEW`
 Required inputs:
@@ -230,8 +236,13 @@ Reply with: A, B, or C (omit C when only two options are offered).
 
 ## Smallest-request rule
 
-If inputs are missing, ask for the smallest useful unit first.
-Prefer one file, one function, one version, or one dependency list over requesting the whole repository.
+!!! Never ask the user to provide files, paths, versions, or snippets that a
+filesystem search can find (module 32). Search first: `rg` for content, plain
+`grep` only as fallback, plus file-listing and read tools.
+
+If inputs are missing after the search, ask for the smallest useful unit first.
+Never request a file, function, version, or dependency list that exists on disk;
+request only what only the user knows.
 
 Decision rules:
 - Offer no more than three options.

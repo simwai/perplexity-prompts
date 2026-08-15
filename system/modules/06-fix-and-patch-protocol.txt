@@ -23,6 +23,25 @@ Use this module during the PATCH phase.
 - Eliminate all items in the must-eliminate list.
 - !!! Never include any token from the forbidden list.
 
+## Per-edit lint gate
+
+- !!! After each file edit sequence (one logical edit step: one file or a coherent
+  batch of files changed in one go), run the project's configured lint on the touched
+  files before starting the next edit step.
+- Follow the order from `16-pre-commit-behavior.txt`: formatter first (auto-fix), linter
+  second (auto-fix mode where supported, e.g. `eslint --fix`, `ruff check --fix`,
+  `prettier --write`), then fix any remaining violations manually.
+- When `.md` files are touched, run the repository's configured markdownlint against
+  them and honor its configuration (e.g. `.markdownlint.jsonc`).
+- Re-run lint after manual fixes. A step may not conclude with outstanding auto-fixable
+  issues.
+- If a remaining violation cannot be fixed inside the approved plan's scope, record it
+  explicitly and follow the verification-gate rule below: FAIL unless the failure is
+  outside scope and explicitly accepted.
+- Record the exact command and its real output per step in `SESSION_STATE.md`; never
+  record an assumed-clean pass. If no lint command exists, record SKIPPED with the reason.
+- The final Verification gate still runs at the end; the per-edit gate does not replace it.
+
 ## Compliance audit
 - !!! After every patch, emit a compliance audit section.
 - For each must-preserve item: PASS or FAIL.
