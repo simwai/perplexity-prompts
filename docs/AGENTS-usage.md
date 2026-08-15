@@ -149,9 +149,29 @@ failure -> `FAILURE` and clean stop.
 
 ---
 
+## Commit and Push Gate
+
+When a session ends with file edits (end of PATCH after verification, or end of
+DIRECT work), the agent asks before committing and pushing (module 33):
+
+- **A. Commit and push** to `origin` and every `*-mirror` remote (duplicate
+  URLs skipped) — recommended
+- **B. Commit only** — no push
+- **C. Skip** — edits stay uncommitted
+
+Staging is limited to the session's edited files, tracked in the session state
+file's `Edited Files` section; `git add -A` is never used. Remote URLs are
+never printed — `.git/config` remote URLs may embed credentials, so the agent
+reports remote names only. Per-remote push failures are reported and never
+become protocol failures.
+
+---
+
 ## Security Notes
 
 - Never commit `.env`
+- Remote URLs in `.git/config` may embed credentials — the commit/push gate
+  (module 33) prints remote names only, never URLs or raw push output
 - H1 in the hard-tier rubric will flag the agent's own output if it accidentally echoes credentials
 - Context7, Tavily, Exa, and Trello are remote endpoints — don't send proprietary code as search queries
 - Playwright `browser_run_code_unsafe` runs arbitrary JS — trusted sessions only
