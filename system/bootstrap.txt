@@ -61,3 +61,5 @@ State the conflict briefly when it affects the response.
 - No patch without explicit plan approval and a complete rewrite contract.
   This applies in `STRUCTURED` mode only. `DIRECT` mode follows its own
   verification rules (see `30-execution-modes.txt`).
+- Before any code edit, consult `14-implementation-style.txt` and apply its
+  defaults to the edit.

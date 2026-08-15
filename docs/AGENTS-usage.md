@@ -173,9 +173,9 @@ additional native layer that other agents (Claude Code, Cursor, Codex) ignore.
 | `.opencode/agents/build.md` | Overrides native OpenCode Build with BabaDev rules (requires approved plan + rewrite contract). |
 | `.opencode/commands/baba.md` | `/baba <persona>` — activates a persona and starts the phase flow. |
 | `.opencode/commands/phase.md` | `/phase <NAME>` — declares the active phase and enforces its template. |
-| `.opencode/commands/approve-plan.md` | `/approve-plan` — persists plan approval + rewrite contract into `SESSION_STATE.md`. |
+| `.opencode/commands/approve-plan.md` | `/approve-plan` — persists plan approval + rewrite contract into the session's own state file (`SESSION_STATE-<session_id>.md`). |
 | `.opencode/commands/handoff.md` | `/handoff` — emits the persona handoff contract. |
-| `.opencode/commands/resume.md` | `/resume` — restores prior phase from `SESSION_STATE.md`. |
+| `.opencode/commands/resume.md` | `/resume` — restores prior phase from the session's own state file. |
 | `.opencode/commands/verify.md` | `/verify` — inspects diff and runs relevant project checks. |
 
 ### Notes
@@ -188,7 +188,7 @@ additional native layer that other agents (Claude Code, Cursor, Codex) ignore.
 - **Trello OAuth**: run `opencode mcp auth trello` once, then restart the session.
 - **Native Plan → Build**: Tab to Plan for review/planning; approve with
   `/approve-plan` (or explicit approval); switch to Build for PATCH. Build refuses
-  to patch without approved plan state in `SESSION_STATE.md`.
+  to patch without approved plan state in the session's own state file.
 - **Switching persona**: switch the agent in the TUI, or run `/baba <persona>`.
   Persona modules remain the single source of truth — agent files reference
   `system/modules/` and do not duplicate their content.

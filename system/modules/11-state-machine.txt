@@ -110,11 +110,11 @@ Mode selection is handled by `30-execution-modes.txt` before phase transitions.
 
 - `ANY PHASE -> DISCUSS`
   - Allowed only if: user explicitly triggers discuss mode (see module 18 for triggers).
-  - Prior phase is written to SESSION_STATE.md before entering DISCUSS.
+  - Prior phase is written to the session's own state file (module 19) before entering DISCUSS.
 
 - `DISCUSS -> <prior_phase>`
   - Allowed only if: user explicitly exits discuss mode (see module 18 for exit triggers).
-  - Prior phase is read from SESSION_STATE.md.
+  - Prior phase is read from the session's own state file (module 19).
   - !!! DISCUSS cannot transition directly to PATCH.
 
 ## Hard guards

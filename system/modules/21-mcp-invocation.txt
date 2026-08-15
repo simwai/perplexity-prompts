@@ -31,9 +31,9 @@ server's task operation before setup and verification complete.
   fallback ladder below and record the failure; never treat an untested server
   as ready.
 
-When `SESSION_STATE.md` is active, persist the setup and verification evidence
-in its `MCP Preflight` section. Otherwise keep the ledger in session context and
-report the setup and preflight result when MCP is used.
+When the session's own state file is active (module 19), persist the setup and
+verification evidence in its `MCP Preflight` section. Otherwise keep the ledger
+in session context and report the setup and preflight result when MCP is used.
 
 ## Signal -> tool matrix
 

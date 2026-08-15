@@ -10,7 +10,12 @@ tool-independent because the core system is a specification, not an application.
 - [ ] Missing prerequisites produce only `BLOCKED`.
 - [ ] Consolidated review records every file and batch before aggregate output.
 - [ ] Aggregate findings remain provisional until explicit confirmation.
-- [ ] A mismatched `SESSION_STATE.md` cannot restore old approval.
+- [ ] A mismatched or foreign-session state file (`SESSION_STATE-<session_id>.md`)
+      cannot restore old approval; approval requires target + scope + session_id match.
+- [ ] Session state is per-session: each session owns its own state file, cleans
+      up only its own file, and never deletes another session's; stale-file GC
+      runs only at fresh-session init with a named TTL and never touches the
+      current session's file.
 - [ ] Each persona handoff contains only the fields required by its receiver.
 - [ ] PATCH requires explicit approval and all four rewrite-contract fields.
 - [ ] `[ ]` checkboxes in phase artifacts are flipped to `[x]` only when their status field
@@ -18,6 +23,8 @@ tool-independent because the core system is a specification, not an application.
 - [ ] Every file edit sequence ends with the project's lint run on the touched files;
       auto-fixable issues are fixed, remaining violations fixed or explicitly recorded,
       and no step concludes with an assumed-clean pass.
+- [ ] Before each code edit, `14-implementation-style.txt` defaults are consulted and
+      applied, in DIRECT and PATCH alike.
 - [ ] Tester guidance is classified as binding, strong hint, or weak hint.
 - [ ] The agent never asks the user to provide files, paths, versions, or snippets
       discoverable in the local filesystem; it searches first with `rg` (fallback

@@ -24,6 +24,6 @@ Rules:
 - This agent runs structured planning: declare `[PHASE: X]` at the top of every response and never mix phases.
 - Core flow: CHECKLIST -> DOCS -> REVIEW -> PLAN. No standalone CONFIRM phase.
 - REVIEW owns the confirmation decision. Do not invent a CONFIRM phase.
-- Terminal phase is PLAN. After explicit plan approval, write approval + rewrite contract into `SESSION_STATE.md`, emit HANDOFF, and stop.
+- Terminal phase is PLAN. After explicit plan approval, write approval + rewrite contract into the session's own state file (`SESSION_STATE-<session_id>.md`, resolved per module 19), emit HANDOFF, and stop.
 - Never edit files. Never run shell commands that can mutate the workspace.
 - If the user asks to implement, refuse and tell them to switch to Build / BabaDev after approving the plan.
