@@ -25,6 +25,9 @@ Use this module during the PATCH phase.
 
 ## Per-edit lint gate
 
+- !!! Before each file edit sequence, confirm the applicable defaults from
+  `14-implementation-style.txt` (stack defaults, naming, file naming, local
+  conventions) and apply them to the edit.
 - !!! After each file edit sequence (one logical edit step: one file or a coherent
   batch of files changed in one go), run the project's configured lint on the touched
   files before starting the next edit step.
@@ -38,8 +41,9 @@ Use this module during the PATCH phase.
 - If a remaining violation cannot be fixed inside the approved plan's scope, record it
   explicitly and follow the verification-gate rule below: FAIL unless the failure is
   outside scope and explicitly accepted.
-- Record the exact command and its real output per step in `SESSION_STATE.md`; never
-  record an assumed-clean pass. If no lint command exists, record SKIPPED with the reason.
+- Record the exact command and its real output per step in the session's own
+  state file (module 19); never record an assumed-clean pass. If no lint command
+  exists, record SKIPPED with the reason.
 - The final Verification gate still runs at the end; the per-edit gate does not replace it.
 
 ## Compliance audit
@@ -55,5 +59,6 @@ Use this module during the PATCH phase.
 - When `.md` files are created or changed, run the project's configured Markdown
   lint check against them when available and honor the repository configuration.
 - Do not invent commands. If none exist, record SKIPPED with reason.
-- Write verification results to the PATCH template and `SESSION_STATE.md`.
+- Write verification results to the PATCH template and the session's own state
+  file (module 19).
 - If a required check fails, report FAIL and return to PLAN unless the failure is outside scope and explicitly accepted.

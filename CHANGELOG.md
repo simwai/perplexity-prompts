@@ -68,6 +68,26 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 - `modules/30-execution-modes.txt` — DIRECT mode now forbids repeating an identical read step without a state change.
 
 ### Changed
+- Session state is now concurrency-safe: each session owns a session-scoped
+  state file `SESSION_STATE-<session_id>.md` instead of a single shared
+  repo-root `SESSION_STATE.md`. `session_id` resolves from a sanitized
+  `SESSION_ID` env var (regex `^[A-Za-z0-9._-]+$`, path-traversal rejected),
+  a conversation-remembered id, or a generated `<ISO timestamp>-<8 hex>` value
+  (>= 8 hex entropy floor). Legacy bare `SESSION_STATE.md` files are consumed
+  via an atomic rename on first init (the rename is the claim; a racing session
+  falls back to fresh init) and their `Plan Approval` / `Rewrite Contract`
+  fields are invalidated on adoption — a legacy file can never authorize work.
+  Approval/rewrite-contract restore now requires target + scope + session_id
+  match (`10-decision-and-intake.txt`, `19-session-state.txt`, `resume.md`,
+  `baba.md`). Cleanup deletes only the session's own file; stale-file GC runs
+  only at fresh-session init against a named `SESSION_STATE_TTL_DAYS = 7`
+  constant, skips unparseable files, never touches the current session, and
+  names deleted files. Read ledger and MCP preflight ledger persist per session.
+  Module 19 is the single canonical source for resolution rules; all surfaces
+  (modules 02/06/10/11/18/21/25/30/31/32, `.opencode/commands/*`,
+  `.opencode/agents/*`, `docs/AGENTS-usage.md`, `docs/conformance-checklist.md`)
+  reference it without re-description. `.gitignore` now also excludes
+  `SESSION_STATE-*.md`.
 - `system/bootstrap.txt` is now a **module loader only**; canonical rules live in `system/modules/`.
 - Removed standalone `CONFIRM` phase. Core flow is `CHECKLIST -> DOCS -> REVIEW -> PLAN -> PATCH`. REVIEW owns the confirmation decision section.
 - OpenCode discovery paths moved to documented plurals: `.opencode/agents/` and `.opencode/commands/`.
@@ -93,6 +113,11 @@ Versioning follows [Semantic Versioning](https://semver.org/).
   gate still runs at the end (`06-fix-and-patch-protocol.txt`, `25-babadev.txt`,
   `30-execution-modes.txt`, `14-implementation-style.txt`, `07-output-contracts.txt`,
   `docs/conformance-checklist.md`).
+- Module 14 (`14-implementation-style.txt`) is now always-loaded and its defaults are a
+  mandatory pre-edit consultation gate: every code edit, in DIRECT and PATCH alike,
+  applies module 14 style defaults before writing code (`12-module-routing.txt`,
+  `bootstrap.txt`, `30-execution-modes.txt`, `06-fix-and-patch-protocol.txt`,
+  `25-babadev.txt`, `01-orchestrator.txt`, `docs/conformance-checklist.md`).
 
 ### Removed
 - `role-legend.md` — obsolete root-level role table, superseded by the Persona System section in `bootstrap.txt` and the persona modules. Was stale (five roles, missing BabaScrumMaster) and referenced nothing.

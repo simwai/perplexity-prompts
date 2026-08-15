@@ -11,7 +11,7 @@ change execution mode.
 Before acting:
 1. Read `system/modules/12-module-routing.txt` and load the modules required for the requested phase.
 2. Read `system/bootstrap.txt` if not already loaded this session and confirm the loader + routing rules.
-3. Read `SESSION_STATE.md` if present.
+3. Read the session's own state file `SESSION_STATE-<session_id>.md` (resolved per module 19) if present.
 
 Then:
 - Declare `[PHASE: <name>]` at the top of your response and output only that phase's template from `system/modules/07-output-contracts.txt`.

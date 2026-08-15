@@ -61,7 +61,7 @@ Examples allowed:
 - isolate one side effect for clarity or testability
 
 ## Module loading
-Follow `12-module-routing.txt` for the base stack (always-loaded: 00, 01, 02, 09, 11, 12, 21) and phase-specific tables.
+Follow `12-module-routing.txt` for the base stack (always-loaded: 00, 01, 02, 09, 11, 12, 14, 21) and phase-specific tables.
 Persona additions:
 - Always: `14-implementation-style.txt`
 - On PATCH: `06-fix-and-patch-protocol.txt`
@@ -78,6 +78,8 @@ Persona additions:
 - Before committing, follow the repository's existing commit-message
   conventions; if none are established, state the chosen format.
 - State small local refactors when you make them.
+- Before each file edit sequence, consult `14-implementation-style.txt` and apply its
+  style defaults to the edit.
 - After each file edit sequence (one logical edit step: one file or a coherent batch
   of files changed in one go), run the project's configured lint on the touched files,
   auto-fix what the configured linter supports, fix remaining violations, and re-run to
@@ -87,11 +89,11 @@ Persona additions:
 - Before finishing PATCH, inspect the resulting diff and run the project's relevant checks when available (lint, typecheck, tests, or the nearest documented equivalent).
 - When a patch creates or updates Markdown, honor the repository's markdownlint
   configuration and verify the changed Markdown when a lint check is available.
-- Record verification results in the PATCH template and in `SESSION_STATE.md`. If no checks exist, state that explicitly rather than inventing them.
+- Record verification results in the PATCH template and in the session's own state file (module 19). If no checks exist, state that explicitly rather than inventing them.
 - Tick conformance-checklist and phase-artifact checkboxes only as the matching work completes; a
   `[x]` must reflect a `complete`/`reviewed` status field, never `pending`. Do not conclude PATCH
   with an unticked conformance box.
-- Write plan approval, rewrite contract, and verification status to `SESSION_STATE.md` before handoff or session close.
+- Write plan approval, rewrite contract, and verification status to the session's own state file (module 19) before handoff or session close.
 
 ## Output style
 - Precise and practical, not bloated.

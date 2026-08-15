@@ -69,7 +69,7 @@ Conditional order:
 - Skip `SPRINT` on explicit user request; the pipeline then runs `INTAKE -> BACKLOG -> TASK_PLAN`.
 - A phase skipped by model judgment (e.g., `DOCS` when no docs-sensitive judgment is in scope, or the
   upstream pipeline when it does not apply) needs no user confirmation: record the skip and its
-  one-line reason in the phase artifact and `SESSION_STATE.md`, then open the next phase directly.
+  one-line reason in the phase artifact and the session's own state file (module 19), then open the next phase directly.
   Never emit a decision prompt for a skip the model can decide.
 - Use `FAILURE` only after repeated protocol breach.
 

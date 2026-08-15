@@ -39,6 +39,7 @@ venv/
 
 # AI session artifacts
 SESSION_STATE.md
+SESSION_STATE-*.md
 sessions/
 *.session.txt
 *.session.md

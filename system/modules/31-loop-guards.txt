@@ -38,8 +38,8 @@ breach instead of a silent credit drain.
 
 - Maintain a read ledger for the session: one fingerprint per read step plus its
   result digest, so repeats are detectable across turns.
-- When `SESSION_STATE.md` is active, persist the ledger in its `Read Ledger`
-  section (module 19). Otherwise keep the ledger in session context.
+- When the session's own state file is active (module 19), persist the ledger in
+  its `Read Ledger` section. Otherwise keep the ledger in session context.
 - Do not re-read to refresh the ledger; a ledger entry is valid until the
   underlying target changes or the user asks for a fresh read.
 
@@ -50,6 +50,24 @@ breach instead of a silent credit drain.
   recorded result instead of re-invoking (extends module 21).
 - Do not re-run a failed or empty lookup with identical arguments expecting a
   different result. Change the evidence gap or the arguments, or go `BLOCKED`.
+
+## Bounded validation loop
+
+A single defined exception to the doom-loop rules, used to raise the confidence
+of a REVIEW finding without asking the user:
+
+- Trigger: a REVIEW finding is recorded at confidence <= 70%.
+- Allowed: up to 3 validation passes, each using a **distinct read fingerprint**
+  (docs lookup per module 03, context read, cross-repo search, or an available
+  project check — the module 04 H11 rule against invented commands applies).
+- State-change rule preserved: a pass that returns no new evidence terminates
+  the loop early; the finding then keeps its last honest confidence.
+- Reusing an identical fingerprint across passes is a breach per module 09,
+  unchanged; the pass list must show a different fingerprint per pass.
+- Terminal classification: `confirmed` when a pass raises confidence above 70%,
+  otherwise `disputed` and routed to the REVIEW decision section for batch-level
+  user confirmation (module 07). This loop never replaces user confirmation of
+  the decision section.
 
 ## Step conscience
 

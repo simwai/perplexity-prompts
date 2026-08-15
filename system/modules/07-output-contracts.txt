@@ -287,6 +287,12 @@ Consolidated mode: inspect every file and batch in order, recording coverage and
 
 When all files are reviewed in either mode, the final REVIEW output must contain the aggregate violations and the REVIEW decision section before transitioning to PLAN.
 
+A finding recorded at confidence <= 70% must first pass the bounded validation
+loop (module 31): up to 3 distinct-fingerprint validation passes, run without
+user input. Record the loop in the template below. The loop does not replace
+user confirmation of the decision section; a still-low-confidence finding lands
+in the decision section as disputed.
+
 ```txt
 [PHASE: REVIEW]
 
@@ -300,6 +306,12 @@ Batch: [lines X-Y or FULL or AGGREGATE – all files complete] ([N] of [M] for t
 
 Confirmed-looking violations (provisional until the decision section is confirmed):
 - [criterion id] -- [line/range] -- [one-sentence failure] ([confidence]%)
+
+Validation loop (run when any finding is at confidence <= 70%):
+- Trigger: [criterion id] -- [confidence]%
+- Passes run: [fingerprint 1] -> [result] / [fingerprint 2] -> [result] / [fingerprint 3] -> [result] (or "terminated early: no new evidence at pass N")
+- Final confidence: [X]%
+- Terminal classification: [confirmed | disputed]
 
 Open questions:
 - Question: [short question]

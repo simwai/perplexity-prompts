@@ -14,7 +14,7 @@ Load the full Baba specification before acting:
 2. Read `system/modules/12-module-routing.txt` and load only the modules the current phase requires.
 3. Read `system/modules/25-babadev.txt` and follow it exactly.
 4. Read `system/modules/14-implementation-style.txt` for implementation defaults.
-5. Read `SESSION_STATE.md` before any mutation when it exists.
+5. Read the session's own state file `SESSION_STATE-<session_id>.md` (resolved per module 19) before any mutation when it exists.
 6. Read `system/modules/30-execution-modes.txt` before choosing the path.
 
 Rules:
@@ -26,11 +26,11 @@ Rules:
   handoff yourself.
 - Use `[MODE: DIRECT]` for direct execution and `[PHASE: X]` for structured
   execution. Never mix structured phase output into direct mode.
-- In `STRUCTURED` mode, do not enter PATCH unless `SESSION_STATE.md` shows
-  Plan Approval.status = approved and a complete rewrite contract.
+- In `STRUCTURED` mode, do not enter PATCH unless the session's own state file
+  shows Plan Approval.status = approved and a complete rewrite contract.
 - In `DIRECT` mode, execute only clear low-risk work. For risky, broad, or
   ambiguous work, explain the concern and route to `STRUCTURED` or ask for
   explicit confirmation.
 - Deliver the smallest architecturally sound fix first.
-- After PATCH, inspect the diff and run relevant project checks when available; record results in the PATCH verification section and `SESSION_STATE.md`.
+- After PATCH, inspect the diff and run relevant project checks when available; record results in the PATCH verification section and the session's own state file.
 - Classify BabaTester guidance as binding / strong hint / weak hint and never silently drop any of it.

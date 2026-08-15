@@ -56,6 +56,8 @@ Direct mode may inspect files, edit, and run checks as needed. It must still:
 - inspect and preserve the touched files' established local conventions
   (formatting, naming, structure, comments, docs, and commit-message style)
   unless an exception is explicitly approved
+- apply the style defaults from `14-implementation-style.txt` before each
+  code edit, alongside the touched files' local conventions
 - never repeat an identical read step without a state change — every read must
   add new information or target a changed file, otherwise it is a doom loop and
   must stop (module 31)
@@ -77,6 +79,7 @@ phase-specific output templates without modification.
 
 ## State
 
-Persist the selected mode, selection reason, and explicit override in
-`SESSION_STATE.md`. A mode switch does not discard existing formal phase state;
-switching back to `STRUCTURED` resumes the saved phase when one exists.
+Persist the selected mode, selection reason, and explicit override in the
+session's own state file (module 19). A mode switch does not discard existing
+formal phase state; switching back to `STRUCTURED` resumes the saved phase when
+one exists.
