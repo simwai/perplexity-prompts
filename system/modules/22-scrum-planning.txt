@@ -66,6 +66,8 @@ Allowed only if:
 
 Unlocks `BACKLOG` only if goal and at least one success criterion are recorded;
 milestones default to a single catch-all milestone when the user supplies none.
+`Target repo` defaults to the agent's current working directory; ask for a path
+only when the repo is genuinely outside the workspace (module 32).
 
 ```txt
 [PHASE: INTAKE]

@@ -203,7 +203,7 @@ additional native layer that other agents (Claude Code, Cursor, Codex) ignore.
 |---|---|---|
 | MCP server missing | Token not exported | `echo $EXA_API_KEY` — re-run `source .env` if empty |
 | Agent ignores phases | `AGENTS.md` not read | Confirm it's at repo root; some agents need `--context AGENTS.md` |
-| Immediate `BLOCKED` | Missing library/version info | Include the library name + version in your task description |
+| Immediate `BLOCKED` | Missing library/version info | The agent reads names/versions from manifests and lockfiles; `BLOCKED` is valid only after a filesystem search (module 32) failed |
 | Trello tools absent | OAuth not completed | Run `opencode mcp auth trello` once, then restart the session |
 | Playwright won't launch | Node too old or browser missing | Use Node 20+; first run downloads browsers via `npx playwright install` |
 | Exa auth error | Wrong header key | Exa: `x-api-key` |

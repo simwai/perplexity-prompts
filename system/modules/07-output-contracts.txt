@@ -27,6 +27,12 @@ generic statement such as "cannot proceed" or "missing information". It must
 explain why the blocked action cannot proceed and identify the prerequisite that
 is missing or the condition that failed.
 
+!!! Before emitting `BLOCKED` for a missing file, path, version, or scope
+input, perform a filesystem search (`rg`, fallback `grep`, plus file-listing and
+read tools – module 32) and record the search in the `Reason`. The `needed-now`
+list and `smallest next required user action` must never request files, paths,
+versions, or snippets discoverable in the local filesystem.
+
 ```txt
 [PHASE: BLOCKED]
 
@@ -234,6 +240,10 @@ Unlocks `REVIEW` only if docs evidence contains:
 - changelog window checked status when relevant
 - short review-impact note
 
+"Unresolved version" applies only after the repo's manifests, lockfiles, and
+imports were checked with `rg` (fallback `grep`) and file tools (module 32);
+never ask the user to supply a version the repo declares.
+
 ```txt
 [PHASE: DOCS]
 
@@ -379,7 +389,7 @@ A `PATCH` response is valid only if it contains:
 - rewrite contract
 - patch output
 - compliance audit
-- verification section (diff inspected; relevant project checks run or explicitly unavailable)
+- verification section (diff inspected; per-edit lint gate run with fixes applied; relevant project checks run or explicitly unavailable)
 
 ```txt
 [PHASE: PATCH]
@@ -405,6 +415,7 @@ Forbidden in patch:
 
 # Verification
 - Diff inspected: yes/no -- [summary]
+- Lint gate (per edit step): PASS/FAIL/SKIPPED -- [command] -- [results]
 - Checks run: [commands] or none available
 - Results: PASS/FAIL/SKIPPED -- [notes]
 ```

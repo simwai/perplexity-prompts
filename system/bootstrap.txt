@@ -33,6 +33,7 @@ Load this file at startup per AGENTS.md. This file is a **loader only** — it d
 | Session state | `19-session-state.txt` |
 | Execution mode routing | `30-execution-modes.txt` |
 | Loop protection | `31-loop-guards.txt` |
+| Filesystem-first discovery | `32-filesystem-first.txt` |
 | Database conventions | `20-database-conventions.txt` |
 
 ## Precedence model

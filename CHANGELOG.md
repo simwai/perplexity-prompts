@@ -8,6 +8,13 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- `modules/32-filesystem-first.txt` — filesystem-first rule: agents never ask the
+  user to provide files, paths, versions, or snippets discoverable in the local
+  filesystem; content search prefers `rg` over `grep`. Cross-referenced from
+  `10-decision-and-intake.txt`, `07-output-contracts.txt`, `08-interaction-layer.txt`,
+  `30-execution-modes.txt`, `00-persona-system.txt`, `23-babascrummaster.txt`,
+  `25-babadev.txt`, `18-discuss-mode.txt`, `22-scrum-planning.txt`,
+  `19-session-state.txt`, `03-docs-research.txt`, and `docs/AGENTS-usage.md`.
 - Safer OpenCode defaults: the loader is explicitly configured, MCP packages are
   version-pinned, and planning is the default native agent.
 - Architecture and protocol conformance guides for maintainers and students.
@@ -78,6 +85,13 @@ Versioning follows [Semantic Versioning](https://semver.org/).
   phase opens, and `PATCH` cannot conclude with an unticked conformance box. A `[x]`
   on work still `pending` is a false tick and a protocol breach (`02-workflow.txt`,
   `07-output-contracts.txt`, `11-state-machine.txt`, `25-babadev.txt`,
+  `docs/conformance-checklist.md`).
+- Per-edit lint gate: every file edit sequence (one logical edit step: one file or a
+  coherent batch changed in one go) now ends with the project's lint run on the touched
+  files (formatter first, auto-fix, then manual fixes), with the exact command and its
+  real result recorded per step and no assumed-clean pass allowed; the final verification
+  gate still runs at the end (`06-fix-and-patch-protocol.txt`, `25-babadev.txt`,
+  `30-execution-modes.txt`, `14-implementation-style.txt`, `07-output-contracts.txt`,
   `docs/conformance-checklist.md`).
 
 ### Removed

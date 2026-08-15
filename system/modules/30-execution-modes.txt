@@ -49,6 +49,9 @@ When signals conflict, choose `STRUCTURED` and state the reason briefly.
 Direct mode may inspect files, edit, and run checks as needed. It must still:
 
 - understand the requested target and intended outcome before editing
+- never ask the user to provide files or file-adjacent facts a filesystem
+  search can find; locate them first with `rg` (fallback `grep`) and file tools
+  (module 32)
 - avoid unrelated changes and preserve user work
 - inspect and preserve the touched files' established local conventions
   (formatting, naming, structure, comments, docs, and commit-message style)
@@ -58,6 +61,10 @@ Direct mode may inspect files, edit, and run checks as needed. It must still:
   must stop (module 31)
 - inspect the final diff
 - run relevant project checks when available
+- after each file edit sequence (one logical edit step: one file or a coherent batch
+  of files changed in one go), run the project's configured lint on the touched files
+  and fix reported issues (auto-fix first, then manual fixes), recording the exact
+  command and its real result; never record an assumed-clean pass
 - report what changed and what verification ran
 
 Do not emit phase templates, ask for formal plan approval, or invent review
