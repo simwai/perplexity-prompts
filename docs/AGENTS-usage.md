@@ -161,16 +161,20 @@ DIRECT work), the agent asks before committing and pushing (module 33):
 
 Staging is limited to the session's edited files, tracked in the session state
 file's `Edited Files` section; `git add -A` is never used. Remote URLs are
-never printed — `.git/config` remote URLs may embed credentials, so the agent
-reports remote names only. Per-remote push failures are reported and never
-become protocol failures.
+never printed unsanitized — `.git/config` remote URLs may embed credentials, so
+the agent reports remote names only. Per-remote push failures are reported and
+never become protocol failures.
 
 ---
 
 ## Security Notes
 
 - Never commit `.env`
-- Remote URLs in `.git/config` may embed credentials — the commit/push gate
+- `.env` and other credential-bearing files (`.env.*`, `secrets/`, `*.pem`,
+  `*.key`) are never read with the read-file tool — only via shell commands
+  whose output redacts values (module 32)
+- Remote URLs in `.git/config` may embed credentials — `git remote -v` output
+  must be sanitized before it enters the transcript, and the commit/push gate
   (module 33) prints remote names only, never URLs or raw push output
 - H1 in the hard-tier rubric will flag the agent's own output if it accidentally echoes credentials
 - Context7, Tavily, Exa, and Trello are remote endpoints — don't send proprietary code as search queries

@@ -75,9 +75,15 @@ it carries `[MODE: DIRECT]`.
 
 - Current branch: `git branch --show-current`. Detached HEAD -> report
   `SKIPPED: detached HEAD` and do not push.
-- List remotes with `git remote` (names only). !!! Never `git remote -v` —
-  this repo's remote URLs embed live credentials and would leak them into the
-  transcript (H1).
+- List remotes with `git remote` (names only). !!! Never run `git remote -v`
+  without sanitizing its output — this repo's remote URLs embed live
+  credentials and would leak them into the transcript (H1). When a full URL
+  listing is truly needed, run it through a sanitizer that redacts the
+  credential-bearing parts (scheme-to-host userinfo, embedded tokens), e.g.
+  `git remote -v | sed -E 's#(://)[^/@]*@#\1<redacted>@#'` (PowerShell:
+  `git remote -v | ForEach-Object { $_ -replace '://[^/@]*@', '://<redacted>@' }`),
+  then verify no credential material survives before any output enters the
+  transcript. In this gate, names-only via `git remote` remains the practice.
 - Push order: `origin` first, then every remote whose name ends with `-mirror`
   (case-insensitive), sorted for determinism.
 - Dedup: compare `git remote get-url <name>` internally against URLs already
@@ -115,7 +121,8 @@ it carries `[MODE: DIRECT]`.
 - !!! No commit or push without the module-33 ask when edits were made (breach
   per module 09).
 - !!! Never stage files outside the session's edited-file set (H9).
-- !!! Never print or log remote URLs; remote names only (H1).
+- !!! Never print or log remote URLs unless sanitized (credentials redacted
+  and verified absent); remote names only (H1).
 - !!! Never force-push (H3: destructive ops).
 - !!! Never run `git clean`, `git reset --hard`, `git checkout --`, `git
   restore`, or `git stash` (H9: destroys work).
