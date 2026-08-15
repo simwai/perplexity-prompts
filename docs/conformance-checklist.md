@@ -27,8 +27,12 @@ tool-independent because the core system is a specification, not an application.
       applied, in DIRECT and PATCH alike.
 - [ ] End-of-session commit/push runs through the module-33 gate: the user is
       asked first, staging is limited to the session's edited files, remote
-      URLs are never printed, and per-remote push failures are reported
-      without becoming protocol failures.
+      URLs are never printed unsanitized, and per-remote push failures are
+      reported without becoming protocol failures.
+- [ ] Credential-bearing files (`.env`, `.env.*`, `secrets/`, `*.pem`, `*.key`)
+      are never read with the read-file tool; shell reads emit names with
+      redacted values only, and `git remote -v` output is sanitized before it
+      enters the transcript (modules 32/33).
 - [ ] Tester guidance is classified as binding, strong hint, or weak hint.
 - [ ] The agent never asks the user to provide files, paths, versions, or snippets
       discoverable in the local filesystem; it searches first with `rg` (fallback

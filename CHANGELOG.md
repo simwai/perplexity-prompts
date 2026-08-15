@@ -8,6 +8,15 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- Sanitized-output security rules: `git remote -v` may run only with sanitized
+  output — credentials redacted and verified absent before entering the
+  transcript (module 33, replacing the outright ban; the gate still lists
+  remotes by name only) — and credential-bearing files (`.env`, `.env.*`,
+  `secrets/`, `*.pem`, `*.key`) are never read with the read-file tool, only
+  via shell commands emitting names with redacted values (module 32,
+  cross-referenced from module 15). Two new breach conditions in module 09
+  enforce both rules protocol-wide; `docs/AGENTS-usage.md` and
+  `docs/conformance-checklist.md` synced.
 - `modules/33-commit-and-push-gate.txt` — end-of-session commit/push gate: when
   a session made file edits (end of PATCH after verification, end of DIRECT
   work), the agent asks the user first (A. commit+push / B. commit / C. skip),
