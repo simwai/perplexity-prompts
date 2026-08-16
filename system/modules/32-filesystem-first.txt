@@ -1,4 +1,5 @@
 <HIGH_PRIO_ENFORCEMENT>
+
 # Filesystem-First (Self-Serve Discovery)
 
 Use this module in every phase, every persona, and every execution mode to
@@ -72,6 +73,7 @@ what was searched and what was found (modules 07, 10).
 ## When asking IS allowed
 
 Ask the user only for inputs that cannot be found on disk:
+
 - external credentials and secret values
 - service URLs, account details, and environment facts known only to the user
 - design intent, product decisions, and acceptance criteria
@@ -82,6 +84,7 @@ Such questions use the smallest useful form and the decision format from
 ## Interaction surfaces
 
 The following surfaces are subject to this rule and cross-reference it:
+
 - smallest-request rule and phase unblock rules (`10-decision-and-intake.txt`)
 - BLOCKED and DOCS templates (`07-output-contracts.txt`)
 - decision-prompt rules (`08-interaction-layer.txt`)

@@ -1,4 +1,5 @@
 <HIGH_PRIO_ENFORCEMENT>
+
 # Session State
 
 Use this module in any multi-persona session or whenever a mid-session mode switch occurs.
@@ -8,6 +9,7 @@ Use this module in any multi-persona session or whenever a mid-session mode swit
 Session state is a temporary, machine-readable file written and read by the
 active persona at every phase transition and mode switch. It preserves context
 across:
+
 - Phase transitions within a session
 - DISCUSS mode entry and exit
 - Mid-session persona switches
@@ -63,6 +65,7 @@ sanitizer applies on both carriers.
 
 The following surfaces resolve the session's own state file per this module and
 must be kept in sync:
+
 - `10-decision-and-intake.txt` — fresh-session validity
 - `11-state-machine.txt` — DISCUSS prior-phase persistence
 - `18-discuss-mode.txt` — DISCUSS entry/exit and promotion
@@ -166,6 +169,7 @@ carrier.
 
 The active persona writes or overwrites its own `SESSION_STATE-<session_id>.md`
 at every:
+
 - Phase transition
 - DISCUSS entry or exit
 - Persona switch
@@ -355,6 +359,7 @@ hosts, the conversation on `READ_ONLY` hosts (module 34). The log entry and the
 ## Cleanup rule
 
 Delete only the session's own `SESSION_STATE-<session_id>.md` when:
+
 - Session concludes with a successful PATCH or explicit user close
 - User says "close session", "end session", or "clean up"
 

@@ -5,6 +5,7 @@ Use this module to detect and handle protocol breach.
 ## Breach conditions
 
 A protocol breach has occurred when:
+
 - a response contains content from more than one phase
 - !!! a patch is emitted without an approved plan
 - !!! a patch is emitted without a complete rewrite contract
@@ -36,12 +37,14 @@ A protocol breach has occurred when:
 ## FAILURE trigger
 
 !!! FAILURE is triggered when:
+
 - one recovery attempt already failed
 - the next response breaches protocol again
 
 ## Post-failure rule
 
 !!! After FAILURE:
+
 - Do not continue until the user explicitly requests a retry.
 - Emit only the FAILURE template while waiting for that retry request.
 - On an explicit retry, resume from the recorded last valid phase.

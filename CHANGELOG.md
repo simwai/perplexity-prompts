@@ -8,6 +8,7 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+
 - Comprehension-before-judgment rule: `modules/32-filesystem-first.txt` gains a
   "Search locates, full read comprehends" section — a grep hit is a slice, not
   understanding; a file must be read in full (largest window, offset-chunked
@@ -72,7 +73,8 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 - Safer OpenCode defaults: the loader is explicitly configured, MCP packages are
   version-pinned, and planning is the default native agent.
 - Architecture and protocol conformance guides for maintainers and students.
-- `modules/14-implementation-style.txt` -- added a File naming section (per-stack filename conventions, test-file naming, case-collision and extension rules) and expanded the Project structure section (root config and scripts placement, test layout choice, kebab-case directories, frontend layer names). Per-stack sections cross-reference the File naming section instead of duplicating rules.
+- `modules/14-implementation-style.txt` -- added a File naming section (per-stack filename conventions, test-file naming, case-collision and extension rules) and expanded the Project structure section (root config and scripts placement, test layout choice,
+  kebab-case directories, frontend layer names). Per-stack sections cross-reference the File naming section instead of duplicating rules.
 - `modules/30-execution-modes.txt` — adaptive `AUTO`, `DIRECT`, and `STRUCTURED` routing with explicit low-risk direct execution and safety-preserving verification.
 - OpenCode `/direct`, `/structured`, and `/auto` commands for overriding adaptive mode selection.
 - `modules/00-persona-system.txt` — always-loaded persona overview and recommended session flow (content moved out of bootstrap).
@@ -83,7 +85,8 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 - `modules/28-app-lifecycle.txt` — startup validation, fail-fast configuration errors, and bounded graceful shutdown guidance.
 - `modules/29-library-selection.txt` — value density, maintenance, security, type safety, dependency footprint, migration, and distribution-aware license selection criteria.
 - Restructured into a one-file + one-folder deployable layout: `bootstrap.txt`, `modules/`, and `personas/` moved under `system/`; `AGENTS.md` is now a slim entry pointer with a Deploy section. `README.md`, `docs/AGENTS-usage.md`, and `.pre-commit-config.yaml` updated to the new paths.
-- Personas are now modules: `system/personas/` removed, personas moved into `system/modules/` as `23-babascrummaster.txt`, `24-babasensei.txt`, `25-babadev.txt`, `26-babatester.txt`, `27-babareviewer.txt`. The deployable unit is now just `bootstrap.txt` + `modules/`. `AGENTS.md`, `README.md`, `docs/AGENTS-usage.md`, and `modules/12-module-routing.txt` updated to the new layout. Session flow folded into `bootstrap.txt`.
+- Personas are now modules: `system/personas/` removed, personas moved into `system/modules/` as `23-babascrummaster.txt`, `24-babasensei.txt`, `25-babadev.txt`, `26-babatester.txt`, `27-babareviewer.txt`. The deployable unit is now just `bootstrap.txt` + `modules/`.
+  `AGENTS.md`, `README.md`, `docs/AGENTS-usage.md`, and `modules/12-module-routing.txt` updated to the new layout. Session flow folded into `bootstrap.txt`.
 - `modules/21-mcp-invocation.txt` — decision guidance for when to invoke each MCP: signal-to-tool matrix, phase pairing, no-go rules (built-ins first, one call per evidence gap, no secrets through remote endpoints), and keyless web-search fallback via direct curl to Google's URL format.
 - `modules/20-database-conventions.txt` — recreated the missing file referenced by module routing, extracted from the Database conventions section in `bootstrap.txt`.
 - Registered `21-mcp-invocation.txt` as always-loaded in `modules/12-module-routing.txt`.
@@ -122,6 +125,7 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 - `modules/30-execution-modes.txt` — DIRECT mode now forbids repeating an identical read step without a state change.
 
 ### Changed
+
 - Session state is now concurrency-safe: each session owns a session-scoped
   state file `SESSION_STATE-<session_id>.md` instead of a single shared
   repo-root `SESSION_STATE.md`. `session_id` resolves from a sanitized
@@ -174,11 +178,13 @@ Versioning follows [Semantic Versioning](https://semver.org/).
   `25-babadev.txt`, `01-orchestrator.txt`, `docs/conformance-checklist.md`).
 
 ### Removed
+
 - `role-legend.md` — obsolete root-level role table, superseded by the Persona System section in `bootstrap.txt` and the persona modules. Was stale (five roles, missing BabaScrumMaster) and referenced nothing.
 - `scripts/pre-commit-check.sh` and `scripts/pre-commit-check.ps1` — replaced with LLM instruction module 16. Removed entirely.
 - `.pre-commit-config.yaml` — replaced with LLM instruction module 16. Stub file remains for reference.
 
 ### Fixed
+
 - `modules/27-babareviewer.txt` — responsibilities line now reads H1–H10 instead of H1–H9; added a Terminal phase section clarifying the reviewer audits patches and never authors them.
 - `modules/07-output-contracts.txt` — CHECKLIST template hard-tier line now lists H1–H10 instead of H1–H9.
 - Persona modules 23–27 — module-loading sections de-duplicated: they now defer to `12-module-routing.txt` and list only persona-specific additions, eliminating the contradiction with the always-loaded set.
@@ -192,6 +198,7 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 ## [1.0.0] — 2026-05-17
 
 ### Added
+
 - Updated `README.md` and `docs/AGENTS-usage.md` to support the MCP-enabled agent instructions.
 - Initial release of the phase-oriented prompt system.
 - Modules 01–12 and 14 covering orchestration, workflow, docs research, review rubrics (hard/soft), fix-and-patch protocol, output contracts, interaction layer, failure guards, decision-and-intake, state machine, module routing, and implementation style.

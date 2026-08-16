@@ -113,9 +113,11 @@ Combine all Tier 1 + Tier 2 + Trello blocks above. Omit any Tier 2 servers whose
 
 ## Loading the Full Spec
 
-`system/bootstrap.txt` is a **loader only**. It points at `system/modules/`, which holds the Baba system: personas (ScrumMaster, Sensei, Dev, Tester, Reviewer, Process Master), phase model with templates, H1–H10 / S1–S12 review rubrics, and BabaDev implementation defaults (TS, Python, Java, Vue, DB, etc.).
+`system/bootstrap.txt` is a **loader only**. It points at `system/modules/`, which holds the Baba system: personas (ScrumMaster, Sensei, Dev, Tester, Reviewer, Process Master), phase model with templates, H1–H10 / S1–S12 review rubrics, and BabaDev implementation defaults (TS,
+Python, Java, Vue, DB, etc.).
 
 **On startup:**
+
 1. Read `system/bootstrap.txt` (loader).
 2. Load always-on modules from `system/modules/12-module-routing.txt`.
 3. Load only the phase/persona modules the current session requires.

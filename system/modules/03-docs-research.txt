@@ -3,6 +3,7 @@
 Use this module during the DOCS phase.
 
 ## Purpose
+
 Verify official documentation for any library, framework, SDK, platform, or API that affects review judgment.
 
 ## Deep-read protocol
@@ -29,6 +30,7 @@ sections that cover them, and cite those sections.
    looked".
 
 ## Required output fields
+
 - Dependency name
 - Exact version (or explicit unresolved-version note)
 - Official source URL
@@ -39,6 +41,7 @@ sections that cover them, and cite those sections.
 - Sections skipped (candidates, with reason) — one line, omitted when none
 
 ## Rules
+
 - Never use unofficial sources, blog posts, or memory as evidence.
 - Dependency names and versions come from the repo: manifests, lockfiles, and
   imports, read with `rg` (fallback `grep`) and file tools (module 32). Never

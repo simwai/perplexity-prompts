@@ -1,4 +1,5 @@
 # perplexity-prompts
+
 Adaptive prompt system with lightweight direct execution and a structured AI
 code review workflow when the task needs it.
 
@@ -12,7 +13,7 @@ need stronger review and approval controls.
 
 ## Layout
 
-```
+```txt
 AGENTS.md          The single entry file — paste at a target repo root.
 system/            The copy-paste unit — contains bootstrap.txt (loader) and modules/.
 docs/              Usage documentation.

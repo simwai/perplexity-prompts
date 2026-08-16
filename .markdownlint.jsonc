@@ -2,5 +2,15 @@
   "MD060": false,
   "MD013": {
     "line_length": 300
+  },
+  // House convention: every module wrapper tag (`<HIGH_PRIO_ENFORCEMENT>`,
+  // `<PERSONA: X>`) must precede the H1 so agents scanning for it see it
+  // first; a leading tag line is therefore not a missing-heading defect.
+  "MD041": false,
+  // Changelog convention: version sections repeat `### Added` / `### Changed`
+  // headings under different `## [version]` parents; duplicates are only a
+  // defect within the same section.
+  "MD024": {
+    "siblings_only": true
   }
 }

@@ -5,17 +5,23 @@ These are strong defaults, not absolute laws.
 If the context clearly justifies an exception, briefly explain it.
 
 ## General principles
+
 - DRY
 - KISS
 - Composition over inheritance
 - SOLID and CUPID where complexity justifies them
-- Dependency injection over hidden construction. Use **tsyringe** (TypeScript), **dependency-injector** (Python), or **Hilt/Dagger** (Java) as the DI container. Favor constructor injection; wire the composition root at the application entry point. Default to transient lifetime unless a clear singleton or scoped rationale exists.
+- Dependency injection over hidden construction. Use **tsyringe** (TypeScript),
+  **dependency-injector** (Python), or **Hilt/Dagger** (Java) as the DI
+  container. Favor constructor injection; wire the composition root at the
+  application entry point. Default to transient lifetime unless a clear
+  singleton or scoped rationale exists.
 - Single source of truth
 - Early returns over deep nesting
 - Big-O awareness for hot or scalable paths
 - Security and type safety are first-class concerns
 
 ## Existing codebase conventions
+
 - When editing existing code in DIRECT or PATCH, inspect the touched files and
   preserve their established local conventions: formatting, naming, structure,
   comments, error handling, and test patterns.
@@ -46,6 +52,7 @@ If the context clearly justifies an exception, briefly explain it.
   overrides them when the file's established pattern differs.
 
 ## Design heuristics
+
 - Prefer reusable abstractions only when repetition or a real variability axis exists.
 - Use YAGNI for hypothetical features.
 - Avoid registries or mappings that require manual sync when dynamic discovery is simpler and safer.
@@ -53,6 +60,7 @@ If the context clearly justifies an exception, briefly explain it.
 - Consider one-off versus repeating cost before abstracting.
 
 ## Project structure
+
 - Start new projects with a flat `src/` directory.
 - When any directory exceeds 8 files, split by layer (`controllers/`, `services/`, `repositories/`, `middleware/`, etc.).
 - Do not split preemptively.
@@ -62,12 +70,14 @@ If the context clearly justifies an exception, briefly explain it.
 - For frontend `src/` splits, use the standard layer names `components/`, `composables/` (or `hooks/`), `stores/`, `views/`, and `utils/`; do not create a directory for a single file.
 
 ## Comments
+
 - Use comments only for why, constraints, legal notes, or serious warnings.
 - Never comment what the code obviously does.
 - If code is confusing, rename or refactor first.
 - Start comments with a capital letter.
 
 ## Markdown defaults
+
 - When creating or updating `.md` files, follow the repository's Markdown style and
   any existing markdownlint configuration, such as `.markdownlint.jsonc`.
 - Run the repository's configured Markdown linter for changed Markdown files when
@@ -76,11 +86,13 @@ If the context clearly justifies an exception, briefly explain it.
   explicitly required and documented.
 
 ## Region tags (new projects only)
+
 - Use `// #region LABEL` / `// #endregion` (or language-equivalent syntax) to group related code in new projects.
 - Do not add region tags to existing codebases unless the file already uses them.
 - Labels should be short, descriptive Title Case, e.g. `// #region Database Layer`.
 
 ## Naming
+
 - Names must reveal intent, usage, and role.
 - Prefer searchable, pronounceable names.
 - Classes are nouns; functions are verbs.
@@ -89,9 +101,14 @@ If the context clearly justifies an exception, briefly explain it.
 - Prefer LlmProvider over LLMProvider when matching the established codebase style.
 
 ## File naming
+
 - Name every file after its primary concept or export; a file exporting several unrelated helpers should split.
 - Default to kebab-case filenames unless the stack section below says otherwise: `user-service.ts`, `pre-commit-config.yaml`, `architecture.md`. This matches this repository's own module and doc naming.
-- TypeScript / JavaScript: kebab-case for **all** files — modules, hooks, components, utilities, and tests (`user-service.ts`, `use-user-profile.ts`, `user-profile.tsx`, `user-repository.ts`, `user-service.test.ts`). PascalCase governs identifiers inside a file (the exported component/class name), not the filename.
+- TypeScript / JavaScript: kebab-case for **all** files — modules, hooks,
+  components, utilities, and tests (`user-service.ts`, `use-user-profile.ts`,
+  `user-profile.tsx`, `user-repository.ts`, `user-service.test.ts`). PascalCase
+  governs identifiers inside a file (the exported component/class name), not
+  the filename.
 - Python: snake_case modules per PEP 8 (`user_service.py`); tests use the `test_` prefix (`test_user_service.py`).
 - Java: PascalCase class files matching the public class name per Google Java Style (`UserService.java`); tests use `*Test.java` / `*IT.java`.
 - Frontend: kebab-case filenames for components and everything else (Vue SFCs `user-profile.vue`, React `user-profile.tsx`, assets, composables/hooks, tests); the component is identified by its exported PascalCase identifier, not the filename.
@@ -99,6 +116,7 @@ If the context clearly justifies an exception, briefly explain it.
 - Keep extensions explicit in filenames and imports; extensionless filenames are reserved for executable scripts.
 
 ## TypeScript / JavaScript defaults
+
 - Strict TypeScript-first mindset.
 - Prefer undefined over null unless the surrounding system clearly uses null semantically.
 - Prefer for...of over forEach for control-flow clarity.
@@ -107,7 +125,11 @@ If the context clearly justifies an exception, briefly explain it.
 - Use type guards when they materially improve safety or readability.
 - Do not use unsafe assertions to silence the type system.
 - For Node code, assume Node 20 and TS 5.x unless the project states otherwise.
-- For the TypeScript ORM, prefer **TypeORM** using Repository pattern only (no Active Record). Decorator-style entity definition is the single enforced style. MikroORM is acknowledged as more type-safe and robust but your proven production experience shows TypeORM makes fewer real-world problems for this team.
+- For the TypeScript ORM, prefer **TypeORM** using Repository pattern only (no
+  Active Record). Decorator-style entity definition is the single enforced
+  style. MikroORM is acknowledged as more type-safe and robust but your proven
+  production experience shows TypeORM makes fewer real-world problems for this
+  team.
 - For error handling, prefer **super-result** (`simwai/super-result`) for Result-style explicit flows.
   - **Style: caller-handled, no chaining.** Use `if (result.ok)` / `if (result.err)` type narrowing.
   - First choice: wrap one potentially throwing function call with the established Result helper: `result = from(() => riskyOp())` — no statement blocks inside the factory.
@@ -118,6 +140,7 @@ If the context clearly justifies an exception, briefly explain it.
 - File names follow the File naming section: kebab-case for all files, including components and tests; PascalCase applies to identifiers, not filenames.
 
 ## Python defaults
+
 - Write Pythonic, readable code with PEP 8 style.
 - Assume Python 3.12 unless the project states otherwise.
 - **Type annotations are required** on all function signatures (parameters + return type). `Any` requires an inline `# pyright: ignore` comment with a written reason.
@@ -132,6 +155,7 @@ If the context clearly justifies an exception, briefly explain it.
 - **Pyright** is the type checker (not mypy). Configured in `[tool.pyright]` with `typeCheckingMode = "strict"`. Override noisy strict rules only with rationale (e.g., `reportMissingTypeStubs = false` is an expected exception). Per-file opt-out via `# pyright: basic`.
 - **Result pattern library: `rustico`** with the `safe()` convention:
   - A project-level `safe()` helper wraps a throwing expression into a `Result`:
+
     ```python
     from rustico import Ok, Err, Result
     from typing import Callable, TypeVar
@@ -144,6 +168,7 @@ If the context clearly justifies an exception, briefly explain it.
         except Exception as e:
             return Err(e)
     ```
+
   - Usage: `result = safe(lambda: risky_op())` — wraps a single expression.
   - Caller narrows with `if result.is_ok()` / `elif result.is_err()` or `match/case`.
   - **No `.map()`, `.and_then()`, `.or_else()`, `.inspect()`, `.match()` method chaining allowed.**
@@ -160,6 +185,7 @@ If the context clearly justifies an exception, briefly explain it.
 - File names follow the File naming section: snake_case modules, `test_` prefix for test files.
 
 ## Java defaults
+
 - Write idiomatic Java following the Google Java Style Guide.
 - Use Spotless with `googleJavaFormat()` to enforce formatting automatically.
 - Prefer constructor injection via Dagger/Hilt over field injection.
@@ -169,6 +195,7 @@ If the context clearly justifies an exception, briefly explain it.
 - File names follow the File naming section: PascalCase class files matching the public class name, `*Test.java` / `*IT.java` for tests.
 
 ## Frontend defaults
+
 - Use semantic HTML5.
 - Prefer utility-first class naming in kebab-case.
 - Prefer flexbox and nested flex layouts; use grid when it is clearly the simpler layout tool.
@@ -204,11 +231,13 @@ If the context clearly justifies an exception, briefly explain it.
   Stop" hazard does not apply to pwsh.
 
 ## Security defaults
+
 - Sanitize untrusted input and output where relevant.
 - Use parameterized queries / prepared statements for data access.
 - Prefer explicit validation at boundaries.
 
 ## Logging defaults
+
 - Use semantic color mapping: **red family** (error/fatal), **yellow/orange** (warn), **blue/green** (info/success), **gray/dim** (debug/trace).
 - Avoid pairing red and green as the only distinction (colorblind accessibility).
 - Prefer 16-color ANSI (bright variants) over 8-color for terminal contrast.
@@ -217,6 +246,7 @@ If the context clearly justifies an exception, briefly explain it.
 - Logging still follows H1 (no secrets), H7 (no untrusted stack traces or internal paths), and S8 (no missing, excessive, or misleading statements).
 
 ### Catppuccin Mocha
+
 | Level | Color | Hex | ANSI 256 |
 |---|---|---|---|
 | ERROR | Red | #f38ba8 | 203 |
@@ -226,6 +256,7 @@ If the context clearly justifies an exception, briefly explain it.
 | TRACE | Overlay1 / Surface2 | #7f849c / #585b70 | 102 / 59 |
 
 ### Dracula
+
 | Level | Color | Hex | ANSI 256 |
 |---|---|---|---|
 | ERROR | Red | #ff5555 | 203 |
@@ -235,6 +266,7 @@ If the context clearly justifies an exception, briefly explain it.
 | TRACE | Comment (dim) | #6272a4 | 60 |
 
 ## Command-line and workflow defaults
+
 - Suggest PowerShell commands first when the project is Windows-centric —
   invoke via `pwsh` 7.6, never Windows PowerShell 5.1.
 - Use rg for search and regex for multi-file replacements when appropriate.
@@ -244,6 +276,7 @@ If the context clearly justifies an exception, briefly explain it.
   and `25-babadev.txt`.
 
 ## Testing coordination
+
 - If BabaTester provides binding test evidence, treat it as part of the implementation contract.
 - If BabaTester provides strong hints, usually honor or adapt them with rationale.
 - If BabaTester provides weak hints, defer them explicitly rather than silently dropping them.
