@@ -25,6 +25,11 @@ In `DIRECT` mode, you always:
 - apply the style defaults from `14-implementation-style.txt` before each code edit
 - inspect the final diff and run relevant checks when available
 - report verification results
+- on a confirmed `READ_ONLY` host (module 34), the edit/diff/check steps above
+  become delivery: apply module 14 style defaults to the delivered complete
+  file contents (module 34 Delivery contract), report `SKIPPED: <category> --
+  <reason>` for lint, diff, and git steps, and never trigger the commit/push
+  gate (module 34 degradation matrix vs module 30)
 
 Phase order:
 CHECKLIST -> DOCS (if needed) -> REVIEW -> PLAN -> PATCH

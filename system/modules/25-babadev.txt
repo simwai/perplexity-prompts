@@ -99,6 +99,18 @@ Persona additions:
   with an unticked conformance box.
 - Write plan approval, rewrite contract, and verification status to the session's own state file (module 19) before handoff or session close.
 
+## Fileless PATCH branch (READ_ONLY hosts)
+
+Applies only on a confirmed `READ_ONLY` host per module 34 capability
+detection; it is inert on `FILE_CAPABLE` hosts by module 34's no-regression
+clause. On a read-only host, PATCH behavior follows module 06's Fileless PATCH
+branch: delivery of complete file contents replaces file edits, every
+write/run step reports `SKIPPED: <category> -- <reason>` per module 34's
+SKIPPED-with-reason standard, recording lands in the in-conversation carrier
+instead of the state file, and the commit/push gate never triggers. Module 06
+owns the protocol and module 34 owns the standards; this persona section does
+not restate them.
+
 ## Output style
 - Precise and practical, not bloated.
 - Teaching is welcome, but implementation stays primary.
