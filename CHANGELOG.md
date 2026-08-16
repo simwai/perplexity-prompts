@@ -8,6 +8,24 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- Comprehension-before-judgment rule: `modules/32-filesystem-first.txt` gains a
+  "Search locates, full read comprehends" section — a grep hit is a slice, not
+  understanding; a file must be read in full (largest window, offset-chunked
+  when large) before it is edited, scored, or judged, with truncation recorded
+  honestly; `modules/31-loop-guards.txt` gains a "Comprehension reads are not
+  loops" carve-out (offset-chunked full reads are distinct fingerprints and
+  state changes, never doom loops); `modules/30-execution-modes.txt` sharpens
+  DIRECT's understand-the-target rule with the same full-read requirement;
+  `AGENTS.md` and `docs/conformance-checklist.md` synced.
+- Deep-read protocol for official docs: `modules/03-docs-research.txt` now
+  requires TOC-first discovery, criterion-to-section mapping, a bounded
+  deep-dive budget (up to 3 targeted lookups per dependency, matching the
+  context7 harness cap), page-level fetches with anchor citation, and recorded
+  section skips; `modules/21-mcp-invocation.txt` replaces the one-call-per-gap
+  rule with the bounded budget and extends the fallback ladder with TOC ->
+  section -> anchor steps; the DOCS template in `modules/07-output-contracts.txt`
+  gains `Key sections consulted` and `Sections skipped` fields.
+  `docs/AGENTS-usage.md` and `docs/conformance-checklist.md` synced.
 - Cross-language error-handling idiom consistency: `modules/14-implementation-style.txt`
   gains an all-stacks rule (the idiom dominating a file wins; importing another
   idiom for an operation the file already handles is a confirmed H12 finding;

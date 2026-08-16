@@ -264,7 +264,9 @@ Verified evidence:
 - Version: [exact version or unresolved]
 - URL: [official docs URL]
 - Changelog window checked: [yes/no]
-- Notes that affect review: [short note]
+- Notes that affect review: [short note citing the supporting section — URL + anchor]
+- Key sections consulted: [URL + anchor + one-line finding, review-relevant entries only]
+- Sections skipped (candidates, with reason): [one line, omitted when none]
 
 Status:
 - Ready for review, or
