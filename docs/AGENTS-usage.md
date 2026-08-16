@@ -143,6 +143,10 @@ selection.
 
 **You hold the gate inside REVIEW and at PLAN** — REVIEW owns the confirmation decision
 (no standalone CONFIRM phase), and PATCH still requires explicit plan approval.
+PLAN must include a `Conventions:` field naming each touched file's dominating
+error-handling/style idiom with evidence (module 14); a foreign idiom for an
+operation the file already handles is a confirmed H12 finding unless explicitly
+user-approved.
 Deterministic skips (`DOCS` out of scope, upstream pipeline not applicable) advance
 automatically and never pause for confirmation. Missing input -> `BLOCKED`. Second
 failure -> `FAILURE` and clean stop.

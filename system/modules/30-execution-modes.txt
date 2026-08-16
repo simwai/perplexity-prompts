@@ -83,6 +83,12 @@ findings in `DIRECT`. Use `[MODE: DIRECT]` at the top of the response.
 Structured mode follows the normal phase order, gates, persona contracts, and
 phase-specific output templates without modification.
 
+- In `STRUCTURED` mode, PLAN and PATCH must cite each touched file's
+  established conventions — error-handling idiom, formatting, naming — with
+  evidence (module 14: Error-handling idiom consistency; module 07: the PLAN
+  `Conventions:` field). The local-conventions rule for `DIRECT` below applies
+  to plan approval and patch verification alike.
+
 ## State
 
 Persist the selected mode, selection reason, and explicit override in the

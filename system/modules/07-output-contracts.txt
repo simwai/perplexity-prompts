@@ -217,7 +217,7 @@ Pre-review docs log:
 Docs phase: [needed | skipped] -- [one-line reason]
 
 Hard tier:
-- [ ] H1 - [ ] H11
+- [ ] H1 - [ ] H12
 
 Soft tier:
 - [ ] S1 - [ ] S12
@@ -385,6 +385,9 @@ Will change:
 Will preserve:
 - [constraint]
 - [constraint]
+
+Conventions:
+- [dominating error-handling/style idiom per touched file, with evidence, and how the plan preserves it]
 
 Risks:
 - [risk]
