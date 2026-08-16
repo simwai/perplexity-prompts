@@ -82,8 +82,9 @@ function Sync-Targets {
     $source  = $scriptDir
     $files   = @('AGENTS.md', 'opencode.jsonc')
     $folders = @('system', '.opencode')
-    $synced  = 0
-    $skipped = 0
+    $synced     = 0
+    $skipped    = 0
+    $pushFailed = 0
 
     $selected = $Targets.GetEnumerator() | Where-Object { $_.Value } | ForEach-Object { $_.Key }
 
@@ -128,10 +129,15 @@ function Sync-Targets {
             }
         }
         $synced++
-        Update-GitTarget -Path $target -DryRun:$DryRun -NoGitPush:$NoGitPush
+        $pushFailed += [int](Update-GitTarget -Path $target -DryRun:$DryRun -NoGitPush:$NoGitPush)
     }
 
-    Write-Host "`nDone. $synced synced, $skipped skipped." -ForegroundColor White
+    $summary = "`nDone. $synced synced, $skipped skipped"
+    if ($pushFailed -gt 0) {
+        Write-Host "$summary, $pushFailed push failed." -ForegroundColor Yellow
+    } else {
+        Write-Host "$summary." -ForegroundColor White
+    }
 }
 
 function Update-GitTarget {
@@ -202,15 +208,32 @@ function Update-GitTarget {
     $remotes = @(& git -C $repoRoot remote 2>&1)
     if ($remotes -notcontains 'origin') {
         Write-Host '    GIT  no origin remote, push skipped' -ForegroundColor DarkGray
-        return
+        return $false
     }
 
-    & git -C $repoRoot push origin $branch 2>&1 | Out-Null
-    if ($LASTEXITCODE -ne 0) {
-        Write-Warning "git push origin $branch failed for $Path"
-        return
+    # Fail fast instead of hanging on an interactive credential prompt;
+    # restore the caller's GIT_TERMINAL_PROMPT afterwards.
+    $previousPrompt = $env:GIT_TERMINAL_PROMPT
+    $env:GIT_TERMINAL_PROMPT = '0'
+    try {
+        & git -C $repoRoot push origin $branch 2>&1 | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            throw "push exit code $LASTEXITCODE"
+        }
+        Write-Host "    GIT  pushed origin $branch" -ForegroundColor Green
+        return $false
     }
-    Write-Host "    GIT  pushed origin $branch" -ForegroundColor Green
+    catch {
+        Write-Warning "git push origin $branch failed for $Path"
+        return $true
+    }
+    finally {
+        if ($null -eq $previousPrompt) {
+            Remove-Item Env:GIT_TERMINAL_PROMPT -ErrorAction SilentlyContinue
+        } else {
+            $env:GIT_TERMINAL_PROMPT = $previousPrompt
+        }
+    }
 }
 
 function Get-Checkmark {
