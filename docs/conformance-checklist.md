@@ -25,6 +25,10 @@ tool-independent because the core system is a specification, not an application.
       and no step concludes with an assumed-clean pass.
 - [ ] Before each code edit, `14-implementation-style.txt` defaults are consulted and
       applied, in DIRECT and PATCH alike.
+- [ ] PLAN names each touched file's dominating error-handling/style idiom and how
+      the patch preserves it; a foreign idiom for an operation the file already
+      handles is a confirmed H12 finding unless explicitly user-approved
+      (modules 14/04/07).
 - [ ] End-of-session commit/push runs through the module-33 gate: the user is
       asked first, staging is limited to the session's edited files, remote
       URLs are never printed unsanitized, and per-remote push failures are

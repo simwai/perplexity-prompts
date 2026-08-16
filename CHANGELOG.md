@@ -8,6 +8,22 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- Cross-language error-handling idiom consistency: `modules/14-implementation-style.txt`
+  gains an all-stacks rule (the idiom dominating a file wins; importing another
+  idiom for an operation the file already handles is a confirmed H12 finding;
+  deliberate idiom changes require explicit user approval) and a `PowerShell
+  defaults` section pinning pwsh 7.6 (never Windows PowerShell 5.1) and
+  documenting `$LASTEXITCODE` guard-and-return as the version-proof native
+  failure pattern, with `$PSNativeCommandUseErrorActionPreference` semantics
+  (7.3 experimental / 7.4 stable, default `$false`) and the pwsh 7.2+
+  redirected-stderr note.
+- `modules/04-review-rubric-hard-tier.txt` — new hard-tier criterion H12
+  (idiom consistency); usage line updated so H1–H10 and H12 apply per chunk.
+- `modules/07-output-contracts.txt` — PLAN template gains a mandatory
+  `Conventions:` field; CHECKLIST hard-tier line now covers H1–H12.
+- `modules/30-execution-modes.txt` — local-conventions rule extended from
+  DIRECT-only to STRUCTURED PLAN/PATCH, cross-referencing modules 14/07.
+- `docs/AGENTS-usage.md` and `docs/conformance-checklist.md` synced.
 - Sanitized-output security rules: `git remote -v` may run only with sanitized
   output — credentials redacted and verified absent before entering the
   transcript (module 33, replacing the outright ban; the gate still lists
