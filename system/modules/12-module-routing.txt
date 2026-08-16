@@ -17,6 +17,7 @@ Load only what the current phase requires. Do not preload future phases.
 - `31-loop-guards.txt`
 - `32-filesystem-first.txt`
 - `33-commit-and-push-gate.txt`
+- `34-fileless-mode.txt`
 
 ## Phase-specific loading
 

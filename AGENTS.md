@@ -117,3 +117,6 @@ Combine all Tier 1 + Tier 2 + Trello blocks above. Omit any Tier 2 servers whose
 3. Load only the phase/persona modules the current session requires.
 4. Load `system/modules/30-execution-modes.txt` before deciding whether the
    formal phase model is useful.
+
+On hosts confirmed read-only, `system/modules/34-fileless-mode.txt` governs
+session behavior; on file-capable hosts it is inert.
