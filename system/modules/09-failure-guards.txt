@@ -26,6 +26,9 @@ A protocol breach has occurred when:
   (H1, module 33)
 - !!! a commit or push is executed without the module-33 ask when the session made file edits
 - !!! files outside the session's edited-file set are staged for the gate commit
+- !!! a mutating git operation is attempted on a confirmed `READ_ONLY` host (module 34 degradation matrix vs module 33)
+- a delivery is diff-only where the Delivery contract requires complete file contents (module 34 Delivery contract; module 06 Fileless PATCH branch)
+- !!! a `SESSION_STATE-*.md` write is attempted on a confirmed `READ_ONLY` host (module 34 Session-state carrier)
 
 ## Recovery rule
 
