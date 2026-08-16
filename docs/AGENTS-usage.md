@@ -151,6 +151,13 @@ Deterministic skips (`DOCS` out of scope, upstream pipeline not applicable) adva
 automatically and never pause for confirmation. Missing input -> `BLOCKED`. Second
 failure -> `FAILURE` and clean stop.
 
+The DOCS phase follows the deep-read protocol (module 03): enumerate the docs
+structure first (TOC/sitemap), map each in-scope criterion to the section that
+answers it (H8 -> advisories, H6/H7 -> API reference, S-tier -> upgrade guides),
+fetch section pages rather than the landing page, and cite the exact URL anchor
+behind each claim. Lookups are bounded (up to 3 per dependency per DOCS phase);
+beyond that the fallback ladder in module 21 walks TOC -> section -> anchor.
+
 ---
 
 ## Commit and Push Gate

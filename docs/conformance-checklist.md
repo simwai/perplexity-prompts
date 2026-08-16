@@ -41,5 +41,13 @@ tool-independent because the core system is a specification, not an application.
 - [ ] The agent never asks the user to provide files, paths, versions, or snippets
       discoverable in the local filesystem; it searches first with `rg` (fallback
       `grep`) and file tools (module 32).
+- [ ] Search locates, full read comprehends: no file is edited, scored, or judged
+      from grep snippets alone; a comprehension read is the largest-window full
+      read (offset-chunked when large), is a state change rather than a loop, and
+      truncation is recorded, never assumed read (modules 31/32).
 - [ ] MCP packages are version-pinned or their update policy is documented.
+- [ ] Docs research follows the deep-read protocol: TOC-first discovery,
+      criterion-to-section mapping, page-level fetches with anchor citation,
+      a bounded lookups budget (up to 3 per dependency per DOCS phase), and
+      recorded section skips (modules 03/21, DOCS template in module 07).
 - [ ] Portable deployment and OpenCode adapter scope are documented consistently.
