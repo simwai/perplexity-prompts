@@ -34,6 +34,7 @@ H12 -- Idiom consistency: a change introduces an error-handling or style idiom
   detect the failure it claims to handle, H9 applies alongside.
 
 ## Usage
+
 - Apply all items to every chunk unless explicitly excluded in the checklist.
   H11 is the sole aggregate-level criterion; H1–H10 and H12 still apply per chunk.
 - A confirmed H-tier violation blocks the PLAN phase until accepted or excluded with justification in the REVIEW decision section.

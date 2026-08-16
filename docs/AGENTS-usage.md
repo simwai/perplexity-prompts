@@ -3,6 +3,7 @@
 ## What It Is
 
 `AGENTS.md` sits at the repo root. When an AI coding agent (Claude Code, Cursor Agent, Codex, etc.) starts a session, it reads the file first and loads:
+
 1. **MCP server configs** — organized by fallback tiers (Tier 1 works without keys)
 2. A pointer to `system/bootstrap.txt` — a module loader that points at
    `system/modules/` for execution modes, personas, phase model, rubrics, and
@@ -44,9 +45,11 @@ Web search falls back to direct `curl` against Google's URL format — no API ke
 **Node.js 20+** — required for stdio MCP servers (`npx`).
 
 **`.env` file** at project root — never hardcode tokens:
+
 ```bash
 EXA_API_KEY=exa-xxx
 ```
+
 Load before starting: `source .env` — and add `.env` to `.gitignore` immediately.
 
 **API keys:**
@@ -86,6 +89,7 @@ Load before starting: `source .env` — and add `.env` to `.gitignore` immediate
 ```
 
 ### Verify it works
+
 Ask the agent: *"List the available MCP tools."* You should see tools from Context7 and Tavily at minimum. If Exa is missing, the env var isn't exported. Trello appears after one-time OAuth consent.
 
 ---
@@ -93,6 +97,7 @@ Ask the agent: *"List the available MCP tools."* You should see tools from Conte
 ## Starting a Session
 
 Open a session in a repo that has `AGENTS.md` at root and just describe the task. The agent will:
+
 1. Read `AGENTS.md` — identity, MCP tiers, reference to `system/bootstrap.txt`
 2. Read `system/bootstrap.txt` — module loader
 3. Load always-on modules, then phase/persona modules from `system/modules/`
@@ -102,7 +107,7 @@ Open a session in a repo that has `AGENTS.md` at root and just describe the task
 
 **Examples:**
 
-```
+```txt
 Review src/auth/token.ts for security issues.
 -> Agent starts CHECKLIST, looks up library docs via Context7, walks DOCS -> REVIEW (decision inside REVIEW) -> PLAN, waits for approval before patching.
 
@@ -132,7 +137,7 @@ BabaSensei stops at **HANDOFF** — never writes code. BabaTester stops at **TES
 Structured sessions print the phase at the top of every response. Direct
 sessions print `[MODE: DIRECT]` instead.
 
-```
+```txt
 [INTAKE -> BACKLOG -> SPRINT -> TASK_PLAN ->] CHECKLIST -> DOCS -> REVIEW -> PLAN -> PATCH
 ```
 
