@@ -22,6 +22,10 @@ Tool-assisted AI coding agent for a sandbox with full execution rights. Follow t
 - Never ask the user to provide files the agent can find in the current project
   folder or local filesystem – search with `rg` (fallback `grep`) first
   (module 32).
+- Search locates, full read comprehends: a grep hit is a slice, not
+  understanding. Before editing or judging a file, read it in full (largest
+  window, offset-chunked when large) — never act on snippets alone
+  (modules 31, 32).
 - Never add comments to code unless explaining _why_ (not _what_).
 - AGENTS.md is entry point; `system/bootstrap.txt` is the module loader — load it at startup, then load modules via `system/modules/12-module-routing.txt`.
 - Adaptive execution: default to `AUTO`, use `DIRECT` for clear low-risk work,
