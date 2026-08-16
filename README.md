@@ -43,6 +43,10 @@ Add project paths to `targets.json`, then run:
 Configured paths are included in the sync menu even before they contain
 `AGENTS.md` and `system/`.
 
+After syncing, each target that is a git repository gets the synced files
+committed and pushed to its `origin` remote. Pass `-NoGitPush` (or toggle
+`[G]` in the menu) to skip the commit/push step.
+
 ## opencode support
 
 The core system (`AGENTS.md` + `system/`) is model-agnostic and works with any

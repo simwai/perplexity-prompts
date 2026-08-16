@@ -3,13 +3,19 @@
     Interactive sync tool for the Baba prompt system.
 .DESCRIPTION
     Discovers all projects with AGENTS.md + system/, lets you pick which
-    to update, and syncs them. Run with no arguments for the interactive menu.
+    to update, and syncs them. After each successful sync, targets that are
+    git repositories get the synced files committed and pushed to their
+    origin remote (use -NoGitPush to skip). Run with no arguments for the
+    interactive menu.
 .EXAMPLE
     .\sync.ps1
+.EXAMPLE
+    .\sync.ps1 -All -NoGitPush
 #>
 param(
     [switch]$All,
-    [switch]$DryRun
+    [switch]$DryRun,
+    [switch]$NoGitPush
 )
 
 $ErrorActionPreference = 'Stop'
@@ -69,7 +75,8 @@ function Find-Targets {
 function Sync-Targets {
     param(
         [hashtable]$Targets,
-        [switch]$DryRun
+        [switch]$DryRun,
+        [switch]$NoGitPush
     )
 
     $source  = $scriptDir
@@ -121,9 +128,89 @@ function Sync-Targets {
             }
         }
         $synced++
+        Update-GitTarget -Path $target -DryRun:$DryRun -NoGitPush:$NoGitPush
     }
 
     Write-Host "`nDone. $synced synced, $skipped skipped." -ForegroundColor White
+}
+
+function Update-GitTarget {
+    param(
+        [string]$Path,
+        [switch]$DryRun,
+        [switch]$NoGitPush
+    )
+
+    # Native git stderr would become a terminating error under the script's
+    # $ErrorActionPreference='Stop' (PS 5.1 behavior). This function owns its
+    # failure handling via $LASTEXITCODE, so 'Continue' is safe here.
+    $ErrorActionPreference = 'Continue'
+
+    if ($NoGitPush) {
+        Write-Host '    GIT  commit/push disabled' -ForegroundColor DarkGray
+        return
+    }
+
+    if ($DryRun) {
+        Write-Host '    [DRY] git add AGENTS.md opencode.jsonc system/ .opencode/' -ForegroundColor Gray
+        Write-Host '    [DRY] git commit + git push origin <branch>' -ForegroundColor Gray
+        return
+    }
+
+    if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+        Write-Warning "SKIP git: git not found for $Path"
+        return
+    }
+
+    $repoRoot = & git -C $Path rev-parse --show-toplevel 2>&1
+    if ($LASTEXITCODE -ne 0 -or -not $repoRoot) {
+        Write-Host '    GIT  not a git repository, skipped' -ForegroundColor DarkGray
+        return
+    }
+
+    $paths = @('AGENTS.md', 'opencode.jsonc', 'system', '.opencode') |
+        Where-Object { Test-Path (Join-Path $repoRoot $_) }
+    if (-not $paths) { return }
+
+    # Stage only the synced paths; never sweep in unrelated work.
+    & git -C $repoRoot add -- $paths 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warning "git add failed for $Path"
+        return
+    }
+
+    & git -C $repoRoot diff --cached --quiet 2>&1 | Out-Null
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host '    GIT  no changes to commit' -ForegroundColor DarkGray
+        return
+    }
+
+    $branch = & git -C $repoRoot branch --show-current 2>&1
+    if (-not $branch) {
+        Write-Warning "SKIP git: detached HEAD in $Path"
+        return
+    }
+
+    & git -C $repoRoot commit -m 'Sync Baba prompt system (AGENTS.md, system/, opencode.jsonc, .opencode/)' 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warning "git commit failed for $Path"
+        return
+    }
+    $sha = & git -C $repoRoot rev-parse --short HEAD 2>&1
+    Write-Host "    GIT  committed $sha" -ForegroundColor Green
+
+    $remotes = @(& git -C $repoRoot remote 2>&1)
+    if ($remotes -notcontains 'origin') {
+        Write-Host '    GIT  no origin remote, push skipped' -ForegroundColor DarkGray
+        return
+    }
+
+    & git -C $repoRoot push origin $branch 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warning "git push origin $branch failed for $Path"
+        return
+    }
+    Write-Host "    GIT  pushed origin $branch" -ForegroundColor Green
 }
 
 function Get-Checkmark {
@@ -155,12 +242,13 @@ if ($keys.Count -eq 0) {
 
 if ($All) {
     foreach ($key in $keys) { $targets[$key] = $true }
-    Sync-Targets -Targets $targets -DryRun:$DryRun
+    Sync-Targets -Targets $targets -DryRun:$DryRun -NoGitPush:$NoGitPush
     exit 0
 }
 
 $all       = $true
 $dryMode   = $DryRun
+$gitPush   = -not $NoGitPush
 $refresh   = $false
 
 while ($true) {
@@ -190,6 +278,8 @@ while ($true) {
     Write-Host "  [A]  Toggle all  ($(if ($all) {'deselect'} else {'select'}))"
     Write-Host '  [D]  Dry-run     ' -NoNewline
     Write-Host ($(if ($dryMode) {'ON'} else {'OFF'})) -ForegroundColor $(if ($dryMode) {'Yellow'} else {'DarkGray'})
+    Write-Host '  [G]  Git push    ' -NoNewline
+    Write-Host ($(if ($gitPush) {'ON'} else {'OFF'})) -ForegroundColor $(if ($gitPush) {'Green'} else {'DarkGray'})
     Write-Host '  [S]  Sync now'
     Write-Host '  [R]  Rescan'
     Write-Host '  [Q]  Quit'
@@ -211,12 +301,15 @@ while ($true) {
         '^D$' {
             $dryMode = -not $dryMode
         }
+        '^G$' {
+            $gitPush = -not $gitPush
+        }
         '^R$' {
             $refresh = $true
             break
         }
         '^S$' {
-            Sync-Targets -Targets $targets -DryRun:$dryMode
+            Sync-Targets -Targets $targets -DryRun:$dryMode -NoGitPush:(-not $gitPush)
             Write-Host ''
             Write-Host -NoNewline 'Press Enter to return...' -ForegroundColor DarkGray
             Read-Host | Out-Null
