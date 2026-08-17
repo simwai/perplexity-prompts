@@ -9,6 +9,14 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Pine Script single-line style: `modules/14-implementation-style.txt` gains a
+  Pine Script defaults section: every statement on a single physical line;
+  never break inside a ternary chain or a function call's argument list (Pine's
+  continuation rules are fragile there and cause `end of line without line
+  continuation` errors); break lines only where Pine requires indented block
+  bodies; refactor unwieldy statements into intermediate variables or
+  `if`/`else` blocks instead of wrapping; comments go on their own line above
+  the statement.
 - Comprehension-before-judgment rule: `modules/32-filesystem-first.txt` gains a
   "Search locates, full read comprehends" section — a grep hit is a slice, not
   understanding; a file must be read in full (largest window, offset-chunked
