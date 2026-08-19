@@ -187,6 +187,13 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ### Removed
 
+- Tavily MCP server removed across all surfaces: `AGENTS.md` Tier 1 block and
+  description bullet, `opencode.jsonc` `mcp` entry, `.codex/config.toml`
+  `[mcp_servers.tavily]` block, `modules/21-mcp-invocation.txt` signal matrix
+  and pairing (web search now maps to `exa` / direct `curl`), `README.md` tool
+  list, and `docs/AGENTS-usage.md` (tier table, key table, example config,
+  verification snippet, security note, troubleshooting row). Line 113 remains
+  as historical record.
 - `role-legend.md` — obsolete root-level role table, superseded by the Persona System section in `bootstrap.txt` and the persona modules. Was stale (five roles, missing BabaScrumMaster) and referenced nothing.
 - `scripts/pre-commit-check.sh` and `scripts/pre-commit-check.ps1` — replaced with LLM instruction module 16. Removed entirely.
 - `.pre-commit-config.yaml` — replaced with LLM instruction module 16. Stub file remains for reference.

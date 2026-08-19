@@ -9,7 +9,7 @@ This repository provides adaptive instructions for AI coding agents: direct
 execution for clear low-risk work and a phase-gated workflow for tasks that
 need stronger review and approval controls.
 
-- [AGENTS.md](AGENTS.md): Agent instructions with Model Context Protocol (MCP) support for tools like Context7, Tavily, Playwright, Trello, and Exa.
+- [AGENTS.md](AGENTS.md): Agent instructions with Model Context Protocol (MCP) support for tools like Context7, Playwright, Trello, and Exa.
 
 ## Layout
 
