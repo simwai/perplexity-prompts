@@ -32,7 +32,7 @@ The `system/` folder is self-contained (`bootstrap.txt` loader + `modules/`); al
 
 | Tier | Description | Examples |
 |---|---|---|
-| 1 | Always works, no keys needed | Context7 (library docs), Tavily (web search), Playwright (browser automation) |
+| 1 | Always works, no keys needed | Context7 (library docs), Playwright (browser automation) |
 | 2 | Requires env keys | Exa |
 | OAuth | Remote server, browser consent instead of a key | Trello (work tracking) |
 
@@ -58,7 +58,6 @@ Load before starting: `source .env` — and add `.env` to `.gitignore` immediate
 |---|---|
 | Exa | exa.ai -> Dashboard |
 | Context7 | No key needed |
-| Tavily | No key needed |
 | Playwright | No key needed (Node 20+ required) |
 | Trello | No key needed (one-time OAuth consent, workspace-scoped) |
 
@@ -72,7 +71,6 @@ Load before starting: `source .env` — and add `.env` to `.gitignore` immediate
 {
   "mcpServers": {
     "context7": { "type": "http", "url": "https://mcp.context7.com/mcp" },
-    "tavily": { "command": "npx", "args": ["-y", "tavily-mcp@0.2.22"] },
     "playwright": { "command": "npx", "args": ["-y", "@playwright/mcp@0.0.79"] },
     "exa": {
       "type": "http",
@@ -90,7 +88,7 @@ Load before starting: `source .env` — and add `.env` to `.gitignore` immediate
 
 ### Verify it works
 
-Ask the agent: *"List the available MCP tools."* You should see tools from Context7 and Tavily at minimum. If Exa is missing, the env var isn't exported. Trello appears after one-time OAuth consent.
+Ask the agent: *"List the available MCP tools."* You should see tools from Context7 and Playwright at minimum. If Exa is missing, the env var isn't exported. Trello appears after one-time OAuth consent.
 
 ---
 
@@ -193,7 +191,7 @@ never become protocol failures.
   must be sanitized before it enters the transcript, and the commit/push gate
   (module 33) prints remote names only, never URLs or raw push output
 - H1 in the hard-tier rubric will flag the agent's own output if it accidentally echoes credentials
-- Context7, Tavily, Exa, and Trello are remote endpoints — don't send proprietary code as search queries
+- Context7, Exa, and Trello are remote endpoints — don't send proprietary code as search queries
 - Playwright `browser_run_code_unsafe` runs arbitrary JS — trusted sessions only
 
 ---
@@ -247,4 +245,3 @@ additional native layer that other agents (Claude Code, Cursor, Codex) ignore.
 | Trello tools absent | OAuth not completed | Run `opencode mcp auth trello` once, then restart the session |
 | Playwright won't launch | Node too old or browser missing | Use Node 20+; first run downloads browsers via `npx playwright install` |
 | Exa auth error | Wrong header key | Exa: `x-api-key` |
-| Tavily still broken | Wrong package name | Use `tavily-mcp` (not `@tavily/mcp`) |
