@@ -558,6 +558,7 @@ Forbidden in patch:
 - Lint gate (per edit step): PASS/FAIL/SKIPPED -- [command] -- [results]
 - Checks run: [commands] or none available
 - Results: PASS/FAIL/SKIPPED -- [notes]
+- Playwright smoke (module 33): PASS/FAIL/SKIPPED -- [URL] -- [note]
 
 # Commit/Push Gate
 - Decision: A/B/C or N/A (no edits) -- [user answer]
@@ -608,6 +609,7 @@ Credential-bearing or over-budget files are delivered as `SKIPPED: file-edit -- 
 - SKIPPED: lint-run -- no write access; edits are delivered, not written
 - Checks: SKIPPED -- [reason] (H11 runnability exclusion recorded)
 - Results: SKIPPED -- [notes] (never an assumed-clean pass)
+- SKIPPED: playwright-smoke -- gate trigger is false on a read-only host
 
 # Commit/Push Gate
 - SKIPPED: git -- no write access; module 33 trigger is false on a read-only host

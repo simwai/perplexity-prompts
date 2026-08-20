@@ -180,6 +180,15 @@ DIRECT work), the agent asks before committing and pushing (module 33):
 - **B. Commit only** — no push
 - **C. Skip** — edits stay uncommitted
 
+Before the ask, when the repo declares a web-app entry point (a package.json
+`dev`/`start` script serving a browser UI, a frontend directory, or a documented
+localhost URL), the agent invokes the Playwright MCP server to smoke-test the
+functionality (navigate + click key flows). The outcome is recorded as
+PASS/FAIL/SKIPPED; a failed smoke is a hard gate — it blocks the ask and the
+session returns to fix, committing only after a pass or your explicit
+acceptance. Repos without a web app record SKIPPED with a reason instead of
+inventing a smoke.
+
 Staging is limited to the session's edited files, tracked in the session state
 file's `Edited Files` section; `git add -A` is never used. Remote URLs are
 never printed unsanitized — `.git/config` remote URLs may embed credentials, so

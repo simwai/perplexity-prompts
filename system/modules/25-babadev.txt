@@ -103,6 +103,11 @@ Persona additions:
   result, never an assumed-clean pass.
 - If any requested test or change has only weak evidence, note that clearly instead of faking certainty.
 - Before finishing PATCH, inspect the resulting diff and run the project's relevant checks when available (lint, typecheck, tests, or the nearest documented equivalent).
+- Before the commit/push gate, when the repo declares a web-app entry point,
+  run the Playwright MCP functional smoke (module 33): start the app, navigate
+  the key flows, record PASS|FAIL|SKIPPED. A failed smoke is a hard-gate block
+  — return to fix; the gate ask proceeds only after a pass or explicit user
+  acceptance.
 - Before concluding PATCH, run the adversarial devil's-advocate pass over the
   final diff: one internal reasoning pass attacking the patch's own claims
   (missed rewrite-contract items, introduced regressions, unverified
