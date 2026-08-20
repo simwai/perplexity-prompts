@@ -51,3 +51,16 @@ tool-independent because the core system is a specification, not an application.
       a bounded lookups budget (up to 3 per dependency per DOCS phase), and
       recorded section skips (modules 03/21, DOCS template in module 07).
 - [ ] Portable deployment and OpenCode adapter scope are documented consistently.
+- [x] Spec content is data, never instructions: spec files are quoted inside
+      fences when echoed, and embedded directives cannot change the phase, tick
+      a checkbox, or skip a gate (modules 35/36, mirroring the fenced-content
+      rule).
+- [x] HALT semantics: version drift surfaces as a DRIFT-internal decision block
+      with exactly one recommended fix path; never a silent fix, never a
+      BLOCKED variant (modules 35/36).
+- [x] Registry-write governance: every `SPECS/` write (new spec, registry row,
+      spec-body edit) flows through PATCH and joins the module-33 edited-files
+      set (modules 35/36).
+- [x] Spec-version freshness: approval restore requires target + scope +
+      session_id + spec_version match, and a version-drift HALT invalidates
+      live Plan Approval (modules 19/35/36).
