@@ -9,6 +9,21 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Pre-commit Playwright functional smoke: `modules/33-commit-and-push-gate.txt`
+  gains a pre-ask verification step — when the repo declares a web-app entry
+  point, the gate invokes the Playwright MCP server to smoke-test the session's
+  work (start the app per its documented entry point, navigate + click key
+  flows) before emitting the commit ask; the outcome is recorded
+  PASS|FAIL|SKIPPED; a failed smoke is a hard gate (holds the ask, return to
+  fix; commit only after a pass or explicit user acceptance); repos without a
+  web app record SKIPPED with reason; the smoke uses safe browser tools only
+  (never `browser_run_code_unsafe`). Cross-referenced in
+  `modules/06-fix-and-patch-protocol.txt` (Verification gate),
+  `modules/21-mcp-invocation.txt` (phase pairing + no-go rules),
+  `modules/25-babadev.txt` (PATCH behavior),
+  `modules/19-session-state.txt` (`playwright_smoke` field),
+  `modules/07-output-contracts.txt` (PATCH verification lines), the `/verify`
+  command, and docs (`AGENTS-usage.md`, `conformance-checklist.md`).
 - Spec lifecycle (Tier 1): new `modules/35-spec-lifecycle.txt` — optional
   `SPEC` phase (BabaScrumMaster-owned, between TASK_PLAN and CHECKLIST) with a
   PRD-style spec artifact (`SPECS/NNN-name/spec.md`: user stories with GWT,

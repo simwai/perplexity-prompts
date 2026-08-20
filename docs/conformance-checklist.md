@@ -33,6 +33,10 @@ tool-independent because the core system is a specification, not an application.
       asked first, staging is limited to the session's edited files, remote
       URLs are never printed unsanitized, and per-remote push failures are
       reported without becoming protocol failures.
+- [ ] Before commit, when the repo declares a web-app entry point, the agent
+      invokes the Playwright MCP server for a functional smoke (navigate +
+      click key flows); PASS|FAIL|SKIPPED is recorded, and a failed smoke
+      holds the commit ask (module 33).
 - [ ] Credential-bearing files (`.env`, `.env.*`, `secrets/`, `*.pem`, `*.key`)
       are never read with the read-file tool; shell reads emit names with
       redacted values only, and `git remote -v` output is sanitized before it

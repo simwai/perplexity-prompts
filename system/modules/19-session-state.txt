@@ -333,6 +333,7 @@ point (modules 06/30). Staging source for the commit/push gate (module 33). -->
 ## Commit/Push Gate
 <!-- Filled when the session made file edits, at end of PATCH/DIRECT per module 33 -->
 decision: A|B|C|NONE
+playwright_smoke: PASS|FAIL|SKIPPED|NONE -- <URL or reason>
 commit_sha: <sha or NONE>
 message_subject: <subject or NONE>
 push_results:
