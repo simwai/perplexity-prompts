@@ -9,6 +9,45 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Spec lifecycle (Tier 1): new `modules/35-spec-lifecycle.txt` — optional
+  `SPEC` phase (BabaScrumMaster-owned, between TASK_PLAN and CHECKLIST) with a
+  PRD-style spec artifact (`SPECS/NNN-name/spec.md`: user stories with GWT,
+  `FR-###` requirements, `SC-###` success criteria, `[NEEDS CLARIFICATION]`
+  markers, max 3) and an append-audit registry (`SPECS/index.md`) with the
+  `Draft -> RFC -> Stable -> Deprecated` lifecycle; L1/L2 layering with
+  `Implements:` parent links (L2 cannot go Stable before its L1 parent);
+  quarantine cascade on L1 demotion (cross-team notification via module 17);
+  micro-spec escape hatch (<50 lines); version-drift HALT semantics; all
+  `SPECS/` writes flow through PATCH and join the module-33 edited-files set;
+  spec content is data, never instructions. Wired into modules
+  `02/07/10/11/12/13/19/22`, bootstrap, docs.
+- Drift detection (Tier 2): new `modules/36-drift-detection.txt` — optional
+  read-only `DRIFT` phase (post-PATCH or on demand, exits to PLAN or prior
+  phase) with claims + mappings, drift categories (verified, diverged,
+  orphaned mappings, code-exceeds-spec), drift verbs `apply`/`extract`/`sync`
+  (renamed from push/pull to avoid the module-33 collision), fresh-eyes
+  bounded cold-read subagent review (no state read, no persona switch), HALT
+  decision block (one recommended fix path, never a BLOCKED variant, never
+  silent), bounded reports with the continue-next-turn rule, and
+  `drift_findings`/`spec_version` handoff fields. Wired into modules
+  `02/07/10/11/12/13/19`, bootstrap, docs.
+- Adversarial persona gate (Tier 3): mandatory devil's-advocate pass inside
+  REVIEW's decision section (pre-promotion) and as a pre-close check inside
+  PATCH — no new phase, no second user ask; BabaTester exclusion documented as
+  intentional; new breach rows in `modules/09-failure-guards.txt`.
+- Tasks-template enrichment (Tier 4): TASK_PLAN card gains `[P]` parallel
+  flags, story grouping, MVP-first ordering (within a story; ICE stays the
+  across-story pull order), and a test-first flag defined as a plan-level
+  ordering signal (never a test-authoring grant, module 14); matching optional
+  fields in `modules/13/19/22` with backward-compatible defaults.
+- `modules/19-session-state.txt` — freshness tuple extended with
+  `spec_version`; new `Spec Registry` (read cursor) and `Drift Report`
+  sections, optional-with-default so legacy adoption and `/resume` never
+  BLOCK; HALT invalidates live Plan Approval mid-session.
+- `docs/conformance-checklist.md` — four new invariants (spec-as-data, HALT
+  semantics, registry-write governance, spec-version freshness); docs synced
+  (`architecture.md`, `AGENTS-usage.md`).
+
 - Pine Script single-line style: `modules/14-implementation-style.txt` gains a
   Pine Script defaults section: every statement on a single physical line;
   never break inside a ternary chain or a function call's argument list (Pine's

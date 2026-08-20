@@ -119,7 +119,7 @@ Add rate limiting to the Express API using express-rate-limit.
 
 | Persona | Use when | Invoke with |
 |---|---|---|
-| **BabaScrumMaster** | You have a fuzzy goal and want it decomposed into sized, prioritized tasks | "Use BabaScrumMaster to plan X" |
+| **BabaScrumMaster** | You have a fuzzy goal and want it decomposed into sized, prioritized tasks — also owns the optional SPEC phase (spec-authoring) | "Use BabaScrumMaster to plan X" |
 | **BabaSensei** | You want mentorship feedback, not code | "Use BabaSensei to review X" |
 | **BabaDev** | You want implementation with a plan gate | "Use BabaDev to implement X" |
 | **BabaTester** | You want adversarial QA + test strategy | "Use BabaTester to test X" |
@@ -136,10 +136,17 @@ Structured sessions print the phase at the top of every response. Direct
 sessions print `[MODE: DIRECT]` instead.
 
 ```txt
-[INTAKE -> BACKLOG -> SPRINT -> TASK_PLAN ->] CHECKLIST -> DOCS -> REVIEW -> PLAN -> PATCH
+[INTAKE -> BACKLOG -> SPRINT -> TASK_PLAN -> SPEC ->] CHECKLIST -> DOCS -> REVIEW -> PLAN -> PATCH -> [DRIFT]
 ```
 
-This is the structured flow. In `AUTO` (the default), a concrete low-risk task
+This is the structured flow. `SPEC` (optional, ScrumMaster-owned) authors a
+spec artifact in `SPECS/` when a goal needs spec-authoring; all `SPECS/`
+writes flow through PATCH. `DRIFT` (optional, read-only) is a post-PATCH
+diagnostic or an on-demand check that compares the spec against the code:
+verified claims, diverged claims, orphaned mappings, and code-exceeds-spec
+candidates. Version drift surfaces as a HALT inside DRIFT with exactly one
+recommended fix path — it never silently fixes itself and never blocks the
+session as a `BLOCKED` variant. In `AUTO` (the default), a concrete low-risk task
 uses direct execution; risky, broad, ambiguous, or version-sensitive work uses
 the structured flow. Use `/direct`, `/structured`, or `/auto` to override the
 selection.

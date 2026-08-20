@@ -17,10 +17,14 @@ Deterministic skips advance without user confirmation: `DOCS` when no version-se
 scope, and the upstream ScrumMaster pipeline when a concrete target exists at session start. The skip
 reason is recorded.
 
+The optional upstream ScrumMaster pipeline (`INTAKE → BACKLOG → SPRINT → TASK_PLAN → SPEC`) runs only
+when the user provides a goal without a concrete target; `SPEC` authors a spec artifact in `SPECS/`
+(planning only — all `SPECS/` writes flow through PATCH). `DRIFT` is an optional read-only diagnostic
+phase entered after `PATCH` (spec-backed sessions) or on demand from any phase; it exits to `PLAN`
+(writes needed) or back to the prior phase (clean).
+
 `REVIEW` owns confirmation. `PLAN` requires explicit approval and a complete
-rewrite contract. `PATCH` is the only implementation phase. The optional
-ScrumMaster pipeline runs only when the user provides a goal without a concrete
-target.
+rewrite contract. `PATCH` is the only implementation phase.
 
 ## Portable versus native files
 
