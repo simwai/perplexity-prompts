@@ -18,8 +18,11 @@ tool-independent because the core system is a specification, not an application.
       current session's file.
 - [ ] Each persona handoff contains only the fields required by its receiver.
 - [ ] PATCH requires explicit approval and all four rewrite-contract fields.
-- [ ] `[ ]` checkboxes in phase artifacts are flipped to `[x]` only when their status field
-      reflects completed work; no phase advances and no PATCH concludes with an unticked box.
+- [ ] Phase artifacts are complete for the work their phase owns before the next phase opens:
+      checklist-scope checkboxes (inventory rows, H/S coverage) are ticked when the listing or
+      scope decision is recorded, review-status fields flip as REVIEW performs the work, and a
+      `[x]` claiming completed work that has not run is a false tick (modules 02/07/11); no PATCH
+      concludes with an unticked conformance box.
 - [ ] Every file edit sequence ends with the project's lint run on the touched files;
       auto-fixable issues are fixed, remaining violations fixed or explicitly recorded,
       and no step concludes with an assumed-clean pass.

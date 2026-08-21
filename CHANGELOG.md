@@ -212,7 +212,7 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 - Removed standalone `CONFIRM` phase. Core flow is `CHECKLIST -> DOCS -> REVIEW -> PLAN -> PATCH`. REVIEW owns the confirmation decision section.
 - OpenCode discovery paths moved to documented plurals: `.opencode/agents/` and `.opencode/commands/`.
 - Read-only Baba agents now deny both `edit` and `bash`.
-- `opencode.jsonc` sets `default_agent: "build"` and continues auto-loading `AGENTS.md` + loader.
+- `opencode.jsonc` sets `default_agent: "plan"` (the read-only BabaSensei planning path) and continues auto-loading `AGENTS.md` + loader.
 - `modules/12-module-routing.txt` and `modules/13-persona-handoff-contract.txt` — stale `GuidedSeniorDev` references aligned to `BabaDev`.
 - `docs/AGENTS-usage.md` — added BabaScrumMaster to the Persona Reference table and the optional upstream pipeline to the Phase Flow.
 - `AGENTS.md`, `system/`, and all shared modules remain portable and model-agnostic; the opencode layer adds no dependencies for other agents.
@@ -246,8 +246,9 @@ Versioning follows [Semantic Versioning](https://semver.org/).
   `[mcp_servers.tavily]` block, `modules/21-mcp-invocation.txt` signal matrix
   and pairing (web search now maps to `exa` / direct `curl`), `README.md` tool
   list, and `docs/AGENTS-usage.md` (tier table, key table, example config,
-  verification snippet, security note, troubleshooting row). Line 113 remains
-  as historical record.
+  verification snippet, security note, troubleshooting row). The AGENTS.md
+  Tavily references were removed in the same pass (see the removed-Tavily
+  entry above).
 - `role-legend.md` — obsolete root-level role table, superseded by the Persona System section in `bootstrap.txt` and the persona modules. Was stale (five roles, missing BabaScrumMaster) and referenced nothing.
 - `scripts/pre-commit-check.sh` and `scripts/pre-commit-check.ps1` — replaced with LLM instruction module 16. Removed entirely.
 - `.pre-commit-config.yaml` — replaced with LLM instruction module 16. Stub file remains for reference.
@@ -261,6 +262,27 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 - `modules/02-workflow.txt` — `DISCUSS` added to the Active phases list; `bootstrap.txt` phase diagram now annotates `DISCUSS`; `.opencode/command/phase.md` accepts `DISCUSS`.
 - `modules/27-babareviewer.txt` — docs-skip reference corrected from `02-workflow.txt:59-60` to `02-workflow.txt:64`.
 - `CHANGELOG.md` — merged duplicate `[Unreleased]` sections.
+- CHECKLIST gate semantics: checklist-scope checkboxes (inventory rows, H1–H12,
+  S1–S13) are now scope ticks recorded during CHECKLIST, while review-status
+  fields flip during REVIEW — eliminating the deadlock where the CHECKLIST exit
+  gate demanded review-complete ticks before REVIEW could open. Aligned across
+  `modules/02`, `07`, `11`, `25` and `docs/conformance-checklist.md`.
+- `modules/34-fileless-mode.txt` — registration note corrected (the module is
+  always-loaded per module 12, not "not yet listed"); `playwright-smoke` added
+  to the canonical SKIPPED category set (validating its use in modules 07/33);
+  "no write step" wording clarified as post-confirmation.
+- Stale enumerations corrected: modules `00`/`27` now cite H1–H12 and S1–S13;
+  personas `23`–`27` base-stack lists now include modules 30–34; module `00`
+  BabaScrumMaster terminal column is `TASK_PLAN -> HANDOFF (SPEC, when in scope,
+  exits to CHECKLIST)`.
+- `modules/11-state-machine.txt` — removed the orphan `BACKLOG -> SPEC`
+  transition (SPEC is entered via `TASK_PLAN -> SPEC` in the upstream pipeline).
+- BLOCKED template alignment: modules `10` (Stack Compatibility notice) and `13`
+  (incomplete handoff) now match the module-07 BLOCKED field set.
+- Wording and doc fixes: module `06` verification-gate smoke reference; module
+  `22` SPRINT-skip path includes SPEC; module `17` delivered-content note; module
+  `24` handoff fields include `excluded_violations`; changelog staleness
+  (default_agent value, AGENTS.md Tavily line reference).
 
 ---
 
