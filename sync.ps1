@@ -197,7 +197,10 @@ function Update-GitTarget {
         return
     }
 
-    & git -C $repoRoot commit -m 'Sync Baba prompt system (AGENTS.md, system/, opencode.jsonc, .opencode/)' 2>&1 | Out-Null
+    # Conventional-commit message: target repos with husky/commitlint (e.g.
+    # biome-formatter-vscode, perplexity-ai-export) reject a subject without a
+    # type prefix, which used to fail the commit there every sync.
+    & git -C $repoRoot commit -m 'chore: sync baba prompt system' 2>&1 | Out-Null
     if ($LASTEXITCODE -ne 0) {
         Write-Warning "git commit failed for $Path"
         return
