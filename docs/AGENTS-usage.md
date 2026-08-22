@@ -139,6 +139,15 @@ sessions print `[MODE: DIRECT]` instead.
 [INTAKE -> BACKLOG -> SPRINT -> TASK_PLAN -> SPEC ->] CHECKLIST -> DOCS -> REVIEW -> PLAN -> PATCH -> [DRIFT]
 ```
 
+**Greenfield projects (from scratch):** when the target repo is empty (or
+near-empty) or you explicitly ask to create a project from scratch, the system
+records CHECKLIST and REVIEW as greenfield skips — there is no existing code to
+inventory or review — and goes PLAN-first. The intake captures a `Stack/Style:`
+field, and the plan establishes the coding conventions from module 14
+(`14-implementation-style.txt`: stack, DI container, error idiom, naming,
+structure) before PATCH scaffolds any file. Your defined coding style is the
+default for new projects; override it at intake or plan approval.
+
 This is the structured flow. `SPEC` (optional, ScrumMaster-owned) authors a
 spec artifact in `SPECS/` when a goal needs spec-authoring; all `SPECS/`
 writes flow through PATCH. `DRIFT` (optional, read-only) is a post-PATCH

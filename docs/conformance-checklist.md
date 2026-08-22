@@ -28,6 +28,11 @@ tool-independent because the core system is a specification, not an application.
       and no step concludes with an assumed-clean pass.
 - [ ] Before each code edit, `14-implementation-style.txt` defaults are consulted and
       applied, in DIRECT and PATCH alike.
+- [x] Greenfield scaffolds (from-scratch request or empty/near-empty repo) record
+      CHECKLIST and REVIEW as greenfield skips and go PLAN-first: the INTAKE
+      `Stack/Style:` field captures the convention source (module 14 defaults or user
+      override) and the PLAN `Conventions:` field lists the module-14 defaults being
+      established before PATCH creates files (modules 02/07/10/11/14).
 - [ ] PLAN names each touched file's dominating error-handling/style idiom and how
       the patch preserves it; a foreign idiom for an operation the file already
       handles is a confirmed H12 finding unless explicitly user-approved

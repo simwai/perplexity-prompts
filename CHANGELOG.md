@@ -9,6 +9,20 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Greenfield style binding: when the target is a from-scratch project or a repo
+  with no existing source files, the module-14 defaults become the project
+  conventions (stack, DI container, error idiom, naming, file naming, structure,
+  region tags) until the user overrides them. `modules/14-implementation-style.txt`
+  gains a Greenfield projects section (defaults are binding there, not merely
+  "strong defaults"); the INTAKE template in `modules/07-output-contracts.txt`
+  and `modules/22-scrum-planning.txt` gains a `Stack/Style:` field; the PLAN
+  template's `Conventions:` field covers new files/new projects; `.opencode/agents/plan.md`
+  loads module 14 and `modules/24-babasensei.txt` requires module-14 conventions in
+  greenfield plans; `modules/02-workflow.txt` and `modules/10-decision-and-intake.txt`
+  add the greenfield branch (CHECKLIST/REVIEW recorded skips, PLAN-first);
+  `modules/11-state-machine.txt` adds the constrained `CHECKLIST -> PLAN`
+  transition with the hard-guard carve-out; `docs/AGENTS-usage.md` and
+  `docs/conformance-checklist.md` synced.
 - Pre-commit Playwright functional smoke: `modules/33-commit-and-push-gate.txt`
   gains a pre-ask verification step — when the repo declares a web-app entry
   point, the gate invokes the Playwright MCP server to smoke-test the session's
