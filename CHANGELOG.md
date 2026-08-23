@@ -9,6 +9,33 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Token-cost refactor of the always-loaded base stack (standing context ~96 KB
+  to ~71 KB): `modules/01-orchestrator.txt` now merges the former
+  `02-workflow.txt` and `11-state-machine.txt` (phase model, transition rules,
+  hard guards, recovery) into one module; the "use the full available token
+  budget" rule is removed and replaced by a continuation rule; the verbatim
+  always-loaded base-stack list is dropped from persona modules 23-27 and the
+  routing table; `modules/14-implementation-style.txt` is split into
+  `14-core.txt` plus per-stack modules (`14-ts.txt`, `14-py.txt`, `14-java.txt`,
+  `14-frontend.txt`, `14-ps.txt`, `14-pine.txt`) so only the active stack loads;
+  `modules/34-fileless-mode.txt` is no longer always-loaded — it loads only on a
+  confirmed `READ_ONLY` host (module 12 read-only trigger), and the fileless
+  branches in `06-fix-and-patch-protocol.txt`, `07-output-contracts.txt`,
+  `25-babadev.txt`, `30-execution-modes.txt`, and `33-commit-and-push-gate.txt`
+  are reduced to one-line pointers into module 34; `modules/19-session-state.txt`
+  template is slimmed to the standing field set with optional sections appended
+  only while their owning surface is active. Synced: `bootstrap.txt`,
+  `docs/AGENTS-usage.md`, `docs/conformance-checklist.md`, `.opencode/agents/`.
+- Dead-path cleanup: `modules/12-module-routing.txt` now loads
+  `03-docs-research.txt` at CHECKLIST (the checklist's pre-review docs log
+  records library/version/URL, which the docs protocol defines — previously it
+  was only loaded one phase later at DOCS); the untracked stray
+  `node-4IhTfWZ9.js` was deleted; `targets.json`'s role as `sync.ps1`-only
+  operational tooling is documented in the script header and in
+  `modules/33-commit-and-push-gate.txt` (never a remote source for the gate);
+  module paths in `.opencode/agents/baba-dev.md` and `baba-reviewer.md` are
+  normalized to the `system/modules/` prefix.
+
 - Greenfield style binding: when the target is a from-scratch project or a repo
   with no existing source files, the module-14 defaults become the project
   conventions (stack, DI container, error idiom, naming, file naming, structure,
