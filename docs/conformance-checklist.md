@@ -21,18 +21,18 @@ tool-independent because the core system is a specification, not an application.
 - [ ] Phase artifacts are complete for the work their phase owns before the next phase opens:
       checklist-scope checkboxes (inventory rows, H/S coverage) are ticked when the listing or
       scope decision is recorded, review-status fields flip as REVIEW performs the work, and a
-      `[x]` claiming completed work that has not run is a false tick (modules 02/07/11); no PATCH
+      `[x]` claiming completed work that has not run is a false tick (modules 01/07); no PATCH
       concludes with an unticked conformance box.
 - [ ] Every file edit sequence ends with the project's lint run on the touched files;
       auto-fixable issues are fixed, remaining violations fixed or explicitly recorded,
       and no step concludes with an assumed-clean pass.
-- [ ] Before each code edit, `14-implementation-style.txt` defaults are consulted and
-      applied, in DIRECT and PATCH alike.
+- [ ] Before each code edit, `14-core.txt` (plus the active stack module)
+      defaults are consulted and applied, in DIRECT and PATCH alike.
 - [x] Greenfield scaffolds (from-scratch request or empty/near-empty repo) record
       CHECKLIST and REVIEW as greenfield skips and go PLAN-first: the INTAKE
       `Stack/Style:` field captures the convention source (module 14 defaults or user
       override) and the PLAN `Conventions:` field lists the module-14 defaults being
-      established before PATCH creates files (modules 02/07/10/11/14).
+      established before PATCH creates files (modules 01/07/10/14).
 - [ ] PLAN names each touched file's dominating error-handling/style idiom and how
       the patch preserves it; a foreign idiom for an operation the file already
       handles is a confirmed H12 finding unless explicitly user-approved

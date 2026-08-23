@@ -7,6 +7,13 @@
     git repositories get the synced files committed and pushed to their
     origin remote (use -NoGitPush to skip). Run with no arguments for the
     interactive menu.
+    The configured target list lives in targets.json at this script's
+    directory (plain JSON array of absolute project paths). Paths are
+    expanded for environment variables; entries pointing at missing
+    directories are skipped. This file is operational tooling for the
+    developer, not part of the prompt-system runtime: no prompt module
+    reads it. The module-33 commit/push gate handles the current repo's
+    own origin + `*-mirror` remotes independently of this sync flow.
 .EXAMPLE
     .\sync.ps1
 .EXAMPLE
