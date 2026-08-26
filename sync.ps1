@@ -273,6 +273,15 @@ if ($keys.Count -eq 0) {
     exit 1
 }
 
+# Regenerate adapter mirrors before every sync so targets never receive stale
+# hand-copied duplicates (sources: .opencode/ tree + opencode.jsonc mcp block).
+try {
+    & (Join-Path $scriptDir 'generate-adapters.ps1')
+} catch {
+    Write-Error "generate-adapters.ps1 failed - fix it before syncing: $_"
+    exit 1
+}
+
 if ($All) {
     foreach ($key in $keys) { $targets[$key] = $true }
     Sync-Targets -Targets $targets -DryRun:$DryRun -NoGitPush:$NoGitPush
