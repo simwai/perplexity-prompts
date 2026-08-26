@@ -269,13 +269,17 @@ Claude Code gets an additional native layer that other agents ignore.
 | Path | Purpose |
 |---|---|
 | `CLAUDE.md` | Claude Code memory file that imports `AGENTS.md` via `@AGENTS.md` – both tools read the same instructions without duplication. |
-| `.mcp.json` | Project-scope MCP servers, tier 1 only (Context7 HTTP, Playwright pinned). Committed so every teammate gets the same tools. |
-| `.claude/settings.json` | Shared project settings: credential-file read denies (`.env`, `.env.*`, `secrets/`, `*.key`, `*.pem`) mirroring module 32, plus pre-approval of the two keyless MCP servers. |
-| `.claude/agents/baba-*.md` | The five Baba personas as Claude Code subagents. Read-only personas list safe tools only; BabaDev inherits all tools. |
-| `.claude/commands/*.md` | Mirrors of the Baba slash commands: `/baba`, `/phase`, `/approve-plan`, `/handoff`, `/resume`, `/verify`, `/direct`, `/structured`, `/auto`. |
+| `.mcp.json` | Project-scope MCP servers, tier 1 only (Context7 HTTP, Playwright pinned). Generated from `opencode.jsonc`. Committed so every teammate gets the same tools. |
+| `.claude/settings.json` | Shared project settings: credential-file read denies (`.env`, `.env.*`, `secrets/`, `*.key`, `*.pem`) mirroring module 32, plus pre-approval of the two keyless MCP servers. Hand-maintained (settings have no source elsewhere). |
+| `.claude/agents/baba-*.md` | The five Baba personas as Claude Code subagents. Generated from `.opencode/agents/baba-*.md`. Read-only personas list safe tools only; BabaDev inherits all tools. |
+| `.claude/commands/*.md` | Mirrors of the Baba slash commands. Generated from `.opencode/commands/*.md`. |
 
 ### Notes
 
+- **Single source of truth**: edit `.opencode/agents/`, `.opencode/commands/`,
+  and the `opencode.jsonc` `mcp` block – then run `.\generate-adapters.ps1`.
+  Files under `.claude/` carry a GENERATED banner; direct edits are lost on
+  the next run. `sync.ps1` regenerates automatically before propagating.
 - **Workspace trust**: on first run in a cloned repo, accept the trust dialog –
   MCP approvals from committed settings apply only in trusted folders.
 - **Local overrides**: `.claude/settings.local.json` and `CLAUDE.local.md` are

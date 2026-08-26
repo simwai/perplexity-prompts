@@ -20,9 +20,12 @@ docs/              Usage documentation.
 opencode.jsonc     opencode-native config (optional layer, inert for other agents).
 .opencode/         opencode persona agents and commands (optional layer).
 CLAUDE.md          Claude Code memory that imports AGENTS.md (optional layer).
-.mcp.json          Claude Code project MCP servers, tier 1 only (optional layer).
-.claude/           Claude Code persona subagents and slash commands (optional layer).
-.codex/            Codex CLI project config with safe defaults (optional layer).
+.mcp.json          Claude Code project MCP servers, tier 1 only (generated).
+.claude/           Claude Code persona subagents and slash commands (generated).
+.codex/            Codex CLI project config with safe defaults (MCP section generated).
+sync.ps1           Interactive propagation to target projects (runs the generator).
+generate-adapters.ps1
+                   Emits .claude/** and MCP blocks from .opencode/** + opencode.jsonc.
 ```
 
 ## Deploy
@@ -61,11 +64,18 @@ agent ignores them:
 - **opencode**: `opencode.jsonc` (MCP servers, bootstrap loader auto-load) and
   `.opencode/` (Baba personas as subagents, native Plan/Build overrides, and
   `/baba`, `/phase`, `/approve-plan`, `/handoff`, `/resume`, `/verify`
-  commands).
+  commands). This is the canonical authoring surface.
 - **Claude Code**: `CLAUDE.md` imports `AGENTS.md`; `.mcp.json` registers the
   tier-1 MCP servers; `.claude/agents/` provides the five Baba personas as
-  subagents and `.claude/commands/` mirrors the Baba slash commands.
+  subagents and `.claude/commands/` mirrors the Baba slash commands. All of
+  these are **generated** by `generate-adapters.ps1` from `.opencode/` and
+  `opencode.jsonc` – edit the sources, never the generated files.
 - **Codex CLI**: `.codex/config.toml` with safe defaults (workspace-write
-  sandbox, on-request approvals) and tier-1 MCP servers.
+  sandbox, on-request approvals) and a generated tier-1 `[mcp_servers]`
+  section.
 - **Hermes**: no dedicated adapter – `AGENTS.md` + `system/` remain its
   integration surface. Revisit if Hermes gains project-config discovery.
+
+Nothing is maintained twice: personas, commands, and MCP server definitions
+live once (in `.opencode/` and `opencode.jsonc`), and `sync.ps1` regenerates
+every adapter mirror before propagating.

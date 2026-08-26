@@ -8,7 +8,9 @@ The Baba system has five layers:
 4. Phase and persona modules define gates, output contracts, and ownership.
 5. Adapter layers bind the portable system to agent platforms: `.opencode/`
    plus `opencode.jsonc` (OpenCode), `CLAUDE.md` + `.mcp.json` + `.claude/`
-   (Claude Code), and `.codex/config.toml` (Codex CLI).
+   (Claude Code), and `.codex/config.toml` (Codex CLI). Adapter mirrors are
+   generated: `generate-adapters.ps1` emits `.claude/**` and the tier-1 MCP
+   blocks from `.opencode/**` and the `opencode.jsonc` `mcp` block.
 
 ## One review path
 
