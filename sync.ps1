@@ -87,8 +87,8 @@ function Sync-Targets {
     )
 
     $source  = $scriptDir
-    $files   = @('AGENTS.md', 'opencode.jsonc')
-    $folders = @('system', '.opencode')
+    $files   = @('AGENTS.md', 'opencode.jsonc', 'CLAUDE.md', '.mcp.json')
+    $folders = @('system', '.opencode', '.claude')
     $synced     = 0
     $skipped    = 0
     $pushFailed = 0
@@ -165,7 +165,7 @@ function Update-GitTarget {
     }
 
     if ($DryRun) {
-        Write-Host '    [DRY] git add AGENTS.md opencode.jsonc system/ .opencode/' -ForegroundColor Gray
+        Write-Host '    [DRY] git add AGENTS.md opencode.jsonc CLAUDE.md .mcp.json system/ .opencode/ .claude/' -ForegroundColor Gray
         Write-Host '    [DRY] git commit + git push origin <branch>' -ForegroundColor Gray
         return
     }
@@ -181,7 +181,7 @@ function Update-GitTarget {
         return
     }
 
-    $paths = @('AGENTS.md', 'opencode.jsonc', 'system', '.opencode') |
+    $paths = @('AGENTS.md', 'opencode.jsonc', 'CLAUDE.md', '.mcp.json', 'system', '.opencode', '.claude') |
         Where-Object { Test-Path (Join-Path $repoRoot $_) }
     if (-not $paths) { return }
 

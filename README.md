@@ -19,6 +19,10 @@ system/            The copy-paste unit — contains bootstrap.txt (loader) and m
 docs/              Usage documentation.
 opencode.jsonc     opencode-native config (optional layer, inert for other agents).
 .opencode/         opencode persona agents and commands (optional layer).
+CLAUDE.md          Claude Code memory that imports AGENTS.md (optional layer).
+.mcp.json          Claude Code project MCP servers, tier 1 only (optional layer).
+.claude/           Claude Code persona subagents and slash commands (optional layer).
+.codex/            Codex CLI project config with safe defaults (optional layer).
 ```
 
 ## Deploy
@@ -48,10 +52,20 @@ After syncing, each target that is a git repository gets the synced files
 committed and pushed to its `origin` remote. Pass `-NoGitPush` (or toggle
 `[G]` in the menu) to skip the commit/push step.
 
-## opencode support
+## Agent platform support
 
 The core system (`AGENTS.md` + `system/`) is model-agnostic and works with any
-agent. opencode additionally consumes `opencode.jsonc` (MCP servers, bootstrap
-loader auto-load) and `.opencode/` (Baba personas, native Plan/Build overrides,
-and `/baba`, `/phase`, `/approve-plan`, `/handoff`, `/resume`, `/verify` commands).
-Other agents ignore these files entirely.
+agent. Optional adapter layers bind it to specific platforms; every other
+agent ignores them:
+
+- **opencode**: `opencode.jsonc` (MCP servers, bootstrap loader auto-load) and
+  `.opencode/` (Baba personas as subagents, native Plan/Build overrides, and
+  `/baba`, `/phase`, `/approve-plan`, `/handoff`, `/resume`, `/verify`
+  commands).
+- **Claude Code**: `CLAUDE.md` imports `AGENTS.md`; `.mcp.json` registers the
+  tier-1 MCP servers; `.claude/agents/` provides the five Baba personas as
+  subagents and `.claude/commands/` mirrors the Baba slash commands.
+- **Codex CLI**: `.codex/config.toml` with safe defaults (workspace-write
+  sandbox, on-request approvals) and tier-1 MCP servers.
+- **Hermes**: no dedicated adapter – `AGENTS.md` + `system/` remain its
+  integration surface. Revisit if Hermes gains project-config discovery.

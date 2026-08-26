@@ -6,7 +6,9 @@ The Baba system has five layers:
 2. `system/bootstrap.txt` loads the canonical modules.
 3. `system/modules/12-module-routing.txt` selects modules for the active phase.
 4. Phase and persona modules define gates, output contracts, and ownership.
-5. `.opencode/` adapts the portable system to OpenCode commands and agents.
+5. Adapter layers bind the portable system to agent platforms: `.opencode/`
+   plus `opencode.jsonc` (OpenCode), `CLAUDE.md` + `.mcp.json` + `.claude/`
+   (Claude Code), and `.codex/config.toml` (Codex CLI).
 
 ## One review path
 
@@ -26,8 +28,10 @@ phase entered after `PATCH` (spec-backed sessions) or on demand from any phase; 
 `REVIEW` owns confirmation. `PLAN` requires explicit approval and a complete
 rewrite contract. `PATCH` is the only implementation phase.
 
-## Portable versus native files
+## Portable versus adapter files
 
-The portable deployment unit is `AGENTS.md` plus `system/`. OpenCode-specific
-commands, agents, and `opencode.jsonc` are an optional adapter layer and are not
-copied by `sync.ps1`.
+The portable deployment unit is `AGENTS.md` plus `system/`. Adapter files
+(`opencode.jsonc`, `.opencode/`, `CLAUDE.md`, `.mcp.json`, `.claude/`,
+`.codex/`) are platform-specific layers owned by one agent each; other agents
+ignore them entirely. `sync.ps1` propagates the portable unit together with
+the adapter surfaces to configured targets.
