@@ -46,6 +46,10 @@ sessions/
 *.session.json
 chat-export/
 
+# Claude Code local state (never commit personal overrides)
+.claude/settings.local.json
+CLAUDE.local.md
+
 # Pre-commit cache
 .pre-commit-cache/
 

@@ -260,11 +260,42 @@ additional native layer that other agents (Claude Code, Cursor, Codex) ignore.
 
 ---
 
+## Claude Code Support
+
+Claude Code gets an additional native layer that other agents ignore.
+
+### Files
+
+| Path | Purpose |
+|---|---|
+| `CLAUDE.md` | Claude Code memory file that imports `AGENTS.md` via `@AGENTS.md` – both tools read the same instructions without duplication. |
+| `.mcp.json` | Project-scope MCP servers, tier 1 only (Context7 HTTP, Playwright pinned). Committed so every teammate gets the same tools. |
+| `.claude/settings.json` | Shared project settings: credential-file read denies (`.env`, `.env.*`, `secrets/`, `*.key`, `*.pem`) mirroring module 32, plus pre-approval of the two keyless MCP servers. |
+| `.claude/agents/baba-*.md` | The five Baba personas as Claude Code subagents. Read-only personas list safe tools only; BabaDev inherits all tools. |
+| `.claude/commands/*.md` | Mirrors of the Baba slash commands: `/baba`, `/phase`, `/approve-plan`, `/handoff`, `/resume`, `/verify`, `/direct`, `/structured`, `/auto`. |
+
+### Notes
+
+- **Workspace trust**: on first run in a cloned repo, accept the trust dialog –
+  MCP approvals from committed settings apply only in trusted folders.
+- **Local overrides**: `.claude/settings.local.json` and `CLAUDE.local.md` are
+  gitignored; create them by hand for personal, non-shared settings.
+- **Restart after changes**: restart the session after editing files under
+  `.claude/agents/` or `.claude/commands/` for the changes to load.
+- **Single source of truth**: persona modules in `system/modules/` remain
+  canonical – subagent and command files reference them, never duplicate.
+- **Perplexity / other agents**: ignore `CLAUDE.md`, `.mcp.json`, `.claude/`,
+  `.codex/`, `opencode.jsonc`, and `.opencode/`. They still follow
+  `AGENTS.md` + `system/` with prompt-enforced gates.
+
+---
+
 ## Troubleshooting
 
 | Symptom | Cause | Fix |
 |---|---|---|
 | MCP server missing | Token not exported | `echo $EXA_API_KEY` — re-run `source .env` if empty |
+| Claude Code MCP servers pending | Workspace not trusted yet | Start `claude` in the repo and accept the trust dialog once |
 | Agent ignores phases | `AGENTS.md` not read | Confirm it's at repo root; some agents need `--context AGENTS.md` |
 | Immediate `BLOCKED` | Missing library/version info | The agent reads names/versions from manifests and lockfiles; `BLOCKED` is valid only after a filesystem search (module 32) failed |
 | Trello tools absent | OAuth not completed | Run `opencode mcp auth trello` once, then restart the session |
