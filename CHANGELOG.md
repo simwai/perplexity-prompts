@@ -9,6 +9,18 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Review-drift remediation pass (consolidated review 2026-08-26): `AGENTS.md`
+  rubric range corrected to H1–H12 / S1–S13 (both mentions) and the removed
+  "use the full token budget" rule replaced by the module-01 continuation rule,
+  plus a startup note recording that opencode pins all always-loaded modules
+  while other hosts load them through model diligence; dangling module-02
+  references fixed in `modules/17-cross-team-requirements.txt` (now modules
+  01/07) and `modules/35-spec-lifecycle.txt` (now modules 01/08); module 05 S11
+  Python upgrade note aligned to H10's function-signature scope;
+  `modules/07-output-contracts.txt` CHECKLIST coverage semantics extended to
+  the documented soft-tier extension IDs (`S-artifact`, `S-gitattributes`,
+  `S-precommit`, modules 15/16); `docs/conformance-checklist.md` rows ticked
+  after verification against the current module set.
 - Token-cost refactor of the always-loaded base stack (standing context ~96 KB
   to ~71 KB): `modules/01-orchestrator.txt` now merges the former
   `02-workflow.txt` and `11-state-machine.txt` (phase model, transition rules,
@@ -229,6 +241,15 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- `opencode.jsonc` pins all ten always-loaded modules (`00`, `01`, `09`, `12`,
+  `14-core`, `21`, `30`, `31`, `32`, `33`) via `instructions`, making module
+  loading fully deterministic in every opencode session; the ~39 KB standing
+  context cost was weighed against the token-cost refactor and accepted
+  deliberately (2026-08-26). Stack modules stay diligence-loaded because they
+  are language-dependent.
+- Dangling `.opencode/plugin/session-header.ts` registration removed from
+  `opencode.jsonc`; the orphaned `@opencode-ai/plugin` dependency was dropped
+  from `.opencode/package.json` and the lockfile refreshed.
 - Session state is now concurrency-safe: each session owns a session-scoped
   state file `SESSION_STATE-<session_id>.md` instead of a single shared
   repo-root `SESSION_STATE.md`. `session_id` resolves from a sanitized
