@@ -9,6 +9,12 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Output language rule: every response is written in English regardless of the
+  user's input language, in any mode, phase, or persona. Added as the first
+  rule in the `## Identity & Rules` section of `AGENTS.md` (above the existing
+  conciseness and no-emoji rules), so it is inherited by every target repo via
+  `sync.ps1` without a per-persona or per-phase restatement.
+
 - Review-drift remediation pass (consolidated review 2026-08-26): `AGENTS.md`
   rubric range corrected to H1–H12 / S1–S13 (both mentions) and the removed
   "use the full token budget" rule replaced by the module-01 continuation rule,
