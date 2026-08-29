@@ -31,6 +31,11 @@ $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 # ═══════════════════════════════════════════════════════════════════════════
 #  Discovery
 # ═══════════════════════════════════════════════════════════════════════════
+# Module 37 (credential & remote-URL sanitization) is the standing H1 rule.
+# Any output from this script that an LLM agent could read back MUST scrub
+# remote URLs and embedded tokens before reaching stdout. Update-GitTarget
+# applies the sanitizer on the push error path; do not add unsanitized
+# `git remote -v` / `get-url` / `git push` calls anywhere in this file.
 
 function Find-Targets {
     param([string[]]$Roots)
@@ -226,9 +231,16 @@ function Update-GitTarget {
     $previousPrompt = $env:GIT_TERMINAL_PROMPT
     $env:GIT_TERMINAL_PROMPT = '0'
     try {
-        & git -C $repoRoot push origin $branch 2>&1 | Out-Null
+        # Capture and sanitize: git prints `To <url>` on success and may include
+        # remote URLs in error output. The exit code is the real signal; the
+        # branch pointer is enough human-readable evidence. Never let an
+        # unsanitized line reach stdout (module 37 / H1).
+        $raw = & git -C $repoRoot push origin $branch 2>&1
         if ($LASTEXITCODE -ne 0) {
-            throw "push exit code $LASTEXITCODE"
+            $scrubbed = ($raw -join "`n") -replace 'https?://\S+', '<url>' `
+                                          -replace 'oauth2:[^@\s]+@', 'oauth2:<token>@'
+            Write-Warning "git push origin $branch failed (exit $LASTEXITCODE) for $Path`n$scrubbed"
+            return $true
         }
         Write-Host "    GIT  pushed origin $branch" -ForegroundColor Green
         return $false
