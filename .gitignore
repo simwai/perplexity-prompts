@@ -45,6 +45,7 @@ sessions/
 *.session.md
 *.session.json
 chat-export/
+.session-locks/
 
 # Claude Code local state (never commit personal overrides)
 .claude/settings.local.json
