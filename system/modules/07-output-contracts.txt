@@ -383,6 +383,28 @@ Allowed only if:
 - docs evidence exists when docs phase is required
 - review mode is recorded as `interactive` or `consolidated`
 
+### Mitigations on findings
+
+Every emitted finding in `# Findings` that is in scope for remediation carries
+a `Mitigations:` block immediately under the finding line. The block is a
+mini decision prompt in the format of modules 08/10: 2-3 options, recommended
+option first with `(Recommended)`, one-line pros and cons per option, and
+exactly one `Recommended:` line. BabaTester is the one exception -- it emits
+mitigations but omits the `(Recommended)` marker and the `Recommended:` line
+because module 01 excludes it from PLAN/Done declarations.
+
+Scope: a `Mitigations:` block appears on every hard-tier finding (H1-H12) and
+on every soft-tier finding that blocks the merge verdict per the
+`05-review-rubric-soft-tier.txt` list (S1-S13 plus documented extension IDs
+from modules 15 and 16 such as S-artifact, S-gitattributes, S-precommit when
+those extensions are in scope). Other soft-tier findings stay as today.
+
+The user's reply is one of: a letter (A/B/C) to pick a mitigation, `skip` to
+accept the finding without a mitigation, or `accept` to record the finding as
+informational. The choice is persisted in the session state file under
+`## Findings Mitigations` (module 19) and travels into PATCH and DRIFT via
+the handoff contract.
+
 !!! REVIEW owns confirmation. There is no standalone CONFIRM phase.
 
 Unlocks `PLAN` (or BabaTester `TEST_STRATEGY`) only if the response contains:
@@ -427,6 +449,16 @@ Batch: [lines X-Y or FULL or AGGREGATE – all files complete] ([N] of [M] for t
 
 Confirmed-looking violations (provisional until the decision section is confirmed):
 - [criterion id] -- [line/range] -- [one-sentence failure] ([confidence]%)
+  - Mitigations:
+    - A. [short action] (Recommended)
+      - Pros: [one line]
+      - Cons: [one line]
+    - B. [short action]
+      - Pros: [one line]
+      - Cons: [one line]
+    - C. [short action, if needed]
+      - Pros: [one line]
+      - Cons: [one line]
 
 Validation loop (run when any finding is at confidence <= 70%):
 - Trigger: [criterion id] -- [confidence]%
@@ -466,6 +498,7 @@ Please confirm:
 - Accepted violations: [list]
 - Disputed violations: [list]
 - Constraints to preserve: [list]
+- Mitigation choices: per finding, reply with A/B/C (pick), `skip`, or `accept` -- one reply per finding. Choices are persisted in `## Findings Mitigations` (module 19).
 
 Next batch:
 - [file path] -- [lines X-Y or FULL] -- [next batch, or "all files complete — confirm aggregate decision before PLAN"]
@@ -616,12 +649,36 @@ Verified claims:
 
 Diverged claims:
 - [claim id] -- [code location] -- [expected vs actual]
+  - Mitigations:
+    - A. [apply: update code to match the spec] (Recommended)
+      - Pros: [one line]
+      - Cons: [one line]
+    - B. [sync: human picks which side wins]
+      - Pros: [one line]
+      - Cons: [one line]
+    - C. [extract: spec needs a new claim] (omit when not viable)
+      - Pros: [one line]
+      - Cons: [one line]
 
 Orphaned mappings:
 - [claim id] -- [mapped location no longer exists]
+  - Mitigations:
+    - A. [apply: re-add the mapped code] (Recommended)
+      - Pros: [one line]
+      - Cons: [one line]
+    - B. [sync: deprecate the claim]
+      - Pros: [one line]
+      - Cons: [one line]
 
 Code-exceeds-spec (extract candidates):
 - [code location] -- [implemented behavior with no claim]
+  - Mitigations:
+    - A. [extract: spec gains a new claim covering this behavior] (Recommended)
+      - Pros: [one line]
+      - Cons: [one line]
+    - B. [apply: remove the unreferenced code]
+      - Pros: [one line]
+      - Cons: [one line]
 
 HALT (only when version drift is detected; never a BLOCKED variant):
 - Recommended fix path: [align header to registry | align registry to header]
