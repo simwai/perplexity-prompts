@@ -51,10 +51,10 @@ tool-independent because the core system is a specification, not an application.
       enters the transcript (modules 32/33).
 - [x] Tester guidance is classified as binding, strong hint, or weak hint.
 - [x] The agent never asks the user to provide files, paths, versions, or snippets
-      discoverable in the local filesystem; it searches first with `rg` (fallback
-      `grep`) and file tools (module 32).
+      discoverable in the local filesystem; it searches with `rg` and specifies
+      no fallbacks (modules 32, 14-core).
 - [x] Search locates, full read comprehends: no file is edited, scored, or judged
-      from grep snippets alone; a comprehension read is the largest-window full
+      from search snippets alone; a comprehension read is the largest-window full
       read (offset-chunked when large), is a state change rather than a loop, and
       truncation is recorded, never assumed read (modules 31/32).
 - [x] MCP packages are version-pinned or their update policy is documented.
