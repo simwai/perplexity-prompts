@@ -54,6 +54,9 @@ CLAUDE.local.md
 # Pre-commit cache
 .pre-commit-cache/
 
+# Local system backups (created before destructive system edits)
+system.backup-*/
+
 # Test output
 coverage/
 .coverage

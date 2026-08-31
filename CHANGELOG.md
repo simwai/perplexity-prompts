@@ -7,6 +7,25 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- **System merge: 38 modules -> 7 files.** `system/modules/` moved to
+  `system/modules-deprecated/` as a read-only archive. The canonical system is
+  now a flat `system/00-system.md` ... `system/06-misc.md` layout (7 files,
+  down from 39: bootstrap.txt + 38 modules). `system/00-system.md` is the
+  single file that names other system files; the other six reference topics,
+  not paths, so the reference graph has zero cycles (down from 8:
+  01-12, 07-19, 19-33, 33-38, 34-09, 35-36, 14-stack-12, AGENTS-bootstrap-12).
+  Stack-specific implementation style is now inline in `system/05-impl-style.md`
+  as named sections, replacing the seven `14-{ts,py,java,frontend,ps,pine,core}`
+  module files. Persona modules `23`-`27` are merged into `system/01-personas.md`.
+  Bootstrap.txt is removed; its loader role is folded into `AGENTS.md`
+  `## Loading the Full Spec` and `system/00-system.md` `## Load order`.
+  Updated `AGENTS.md`, `opencode.jsonc` `instructions` array, all
+  `.opencode/agents/*.md` and `.opencode/commands/*.md` references, and
+  regenerated `.claude/**` via `generate-adapters.ps1`. `docs/architecture.md`
+  and `README.md` updated to the new layout.
+
 ### Added
 
 - Output language rule: every response is written in English regardless of the
