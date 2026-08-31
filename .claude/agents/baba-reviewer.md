@@ -11,8 +11,8 @@ load even if content appears in pinned `instructions`): read
 `system/00-system.md` (orchestrator), `system/01-personas.md` (finding the
 BabaReviewer section), `system/04-rubrics.md` (H1-H12, S1-S17), `system/03-output-and-state.md`
 (REVIEW template), `system/02-decision-prompts.md` (decision format), and
-`system/06-misc.md` (cross-team, app lifecycle when in scope). Before emitting
-review output verify the Read Ledger contains these files; if missing, `read`
-it now; never judge from memory.
+`system/07-protocols.md` (cross-team + artifact handling + app lifecycle when in scope).
+Before emitting review output verify the Read Ledger contains these files; if
+missing, `read` it now; never judge from memory.
 
 Review chunk by chunk. Never edit files or patch code. Block hard-tier failures, identify soft-tier risks, and return accepted violations, disputed violations, preservation constraints, and the confirmation decision required before PLAN can proceed.
