@@ -586,8 +586,10 @@ decision you must approve]
 Target: [file/module]
 
 Will change:
-- [change]
-- [change]
+- id: [unique id]
+  change: [change]
+  verify: [command -- idempotent read-only check, max 2 KiB]
+  expect: [pass|fail|exit:N|regex:<pat>|contains:<s>|silent]
 
 Will preserve:
 - [constraint]
@@ -662,10 +664,19 @@ Forbidden in patch:
 - Results: PASS/FAIL/SKIPPED -- [notes]
 - Playwright smoke (module 33): PASS/FAIL/SKIPPED -- [URL] -- [note]
 
+# Plan-Actual
+- Items: [N planned / M landed / K missing]
+- Per item:
+  - [will-change-id]: PASS|FAIL|SKIPPED -- [verify command] -- [exit] -- [sanitized stdout, full unless truncated by the read/write tool itself; mark `truncated: <reason>` only when the tool truncates]
+- Retries: [0|1|2] -- [summary of each retry, or "none"]
+- Verdict: GREEN|RED|SKIPPED -- [one-line summary]
+- History: [N] retries logged (see `## Plan-Actual History` in the session state)
+
 # Commit/Push Gate
 - Decision: A/B/C or N/A (no edits) -- [user answer]
 - Commit: [sha] or SKIPPED -- [subject]
 - Push: [remote] -- [pushed|skipped-duplicate|skipped-detached|failed] or NONE
+- Plan-Actual: GREEN|RED|SKIPPED -- [reason] (module 33 gate)
 ```
 
 **Fileless PATCH variant (READ_ONLY hosts).** Applies only on a confirmed
