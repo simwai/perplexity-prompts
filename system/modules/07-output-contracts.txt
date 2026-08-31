@@ -625,7 +625,11 @@ A `PATCH` response is valid only if it contains:
 
 - rewrite contract
 - patch output
-- compliance audit
+- compliance audit (must include `Project style policy: PASS|FAIL` -- PASS
+  when the target repo's `AGENTS.md` either has a valid `## Project Style
+  Policy` section or the auto-trigger skip conditions apply; FAIL when the
+  field is missing on a non-greenfield, non-READ_ONLY repo at PATCH time --
+  module 10)
 - verification section (diff inspected; per-edit lint gate run with fixes applied; relevant project checks run or explicitly unavailable)
 - commit/push gate outcome when the session made file edits (module 33)
 
@@ -656,6 +660,7 @@ Forbidden in patch:
 # Compliance Audit
 - [check]: PASS/FAIL
 - [check]: PASS/FAIL
+- Project style policy: PASS|FAIL -- [one-line evidence per module 10; FAIL only on a non-greenfield, non-READ_ONLY repo missing the section]
 
 # Verification
 - Diff inspected: yes/no -- [summary]
