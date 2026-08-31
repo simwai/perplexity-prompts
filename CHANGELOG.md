@@ -9,6 +9,30 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- **Content restoration pass: 7 files -> 8 files with full content.** The
+  initial cycle-removal pass condensed 38 deprecated modules into 7 files but
+  lost ~30% of the rules. This pass restores the dropped detail while
+  keeping cycles at 0 by extracting the cross-cutting protocol detail into
+  a new `system/07-protocols.md` (artifact handling, pre-commit, cross-team,
+  app lifecycle, library selection, session file locks, spec lifecycle, drift
+  detection, discuss mode, scrum planning). The file graph stays a star
+  with `00-system.md` as the only hub; all 7 other files are leaves with
+  zero cross-references. Other files restored in place: `00-system.md` (loop
+  protection, READ_ONLY host, credentials & secrets, execution modes),
+  `01-personas.md` (full identity/tone/phase-override blocks per persona),
+  `02-decision-prompts.md` (START routing, ScrumMaster "direct mode"
+  disambiguation), `03-output-and-state.md` (full session state file
+  template, persona switch protocol, legacy adoption, stale-file GC),
+  `05-impl-style.md` (general principles, code-decision ladder, full comments
+  taxonomy, region tags, logging palettes, project-specific tooling per
+  stack), `06-misc.md` (commit/push gate detail with Plan-Versus-Actual Gate,
+  expect vocabulary, mutation denylist, auto-retry loop). Net: 8 files
+  (was 7; was 39 before cycle removal). Cycle count: 0 (unchanged).
+- Java-specific "Javadoc" terminology in the cross-language Comments
+  taxonomy was replaced with language-agnostic "Docstrings" / "public-API
+  docstrings" / "Docstrings in nonpublic code" so the Martin ch. 4/5
+  reference applies to all stacks.
+
 - **System merge: 38 modules -> 7 files.** `system/modules/` moved to
   `system/modules-deprecated/` as a read-only archive. The canonical system is
   now a flat `system/00-system.md` ... `system/06-misc.md` layout (7 files,

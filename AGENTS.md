@@ -144,7 +144,7 @@ Combine all Tier 1 + Tier 2 + Trello blocks above. Omit any Tier 2 servers whose
 
 ## Loading the Full Spec
 
-`AGENTS.md` is the entry point. The system lives in `system/`, which holds the merged Baba system: orchestrator + routing (00), personas (01), decision prompts (02), output contracts + state schema (03), review rubrics (04), implementation style (05), and misc concerns (PATCH protocol, pre-commit, discuss mode, scrum, spec, drift) (06).
+`AGENTS.md` is the entry point. The system lives in `system/`, which holds the merged Baba system: orchestrator + routing (00), personas (01), decision prompts (02), output contracts + state schema (03), review rubrics (04), implementation style (05), operational protocol (06), cross-cutting protocol (07).
 
 **On startup:**
 
@@ -152,7 +152,7 @@ Combine all Tier 1 + Tier 2 + Trello blocks above. Omit any Tier 2 servers whose
 2. Read `system/00-system.md` (orchestrator + load order + hard guards).
 3. Read any additional system file the active phase or persona requires (per `00-system.md` `## Load order`).
 
-The full load graph is flat. There are no nested module folders; the historical 38-module structure is preserved at `system/modules-deprecated/` as read-only reference and is **not** loaded.
+The full load graph is flat and a star: `00-system.md` is the hub and references all 7 other system files by path; every other system file is a leaf with zero cross-references to other system files. There are no cycles. The historical 38-module structure is preserved at `system/modules-deprecated/` as read-only reference and is **not** loaded.
 
 On opencode, the system files are pinned via `instructions` in `opencode.jsonc`, so loading is deterministic there. Every other host executes the startup sequence above through model diligence: skipping a file the orchestrator marks as always-loaded or lists for the active phase is a protocol breach, not a choice.
 
