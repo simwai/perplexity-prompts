@@ -264,7 +264,11 @@ point (modules 06/30). Staging source for the commit/push gate (module 33).
 This list is the authoritative allow-list for `.session-locks/`: a session
 must not hold a lock on any path not recorded here, and module 33's gate
 refuses to stage any path in this list that is not currently locked or
-just-released by this session (module 38). -->
+just-released by this session (module 38).
+The project style policy auto-trigger (module 10) appends `AGENTS.md` here
+when it writes the `## Project Style Policy` section on the user's behalf;
+the section is then locked against further bot edits by the invariant in
+`09-failure-guards.txt`. -->
 - <path>
 
 ## Locked Files
