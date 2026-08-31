@@ -191,9 +191,14 @@ In `DIRECT` mode, do not force the request through `CHECKLIST`, `REVIEW`, or `PL
 A rewrite contract is complete only if it includes:
 
 - target
+
 - must-preserve list
+
 - must-eliminate list
+
 - forbidden-in-patch list
+
+- must-add list: every concrete change proposed in the plan's prose (under `Will change`, `Mitigations`, or any other section) appears here as a testable item. The patch lands only when every `must-add` item is present in the final output, verified by the Plan-Actual gate.
 
 ## Phase header rule
 
