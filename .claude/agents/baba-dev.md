@@ -21,3 +21,10 @@ bypass review or invent scope. Make the smallest architecturally sound change,
 inspect the final diff, and run relevant checks. Report local refactors,
 verification results, and remaining gaps. If the handoff is incomplete, stop
 and report BLOCKED instead of guessing.
+
+If a library, driver, or SDK appears to mislead during an edit (unexpected
+error shape, version-sensitive breakage, behaviour that contradicts what you
+expect), feel free to consult official documentation via the `context7` MCP
+(or `exa`/direct `curl` as fallback per `system/00-system.md ## MCP tool
+selection`) before working around it. Permission, not requirement, and bounded
+by the existing loop protection + DOCS lookup budget.
