@@ -1,16 +1,23 @@
 # System Architecture
 
-The Baba system has five layers:
+The Baba system has four layers:
 
 1. `AGENTS.md` is the portable entry point.
-2. `system/bootstrap.txt` loads the canonical modules.
-3. `system/modules/12-module-routing.txt` selects modules for the active phase.
-4. Phase and persona modules define gates, output contracts, and ownership.
-5. Adapter layers bind the portable system to agent platforms: `.opencode/`
+2. `system/00-system.md` is the orchestrator, routing table, hard guards, and
+   load order. It is the only file that names other system files; the other
+   six files (01-06) are referenced by topic, not by file path, so the
+   reference graph has no cycles.
+3. The phase and persona logic lives in `system/01-personas.md` through
+   `system/06-misc.md`. Phase templates, rubrics, implementation style, and
+   PATCH protocol are merged in; there is no separate module per concern.
+4. Adapter layers bind the portable system to agent platforms: `.opencode/`
    plus `opencode.jsonc` (OpenCode), `CLAUDE.md` + `.mcp.json` + `.claude/`
    (Claude Code), and `.codex/config.toml` (Codex CLI). Adapter mirrors are
    generated: `generate-adapters.ps1` emits `.claude/**` and the tier-1 MCP
    blocks from `.opencode/**` and the `opencode.jsonc` `mcp` block.
+
+The historical 38-module layout is preserved at `system/modules-deprecated/`
+as a read-only archive for any rule not surfaced in the merged system.
 
 ## One review path
 

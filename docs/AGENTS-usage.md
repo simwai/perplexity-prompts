@@ -5,9 +5,9 @@
 `AGENTS.md` sits at the repo root. When an AI coding agent (Claude Code, Cursor Agent, Codex, etc.) starts a session, it reads the file first and loads:
 
 1. **MCP server configs** — organized by fallback tiers (Tier 1 works without keys)
-2. A pointer to `system/bootstrap.txt` — a module loader that points at
-   `system/modules/` for execution modes, personas, phase model, rubrics, and
-   implementation style
+2. A pointer to the merged system in `system/00-system.md` ... `system/06-misc.md`
+   (7 files; the historical 38-module structure is preserved at
+   `system/modules-deprecated/` for reference but is not loaded)
 
 This is the single entry point for AI coding agents; MCP servers are covered by the fallback tier system.
 
@@ -24,7 +24,7 @@ The copy-paste unit is `AGENTS.md` + the `system/` folder:
 Copy-Item -Recurse system <target-project>\system
 ```
 
-The `system/` folder is self-contained (`bootstrap.txt` loader + `modules/`); all internal references stay valid after the move.
+The `system/` folder is self-contained (7 merged system files); all internal references stay valid after the move.
 
 ---
 
@@ -96,9 +96,9 @@ Ask the agent: *"List the available MCP tools."* You should see tools from Conte
 
 Open a session in a repo that has `AGENTS.md` at root and just describe the task. The agent will:
 
-1. Read `AGENTS.md` — identity, MCP tiers, reference to `system/bootstrap.txt`
-2. Read `system/bootstrap.txt` — module loader
-3. Load always-on modules, then phase/persona modules from `system/modules/`
+1. Read `AGENTS.md` — identity, MCP tiers, reference to `system/00-system.md`
+2. Read `system/00-system.md` — orchestrator, phase model, routing, hard guards
+3. Load phase/persona files from `system/01-personas.md` ... `system/06-misc.md`
 4. Pick the right persona for the task type
 5. Declare the starting phase in its first response
 6. Reach for MCP tools (those available based on your configured keys)
@@ -143,10 +143,10 @@ sessions print `[MODE: DIRECT]` instead.
 near-empty) or you explicitly ask to create a project from scratch, the system
 records CHECKLIST and REVIEW as greenfield skips — there is no existing code to
 inventory or review — and goes PLAN-first. The intake captures a `Stack/Style:`
-field, and the plan establishes the coding conventions from module 14
-(`14-core.txt` + the active stack module: stack, DI container, error idiom,
-naming, structure) before PATCH scaffolds any file. Your defined coding style
-is the default for new projects; override it at intake or plan approval.
+field, and the plan establishes the coding conventions from
+`system/05-impl-style.md` (stack defaults, DI container, error idiom, naming,
+structure) before PATCH scaffolds any file. Your defined coding style is the
+default for new projects; override it at intake or plan approval.
 
 This is the structured flow. `SPEC` (optional, ScrumMaster-owned) authors a
 spec artifact in `SPECS/` when a goal needs spec-authoring; all `SPECS/`
@@ -163,26 +163,28 @@ selection.
 **You hold the gate inside REVIEW and at PLAN** — REVIEW owns the confirmation decision
 (no standalone CONFIRM phase), and PATCH still requires explicit plan approval.
 PLAN must include a `Conventions:` field naming each touched file's dominating
-error-handling/style idiom with evidence (module 14); a foreign idiom for an
+error-handling/style idiom with evidence (`05-impl-style.md`); a foreign idiom for an
 operation the file already handles is a confirmed H12 finding unless explicitly
 user-approved.
 Deterministic skips (`DOCS` out of scope, upstream pipeline not applicable) advance
 automatically and never pause for confirmation. Missing input -> `BLOCKED`. Second
 failure -> `FAILURE` and clean stop.
 
-The DOCS phase follows the deep-read protocol (module 03): enumerate the docs
-structure first (TOC/sitemap), map each in-scope criterion to the section that
-answers it (H8 -> advisories, H6/H7 -> API reference, S-tier -> upgrade guides),
-fetch section pages rather than the landing page, and cite the exact URL anchor
-behind each claim. Lookups are bounded (up to 3 per dependency per DOCS phase);
-beyond that the fallback ladder in module 21 walks TOC -> section -> anchor.
+The DOCS phase follows the deep-read protocol (`06-misc.md` cross-team
+section): enumerate the docs structure first (TOC/sitemap), map each in-scope
+criterion to the section that answers it (H8 -> advisories, H6/H7 -> API
+reference, S-tier -> upgrade guides), fetch section pages rather than the
+landing page, and cite the exact URL anchor behind each claim. Lookups are
+bounded (up to 3 per dependency per DOCS phase); beyond that the fallback
+ladder in `00-system.md` `## MCP tool selection` walks TOC -> section ->
+anchor.
 
 ---
 
 ## Commit and Push Gate
 
 When a session ends with file edits (end of PATCH after verification, or end of
-DIRECT work), the agent asks before committing and pushing (module 33):
+DIRECT work), the agent asks before committing and pushing (`06-misc.md` `## Commit/push gate`):
 
 - **A. Commit and push** to `origin` and every `*-mirror` remote (duplicate
   URLs skipped) — recommended
@@ -211,10 +213,10 @@ never become protocol failures.
 - Never commit `.env`
 - `.env` and other credential-bearing files (`.env.*`, `secrets/`, `*.pem`,
   `*.key`) are never read with the read-file tool — only via shell commands
-  whose output redacts values (module 32)
+  whose output redacts values (`00-system.md` `## Credentials & secrets`)
 - Remote URLs in `.git/config` may embed credentials — `git remote -v` output
   must be sanitized before it enters the transcript, and the commit/push gate
-  (module 33) prints remote names only, never URLs or raw push output
+  prints remote names only, never URLs or raw push output
 - H1 in the hard-tier rubric will flag the agent's own output if it accidentally echoes credentials
 - Context7, Exa, and Trello are remote endpoints — don't send proprietary code as search queries
 - Playwright `browser_run_code_unsafe` runs arbitrary JS — trusted sessions only
@@ -230,7 +232,7 @@ additional native layer that other agents (Claude Code, Cursor, Codex) ignore.
 
 | Path | Purpose |
 |---|---|
-| `opencode.jsonc` | opencode config: auto-loads `AGENTS.md` + `system/bootstrap.txt` via `instructions`, sets the safer planning agent as default, and registers version-pinned MCP servers. |
+| `opencode.jsonc` | opencode config: auto-loads `AGENTS.md` + the 7 system files via `instructions`, sets the safer planning agent as default, and registers version-pinned MCP servers. |
 | `.opencode/agents/baba-*.md` | The five personas as OpenCode subagents. Read-only personas deny `edit` and `bash`; BabaDev alone can edit and run commands. |
 | `.opencode/agents/plan.md` | Overrides native OpenCode Plan with BabaSensei rules (read-only). |
 | `.opencode/agents/build.md` | Overrides native OpenCode Build with BabaDev rules (requires approved plan + rewrite contract). |
@@ -253,8 +255,8 @@ additional native layer that other agents (Claude Code, Cursor, Codex) ignore.
   `/approve-plan` (or explicit approval); switch to Build for PATCH. Build refuses
   to patch without approved plan state in the session's own state file.
 - **Switching persona**: switch the agent in the TUI, or run `/baba <persona>`.
-  Persona modules remain the single source of truth — agent files reference
-  `system/modules/` and do not duplicate their content.
+  The personas are defined in `system/01-personas.md`; agent files reference
+  that file and do not duplicate the content.
 - **Perplexity / other agents**: ignore `opencode.jsonc` and `.opencode/`. They
   still follow `AGENTS.md` + `system/` with prompt-enforced gates.
 
@@ -270,7 +272,7 @@ Claude Code gets an additional native layer that other agents ignore.
 |---|---|
 | `CLAUDE.md` | Claude Code memory file that imports `AGENTS.md` via `@AGENTS.md` – both tools read the same instructions without duplication. |
 | `.mcp.json` | Project-scope MCP servers, tier 1 only (Context7 HTTP, Playwright pinned). Generated from `opencode.jsonc`. Committed so every teammate gets the same tools. |
-| `.claude/settings.json` | Shared project settings: credential-file read denies (`.env`, `.env.*`, `secrets/`, `*.key`, `*.pem`) mirroring module 32, plus pre-approval of the two keyless MCP servers. Hand-maintained (settings have no source elsewhere). |
+| `.claude/settings.json` | Shared project settings: credential-file read denies (`.env`, `.env.*`, `secrets/`, `*.key`, `*.pem`), plus pre-approval of the two keyless MCP servers. Hand-maintained (settings have no source elsewhere). |
 | `.claude/agents/baba-*.md` | The five Baba personas as Claude Code subagents. Generated from `.opencode/agents/baba-*.md`. Read-only personas list safe tools only; BabaDev inherits all tools. |
 | `.claude/commands/*.md` | Mirrors of the Baba slash commands. Generated from `.opencode/commands/*.md`. |
 
@@ -286,8 +288,8 @@ Claude Code gets an additional native layer that other agents ignore.
   gitignored; create them by hand for personal, non-shared settings.
 - **Restart after changes**: restart the session after editing files under
   `.claude/agents/` or `.claude/commands/` for the changes to load.
-- **Single source of truth**: persona modules in `system/modules/` remain
-  canonical – subagent and command files reference them, never duplicate.
+- **Single source of truth**: persona definitions in `system/01-personas.md`
+  remain canonical – subagent and command files reference them, never duplicate.
 - **Perplexity / other agents**: ignore `CLAUDE.md`, `.mcp.json`, `.claude/`,
   `.codex/`, `opencode.jsonc`, and `.opencode/`. They still follow
   `AGENTS.md` + `system/` with prompt-enforced gates.
@@ -301,7 +303,7 @@ Claude Code gets an additional native layer that other agents ignore.
 | MCP server missing | Token not exported | `echo $EXA_API_KEY` — re-run `source .env` if empty |
 | Claude Code MCP servers pending | Workspace not trusted yet | Start `claude` in the repo and accept the trust dialog once |
 | Agent ignores phases | `AGENTS.md` not read | Confirm it's at repo root; some agents need `--context AGENTS.md` |
-| Immediate `BLOCKED` | Missing library/version info | The agent reads names/versions from manifests and lockfiles; `BLOCKED` is valid only after a filesystem search (module 32) failed |
+| Immediate `BLOCKED` | Missing library/version info | The agent reads names/versions from manifests and lockfiles; `BLOCKED` is valid only after a filesystem search failed |
 | Trello tools absent | OAuth not completed | Run `opencode mcp auth trello` once, then restart the session |
 | Playwright won't launch | Node too old or browser missing | Use Node 20+; first run downloads browsers via `npx playwright install` |
 | Exa auth error | Wrong header key | Exa: `x-api-key` |

@@ -15,7 +15,8 @@ need stronger review and approval controls.
 
 ```txt
 AGENTS.md          The single entry file — paste at a target repo root.
-system/            The copy-paste unit — contains bootstrap.txt (loader) and modules/.
+system/            The copy-paste unit — 7 merged system files (00-06) and a
+                   modules-deprecated/ archive of the historical 38-module layout.
 docs/              Usage documentation.
 opencode.jsonc     opencode-native config (optional layer, inert for other agents).
 .opencode/         opencode persona agents and commands (optional layer).
