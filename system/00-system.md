@@ -68,6 +68,7 @@ Direct mode may inspect files, edit, and run checks as needed. It must still:
 - inspect and preserve the touched files' established local conventions (formatting, naming, structure, comments, docs, and commit-message style) unless an exception is explicitly approved.
 - apply the style defaults from `05-impl-style.md` before each code edit, alongside the touched files' local conventions.
 - never repeat an identical read step without a state change; every read must add new information or target a changed file, otherwise it is a doom loop and must stop.
+- if a library, driver, or SDK appears to mislead (unexpected error shape, version-sensitive breakage, behaviour that contradicts the docs), feel free to consult official documentation via the `context7` MCP (or `exa`/direct `curl` as fallback per `## MCP tool selection`) before working around it; one targeted lookup, distinct fingerprint, bounded by the DOCS budget - permission, not requirement
 - inspect the final diff.
 - run relevant project checks when available.
 - after each file edit sequence (one logical edit step: one file or a coherent batch of files changed in one go), run the project's configured lint on the touched files and fix reported issues (auto-fix first, then manual fixes), recording the exact command and its real result; never record an assumed-clean pass. See `03-output-and-state.md` global no-assumed-passes rule for the evidence-chain requirement.
@@ -182,6 +183,8 @@ In `DIRECT` mode, do not force the request through `CHECKLIST`, `REVIEW`, or `PL
 - No DRIFT output with a write; DRIFT is read-only.
 - No write to the target project's `## Project Style Policy` section in `AGENTS.md`.
 - No pass assertion (`pass`, `passed`, `clean`, `clear`, `conforms`, `LGTM`, synonym) without the evidence chain (command + real output, or `file:line` inspected, or validation-loop pass, or explicit user acceptance).
+- Decision prompts from `02-decision-prompts.md` are binding output, not stylistic guidance. A response uses either up to three `# Decision Needed` blocks or one `## Open question for you` header, never both. Prose-only question lists in place of the format are a protocol breach. Format mixing in a single response is a protocol breach.
+- No list items stacked without a blank line between them. Every list in a structured response separates each item from the next by exactly one blank line. Correct shape: each item on its own line, one blank line between items, then the next item. Failure shape: items run-on as a single paragraph (the line break is treated as a separator the rendered text does not have). Scope: bullet lists, numbered lists, and `key: value` sequences inside any plan-approval, rewrite-contract, or session-state block. The literal stack of `key: value` lines in the `## Plan Approval` template and the `# Rewrite Contract` template is also a list and gets the rule.
 
 ## Rewrite-contract completeness
 
