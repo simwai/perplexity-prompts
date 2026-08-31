@@ -143,6 +143,7 @@ A method should not reach through another object to access its parts. `customer.
 - **Too much information** -- a multi-paragraph essay in a code comment. The file is not a blog.
 - **Function headers** -- a block comment at the top of every function describing what it does. The function name and signature carry the meaning; a docstring is enough.
 - **Docstrings in nonpublic code** -- verbose docstrings on private functions. Required only on public-API boundaries.
+- **Markup in comments/docstrings** -- no Markdown, reST, or other rendering markup (`*`, `_`, ` ` `, ` `` `, `>`, `#`, `[]()`, etc.) inside code comments or docstrings. Plain prose only. Exception: when a documentation generation library (Sphinx, pdoc, TypeDoc, JSDoc, Doxygen, rustdoc, etc.) is explicitly configured in the project and its format requires specific markup, that markup is allowed and the project's tooling config is the source of truth.
 
 Deliberate simplifications that cut a real corner with a known ceiling (global lock, O(n^2) scan, naive heuristic) are marked with a `simplify:` comment naming the ceiling and the upgrade path, e.g. `# simplify: global lock -- per-account locks if throughput matters`.
 
