@@ -1,3 +1,93 @@
-# This file is intentionally stubbed.
-# Pre-commit behavior is defined as LLM instructions in system/modules/16-pre-commit-behavior.txt.
-# If you need an actual hook config for this repo, generate one following the rules in that module.
+# Pre-commit hooks for the Baba prompt system.
+# Order follows system/07-protocols.md: file hygiene -> secret scanner -> formatter -> linter -> type check -> tests
+# Local hook for generate-adapters.ps1 runs first to ensure generated files are current before other checks.
+
+repos:
+  # Local hook: generate adapters from opencode sources
+  - repo: local
+    hooks:
+      - id: generate-adapters
+        name: Generate platform adapters
+        entry: pwsh -NoProfile -ExecutionPolicy Bypass -File generate-adapters.ps1
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+        # Runs first so generated files (.mcp.json, .claude/agents/, .claude/commands/, .codex/config.toml)
+        # are present for subsequent formatters/linters.
+
+  # File hygiene: trailing whitespace, end-of-file newline, LF line endings, merge-conflict markers
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        name: Trim trailing whitespace
+        stages: [pre-commit]
+      - id: end-of-file-fixer
+        name: Ensure newline at end of file
+        stages: [pre-commit]
+      - id: check-merge-conflict
+        name: Check for merge conflict markers
+        stages: [pre-commit]
+      - id: check-yaml
+        name: Validate YAML syntax
+        stages: [pre-commit]
+      - id: check-json
+        name: Validate JSON syntax
+        stages: [pre-commit]
+      - id: check-toml
+        name: Validate TOML syntax
+        stages: [pre-commit]
+      - id: mixed-line-ending
+        name: Detect mixed line endings
+        args: ['--fix=lf']
+        stages: [pre-commit]
+
+  # Secret scanner: truffleHog
+  - repo: https://github.com/trufflesecurity/truffleHog
+    rev: v3.88.0
+    hooks:
+      - id: trufflehog
+        name: Scan for secrets
+        entry: trufflehog filesystem --no-verification --fail
+        language: system
+        stages: [pre-commit]
+        pass_filenames: false
+        always_run: true
+
+  # Markdown linting
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.44.0
+    hooks:
+      - id: markdownlint
+        name: Lint Markdown files
+        entry: markdownlint-cli
+        language: node
+        types: [markdown]
+        args: ['--config', '.markdownlint.jsonc']
+        stages: [pre-commit]
+
+  # Local hook: PowerShell Script Analyzer (linting)
+  - repo: local
+    hooks:
+      - id: psscriptanalyzer
+        name: Analyze PowerShell scripts
+        entry: pwsh -NoProfile -ExecutionPolicy Bypass -Command "Invoke-ScriptAnalyzer -Path . -Recurse -Severity Error,Warning -ExcludeRule @('PSAvoidUsingWriteHost', 'PSAvoidGlobalVars') | Select-Object RuleName, Severity, Line, Message, ScriptName | Format-Table -AutoSize"
+        language: system
+        files: '\.ps1$'
+        stages: [pre-commit]
+        pass_filenames: false
+        always_run: true
+
+  # PowerShell formatter (prettier with powershell plugin)
+  - repo: https://github.com/prettier/prettier
+    rev: v3.4.2
+    hooks:
+      - id: prettier
+        name: Format with Prettier
+        entry: npx prettier --write
+        language: node
+        types: [markdown, yaml, json, toml]
+        # Exclude PowerShell for now - prettier PS support is limited
+        exclude: '\.ps1$'
+        stages: [pre-commit]

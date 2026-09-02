@@ -354,7 +354,17 @@ Next batch:
 - [file path] -- [lines X-Y or FULL] -- [next batch, or "all files complete - confirm aggregate decision before PLAN"]
 ```
 
-REVIEW owns confirmation. There is no standalone CONFIRM phase. Every emitted finding in `# Findings` that is in scope for remediation carries a `Mitigations:` block immediately under the finding line. The block is a mini decision prompt: 2-3 options, recommended option first with `(Recommended)`, one-line pros and cons per option, and exactly one `Recommended:` line. **The recommended option MUST be rendered as `**A. option text**` (fat bolded, first position) per the Rendering Rule in `02-decision-prompts.md`.** BabaTester is the one exception: it emits mitigations but omits the `(Recommended)` marker and the `Recommended:` line because BabaTester is excluded from PLAN/Done declarations. Do not mark `(Recommended)` unless one option's pros dominate the others; when in doubt, leave the block unmarked (no `(Recommended)` marker, no `Recommended:` line) and the user picks without guidance. An unmarked `Mitigations:` block is a valid shape, not a missing one. Findings that are informational only move to a new `## Informational` heading in REVIEW and carry no `Mitigations:` block.
+REVIEW owns confirmation. There is no standalone CONFIRM phase.
+
+Every emitted finding in `# Findings` that is in scope for remediation carries a `Mitigations:` block immediately under the finding line. The block is a mini decision prompt: 2-3 options, recommended option first with `(Recommended)`, and one-line pros and cons per option.
+
+The recommended option is rendered as `**A. option text**` (fat bolded, first position) per the Rendering Rule in `02-decision-prompts.md`.
+
+The `Recommended:` line is optional: include it when one option's pros dominate the others; omit it when the block is left unmarked. The two are equivalent in weight; an unmarked `Mitigations:` block is a valid shape, not a missing one.
+
+BabaTester is the one exception: it emits mitigations but omits the `(Recommended)` marker and the `Recommended:` line because BabaTester is excluded from PLAN/Done declarations.
+
+Findings that are informational only move to a new `## Informational` heading in REVIEW and carry no `Mitigations:` block.
 
 The user's reply is one of: a letter (A/B/C) to pick a mitigation, `skip` to accept the finding without a mitigation, or `accept` to record the finding as informational. The choice is persisted in the session state file under `## Findings Mitigations` and travels into PATCH and DRIFT via the handoff contract.
 
