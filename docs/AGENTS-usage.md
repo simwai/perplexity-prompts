@@ -5,9 +5,8 @@
 `AGENTS.md` sits at the repo root. When an AI coding agent (Claude Code, Cursor Agent, Codex, etc.) starts a session, it reads the file first and loads:
 
 1. **MCP server configs** — organized by fallback tiers (Tier 1 works without keys)
-2. A pointer to the merged system in `system/00-system.md` ... `system/06-misc.md`
-   (7 files; the historical 38-module structure is preserved at
-   `system/modules-deprecated/` for reference but is not loaded)
+2. A pointer to the merged system in `system/00-system.md` ... `system/07-protocols.md`
+   (8 files)
 
 This is the single entry point for AI coding agents; MCP servers are covered by the fallback tier system.
 

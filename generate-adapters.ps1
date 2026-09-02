@@ -2,14 +2,19 @@
 .SYNOPSIS
     Single-source adapter generator for the Baba prompt system.
 .DESCRIPTION
-    Emits per-platform adapter files from canonical sources so no platform
-    config is hand-maintained twice:
+    Emits per-platform adapter files from a small, fixed set of sources so no
+    platform config is hand-maintained twice:
 
-      Canonical source                     Generated targets
-      .opencode/agents/baba-*.md    ->     .claude/agents/<name>.md
-      .opencode/commands/*.md       ->     .claude/commands/<name>.md
-      opencode.jsonc "mcp" block    ->     .mcp.json (tier-1 servers)
-                                    ->     .codex/config.toml [mcp_servers]
+      Source                              Generated targets
+      opencode.jsonc "mcp" block    ->    .mcp.json (tier-1 servers)
+                                    ->    .codex/config.toml [mcp_servers]
+      .opencode/agents/baba-*.md    ->    .claude/agents/<name>.md
+      .opencode/commands/*.md       ->    .claude/commands/<name>.md
+
+    The canonical system files (system/00-system.md through system/07-protocols.md,
+    AGENTS.md, README.md, docs/*.md) are NOT inputs to this script. Editing them
+    and re-running the generator is a deliberate no-op: the adapters only react
+    to changes in opencode.jsonc and the .opencode/ sources above.
 
     Generated markdown files carry a GENERATED banner after their frontmatter;
     edits there are overwritten on the next run. .mcp.json is strict JSON and

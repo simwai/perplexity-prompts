@@ -16,9 +16,6 @@ The Baba system has four layers:
    generated: `generate-adapters.ps1` emits `.claude/**` and the tier-1 MCP
    blocks from `.opencode/**` and the `opencode.jsonc` `mcp` block.
 
-The historical 38-module layout is preserved at `system/modules-deprecated/`
-as a read-only archive for any rule not surfaced in the merged system.
-
 ## One review path
 
 `AUTO` chooses the execution mode. A broad or risky request enters
