@@ -269,8 +269,17 @@ function Get-Checkmark {
 
 $DRIVES = @('C:\', 'M:\', 'H:\')
 
-Clear-Host
-Write-Host '========================================' -ForegroundColor DarkCyan
+    function Clear-HostSafe {
+        try {
+            Clear-Host
+        } catch {
+            # Non-interactive terminal (CI, script host) - ignore
+            Write-Host "`n---" -ForegroundColor DarkGray
+        }
+    }
+
+    Clear-HostSafe
+    Write-Host '========================================' -ForegroundColor DarkCyan
 Write-Host '  Baba Prompt System - Sync Tool'        -ForegroundColor White
 Write-Host '========================================' -ForegroundColor DarkCyan
 Write-Host ''
@@ -301,19 +310,28 @@ if ($All) {
 }
 
 $all       = $true
-$dryMode   = $DryRun
-$gitPush   = -not $NoGitPush
-$refresh   = $false
+    $dryMode   = $DryRun
+    $gitPush   = -not $NoGitPush
+    $refresh   = $false
 
-while ($true) {
-    if ($refresh) {
-        Write-Host "`nRescanning..." -ForegroundColor DarkGray
-        $targets = Find-Targets -Roots $DRIVES
-        $keys    = @($targets.Keys)
-        $refresh = $false
+    function Clear-HostSafe {
+        try {
+            Clear-Host
+        } catch {
+            # Non-interactive terminal (CI, script host) - ignore
+            Write-Host "`n---" -ForegroundColor DarkGray
+        }
     }
 
-    Clear-Host
+    while ($true) {
+        if ($refresh) {
+            Write-Host "`nRescanning..." -ForegroundColor DarkGray
+            $targets = Find-Targets -Roots $DRIVES
+            $keys    = @($targets.Keys)
+            $refresh = $false
+        }
+
+        Clear-HostSafe
     Write-Host '========================================' -ForegroundColor DarkCyan
     Write-Host '  Baba Prompt System - Sync Tool'        -ForegroundColor White
     Write-Host '========================================' -ForegroundColor DarkCyan
