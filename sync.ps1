@@ -2,7 +2,7 @@
 .SYNOPSIS
     Interactive sync tool for the Baba prompt system.
 .DESCRIPTION
-    Discovers all projects with AGENTS.md + system/, lets you pick which
+    Discovers all projects with AGENTS.md + prompt-system/, lets you pick which
     to update, and syncs them. After each successful sync, targets that are
     git repositories get the synced files committed and pushed to their
     origin remote (use -NoGitPush to skip). Run with no arguments for the
@@ -59,7 +59,7 @@ function Find-Targets {
         foreach ($hit in $hits) {
             $dir = Split-Path -Parent $hit
             if ($dir -eq $source) { continue }
-            if (Test-Path (Join-Path $dir 'system') -PathType Container) {
+            if (Test-Path (Join-Path $dir 'prompt-system') -PathType Container) {
                 if (-not $targets.Contains($dir)) {
                     $targets[$dir] = $false  # false = not selected
                 }
@@ -93,7 +93,7 @@ function Sync-Targets {
 
     $source  = $scriptDir
 $files   = @('AGENTS.md', 'opencode.jsonc', 'CLAUDE.md', '.mcp.json')
-    $folders = @('system', '.opencode', '.claude', 'synced-scripts')
+    $folders = @('prompt-system', '.opencode', '.claude')
     $synced     = 0
     $skipped    = 0
     $pushFailed = 0
@@ -170,7 +170,7 @@ function Update-GitTarget {
     }
 
 if ($DryRun) {
-        Write-Host '    [DRY] git add AGENTS.md opencode.jsonc CLAUDE.md .mcp.json system/ .opencode/ .claude/ synced-scripts/' -ForegroundColor Gray
+        Write-Host '    [DRY] git add AGENTS.md opencode.jsonc CLAUDE.md .mcp.json prompt-system/ .opencode/ .claude/' -ForegroundColor Gray
         Write-Host '    [DRY] git commit + git push origin <branch>' -ForegroundColor Gray
         return
     }
@@ -186,7 +186,7 @@ if ($DryRun) {
         return
     }
 
-$paths = @('AGENTS.md', 'opencode.jsonc', 'CLAUDE.md', '.mcp.json', 'system', '.opencode', '.claude', 'synced-scripts') |
+$paths = @('AGENTS.md', 'opencode.jsonc', 'CLAUDE.md', '.mcp.json', 'prompt-system', '.opencode', '.claude') |
         Where-Object { Test-Path (Join-Path $repoRoot $_) }
     if (-not $paths) { return }
 
@@ -269,17 +269,8 @@ function Get-Checkmark {
 
 $DRIVES = @('C:\', 'M:\', 'H:\')
 
-    function Clear-HostSafe {
-        try {
-            Clear-Host
-        } catch {
-            # Non-interactive terminal (CI, script host) - ignore
-            Write-Host "`n---" -ForegroundColor DarkGray
-        }
-    }
-
-    Clear-HostSafe
-    Write-Host '========================================' -ForegroundColor DarkCyan
+Clear-Host
+Write-Host '========================================' -ForegroundColor DarkCyan
 Write-Host '  Baba Prompt System - Sync Tool'        -ForegroundColor White
 Write-Host '========================================' -ForegroundColor DarkCyan
 Write-Host ''
@@ -290,7 +281,7 @@ $keys    = @($targets.Keys)
 
 if ($keys.Count -eq 0) {
     Write-Host 'No projects found on C:\, M:\, H:\.' -ForegroundColor Red
-    Write-Host 'Add AGENTS.md + system/ to a project first.' -ForegroundColor Gray
+    Write-Host 'Add AGENTS.md + prompt-system/ to a project first.' -ForegroundColor Gray
     exit 1
 }
 
@@ -310,28 +301,19 @@ if ($All) {
 }
 
 $all       = $true
-    $dryMode   = $DryRun
-    $gitPush   = -not $NoGitPush
-    $refresh   = $false
+$dryMode   = $DryRun
+$gitPush   = -not $NoGitPush
+$refresh   = $false
 
-    function Clear-HostSafe {
-        try {
-            Clear-Host
-        } catch {
-            # Non-interactive terminal (CI, script host) - ignore
-            Write-Host "`n---" -ForegroundColor DarkGray
-        }
+while ($true) {
+    if ($refresh) {
+        Write-Host "`nRescanning..." -ForegroundColor DarkGray
+        $targets = Find-Targets -Roots $DRIVES
+        $keys    = @($targets.Keys)
+        $refresh = $false
     }
 
-    while ($true) {
-        if ($refresh) {
-            Write-Host "`nRescanning..." -ForegroundColor DarkGray
-            $targets = Find-Targets -Roots $DRIVES
-            $keys    = @($targets.Keys)
-            $refresh = $false
-        }
-
-        Clear-HostSafe
+    Clear-Host
     Write-Host '========================================' -ForegroundColor DarkCyan
     Write-Host '  Baba Prompt System - Sync Tool'        -ForegroundColor White
     Write-Host '========================================' -ForegroundColor DarkCyan

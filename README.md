@@ -15,7 +15,7 @@ need stronger review and approval controls.
 
 ```txt
 AGENTS.md          The single entry file — paste at a target repo root.
-system/            The copy-paste unit — 7 merged system files (00-07).
+prompt-system/     The copy-paste unit — 7 merged system files (00-07).
 docs/              Usage documentation.
 opencode.jsonc     opencode-native config (optional layer, inert for other agents).
 .opencode/         opencode persona agents and commands (optional layer).
@@ -33,7 +33,7 @@ generate-adapters.ps1
 Copy the system into a target project in two steps:
 
 ```powershell
-Copy-Item -Recurse system <target-project>\system
+Copy-Item -Recurse prompt-system <target-project>\prompt-system
 ```
 
 Then paste `AGENTS.md` content as `AGENTS.md` at the target repo root.
@@ -49,7 +49,7 @@ Add project paths to `targets.json`, then run:
 ```
 
 Configured paths are included in the sync menu even before they contain
-`AGENTS.md` and `system/`.
+`AGENTS.md` and `prompt-system/`.
 
 After syncing, each target that is a git repository gets the synced files
 committed and pushed to its `origin` remote. Pass `-NoGitPush` (or toggle
@@ -57,7 +57,7 @@ committed and pushed to its `origin` remote. Pass `-NoGitPush` (or toggle
 
 ## Agent platform support
 
-The core system (`AGENTS.md` + `system/`) is model-agnostic and works with any
+The core system (`AGENTS.md` + `prompt-system/`) is model-agnostic and works with any
 agent. Optional adapter layers bind it to specific platforms; every other
 agent ignores them:
 
@@ -73,7 +73,7 @@ agent ignores them:
 - **Codex CLI**: `.codex/config.toml` with safe defaults (workspace-write
   sandbox, on-request approvals) and a generated tier-1 `[mcp_servers]`
   section.
-- **Hermes**: no dedicated adapter – `AGENTS.md` + `system/` remain its
+- **Hermes**: no dedicated adapter – `AGENTS.md` + `prompt-system/` remain its
   integration surface. Revisit if Hermes gains project-config discovery.
 
 Nothing is maintained twice: personas, commands, and MCP server definitions
