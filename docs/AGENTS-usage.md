@@ -5,7 +5,7 @@
 `AGENTS.md` sits at the repo root. When an AI coding agent (Claude Code, Cursor Agent, Codex, etc.) starts a session, it reads the file first and loads:
 
 1. **MCP server configs** — organized by fallback tiers (Tier 1 works without keys)
-2. A pointer to the merged system in `system/00-system.md` ... `system/07-protocols.md`
+2. A pointer to the merged system in `prompt-system/00-system.md` ... `prompt-system/07-protocols.md`
    (8 files)
 
 This is the single entry point for AI coding agents; MCP servers are covered by the fallback tier system.
@@ -14,16 +14,16 @@ This is the single entry point for AI coding agents; MCP servers are covered by 
 
 ## Deploying to a Target Project
 
-The copy-paste unit is `AGENTS.md` + the `system/` folder:
+The copy-paste unit is `AGENTS.md` + the `prompt-system/` folder:
 
 1. Paste this file as `AGENTS.md` at the target repo root.
-2. Copy the `system/` folder next to it:
+2. Copy the `prompt-system/` folder next to it:
 
 ```powershell
-Copy-Item -Recurse system <target-project>\system
+Copy-Item -Recurse prompt-system <target-project>\prompt-system
 ```
 
-The `system/` folder is self-contained (7 merged system files); all internal references stay valid after the move.
+The `prompt-system/` folder is self-contained (7 merged system files); all internal references stay valid after the move.
 
 ---
 
@@ -95,9 +95,9 @@ Ask the agent: *"List the available MCP tools."* You should see tools from Conte
 
 Open a session in a repo that has `AGENTS.md` at root and just describe the task. The agent will:
 
-1. Read `AGENTS.md` — identity, MCP tiers, reference to `system/00-system.md`
-2. Read `system/00-system.md` — orchestrator, phase model, routing, hard guards
-3. Load phase/persona files from `system/01-personas.md` ... `system/06-misc.md`
+1. Read `AGENTS.md` — identity, MCP tiers, reference to `prompt-system/00-system.md`
+2. Read `prompt-system/00-system.md` — orchestrator, phase model, routing, hard guards
+3. Load phase/persona files from `prompt-system/01-personas.md` ... `prompt-system/06-misc.md`
 4. Pick the right persona for the task type
 5. Declare the starting phase in its first response
 6. Reach for MCP tools (those available based on your configured keys)
@@ -143,7 +143,7 @@ near-empty) or you explicitly ask to create a project from scratch, the system
 records CHECKLIST and REVIEW as greenfield skips — there is no existing code to
 inventory or review — and goes PLAN-first. The intake captures a `Stack/Style:`
 field, and the plan establishes the coding conventions from
-`system/05-impl-style.md` (stack defaults, DI container, error idiom, naming,
+`prompt-system/05-impl-style.md` (stack defaults, DI container, error idiom, naming,
 structure) before PATCH scaffolds any file. Your defined coding style is the
 default for new projects; override it at intake or plan approval.
 
@@ -169,13 +169,13 @@ Deterministic skips (`DOCS` out of scope, upstream pipeline not applicable) adva
 automatically and never pause for confirmation. Missing input -> `BLOCKED`. Second
 failure -> `FAILURE` and clean stop.
 
-The DOCS phase follows the deep-read protocol (`06-misc.md` cross-team
+The DOCS phase follows the deep-read protocol (`prompt-system/06-misc.md` cross-team
 section): enumerate the docs structure first (TOC/sitemap), map each in-scope
 criterion to the section that answers it (H8 -> advisories, H6/H7 -> API
 reference, S-tier -> upgrade guides), fetch section pages rather than the
 landing page, and cite the exact URL anchor behind each claim. Lookups are
 bounded (up to 3 per dependency per DOCS phase); beyond that the fallback
-ladder in `00-system.md` `## MCP tool selection` walks TOC -> section ->
+ladder in `prompt-system/00-system.md` `## MCP tool selection` walks TOC -> section ->
 anchor.
 
 ---
@@ -224,7 +224,7 @@ never become protocol failures.
 
 ## opencode Support
 
-The core deploy unit (`AGENTS.md` + `system/`) is model-agnostic. opencode gets an
+The core deploy unit (`AGENTS.md` + `prompt-system/`) is model-agnostic. opencode gets an
 additional native layer that other agents (Claude Code, Cursor, Codex) ignore.
 
 ### Files
@@ -254,10 +254,10 @@ additional native layer that other agents (Claude Code, Cursor, Codex) ignore.
   `/approve-plan` (or explicit approval); switch to Build for PATCH. Build refuses
   to patch without approved plan state in the session's own state file.
 - **Switching persona**: switch the agent in the TUI, or run `/baba <persona>`.
-  The personas are defined in `system/01-personas.md`; agent files reference
+  The personas are defined in `prompt-system/01-personas.md`; agent files reference
   that file and do not duplicate the content.
 - **Perplexity / other agents**: ignore `opencode.jsonc` and `.opencode/`. They
-  still follow `AGENTS.md` + `system/` with prompt-enforced gates.
+  still follow `AGENTS.md` + `prompt-system/` with prompt-enforced gates.
 
 ---
 
@@ -287,11 +287,11 @@ Claude Code gets an additional native layer that other agents ignore.
   gitignored; create them by hand for personal, non-shared settings.
 - **Restart after changes**: restart the session after editing files under
   `.claude/agents/` or `.claude/commands/` for the changes to load.
-- **Single source of truth**: persona definitions in `system/01-personas.md`
+- **Single source of truth**: persona definitions in `prompt-system/01-personas.md`
   remain canonical – subagent and command files reference them, never duplicate.
 - **Perplexity / other agents**: ignore `CLAUDE.md`, `.mcp.json`, `.claude/`,
   `.codex/`, `opencode.jsonc`, and `.opencode/`. They still follow
-  `AGENTS.md` + `system/` with prompt-enforced gates.
+  `AGENTS.md` + `prompt-system/` with prompt-enforced gates.
 
 ---
 

@@ -11,7 +11,7 @@
       .opencode/agents/baba-*.md    ->    .claude/agents/<name>.md
       .opencode/commands/*.md       ->    .claude/commands/<name>.md
 
-    The canonical system files (system/00-system.md through system/07-protocols.md,
+    The canonical system files (prompt-system/00-system.md through prompt-system/07-protocols.md,
     AGENTS.md, README.md, docs/*.md) are NOT inputs to this script. Editing them
     and re-running the generator is a deliberate no-op: the adapters only react
     to changes in opencode.jsonc and the .opencode/ sources above.
