@@ -28,6 +28,19 @@ param(
 $ErrorActionPreference = 'Stop'
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
+# Non-interactive or broken console handles (e.g. agent execution) cannot
+# support Clear-Host / Read-Host / CursorPosition. Detect that once.
+$interactiveConsole = $true
+try {
+    $null = $Host.UI.RawUI
+    $null = $Host.UI.RawUI.WindowTitle
+    # Probing CursorPosition is the exact failure mode reported (German:
+    # "Das Handle ist ungültig"). If it throws, treat as non-interactive.
+    $testPos = $Host.UI.RawUI.CursorPosition
+} catch {
+    $interactiveConsole = $false
+}
+
 # ═══════════════════════════════════════════════════════════════════════════
 #  Discovery
 # ═══════════════════════════════════════════════════════════════════════════
@@ -269,7 +282,17 @@ function Get-Checkmark {
 
 $DRIVES = @('C:\', 'M:\', 'H:\')
 
-Clear-Host
+# Clear-Host fails when the console handle is invalid (e.g. agent/session
+# execution with no interactive TTY). Wrap each call independently.
+function Invoke-ClearHostSafe {
+    try {
+        Clear-Host -ErrorAction Stop
+    } catch {
+        # Non-terminating; non-interactive runs skip the clear silently.
+    }
+}
+
+Invoke-ClearHostSafe
 Write-Host '========================================' -ForegroundColor DarkCyan
 Write-Host '  Baba Prompt System - Sync Tool'        -ForegroundColor White
 Write-Host '========================================' -ForegroundColor DarkCyan
@@ -305,6 +328,11 @@ $dryMode   = $DryRun
 $gitPush   = -not $NoGitPush
 $refresh   = $false
 
+if (-not $interactiveConsole) {
+    Write-Host '`nInteractive console unavailable (no valid $Host.UI.RawUI handle). Use -All or -DryRun for non-interactive operation.' -ForegroundColor DarkGray
+    exit 0
+}
+
 while ($true) {
     if ($refresh) {
         Write-Host "`nRescanning..." -ForegroundColor DarkGray
@@ -313,7 +341,7 @@ while ($true) {
         $refresh = $false
     }
 
-    Clear-Host
+    Invoke-ClearHostSafe
     Write-Host '========================================' -ForegroundColor DarkCyan
     Write-Host '  Baba Prompt System - Sync Tool'        -ForegroundColor White
     Write-Host '========================================' -ForegroundColor DarkCyan
