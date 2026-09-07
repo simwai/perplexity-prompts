@@ -16,6 +16,17 @@ repos:
         # Runs first so generated files (.mcp.json, .claude/agents/, .claude/commands/, .codex/config.toml)
         # are present for subsequent formatters/linters.
 
+  # Local hook: session lock verification (locks-only mode of pre-commit.ps1)
+  - repo: local
+    hooks:
+      - id: session-locks
+        name: Verify session file locks
+        entry: pwsh -NoProfile -ExecutionPolicy Bypass -Command "$env:BABA_PRECOMMIT_LOCKS_ONLY='1'; ./pre-commit.ps1"
+        language: system
+        stages: [pre-commit]
+        pass_filenames: false
+        always_run: true
+
   # File hygiene: trailing whitespace, end-of-file newline, LF line endings, merge-conflict markers
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0

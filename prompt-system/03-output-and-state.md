@@ -564,6 +564,7 @@ The session state file is `SESSION_STATE-<session_id>.md` and is the standing pe
 # Session State
 
 session_id: [YYYYMMDDTHHMMSS-<hash>]
+last_active_at: [ISO-8601 UTC of last session activity or n/a]
 target: [file/module/repo path]
 scope: [in scope / out of scope]
 spec_version: [x.y.z or n/a]

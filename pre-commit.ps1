@@ -8,18 +8,27 @@
 
 $ErrorActionPreference = 'Stop'
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$repoRoot = Split-Path -Parent $scriptDir
+# The script lives at the repo root (not in scripts/), so the root is the script
+# directory itself when it holds generate-adapters.ps1; otherwise its parent.
+$repoRoot = if (Test-Path (Join-Path $scriptDir 'generate-adapters.ps1')) { $scriptDir } else { Split-Path -Parent $scriptDir }
+
+# Locks-only mode for the pre-commit framework hook (see .pre-commit-config.yaml).
+$locksOnly = $env:BABA_PRECOMMIT_LOCKS_ONLY -in @('1', 'true', 'yes')
 
 Write-Host "Running pre-commit checks..." -ForegroundColor Cyan
 
 # 1. Generate adapters (must run first so generated files are present for other checks)
-Write-Host "`n[1/5] Generating platform adapters..." -ForegroundColor Yellow
-& "$repoRoot\generate-adapters.ps1"
-if (-not $?) {
-    Write-Error "generate-adapters.ps1 failed"
-    exit 1
+Write-Host "`n[1/6] Generating platform adapters..." -ForegroundColor Yellow
+if (-not $locksOnly) {
+    & "$repoRoot\generate-adapters.ps1"
+    if (-not $?) {
+        Write-Error "generate-adapters.ps1 failed"
+        exit 1
+    }
+    Write-Host "  OK" -ForegroundColor Green
+} else {
+    Write-Host "  Skipped (locks-only mode)" -ForegroundColor Gray
 }
-Write-Host "  OK" -ForegroundColor Green
 
 # 2. File hygiene checks (trailing whitespace, EOF newline, LF line endings, merge conflicts)
 # Define paths to exclude from checks
@@ -33,7 +42,49 @@ function Should-Exclude {
     return $false
 }
 
-Write-Host "`n[2/5] Checking file hygiene..." -ForegroundColor Yellow
+function Invoke-StagedLockCheck {
+    param([string]$RepoRoot)
+    # Returns $true when every staged file is covered by a lock this session
+    # holds (or when there is nothing to check); $false otherwise.
+    $lockScript = Join-Path $RepoRoot 'prompt-system\scripts\session-locks.ps1'
+    if (-not (Test-Path -LiteralPath $lockScript)) {
+        Write-Warning "  session-locks.ps1 not found, skipping lock verification (record SKIPPED with reason)"
+        return $true
+    }
+    $sessionId = $env:SESSION_ID
+    if (-not $sessionId) {
+        $stateFile = Get-ChildItem -Path $RepoRoot -Filter 'SESSION_STATE-*.md' -ErrorAction SilentlyContinue |
+            Sort-Object LastWriteTime -Descending | Select-Object -First 1
+        if ($stateFile -and ($stateFile.BaseName -match 'SESSION_STATE-(.+)')) { $sessionId = $Matches[1] }
+    }
+    if (-not $sessionId) {
+        Write-Warning "  Cannot resolve session id, skipping lock verification (record SKIPPED with reason)"
+        return $true
+    }
+    . $lockScript
+    $staged = @(git diff --cached --name-only 2>$null | Where-Object { $_ })
+    if ($LASTEXITCODE -ne 0) { $staged = @() }
+    if ($staged.Count -eq 0) {
+        Write-Host "  No staged files, skipping" -ForegroundColor Gray
+        return $true
+    }
+    $check = Verify-LocksForStagedFiles -StagedFiles $staged -SessionId $sessionId
+    $missing = @($check.Results | Where-Object { -not $_.LockHeld })
+    if ($missing.Count -eq 0) {
+        Write-Host "  Lock verification passed ($($staged.Count) staged files)" -ForegroundColor Green
+        return $true
+    }
+    Write-Warning "  Files without a held lock (stage only files this session locked):"
+    $missing | ForEach-Object { Write-Warning "    $($_.File) -- $($_.Reason)" }
+    return $false
+}
+
+if ($locksOnly) {
+    Write-Host "`n[locks-only] Verifying session file locks..." -ForegroundColor Yellow
+    if (Invoke-StagedLockCheck -RepoRoot $repoRoot) { exit 0 } else { exit 1 }
+}
+
+Write-Host "`n[2/6] Checking file hygiene..." -ForegroundColor Yellow
 
 # Check for trailing whitespace
 $filesWithTrailingWs = Get-ChildItem -Path $repoRoot -Recurse -File |
@@ -90,7 +141,7 @@ if ($filesWithConflicts) {
 }
 
 # 3. Secret scanning (basic patterns)
-Write-Host "`n[3/5] Scanning for secrets..." -ForegroundColor Yellow
+Write-Host "`n[3/6] Scanning for secrets..." -ForegroundColor Yellow
 $secretPatterns = @(
     'api[_-]?key\s*[:=]\s*["'']?[a-zA-Z0-9_\-]{20,}',
     'secret\s*[:=]\s*["'']?[a-zA-Z0-9_\-]{20,}',
@@ -123,7 +174,7 @@ if ($filesWithSecrets) {
 }
 
 # 4. Markdown linting (if markdownlint-cli available via npx)
-Write-Host "`n[4/5] Linting Markdown files..." -ForegroundColor Yellow
+Write-Host "`n[4/6] Linting Markdown files..." -ForegroundColor Yellow
 $mdFiles = Get-ChildItem -Path $repoRoot -Recurse -Filter '*.md' -File |
     Where-Object { -not (Should-Exclude $_.FullName) } |
     Where-Object { $_.FullName -notmatch '\\.git\\' } |
@@ -149,7 +200,7 @@ if ($mdFiles) {
 }
 
 # 5. PowerShell Script Analyzer (if module available)
-Write-Host "`n[5/5] Analyzing PowerShell scripts..." -ForegroundColor Yellow
+Write-Host "`n[5/6] Analyzing PowerShell scripts..." -ForegroundColor Yellow
 $psFiles = Get-ChildItem -Path $repoRoot -Recurse -Filter '*.ps1' -File |
     Where-Object { $_.FullName -notmatch '\\.git\\' } |
     Select-Object -ExpandProperty FullName
@@ -176,6 +227,10 @@ if ($psFiles) {
 } else {
     Write-Host "  No PowerShell files" -ForegroundColor Gray
 }
+
+# 6. Session file lock verification (warn-only; the commit/push gate owns blocking)
+Write-Host "`n[6/6] Verifying session file locks..." -ForegroundColor Yellow
+Invoke-StagedLockCheck -RepoRoot $repoRoot | Out-Null
 
 Write-Host "`nAll pre-commit checks passed!" -ForegroundColor Green
 exit 0
