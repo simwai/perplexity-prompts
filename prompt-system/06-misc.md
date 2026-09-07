@@ -208,6 +208,9 @@ If any path fails the check, staging is refused and the gate surfaces the same t
 
 After the lock check passes, the gate re-reads the working-tree version of each path and diffs it against the in-memory expected content to catch the read-then-write race that implicit-on-write locking cannot prevent. Any unowned hunk surfaces with the same three options and refuses staging.
 
+SKIPPED-allowlist: recording `SKIPPED -- <reason>` for lock verification is legitimate only when the host has no shell tool to invoke the script, when no staged file overlaps the session's ledger, or on a confirmed `READ_ONLY` host.
+Any other missing lock refuses staging via the wait/skip/steal surface above; a bare SKIPPED outside these three cases is a gate FAIL.
+
 A confirmed `READ_ONLY` host skips this section: the gate trigger is already false, so no staging and no lock check occur.
 
 ### The ask
