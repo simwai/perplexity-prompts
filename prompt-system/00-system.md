@@ -375,6 +375,7 @@ Phase set:
 - `CHECKLIST`
 - `DISCUSS`
 - `DOCS`
+- `PARALLEL_REVIEW` (optional, auto-spawn when CHECKLIST inventory > 1 file)
 - `REVIEW`
 - `TEST_STRATEGY` (BabaTester only)
 - `PLAN`
@@ -394,6 +395,8 @@ The phase header `[PHASE: X]` is the checkpoint. If the header is missing in STR
 ### Phase order
 
 Normal order: `CHECKLIST -> DOCS -> REVIEW -> PLAN -> PATCH`
+
+Parallel review branch (auto when CHECKLIST inventory > 1 file and not greenfield/single-file): `CHECKLIST -> DOCS -> PARALLEL_REVIEW -> REVIEW -> PLAN -> PATCH`
 
 Optional upstream (BabaScrumMaster only, skipped by default): `INTAKE -> BACKLOG -> SPRINT -> TASK_PLAN -> SPEC -> CHECKLIST`
 
