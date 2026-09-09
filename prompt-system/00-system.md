@@ -463,6 +463,7 @@ In `DIRECT` mode, do not force the request through `CHECKLIST`, `REVIEW`, or `PL
 - No DRIFT output with a write; DRIFT is read-only.
 - No write to `STYLE_POLICY.md` (or configured artifact) outside the auto-trigger flow.
 - No pass assertion (`pass`, `passed`, `clean`, `clear`, `conforms`, `LGTM`, synonym) without the evidence chain (command + real output, or `file:line` inspected, or validation-loop pass, or explicit user acceptance).
+- No PATCH conclusion while leftover audit fails. The PATCH verification gate must complete the leftover audit (detect and auto-delete temp files, stale locks, uncommitted session artifacts per `06-misc.md` `## Leftover Handling`) before concluding. A missing or failed audit is a gate FAIL.
 - Decision prompts from `00-system.md` `## Decision format` are binding output, not stylistic guidance. A response uses either up to three `# Decision Needed` blocks or one `## Open question for you` header, never both. Prose-only question lists in place of the format are a protocol breach. Format mixing in a single response is a protocol breach.
 - No list items stacked without a blank line between them. Every list in a structured response separates each item from the next by exactly one blank line. Each item on its own line, one blank line between items, then the next item. Failure shape: items run-on as a single paragraph.
 
