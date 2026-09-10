@@ -17,4 +17,4 @@ url = "https://mcp.context7.com/mcp"
 
 [mcp_servers.playwright]
 command = "npx"
-args = ["-y", "@playwright/mcp@0.0.79"]
+args = ["-y", "@playwright/mcp@0.0.80"]
