@@ -32,7 +32,7 @@ if (-not $locksOnly) {
 
 # 2. File hygiene checks (trailing whitespace, EOF newline, LF line endings, merge conflicts)
 # Define paths to exclude from checks
-$excludePaths = @('\.git\\', '\\node_modules\\', '\.opencode\\node_modules\\')
+$excludePaths = @('\.git\\', '\\node_modules\\', '\.opencode\\node_modules\\', 'pre-commit\.ps1')
 
 function Should-Exclude {
     param([string]$Path)

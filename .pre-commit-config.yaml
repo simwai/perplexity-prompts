@@ -3,6 +3,17 @@
 # Local hook for generate-adapters.ps1 runs first to ensure generated files are current before other checks.
 
 repos:
+  # Local hook: ensure trufflehog is installed (scoop)
+  - repo: local
+    hooks:
+      - id: ensure-trufflehog
+        name: Ensure trufflehog installed (scoop)
+        entry: pwsh -NoProfile -ExecutionPolicy Bypass -Command "if (-not (Get-Command trufflehog -ErrorAction SilentlyContinue)) { Write-Host 'Installing trufflehog via scoop...'; scoop install trufflehog }"
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+
   # Local hook: generate adapters from opencode sources
   - repo: local
     hooks:

@@ -72,7 +72,10 @@ function Find-Targets {
         foreach ($hit in $hits) {
             $dir = Split-Path -Parent $hit
             if ($dir -eq $source) { continue }
-            if (Test-Path (Join-Path $dir 'prompt-system') -PathType Container) {
+            $hasPromptSystem = Test-Path (Join-Path $dir 'prompt-system') -PathType Container
+            $hasSystem = Test-Path (Join-Path $dir 'system') -PathType Container
+            $hasSyncedScripts = Test-Path (Join-Path $dir 'synced-scripts') -PathType Container
+            if ($hasPromptSystem -or $hasSystem -or $hasSyncedScripts) {
                 if (-not $targets.Contains($dir)) {
                     $targets[$dir] = $false  # false = not selected
                 }
@@ -139,7 +142,7 @@ $files   = @('AGENTS.md', 'opencode.jsonc', 'CLAUDE.md', '.mcp.json')
             }
         }
 
-        foreach ($folder in $folders) {
+foreach ($folder in $folders) {
             $src = Join-Path $source $folder
             $dst = Join-Path $target $folder
             if ($DryRun) {
@@ -153,6 +156,21 @@ $files   = @('AGENTS.md', 'opencode.jsonc', 'CLAUDE.md', '.mcp.json')
                 Write-Host "    OK  $folder\" -ForegroundColor Green
             }
         }
+
+        # Remove legacy folders from old structure
+        $legacyFolders = @('system', 'synced-scripts')
+        foreach ($legacy in $legacyFolders) {
+            $legacyPath = Join-Path $target $legacy
+            if (Test-Path $legacyPath -PathType Container) {
+                if ($DryRun) {
+                    Write-Host "    [DRY] REMOVE $legacy\" -ForegroundColor Gray
+                } else {
+                    Remove-Item -LiteralPath $legacyPath -Recurse -Force -ErrorAction SilentlyContinue
+                    Write-Host "    REMOVED $legacy\" -ForegroundColor Yellow
+                }
+            }
+        }
+
         $synced++
         $pushFailed += [int](Update-GitTarget -Path $target -DryRun:$DryRun -NoGitPush:$NoGitPush)
     }
