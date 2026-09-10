@@ -211,7 +211,8 @@
     "@spoons-and-mirrors/subtask2@latest",
     "opencode-vibeguard@latest",
     "opencode-adaptive-thinking@latest",
-    "opencode-pty"
+    "opencode-pty",
+    "opencode-scheduler"
   ],
 
   // MCP servers mirror the fallback tiers in AGENTS.md, adapted to opencode's
