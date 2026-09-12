@@ -107,9 +107,9 @@ function Sync-Targets {
         [switch]$NoGitPush
     )
 
-    $source  = $scriptDir
-$files   = @('AGENTS.md', 'opencode.jsonc', 'CLAUDE.md', '.mcp.json')
-    $folders = @('prompt-system', '.opencode', '.claude')
+$source  = $scriptDir
+$files   = @('AGENTS.md', 'opencode.jsonc', 'CLAUDE.md', '.mcp.json', 'BOOTSTRAP.md')
+$folders = @('prompt-system', '.opencode', '.claude', '.cursor', '.codex')
     $synced     = 0
     $skipped    = 0
     $pushFailed = 0

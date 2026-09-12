@@ -1,6 +1,6 @@
 # 04-rubrics
 
-Hard-tier (H1-H12) and soft-tier (S1-S17) review rubrics. Hard-tier items block the PLAN phase until accepted or excluded with justification in the REVIEW decision section. Soft-tier items are quality concerns; flag and discuss, do not hard-block.
+Hard-tier (H1-H12) and soft-tier (S1-S20) review rubrics. Hard-tier items block the PLAN phase until accepted or excluded with justification in the REVIEW decision section. Soft-tier items are quality concerns; flag and discuss, do not hard-block.
 
 ## Hard tier (H1-H12) <HIGH_PRIO>
 
@@ -28,7 +28,7 @@ Hard-tier (H1-H12) and soft-tier (S1-S17) review rubrics. Hard-tier items block 
 
 **H12 -- Idiom consistency: a change introduces an error-handling or style idiom that conflicts with the dominating pattern of the file or codebase** (e.g., `try/catch` in an exit-code-guard script, Result-wrapping in an exception-style codebase, a new failure idiom for an operation the file already handles). Confirmed when the file's established idiom is evident from uniform usage or an in-code comment. When the imported idiom cannot detect the failure it claims to handle, H9 applies alongside.
 
-## Soft tier (S1-S17)
+## Soft tier (S1-S20)
 
 **S1 -- Naming: unclear, misleading, or inconsistent identifiers.**
 

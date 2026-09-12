@@ -217,6 +217,9 @@ Soft tier:
 - [ ] S15
 - [ ] S16
 - [ ] S17
+- [ ] S18
+- [ ] S19
+- [ ] S20
 
 Logical tier (L1-L10):
 - [ ] L1
@@ -679,11 +682,18 @@ mode: [AUTO|DIRECT|STRUCTURED]
 style_policy: [preserve-local|upgrade-house-style]
 style_policy_source: [STYLE_POLICY.md artifact|INTAKE Stack/Style field|SKIPPED: file-edit|auto-trigger pending]
 style_policy_resolved: [yes|no]
+startup_verified: [true|false]
+startup_fingerprint:
+  line_count: [number]
+  first_100_chars: "[string]"
+  last_100_chars: "[string]"
+  sha256_first_1kb: "[hash or N/A]"
+  verified_at: [ISO-8601 UTC]
 
 ## Startup Verification
 
 AGENTS.md: [cited rule]
-00-system.md: [cited rule] — fingerprint: <line_count> lines, first_100_chars="<first 100 chars>", sha256_first_1kb="<hash or N/A>"
+00-system.md: [cited rule] — fingerprint: <line_count> lines, first_100_chars="<first 100 chars>", last_100_chars="<last 100 chars>", sha256_first_1kb="<hash or N/A>"
 01-personas.md: [cited rule]
 03-output-and-state.md: [cited rule]
 04-rubrics.md: [cited rule]
@@ -736,6 +746,10 @@ plan_actual_history: [list of (timestamp, items, verdict) tuples]
 <!-- Per-item records consumed by the Plan-Versus-Actual Gate. -->
 
 - format: pass|fail|exit:N|regex:<pat>|contains:<s>|silent
+
+## Read Ledger
+
+- [fingerprint] -- [result digest]
 
 ## Plan-Actual History
 

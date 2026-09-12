@@ -23,7 +23,7 @@ The copy-paste unit is `AGENTS.md` + the `prompt-system/` folder:
 Copy-Item -Recurse prompt-system <target-project>\prompt-system
 ```
 
-The `prompt-system/` folder is self-contained (7 merged system files); all internal references stay valid after the move.
+The `prompt-system/` folder is self-contained (8 system files); all internal references stay valid after the move.
 
 ---
 
@@ -97,7 +97,7 @@ Open a session in a repo that has `AGENTS.md` at root and just describe the task
 
 1. Read `AGENTS.md` — identity, MCP tiers, reference to `prompt-system/00-system.md`
 2. Read `prompt-system/00-system.md` — orchestrator, phase model, routing, hard guards
-3. Load phase/persona files from `prompt-system/01-personas.md` ... `prompt-system/06-misc.md`
+3. Load phase/persona files from `prompt-system/01-personas.md` ... `prompt-system/07-protocols.md` and `prompt-system/08-plan-actual-gate.md`
 4. Pick the right persona for the task type
 5. Declare the starting phase in its first response
 6. Reach for MCP tools (those available based on your configured keys)
@@ -169,7 +169,7 @@ Deterministic skips (`DOCS` out of scope, upstream pipeline not applicable) adva
 automatically and never pause for confirmation. Missing input -> `BLOCKED`. Second
 failure -> `FAILURE` and clean stop.
 
-The DOCS phase follows the deep-read protocol (`prompt-system/06-misc.md` cross-team
+The DOCS phase follows the deep-read protocol (`prompt-system/07-protocols.md` cross-team
 section): enumerate the docs structure first (TOC/sitemap), map each in-scope
 criterion to the section that answers it (H8 -> advisories, H6/H7 -> API
 reference, S-tier -> upgrade guides), fetch section pages rather than the

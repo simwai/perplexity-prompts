@@ -984,7 +984,7 @@ When `PARALLEL_REVIEW` completes, N BabaSensei reviewers and BabaTester subagent
 
 1. **Hard-tier (H1-H12) - Sensei authority**: For any criterion where multiple reviewers reported findings on the same file/line range, the highest-confidence Sensei verdict takes precedence. The merged finding uses that reviewer's confidence, verdict, and mitigation. Other reviewers' findings are recorded as cross-reference notes.
 
-2. **Soft-tier (S1-S17) - Union**: All findings from all reviewers are included. Duplicate findings (same criterion, same file, overlapping line range) are deduplicated keeping the highest confidence. Non-overlapping findings from any reviewer are included as-is.
+2. **Soft-tier (S1-S20) - Union**: All findings from all reviewers are included. Duplicate findings (same criterion, same file, overlapping line range) are deduplicated keeping the highest confidence. Non-overlapping findings from any reviewer are included as-is.
 
 3. **Test strategy items**: BabaTester's `binding_items` and `strong_hints` are preserved in full and carried into the consolidated handoff to BabaDev.
 
