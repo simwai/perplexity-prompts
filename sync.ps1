@@ -157,6 +157,11 @@ foreach ($folder in $folders) {
             }
         }
 
+        # Install npm plugins declared in opencode.jsonc
+        if (Test-Path (Join-Path $target '.opencode')) {
+            Install-Plugins -TargetPath $target
+        }
+
         # Remove legacy folders from old structure
         $legacyFolders = @('system', 'synced-scripts')
         foreach ($legacy in $legacyFolders) {
@@ -180,6 +185,73 @@ foreach ($folder in $folders) {
         Write-Host "$summary, $pushFailed push failed." -ForegroundColor Yellow
     } else {
         Write-Host "$summary." -ForegroundColor White
+    }
+}
+
+# ═══════════════════════════════════════════════════════════════════════════
+#  Plugin installer
+# ═══════════════════════════════════════════════════════════════════════════
+
+function Install-Plugins {
+    param([string]$TargetPath)
+
+    $opencodePath = Join-Path $TargetPath 'opencode.jsonc'
+    if (-not (Test-Path $opencodePath)) { return }
+
+    $sourceJson = Get-Content -LiteralPath $opencodePath -Raw -Encoding UTF8
+    $cleaned = ($sourceJson -split "`n" | Where-Object { $_.TrimStart() -notmatch '^//' }) -join "`n"
+    try { $config = $cleaned | ConvertFrom-Json } catch { return }
+
+    if (-not $config.plugin) { return }
+
+    $packageJsonPath = Join-Path (Join-Path $TargetPath '.opencode') 'package.json'
+    if (-not (Test-Path $packageJsonPath)) { return }
+
+    $pkg = Get-Content -LiteralPath $packageJsonPath -Raw -Encoding UTF8 | ConvertFrom-Json
+    $deps = New-Object System.Collections.Hashtable
+    if ($null -ne $pkg.dependencies) {
+        foreach ($prop in $pkg.dependencies.PSObject.Properties) {
+            $deps[$prop.Name] = $prop.Value
+        }
+    }
+
+    foreach ($entry in $config.plugin) {
+        if ($entry -match '^\.') { continue }
+        if ($entry -match '^(.+)@(.+)$') {
+            $name = $matches[1]; $version = $matches[2]
+        } else {
+            $name = $entry; $version = 'latest'
+        }
+        if (-not $deps.ContainsKey($name) -or $deps[$name] -ne $version) {
+            $deps[$name] = $version
+        }
+    }
+
+    $pkg.dependencies = $deps
+    $pkg | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $packageJsonPath -Encoding UTF8 -Force
+
+    $npmCommand = $null
+    try { $npmCommand = (Get-Command npm).Source } catch { $null }
+    if (-not $npmCommand) { $npmCommand = 'C:\Program Files\nodejs\npm.cmd' }
+    if (-not (Test-Path $npmCommand)) {
+        Write-Warning "    NPM  not available -- no npm found on PATH or at default install location"
+        return
+    }
+
+    Write-Host "    NPM  installing plugins" -ForegroundColor Cyan
+    $oldPath = $pwd
+    try {
+        Set-Location (Join-Path $TargetPath '.opencode')
+        $npmResult = & $npmCommand install 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            Write-Warning "    NPM  install failed -- $npmResult"
+        } else {
+            Write-Host "    NPM  OK" -ForegroundColor Green
+        }
+    } catch {
+        Write-Warning "    NPM  not available -- $_"
+    } finally {
+        Set-Location $oldPath
     }
 }
 
