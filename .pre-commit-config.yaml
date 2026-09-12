@@ -1,5 +1,5 @@
 # Pre-commit hooks for the Baba prompt system.
-# Order follows system/07-protocols.md: file hygiene -> secret scanner -> formatter -> linter -> type check -> tests
+# Order follows prompt-system/07-protocols.md: file hygiene -> secret scanner -> formatter -> linter -> type check -> tests
 # Local hook for generate-adapters.ps1 runs first to ensure generated files are current before other checks.
 
 repos:
@@ -77,6 +77,19 @@ repos:
         pass_filenames: false
         always_run: true
 
+  # Markdown formatter (prettier)
+  - repo: https://github.com/prettier/prettier
+    rev: v3.4.2
+    hooks:
+      - id: prettier
+        name: Format with Prettier
+        entry: npx prettier --write
+        language: node
+        types: [markdown, yaml, json, toml]
+        # Exclude PowerShell for now - prettier PS support is limited
+        exclude: '\.ps1$'
+        stages: [pre-commit]
+
   # Markdown linting
   - repo: https://github.com/igorshubovych/markdownlint-cli
     rev: v0.44.0
@@ -100,16 +113,3 @@ repos:
         stages: [pre-commit]
         pass_filenames: false
         always_run: true
-
-  # PowerShell formatter (prettier with powershell plugin)
-  - repo: https://github.com/prettier/prettier
-    rev: v3.4.2
-    hooks:
-      - id: prettier
-        name: Format with Prettier
-        entry: npx prettier --write
-        language: node
-        types: [markdown, yaml, json, toml]
-        # Exclude PowerShell for now - prettier PS support is limited
-        exclude: '\.ps1$'
-        stages: [pre-commit]

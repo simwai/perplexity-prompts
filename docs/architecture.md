@@ -3,12 +3,12 @@
 The Baba system has four layers:
 
 1. `AGENTS.md` is the portable entry point.
-2. `system/00-system.md` is the orchestrator, routing table, hard guards, and
+2. `prompt-system/00-system.md` is the orchestrator, routing table, hard guards, and
    load order. It is the only file that names other system files; the other
-   six files (01-06) are referenced by topic, not by file path, so the
+   seven files (01-07) are referenced by topic, not by file path, so the
    reference graph has no cycles.
-3. The phase and persona logic lives in `system/01-personas.md` through
-   `system/06-misc.md`. Phase templates, rubrics, implementation style, and
+3. The phase and persona logic lives in `prompt-system/01-personas.md` through
+   `prompt-system/07-protocols.md`. Phase templates, rubrics, implementation style, and
    PATCH protocol are merged in; there is no separate module per concern.
 4. Adapter layers bind the portable system to agent platforms: `.opencode/`
    plus `opencode.jsonc` (OpenCode), `CLAUDE.md` + `.mcp.json` + `.claude/`
@@ -36,7 +36,7 @@ rewrite contract. `PATCH` is the only implementation phase.
 
 ## Portable versus adapter files
 
-The portable deployment unit is `AGENTS.md` plus `system/`. Adapter files
+The portable deployment unit is `AGENTS.md` plus `prompt-system/`. Adapter files
 (`opencode.jsonc`, `.opencode/`, `CLAUDE.md`, `.mcp.json`, `.claude/`,
 `.codex/`) are platform-specific layers owned by one agent each; other agents
 ignore them entirely. `sync.ps1` propagates the portable unit together with

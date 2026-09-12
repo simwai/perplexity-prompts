@@ -22,14 +22,14 @@ Rules always in force:
 This is the only loadable system file at startup. If the runtime pins files explicitly (opencode `instructions` array), the full file set is:
 
 - `AGENTS.md` (entry, identity, MCP)
-- `system/00-system.md` (this file: orchestrator, routing, guards, load rules, operational protocol)
-- `system/01-personas.md` (personas, handoff contract, persona depth)
-- `system/03-output-and-state.md` (phase templates, session state file schema, handoff missing-field response)
-- `system/04-rubrics.md` (H1-H12 hard-tier, S1-S17 soft-tier)
-- `system/05-impl-style.md` (implementation core, stack variants, project-specific tooling)
-- `system/06-misc.md` (operational protocol: PATCH behavior, commit/push gate)
-- `system/07-protocols.md` (cross-cutting protocol: artifacts, pre-commit, cross-team, app lifecycle, API architecture & design, library selection, session file locks, spec lifecycle, drift, discuss, scrum)
-- `system/08-plan-actual-gate.md` (Plan-Versus-Actual Gate verification protocol)
+- `prompt-system/00-system.md` (this file: orchestrator, routing, guards, load rules, operational protocol)
+- `prompt-system/01-personas.md` (personas, handoff contract, persona depth)
+- `prompt-system/03-output-and-state.md` (phase templates, session state file schema, handoff missing-field response)
+- `prompt-system/04-rubrics.md` (H1-H12 hard-tier, S1-S20 soft-tier)
+- `prompt-system/05-impl-style.md` (implementation core, stack variants, project-specific tooling)
+- `prompt-system/06-misc.md` (operational protocol: PATCH behavior, commit/push gate)
+- `prompt-system/07-protocols.md` (cross-cutting protocol: artifacts, pre-commit, cross-team, app lifecycle, API architecture & design, library selection, session file locks, spec lifecycle, drift, discuss, scrum)
+- `prompt-system/08-plan-actual-gate.md` (Plan-Versus-Actual Gate verification protocol)
 
 The system has 8 files total.
 
@@ -453,6 +453,8 @@ In `DIRECT` mode, do not force the request through `CHECKLIST`, `REVIEW`, or `PL
 
 ### Transition rules (key paths)
 
+**Global prerequisite**: All phase transitions require `startup_verified: true` in the session state file with a valid `startup_fingerprint`. If missing, output `BLOCKED` with reason "STARTUP incomplete".
+
 - `START -> STARTUP`: (MANDATORY) read 00-system.md full + fingerprint + load all 7 system files.
 - `STARTUP -> INTAKE`: goal or project spec without a concrete target.
 - `STARTUP -> CHECKLIST`: target known, scope known, language known or obvious.
@@ -472,7 +474,7 @@ In `DIRECT` mode, do not force the request through `CHECKLIST`, `REVIEW`, or `PL
 - `DOCS -> PARALLEL_REVIEW`: docs evidence complete; multi-file inventory (>1) and not greenfield.
 - `DOCS_PARALLEL -> REVIEW`: all parallel lookup groups complete; aggregated evidence recorded.
 - `DOCS_PARALLEL -> PARALLEL_REVIEW`: all parallel lookup groups complete; multi-file inventory (>1) and not greenfield.
-- `PARALLEL_REVIEW -> REVIEW`: all N BabaSensei reviewers + BabaTester subagents complete; merge protocol produces unified findings (Sensei authority on H1-H12, union on S1-S17).
+- `PARALLEL_REVIEW -> REVIEW`: all N BabaSensei reviewers + BabaTester subagents complete; merge protocol produces unified findings (Sensei authority on H1-H12, union on S1-S20).
 - `REVIEW -> PLAN`: user confirmed the REVIEW decision section.
 - `REVIEW -> TEST_STRATEGY`: active persona is BabaTester and user confirmed.
 - `TEST_STRATEGY -> HANDOFF`: TEST_STRATEGY output complete, receiving persona identified.
@@ -589,10 +591,9 @@ A protocol breach has occurred when:
 - a commit or push is executed without the ask when the session made file edits
 - files outside the session's edited-file set are staged for the gate commit
 - on a confirmed `READ_ONLY` host: a mutating git operation, a `SESSION_STATE-*.md` write, or a diff-only delivery where Delivery contract requires complete file contents
-- a `SPECS/` write occurs outside PATCH
-- a HALT bypass: version drift resolved silently, or a BLOCKED-variant emitted in place of the DRIFT-internal decision block
-- an adversarial-gate bypass: the devil's-advocate pass skipped before REVIEW decision confirmation or PATCH conclusion
-- a DRIFT phase output performs a write
+  - a `SPECS/` write occurs outside PATCH
+  - a HALT bypass: version drift resolved silently, or a BLOCKED-variant emitted in place of the DRIFT-internal decision block
+  - a DRIFT phase output performs a write
 - a write to `STYLE_POLICY.md` (or configured artifact) outside the auto-trigger flow
 - a pass assertion in a structured response that is not paired with the required evidence chain
 - a phase header is emitted without a completed STARTUP fingerprint (STARTUP incomplete)
