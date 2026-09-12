@@ -547,6 +547,8 @@ Use `New-LockDirectoryAtomic` (create without `-Force`); a `-Force` create is ne
 4. On success, write `owner` and `acquired_at` into the new directory. The lock is held.
 5. On "already locked", read the existing `owner` and `acquired_at`. If `acquired_at` is within `SESSION_LOCK_TTL_MINUTES`, the peer is live; enter Wait and surface. Otherwise the lock is stale; enter Stale lock handling.
 
+Lock acquisition MUST complete before the per-edit lint gate runs for the first write to the file. Lint auto-fixes that occur before lock acquisition are a protocol breach.
+
 Before the create attempt, a per-file acquisition also refuses when a live peer dependency lock covers the flat name, and session identity always comes from the once-per-session cache, never from a per-call generated fallback.
 
 Acquisition is recorded in the session's state file under `## Locked Paths` (`### Per-file`).
@@ -978,7 +980,7 @@ A protocol that enhances CHECKLIST file inventory initialization when the target
 
 ## REVIEW Merge Protocol
 
-When `PARALLEL_REVIEW` completes, N BabaSensei reviewers and BabaTester subagent have produced findings in their partitioned state sections (`## Sensei State 1`, `## Sensei State 2`, ..., `## Sensei State N`, `## Tester State`). The merge protocol produces unified findings for the consolidated REVIEW phase.
+When `PARALLEL_REVIEW` completes, N BabaSensei reviewers and BabaTester subagent have produced findings in their partitioned state sections (`## Sensei State 1`, `## Sensei State 2`, ..., `## Sensei State N`, `## Tester State`). BabaReviewer acts as the merge auditor: it receives the merged findings, verifies the merge protocol was applied correctly (Sensei authority on hard-tier, union on soft-tier), and produces the final merge verdict before the session enters REVIEW. The merge protocol produces unified findings for the consolidated REVIEW phase.
 
 ### Merge Rules
 
@@ -991,6 +993,8 @@ When `PARALLEL_REVIEW` completes, N BabaSensei reviewers and BabaTester subagent
 4. **Preservation constraints**: Union of all reviewers' constraints. Deduplicated by constraint text.
 
 5. **Output**: Unified `accepted_violations`, `excluded_violations`, `preserve_constraints` lists written to the main session state file. Partitioned sections (`## Sensei State 1..N`, `## Tester State`) are retained for audit but no longer written to during REVIEW phase.
+
+6. **Merge audit**: BabaReviewer verifies that rules 1-5 were applied correctly and emits the final merge verdict (`merged: complete` or `merged: FAIL`). Any merge-protocol violation is flagged as a hard-tier finding before the session proceeds to REVIEW.
 
 ### Conflict Detection
 
