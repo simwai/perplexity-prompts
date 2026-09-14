@@ -61,8 +61,6 @@ After a successful compliance audit, inspect the resulting diff. Run the project
 
 For partial-scope patches, the verification gate checks only the scoped items. Pending review items are not verified and remain untouched in the working tree.
 
-**Parallel test execution**: Detect independent test suites by scanning project config (package.json scripts, jest.config, pytest.ini, pyproject.toml) for isolation markers: no shared `beforeAll`/`setup`, no shared DB fixtures, no global state mutations, no `@Order`/`dependsOn`. Categorize suites as `isolated` (parallel-safe) or `sequential-only`. Run `lint` + `typecheck` sequentially (required order), then execute isolated test suites concurrently via background processes (max concurrent per `parallel_budget.patch = 4`). Aggregate results with per-suite timing. Fallback: if zero isolated suites detected or `/noparallel`, run all sequentially with note `Parallel test execution skipped: no isolated suites detected`.
-
 When the patch contains a confirmed bug, the verification gate runs two extra rows before the diff inspection concludes:
 
 - **Regression baseline (expected FAIL):** PASS|FAIL/SKIPPED -- <command or n/a> -- <note or SKIPPED reason>.
