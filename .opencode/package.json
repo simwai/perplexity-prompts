@@ -1,5 +1,10 @@
 {
   "dependencies": {
-    "@opencode-ai/plugin": "1.18.25"
+    "@opencode-ai/plugin": "1.18.25",
+    "@spoons-and-mirrors/subtask2": "^0.3.5",
+    "opencode-adaptive-thinking": "^0.1.6",
+    "opencode-pty": "^0.3.6",
+    "opencode-scheduler": "^1.3.0",
+    "opencode-vibeguard": "^0.1.0"
   }
 }
