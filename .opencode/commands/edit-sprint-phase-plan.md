@@ -20,12 +20,13 @@ Then:
 3. Read the sprint file in full.
 4. Parse the frontmatter and current stories/tasks/blockers.
 5. Apply the edit action from `$ARGUMENTS`:
-   - Add story: append a new story entry to the stories array with the goal, features, tasks, blockers, and default size/ICE.
+   - Add story: append a new story entry to the stories array with the goal, features, tasks, blockers, size, and ICE fields. Score ICE using the framework below.
    - Add task: add a task to a specific story's tasks array.
    - Update task: modify a task's status or details.
-   - Move story: reorder stories or move between milestones.
+   - Move story: reorder stories or move between milestones. Ties broken by size (smaller first), then by milestone target date.
    - Mark done: update a story or task status to done.
    - Add blocker: append to the blockers array and mark the relevant story.
+   - Recalculate ICE: after any edit that changes impact, confidence, or size, recalculate `ice = impact * confidence * ease`.
 6. Write the updated file back, preserving the frontmatter format.
 7. Emit confirmation with what changed and the updated story/task counts.
 
@@ -43,5 +44,7 @@ Then:
 ## Common
 
 - If `$ARGUMENTS` is empty or doesn't specify a sprint, emit `[PHASE: BLOCKED]` with: "sprint ID/name is required".
-- Follow scrum conventions: ICE scoring, size bands, milestones, DoD.
+- Follow scrum conventions: ICE scoring (ICE = Impact * Confidence * Ease), size bands (XS/S/M/L), milestones, DoD, task-card enrichment (MVP-first ordering).
+- Ties broken by size (smaller first), then by milestone target date.
+- Recalculate ICE after any edit that changes impact, confidence, or size.
 - Record the updated sprint ID in the session state file.
