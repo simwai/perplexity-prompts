@@ -27,3 +27,6 @@ url = "https://mcp.context7.com/mcp"
 [mcp_servers.playwright]
 command = "npx"
 args = ["-y", "@playwright/mcp@0.0.80"]
+
+[mcp_servers.trello]
+url = "https://mcp.trello.com/v1"
