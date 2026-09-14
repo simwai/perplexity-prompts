@@ -1,0 +1,30 @@
+# Scratch files
+*.tmp
+*.bak
+
+# Session artifacts
+*.session.md
+
+# OS/editor
+.DS_Store
+._*
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+*~
+
+# IDE
+.idea/
+.vscode/
+
+# Dependencies
+node_modules/
+.venv/
+venv/
+env/
+
+# Build outputs
+dist/
+build/
+out/
