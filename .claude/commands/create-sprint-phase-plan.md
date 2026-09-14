@@ -53,8 +53,34 @@ stories:
 ## Definition of Done
 <!-- Add DoD criteria -->
 
-## ICE Scores
-<!-- Score each story: Impact * Confidence * Ease -->
+## ICE Scoring Framework
+
+Each story is scored using ICE = Impact * Confidence * Ease:
+
+| Factor | Definition | Scale |
+|---|---|---|
+| **Impact** | How much this item moves the goal (value delivered, effort removed, risk retired) | 1-10 |
+| **Confidence** | How sure we are the approach, scope, and estimate are right | 1-10 |
+| **Ease** | Inverse of implementation effort, derived from the size band | see below |
+
+Size-to-Ease mapping:
+
+| Size | LOC band | Ease guidance |
+|---|---|---|
+| XS | ~50-150 | 8-10 |
+| S | ~150-300 | 6-8 |
+| M | ~300-400 | 4-6 |
+| L | >400 | 1-4 |
+
+Ties are broken by size (smaller first), then by milestone target date.
+
+Each story in the sprint file must include these fields:
+- `size` (XS/S/M/L)
+- `ice` (calculated: impact * confidence * ease)
+- `impact` (1-10)
+- `confidence` (1-10)
+- `milestone` (the milestone tag this story serves)
+- `definition_of_done` (what "reached" means for this story)
 
 ## Blockers
 <!-- Track blockers here -->
@@ -76,4 +102,6 @@ stories:
 
 - If `$ARGUMENTS` is empty, emit `[PHASE: BLOCKED]` with: "sprint name and roadmap ID are required".
 - Follow scrum conventions from `prompt-system/07-protocols.md`: ICE scoring, size bands (XS/S/M/L), milestones, task-card enrichment rules.
+- Apply task-card enrichment: stories sharing a `Story` id belong to one user story; tasks ordered MVP-first (core before supporting); test-first flag as a plan-level ordering signal.
 - Record the sprint ID in the session state file under `## Project Management`.
+- Populate stories from the roadmap's phases/items, then score each story's ICE before finalizing.
