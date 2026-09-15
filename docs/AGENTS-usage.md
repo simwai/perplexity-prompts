@@ -275,6 +275,29 @@ Claude Code gets an additional native layer that other agents ignore.
 | `.claude/agents/baba-*.md` | The five Baba personas as Claude Code subagents. Generated from `.opencode/agents/baba-*.md`. Read-only personas list safe tools only; BabaDev inherits all tools. |
 | `.claude/commands/*.md` | Mirrors of the Baba slash commands. Generated from `.opencode/commands/*.md`. |
 
+## Commands
+
+| Command | Purpose |
+|---|---|
+| `/baba <persona>` | Activate a Baba persona (`scrummaster`, `sensei`, `dev`, `tester`, `reviewer`) and start the phase flow. |
+| `/phase <NAME>` | Declare the active structured phase (`CHECKLIST`, `DOCS`, `REVIEW`, `PLAN`, `PATCH`, `DISCUSS`, `DRIFT`, `BLOCKED`, `FAILURE`, plus optional upstream `INTAKE`, `BACKLOG`, `SPRINT`, `TASK_PLAN`, `SPEC`). |
+| `/approve-plan` | Persist plan approval + rewrite contract into the session's own state file. |
+| `/handoff` | Emit the persona handoff contract and persist it to the session state file. |
+| `/resume` | Restore the prior phase from the session's own state file after `DISCUSS` or interruption. |
+| `/verify` | Inspect the diff and run relevant project checks; apply the commit/push gate when edits were made. |
+| `/auto` | Switch execution mode to `AUTO` — agent chooses direct or structured by task risk. |
+| `/direct` | Switch execution mode to `DIRECT` — clear low-risk work without phase templates. |
+| `/structured` | Switch execution mode to `STRUCTURED` — full phase-gated workflow. |
+| `/review-consolidated` | Set `review_mode = consolidated` and enter `REVIEW` phase. Aggregates all findings into one final decision block. |
+| `/review-interactive` | Set `review_mode = interactive` and enter `REVIEW` phase. Emits one batch per response and waits for confirmation. |
+| `/check-for-blockers` | Scan all sprints for blocked or stalled items and report them with severity. Uses Trello MCP or the `project-management/` folder. |
+| `/check-sprint-progress` | Report story completion, task counts, and phase status across sprints. Uses Trello MCP or the `project-management/` folder. |
+| `/create-roadmap` | Create a new roadmap document. |
+| `/edit-roadmap` | Edit an existing roadmap document. |
+| `/create-sprint-phase-plan` | Create a new sprint phase plan. |
+| `/edit-sprint-phase-plan` | Edit an existing sprint phase plan. |
+| `/code-ref` | Look up a high-quality code reference from the curated global pool. Flags: `--language`, `--domain`, `--keywords`, `--pool`, `--refresh`. |
+
 ### Notes
 
 - **Single source of truth**: edit `.opencode/agents/`, `.opencode/commands/`,
