@@ -1,6 +1,6 @@
 # 07-protocols
 
-Cross-cutting protocol details: artifact handling, pre-commit behavior, cross-team requirements, app lifecycle, library selection, session file locks, spec lifecycle, drift detection, discuss mode, and scrum planning. These were merged out of 11 separate deprecated modules; they are protocol detail that PATCH, REVIEW, and PLAN consume. "PATCH rule" sections below are cross-phase constraints that apply when PATCH touches the relevant domain — the PATCH execution protocol lives in `06-misc.md`.
+Cross-cutting protocol details: artifact handling, pre-commit behavior, cross-team requirements, app lifecycle, library selection, session file locks, spec lifecycle, drift detection, discuss mode, scrum planning, and prompt-system protection. These were merged out of 11 separate deprecated modules; they are protocol detail that PATCH, REVIEW, and PLAN consume. "PATCH rule" sections below are cross-phase constraints that apply when PATCH touches the relevant domain — the PATCH execution protocol lives in `06-misc.md`.
 
 ## Artifact handling
 
@@ -92,6 +92,8 @@ The `prompt-system/` folder and its files are the core system and must be protec
 Trigger: CHECKLIST init for any non-greenfield target.
 
 Search budget: max 15 `rg`/`glob` invocations, max 100 hits.
+
+Search scope excludes `prompt-system/` (core system, never part of project work). All other directories are searched.
 
 ### Mandatory searches
 
