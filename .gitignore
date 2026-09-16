@@ -46,6 +46,7 @@ sessions/
 *.session.json
 chat-export/
 .session-locks/
+.playwright-mcp/
 
 # Claude Code local state (never commit personal overrides)
 .claude/settings.local.json

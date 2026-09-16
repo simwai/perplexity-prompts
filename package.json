@@ -1,0 +1,26 @@
+{
+  "name": "perplexity-prompts",
+  "version": "1.0.0",
+  "description": "Adaptive prompt system with lightweight direct execution and a structured AI code review workflow when the task needs it.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://oauth2:@gitlab.com/simwai/perplexity-prompts.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://gitlab.com/simwai/perplexity-prompts/issues"
+  },
+  "homepage": "https://gitlab.com/simwai/perplexity-prompts#readme",
+  "devDependencies": {
+    "markdownlint-cli": "^0.49.1"
+  }
+}

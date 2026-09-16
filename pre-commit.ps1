@@ -20,6 +20,7 @@ Write-Host "Running pre-commit checks..." -ForegroundColor Cyan
 # 1. Generate adapters (must run first so generated files are present for other checks)
 Write-Host "`n[1/6] Generating platform adapters..." -ForegroundColor Yellow
 if (-not $locksOnly) {
+    $env:BABA_STAGE_ADAPTERS = '1'
     & "$repoRoot\generate-adapters.ps1"
     if (-not $?) {
         Write-Error "generate-adapters.ps1 failed"

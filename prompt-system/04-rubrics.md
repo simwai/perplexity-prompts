@@ -80,6 +80,8 @@ Hard-tier (H1-H12) and soft-tier (S1-S20) review rubrics. Hard-tier items block 
 
 **H38 -- No Obvious Performance Issues: fix introduces O(n2) scans, nested loops over same data, or synchronous blocking in async context.** See `rules.md` H38 for detection, auto-exception, and scope. Advisory only.
 
+**H39 -- No Multi-Concept Files: fix combines multiple classes, errors, types, interfaces, or schemas into a single file.** See `rules.md` H39 for detection, auto-exception, and scope. System-triggered: fires when a file contains multiple distinct concept types.
+
 ## Soft tier (S1-S20)
 
 **S1 -- Naming: unclear, misleading, or inconsistent identifiers.**

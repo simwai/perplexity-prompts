@@ -236,7 +236,8 @@ Hard tier:
 - [ ] H36
 - [ ] H37
 - [ ] H38
-  - Greenfield skip: mark `[x] H1-H38 -- skipped (greenfield)` when CHECKLIST/REVIEW are skipped per the greenfield branch.
+- [ ] H39
+  - Greenfield skip: mark `[x] H1-H39 -- skipped (greenfield)` when CHECKLIST/REVIEW are skipped per the greenfield branch.
 
 Soft tier:
 - [ ] S1

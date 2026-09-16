@@ -723,6 +723,33 @@ Each rule has:
 | Logging quality | H36 | all mandatory |
 | Type safety (non-Python) | H37 | all mandatory |
 | No obvious performance issues | H38 | all advisory |
+| No multi-concept files | H39 | all mandatory |
+
+---
+
+## H39 -- No Multi-Concept Files
+
+**Principle:** Each distinct concept gets its own file. Do not combine multiple classes, errors, types, interfaces, or schemas into a single file.
+
+**Hard gate:** H39
+
+**Detection:**
+- System checks for multiple class definitions in a single file
+- System checks for mixed concept types in a single file (e.g., a class and an interface, or two unrelated classes)
+- Detection method: `rg` for class/interface/type definitions in target file; count distinct concept types
+
+**Enforcement:** Block if fix combines multiple concepts in one file. Verification gate checks for mixed concepts; if found, gate FAIL.
+
+**Auto-exception:**
+- File is a test file (test helpers may combine)
+- File is a barrel/index file (re-exports only)
+- All concepts in the file are tightly related and form a single coherent module (documented)
+- Target language has no native class/interface separation (rare)
+
+**Scope matrix:**
+- bugfix: mandatory
+- feature: mandatory
+- refactor: mandatory
 
 ---
 

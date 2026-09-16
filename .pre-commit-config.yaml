@@ -19,13 +19,13 @@ repos:
     hooks:
       - id: generate-adapters
         name: Generate platform adapters
-        entry: pwsh -NoProfile -ExecutionPolicy Bypass -File generate-adapters.ps1
+        entry: pwsh -NoProfile -ExecutionPolicy Bypass -Command "$env:BABA_STAGE_ADAPTERS='1'; .\generate-adapters.ps1"
         language: system
         pass_filenames: false
         always_run: true
         stages: [pre-commit]
         # Runs first so generated files (.mcp.json, .claude/agents/, .claude/commands/, .codex/config.toml)
-        # are present for subsequent formatters/linters.
+        # are present for subsequent formatters/linters. Generated files are auto-staged into the commit.
 
   # Local hook: session lock verification (locks-only mode of pre-commit.ps1)
   - repo: local

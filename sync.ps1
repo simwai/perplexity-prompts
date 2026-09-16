@@ -114,6 +114,9 @@ $folders = @('prompt-system', '.opencode', '.claude', '.cursor', '.codex')
     $skipped    = 0
     $pushFailed = 0
 
+    # Bootstrap the global reference pool if not already present.
+    & (Join-Path $scriptDir 'prompt-system\scripts\init-reference-pool.ps1')
+
     $selected = $Targets.GetEnumerator() | Where-Object { $_.Value } | ForEach-Object { $_.Key }
 
     if (-not $selected) {
@@ -142,7 +145,7 @@ $folders = @('prompt-system', '.opencode', '.claude', '.cursor', '.codex')
             }
         }
 
-foreach ($folder in $folders) {
+        foreach ($folder in $folders) {
             $src = Join-Path $source $folder
             $dst = Join-Path $target $folder
             if ($DryRun) {
@@ -156,6 +159,8 @@ foreach ($folder in $folders) {
                 Write-Host "    OK  $folder\" -ForegroundColor Green
             }
         }
+
+        Ensure-GitignoreEntries -TargetPath $target
 
         # Install npm plugins declared in opencode.jsonc
         if (Test-Path (Join-Path $target '.opencode')) {
@@ -185,6 +190,37 @@ foreach ($folder in $folders) {
         Write-Host "$summary, $pushFailed push failed." -ForegroundColor Yellow
     } else {
         Write-Host "$summary." -ForegroundColor White
+    }
+}
+
+# ═══════════════════════════════════════════════════════════════════════════
+#  Gitignore hygiene
+# ═══════════════════════════════════════════════════════════════════════════
+
+function Ensure-GitignoreEntries {
+    param([string]$TargetPath)
+
+    $gitignorePath = Join-Path $TargetPath '.gitignore'
+    if (-not (Test-Path -LiteralPath $gitignorePath -PathType Leaf)) {
+        return
+    }
+
+    $content = Get-Content -LiteralPath $gitignorePath -Raw -Encoding UTF8
+    $entries = @('.session-locks/', '.playwright-mcp/')
+    $modified = $false
+
+    foreach ($entry in $entries) {
+        # Match the entry as a whole line, ignoring whitespace around it
+        $pattern = '(?m)^\s*' + [regex]::Escape($entry) + '\s*$'
+        if ($content -notmatch $pattern) {
+            $content = $content.TrimEnd() + "`n" + $entry + "`n"
+            $modified = $true
+        }
+    }
+
+    if ($modified) {
+        $content | Set-Content -LiteralPath $gitignorePath -Encoding UTF8 -NoNewline
+        Write-Host "    OK  .gitignore augmented" -ForegroundColor Green
     }
 }
 
@@ -289,7 +325,7 @@ if ($DryRun) {
         return
     }
 
-$paths = @('AGENTS.md', 'opencode.jsonc', 'CLAUDE.md', '.mcp.json', 'prompt-system', '.opencode', '.claude') |
+$paths = @('AGENTS.md', 'opencode.jsonc', 'CLAUDE.md', '.mcp.json', 'BOOTSTRAP.md', 'prompt-system', '.opencode', '.claude', '.cursor', '.codex') |
         Where-Object { Test-Path (Join-Path $repoRoot $_) }
     if (-not $paths) { return }
 

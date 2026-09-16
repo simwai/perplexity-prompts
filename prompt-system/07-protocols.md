@@ -66,6 +66,27 @@ The house preference is LF line endings for every repository, including on Windo
 
 Spawn rule: when a plan or patch sets up a new repo or touches repo hygiene, spawn `.gitattributes` with `* text=auto eol=lf` when the repo lacks one. Extend the existing file in the same patch that normalizes line endings.
 
+## Prompt-system protection
+
+The `prompt-system/` folder and its files are the core system and must be protected from modification when the prompt-system is deployed to a project. These files define the agent's behavior, rules, and conventions; editing them corrupts the system for all projects using it.
+
+### Hard rules
+
+- The `prompt-system/` folder must never be edited as part of a project's work. Changes to the system go through a separate governance session.
+- When deploying the prompt-system to a new project, the `prompt-system/` files are installed as read-only artifacts.
+- Any automated tool or agent must not modify `prompt-system/` files during normal project work.
+- The `prompt-system/` folder is excluded from project-level linting, formatting, and review rules.
+
+### Enforcement
+
+- `07-protocols.md` rule detection (H13-H39) must not fire against `prompt-system/` files. The system reads `STYLE_POLICY.md` for project-level exceptions and treats `prompt-system/` as an always-excluded directory.
+- Pre-commit hooks must not include `prompt-system/` in their staged-file patterns.
+- Discovery Protocol searches must exclude `prompt-system/` from the project source tree.
+
+### Exception
+
+- Updates to the prompt-system itself (new rules, rubric changes, style updates) are performed in a dedicated governance session and deployed via the sync mechanism (`sync.ps1`), not through normal project PATCH flows.
+
 ## Discovery Protocol
 
 Trigger: CHECKLIST init for any non-greenfield target.
@@ -104,7 +125,7 @@ Search budget: max 15 `rg`/`glob` invocations, max 100 hits.
 
 ### Rule detection
 
-For each rule in `rules.md` H13-H38:
+For each rule in `rules.md` H13-H39:
 1. Check if rule applies to target file's context
 2. If yes: add to `system_evidence.rule_triggers` with evidence
 3. If rule has auto-exception: evaluate exception conditions

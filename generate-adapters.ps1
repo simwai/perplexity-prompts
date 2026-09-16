@@ -316,4 +316,27 @@ if (Test-Path -LiteralPath $codexPath) {
 Write-Host "OK  .codex/config.toml (full config)" -ForegroundColor Green
 $count++
 
+if ($env:BABA_STAGE_ADAPTERS -in @('1', 'true', 'yes')) {
+    Write-Host "`nStaging generated adapter files..." -ForegroundColor Yellow
+    Push-Location -LiteralPath $scriptDir
+    try {
+        $paths = @(
+            '.claude\agents',
+            '.claude\commands',
+            '.cursor\rules',
+            '.codex\config.toml',
+            '.mcp.json'
+        )
+        foreach ($p in $paths) {
+            if (Test-Path -LiteralPath $p) {
+                git add $p
+            }
+        }
+    }
+    finally {
+        Pop-Location
+    }
+    Write-Host "  OK" -ForegroundColor Green
+}
+
 Write-Host "`nDone. $count generated files." -ForegroundColor White
