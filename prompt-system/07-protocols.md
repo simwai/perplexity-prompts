@@ -675,8 +675,11 @@ Host capability reaches the script via the `BABA_READ_ONLY` environment flag; wh
 
 ### Hard rules
 
-- One file, one writer. A session must hold the lock for a file before any write to that file, and must not hold the lock for any file outside its `## Edited Files` ledger.
-- Lock acquisition is required on **first write in any phase**, not just PATCH. Reads never acquire locks. The cost of this choice is a read-then-write race that the commit/push gate re-checks at staging time.
+<MUST>One file, one writer. A session must hold the lock for a file before any write to that file, and must not hold the lock for any file outside its `## Edited Files` ledger.</MUST>
+<MUST>Lock acquisition is required on first write in any phase, not just PATCH. Reads never acquire locks. The cost of this choice is a read-then-write race that the commit/push gate re-checks at staging time.</MUST>
+<MUST_NOT>Skip lock acquisition when a shell tool can invoke the lock script.</MUST_NOT>
+<MUST_NOT>Auto-steal a live peer lock.</MUST_NOT>
+<MUST_NOT>Release a lock whose `owner` is not this session id.</MUST_NOT>
 - Stale locks are never auto-stolen. Surface the choice to the user.
 - The commit/push gate staging is refused if any path in the proposed commit is not currently locked by this session or released by this session within the current PATCH/DIRECT step.
 - A session never releases a lock whose `owner` is not its own session id. Releasing a peer's lock is a protocol violation and surfaces as BLOCKED.
@@ -703,7 +706,7 @@ The presence of a live peer does not change behavior directly. It only means loc
 
 ### Acquisition
 
-Before the first write to a file:
+<MUST>Before the first write to a file, acquire the lock. Lock acquisition MUST complete before the per-edit lint gate runs for the first write to the file; lint auto-fixes that occur before lock acquisition are a protocol breach.</MUST>
 
 1. Verify the file is in the session's `## Edited Files` ledger. A file not in the ledger is not eligible for a lock, and acquiring one anyway is BLOCKED.
 2. Compute the flat name per the Lock directory section.
@@ -711,8 +714,6 @@ Before the first write to a file:
 Use `New-LockDirectoryAtomic` (create without `-Force`); a `-Force` create is never atomic and silently steals.
 4. On success, write `owner` and `acquired_at` into the new directory. The lock is held.
 5. On "already locked", read the existing `owner` and `acquired_at`. If `acquired_at` is within `SESSION_LOCK_TTL_MINUTES`, the peer is live; enter Wait and surface. Otherwise the lock is stale; enter Stale lock handling.
-
-Lock acquisition MUST complete before the per-edit lint gate runs for the first write to the file. Lint auto-fixes that occur before lock acquisition are a protocol breach.
 
 Before the create attempt, a per-file acquisition also refuses when a live peer dependency lock covers the flat name, and session identity always comes from the once-per-session cache, never from a per-call generated fallback.
 
@@ -749,7 +750,7 @@ The model records the stale-lock event in the session's state file under `## Loc
 
 ### Commit/push gate integration
 
-The commit/push gate must, before staging, call into session file locks to verify: for every path in the proposed commit, the current session holds the lock or released it within the current PATCH/DIRECT step.
+<MUST>The commit/push gate must, before staging, call into session file locks to verify: for every path in the proposed commit, the current session holds the lock or released it within the current PATCH/DIRECT step.</MUST>
 Verification also scans every lock's `dependencies.txt`, so a file covered by a live peer dependency lock refuses staging even without an exact-path lock.
 Any path that fails this check is surfaced to the user with the same three options as Wait and surface, and staging is refused until the user decides.
 The re-read check that defends against the read-then-write race lives in the commit/push gate right after the lock check: re-read the working-tree version of each path, diff it against the in-memory expected content, and refuse to stage any path with unowned hunks.
