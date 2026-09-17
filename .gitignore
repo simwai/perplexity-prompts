@@ -67,5 +67,13 @@ coverage/
 dist/
 out/
 
+# Scratch and WIP files
+*.tmp
+*.bak
+*.orig
+scratch/
+todo.md
+WIP.md
+
 # Local logs
 .logs/
