@@ -102,6 +102,8 @@ agent ignores them:
 | `/create-sprint-phase-plan` | Create a new sprint phase plan. |
 | `/edit-sprint-phase-plan` | Edit an existing sprint phase plan. |
 | `/code-ref` | Look up a high-quality code reference from the curated global pool. Flags: `--language`, `--domain`, `--keywords`, `--pool`, `--refresh`. |
+| `/reddit-post` | Draft a high-engagement Reddit post by researching top-performing posts in the best subreddits for the project. Optional argument: `[subreddit-override]`. |
+| `/arxiv-paper` | Generate a full arXiv-ready paper PDF for the current project, using either a provided reference arXiv paper or auto-discovered high-cited readable papers. Optional argument: `[arxiv-id-or-url]`. |
 
 Nothing is maintained twice: personas, commands, and MCP server definitions
 live once (in `.opencode/` and `opencode.jsonc`), and `sync.ps1` regenerates
