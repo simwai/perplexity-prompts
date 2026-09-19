@@ -75,7 +75,8 @@ function Find-Targets {
             $hasPromptSystem = Test-Path (Join-Path $dir 'prompt-system') -PathType Container
             $hasSystem = Test-Path (Join-Path $dir 'system') -PathType Container
             $hasSyncedScripts = Test-Path (Join-Path $dir 'synced-scripts') -PathType Container
-            if ($hasPromptSystem -or $hasSystem -or $hasSyncedScripts) {
+            $hasAgentResources = Test-Path (Join-Path $dir 'agent-resources') -PathType Container
+            if ($hasPromptSystem -or $hasSystem -or $hasSyncedScripts -or $hasAgentResources) {
                 if (-not $targets.Contains($dir)) {
                     $targets[$dir] = $false  # false = not selected
                 }
@@ -168,15 +169,54 @@ $folders = @('prompt-system', '.opencode', '.claude', '.cursor', '.codex')
         }
 
         # Remove legacy folders from old structure
-        $legacyFolders = @('system', 'synced-scripts')
+        $legacyFolders = @('system', 'synced-scripts', 'agent-resources')
         foreach ($legacy in $legacyFolders) {
             $legacyPath = Join-Path $target $legacy
-            if (Test-Path $legacyPath -PathType Container) {
+            if (-not (Test-Path $legacyPath)) { continue }
+
+            # If this is a git submodule, deinit it before removing contents.
+            $isSubmodule = $false
+            if (Test-Path (Join-Path $legacyPath '.git')) {
+                $isSubmodule = $true
+            } elseif (Test-Path (Join-Path $repoRoot '.gitmodules')) {
+                $modules = Get-Content -LiteralPath (Join-Path $repoRoot '.gitmodules') -Raw -ErrorAction SilentlyContinue
+                if ($modules -match [regex]::Escape($legacy)) {
+                    $isSubmodule = $true
+                }
+            }
+
+            if ($isSubmodule) {
+                if (-not $DryRun) {
+                    Push-Location $repoRoot
+                    try {
+                        & git submodule deinit -f $legacy 2>&1 | Out-Null
+                    } catch { }
+                    try {
+                        & git rm -f $legacy 2>&1 | Out-Null
+                    } catch { }
+                    Pop-Location
+                }
+                Write-Host "    DEINIT submodule $legacy\" -ForegroundColor Yellow
+            }
+
+            if ($DryRun) {
+                Write-Host "    [DRY] REMOVE $legacy\" -ForegroundColor Gray
+            } else {
+                Remove-Item -LiteralPath $legacyPath -Recurse -Force -ErrorAction SilentlyContinue
+                Write-Host "    REMOVED $legacy\" -ForegroundColor Yellow
+            }
+        }
+
+        # Remove stray AGENTS.md symlinks from old structure
+        $agentsLink = Join-Path $target 'AGENTS.md'
+        if (Test-Path $agentsLink -PathType Leaf) {
+            $item = Get-Item -LiteralPath $agentsLink -Force
+            if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) {
                 if ($DryRun) {
-                    Write-Host "    [DRY] REMOVE $legacy\" -ForegroundColor Gray
+                    Write-Host "    [DRY] REMOVE AGENTS.md symlink" -ForegroundColor Gray
                 } else {
-                    Remove-Item -LiteralPath $legacyPath -Recurse -Force -ErrorAction SilentlyContinue
-                    Write-Host "    REMOVED $legacy\" -ForegroundColor Yellow
+                    Remove-Item -LiteralPath $agentsLink -Force -ErrorAction SilentlyContinue
+                    Write-Host "    REMOVED AGENTS.md symlink" -ForegroundColor Yellow
                 }
             }
         }

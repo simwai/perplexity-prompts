@@ -75,5 +75,13 @@ scratch/
 todo.md
 WIP.md
 
+# Scratch and WIP files
+*.tmp
+*.bak
+*.orig
+scratch/
+todo.md
+WIP.md
+
 # Local logs
 .logs/

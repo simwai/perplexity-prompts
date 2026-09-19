@@ -3,17 +3,6 @@
 # Local hook for generate-adapters.ps1 runs first to ensure generated files are current before other checks.
 
 repos:
-  # Local hook: ensure trufflehog is installed (scoop)
-  - repo: local
-    hooks:
-      - id: ensure-trufflehog
-        name: Ensure trufflehog installed (scoop)
-        entry: pwsh -NoProfile -ExecutionPolicy Bypass -Command "if (-not (Get-Command trufflehog -ErrorAction SilentlyContinue)) { Write-Host 'Installing trufflehog via scoop...'; scoop install trufflehog }"
-        language: system
-        pass_filenames: false
-        always_run: true
-        stages: [pre-commit]
-
   # Local hook: generate adapters from opencode sources
   - repo: local
     hooks:
@@ -65,13 +54,24 @@ repos:
         args: ['--fix=lf']
         stages: [pre-commit]
 
-  # Secret scanner: truffleHog
-  - repo: https://github.com/trufflesecurity/truffleHog
-    rev: v3.88.0
+  # Local hook: ensure gitleaks is installed (winget)
+  - repo: local
     hooks:
-      - id: trufflehog
+      - id: ensure-gitleaks
+        name: Ensure gitleaks installed (winget)
+        entry: pwsh -NoProfile -ExecutionPolicy Bypass -Command "if (-not (Get-Command gitleaks -ErrorAction SilentlyContinue)) { Write-Host 'Installing gitleaks via winget...'; winget install --id Zricethezav.gitleaks --silent --accept-source-agreements }"
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+
+  # Secret scanner: gitleaks
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.0
+    hooks:
+      - id: gitleaks
         name: Scan for secrets
-        entry: trufflehog filesystem --no-verification --fail
+        entry: gitleaks protect --verbose --redact --fail
         language: system
         stages: [pre-commit]
         pass_filenames: false
