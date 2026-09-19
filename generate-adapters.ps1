@@ -10,7 +10,7 @@
                                         ->    .codex/config.toml [mcp_servers] + config
       .opencode/agents/baba-*.md    ->    .claude/agents/<name>.md
       .opencode/commands/*.md       ->    .claude/commands/<name>.md
-      BOOTSTRAP.md                  ->    .cursor/rules/bootstrap.mdc (alwaysApply)
+      AGENTS.md                   ->    .cursor/rules/bootstrap.mdc (alwaysApply)
                                         ->    .claude/commands/bootstrap.md
                                         ->    .codex/config.toml (full config)
 
@@ -240,11 +240,11 @@ New-Item -ItemType Directory -Force -Path (Join-Path $scriptDir '.cursor\rules')
 $cursorRule = @"
 ---
 alwaysApply: true
-description: Enforces mandatory STARTUP fingerprint gate per BOOTSTRAP.md
+description: Enforces mandatory STARTUP fingerprint gate per AGENTS.md
 ---
 $bannerMd
 
-@BOOTSTRAP.md
+@AGENTS.md
 "@
 [System.IO.File]::WriteAllText(
     (Join-Path $scriptDir '.cursor\rules\bootstrap.mdc'),
@@ -256,13 +256,15 @@ $count++
 New-Item -ItemType Directory -Force -Path (Join-Path $scriptDir '.claude\commands') | Out-Null
 $claudeBootstrapCmd = @"
 ---
-description: Enforce STARTUP phase - read 00-system.md, emit fingerprint, load all system files
+description: Enforce STARTUP phase - read AGENTS.md, emit fingerprint, load all system files
 argument-hint: 
 ---
 $bannerMd
 
+@AGENTS.md
 @prompt-system/00-system.md
 @prompt-system/01-personas.md
+@prompt-system/02-decision-prompts.md
 @prompt-system/03-output-and-state.md
 @prompt-system/04-rubrics.md
 @prompt-system/05-impl-style.md
@@ -270,12 +272,7 @@ $bannerMd
 @prompt-system/07-protocols.md
 @prompt-system/08-plan-actual-gate.md
 
-**MANDATORY**: After reading 00-system.md, emit fingerprint:
-\`\`\`
-00-system.md fingerprint: <line_count> lines, first_100_chars="<first 100 chars>", last_100_chars="<last 100 chars>", sha256_first_1kb="<hash or N/A>"
-\`\`\`
-
-Then load remaining 7 files. No phase output until fingerprint verified.
+**MANDATORY**: After reading AGENTS.md, discover all system files with `ls prompt-system/*.md`, then read each in full per `00-system.md`'s `## Load order`. Emit fingerprint after reading 00-system.md.
 "@
 [System.IO.File]::WriteAllText(
     (Join-Path $scriptDir '.claude\commands\bootstrap.md'),
