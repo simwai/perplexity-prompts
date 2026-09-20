@@ -1,5 +1,14 @@
-# bootstrap for Playwright MCP server and browser binaries.
-# Exit codes: 0 = ready, 1 = missing Node, 2 = install failed.
+<#
+.SYNOPSIS
+    Standalone Playwright MCP bootstrap script — run MANUALLY before first use.
+.DESCRIPTION
+    Checks Node >= 20, installs @playwright/mcp@0.0.80, installs Chromium.
+    NOT invoked by sync.ps1 — sync.ps1 uses prompt-system/scripts/init-reference-pool.ps1 instead.
+.USAGE
+    .\scripts\ensure-playwright.ps1
+.EXIT CODES
+    0 = ready, 1 = missing Node, 2 = install failed.
+#>
 
 $ErrorActionPreference = 'Stop'
 

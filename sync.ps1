@@ -110,7 +110,7 @@ function Sync-Targets {
 
 $source  = $scriptDir
 $files   = @('AGENTS.md', 'opencode.jsonc', 'CLAUDE.md', '.mcp.json', 'BOOTSTRAP.md')
-$folders = @('prompt-system', '.opencode', '.claude', '.cursor', '.codex')
+$folders = @('prompt-system', '.opencode', '.claude', '.cursor', '.codex', '.opencode/agents')
     $synced     = 0
     $skipped    = 0
     $pushFailed = 0
@@ -168,8 +168,14 @@ $folders = @('prompt-system', '.opencode', '.claude', '.cursor', '.codex')
             Install-Plugins -TargetPath $target
         }
 
-        # Remove legacy folders from old structure
+# Remove legacy folders from old structure
         $legacyFolders = @('system', 'synced-scripts', 'agent-resources')
+        # Get repo root for submodule check (only if git repo)
+        $repoRoot = $null
+        if (Test-Path (Join-Path $target '.git')) {
+            $repoRoot = & git -C $target rev-parse --show-toplevel 2>&1 | Out-Null; $repoRoot
+        }
+        if (-not $repoRoot) { $repoRoot = $target }
         foreach ($legacy in $legacyFolders) {
             $legacyPath = Join-Path $target $legacy
             if (-not (Test-Path $legacyPath)) { continue }
