@@ -157,6 +157,7 @@ Hard-tier (H1-H12) and soft-tier (S1-S20) review rubrics. Hard-tier items block 
 **L10 -- Strategy Logic** (Default: Blocking): signal generation correctness, entry/exit conditions, parameter sensitivity, regime detection, execution slippage.
 
 Severity classification (applied at discovery time):
+
 - **Blocking**: findings affecting correctness, safety, financial outcomes, or data integrity (behave like H-tier: block PATCH until accepted/excluded in REVIEW decision section)
 - **Advisory**: findings in non-critical paths -- logging, display formatting, non-validated display calculations, cosmetic state transitions (behave like S-tier: flag and discuss)
 

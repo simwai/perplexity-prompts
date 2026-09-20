@@ -5,7 +5,8 @@
     "opencode-adaptive-thinking@latest",
     "opencode-pty",
     "opencode-scheduler",
-    ".opencode/plugins/startup-gate.ts"
+    ".opencode/plugins/startup-gate.ts",
+    ".opencode/plugins/adaptive-temperature.ts"
   ],
   "instructions": [
     "AGENTS.md",

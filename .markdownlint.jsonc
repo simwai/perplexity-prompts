@@ -1,7 +1,7 @@
 {
   "MD060": false,
   "MD013": {
-    "line_length": 300
+    "line_length": 1000
   },
   // House convention: every module wrapper tag (`<HIGH_PRIO_ENFORCEMENT>`,
   // `<PERSONA: X>`) must precede the H1 so agents scanning for it see it
@@ -12,5 +12,13 @@
   // defect within the same section.
   "MD024": {
     "siblings_only": true
-  }
+  },
+  // Generated session artifacts are not hand-authored source; exclude them
+  // from lint so auto-generated formatting does not block the gate.
+  "ignores": [
+    "SESSION_STATE-*.md"
+  ],
+  // Protocol files use inline HTML tags (`<MUST>`, `<MUST_NOT>`, `<HIGH_PRIO>`)
+  // as hard-guard markers; these are intentional and must not be removed.
+  "MD033": false
 }
