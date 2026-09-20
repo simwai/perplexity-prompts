@@ -81,7 +81,7 @@ The `prompt-system/` folder and its files are the core system and must be protec
 
 ### Enforcement
 
-- `07-protocols.md` rule detection (H13-H39) must not fire against `prompt-system/` files. The system reads `STYLE_POLICY.md` for project-level exceptions and treats `prompt-system/` as an always-excluded directory.
+- `07-protocols.md` rule detection (H14-H40) must not fire against `prompt-system/` files. The system reads `STYLE_POLICY.md` for project-level exceptions and treats `prompt-system/` as an always-excluded directory.
 - Pre-commit hooks must not include `prompt-system/` in their staged-file patterns.
 - Discovery Protocol searches must exclude `prompt-system/` from the project source tree.
 
@@ -191,7 +191,7 @@ Search scope excludes `prompt-system/` (core system, never part of project work)
 
 ### Rule detection
 
-For each rule in `rules.md` H13-H39:
+For each rule in `rules.md` H14-H40:
 
 1. Check if rule applies to target file's context
 2. If yes: add to `system_evidence.rule_triggers` with evidence
@@ -232,7 +232,7 @@ system_evidence:
     - <module.method> (<file:line>) [rule: H15]
   
   must_not_duplicate:
-    - <file:lines> -- <pattern> [rule: H13]
+    - <file:lines> -- <pattern> [rule: H14]
   
   must_use_library:
     - <name> (<version>) [rule: H14]
@@ -247,7 +247,7 @@ system_evidence:
     confidence: high|medium|low
   
   rule_triggers:
-    - rule: H13
+    - rule: H14
       active: true|false
       auto_excepted: true|false
       reason: <if auto-excepted>
@@ -277,7 +277,7 @@ system_evidence:
 
 System reads `STYLE_POLICY.md` for project-level rule exceptions:
 
-- `rule_exceptions.H13: disabled|advisory|mandatory`
+- `rule_exceptions.H14: disabled|advisory|mandatory`
 - `rule_exceptions.H14: disabled|advisory|mandatory`
 - etc.
 

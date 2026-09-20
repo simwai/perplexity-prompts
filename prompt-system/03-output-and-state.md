@@ -263,7 +263,8 @@ Hard tier:
 - [ ] H37
 - [ ] H38
 - [ ] H39
-  - Greenfield skip: mark `[x] H1-H39 -- skipped (greenfield)` when CHECKLIST/REVIEW are skipped per the greenfield branch.
+- [ ] H40
+  - Greenfield skip: mark `[x] H1-H40 -- skipped (greenfield)` when CHECKLIST/REVIEW are skipped per the greenfield branch.
 
 Soft tier:
 - [ ] S1
@@ -370,6 +371,11 @@ Verified evidence:
 Status:
 - Ready for review, or
 - Blocked pending evidence
+
+# Reading Verification
+Planned: N | Completed: M | Status: [complete | incomplete]
+Pending: [specific file paths or "none"]
+
 ## Review mode selection
 
 REVIEW has two cadences: `interactive` and `consolidated`. The agent selects the cadence at REVIEW entry using the first match below:
@@ -394,6 +400,10 @@ the one decision you must confirm]
 # Multi-file progress
 Reviewed: [X/Y] files -- [Z] batches complete
 Review mode: [interactive|consolidated]
+
+# Reading Verification
+Planned: N | Completed: M | Status: [complete | incomplete]
+Pending: [specific file paths or "none"]
 
 # Findings
 File: [file path or ALL FILES]
@@ -547,6 +557,10 @@ Rule exceptions (auto-granted):
 
 Architecture flags:
 - <flag_type>: <details> [from system_evidence]
+
+# Reading Verification
+Planned: N | Completed: M | Status: [complete | incomplete]
+Pending: [specific file paths or "none"]
 
 Agent writes only:
 Will change:

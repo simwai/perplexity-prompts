@@ -13,11 +13,39 @@ Each rule has:
 
 ---
 
-## H13 -- No Duplication
+## H13 -- Incomplete Reading
+
+**Principle:** Analysis must not be emitted without completing the Reading Plan for the current scope.
+
+**Hard gate:** H13
+
+**Detection:**
+
+- Before any analysis output, the system checks the Reading Plan in session state
+- If any file in the Reading Plan closure is missing a read fingerprint in the read ledger, the plan is incomplete
+- The plugin injects `[PHASE: BLOCKED]` with the specific unread file list
+
+**Enforcement:** Block analysis output when Reading Plan is incomplete. The only exits are: complete all pending reads, or obtain explicit user approval for partial scope.
+
+**Auto-exception:**
+
+- Greenfield target (no existing source files)
+- READ_ONLY host where session state writes are not possible
+- User explicitly approves partial scope
+
+**Scope matrix:**
+
+- bugfix: mandatory
+- feature: mandatory
+- refactor: mandatory
+
+---
+
+## H14 -- No Duplication
 
 **Principle:** DRY - don't repeat logic that exists elsewhere in the codebase.
 
-**Hard gate:** H13
+**Hard gate:** H14
 
 **Detection:**
 
@@ -42,11 +70,11 @@ Each rule has:
 
 ---
 
-## H14 -- Library-First
+## H15 -- Library-First
 
 **Principle:** Use an already-installed dependency before hand-rolling. Code-decision ladder rung 5.
 
-**Hard gate:** H14
+**Hard gate:** H15
 
 **Detection:**
 
@@ -71,11 +99,11 @@ Each rule has:
 
 ---
 
-## H15 -- Ownership Routing
+## H16 -- Ownership Routing
 
 **Principle:** Route through the architectural owner of a concern. Don't bypass the module that owns the validation, error handling, or business logic.
 
-**Hard gate:** H15
+**Hard gate:** H16
 
 **Detection:**
 
@@ -101,11 +129,11 @@ Each rule has:
 
 ---
 
-## H16 -- Layer Discipline
+## H17 -- Layer Discipline
 
 **Principle:** Respect architectural layer boundaries. Controllers must not contain business logic. Services must not access the database directly.
 
-**Hard gate:** H16
+**Hard gate:** H17
 
 **Detection:**
 
@@ -130,11 +158,11 @@ Each rule has:
 
 ---
 
-## H17 -- No Single-Use Abstraction
+## H18 -- No Single-Use Abstraction
 
 **Principle:** YAGNI. Don't create abstractions that are used only once. A factory with one product, an interface with one implementation, or a helper called from one place is speculative.
 
-**Hard gate:** H17
+**Hard gate:** H18
 
 **Detection:**
 
@@ -161,11 +189,11 @@ Each rule has:
 
 ---
 
-## H18 -- Dominant Idiom Enforcement
+## H19 -- Dominant Idiom Enforcement
 
 **Principle:** Don't introduce a new pattern when a dominant pattern already exists. The fix should follow the established idiom of the file and codebase.
 
-**Hard gate:** H18
+**Hard gate:** H19
 
 **Detection:**
 
@@ -191,11 +219,11 @@ Each rule has:
 
 ---
 
-## H19 -- No Over-Engineering
+## H20 -- No Over-Engineering
 
 **Principle:** KISS. Don't create unnecessary abstraction layers. A function that does one thing doesn't need a strategy pattern, a factory, and an interface.
 
-**Hard gate:** H19
+**Hard gate:** H20
 
 **Detection:**
 
@@ -220,11 +248,11 @@ Each rule has:
 
 ---
 
-## H20 -- Composition Over Inheritance
+## H21 -- Composition Over Inheritance
 
 **Principle:** Prefer composition over class inheritance. Use dependency injection and object composition instead of extending base classes.
 
-**Hard gate:** H20
+**Hard gate:** H21
 
 **Detection:**
 
@@ -249,11 +277,11 @@ Each rule has:
 
 ---
 
-## H21 -- Dependency Injection
+## H22 -- Dependency Injection
 
 **Principle:** Use dependency injection over hidden construction. Don't use `new` outside the composition root.
 
-**Hard gate:** H21
+**Hard gate:** H22
 
 **Detection:**
 
@@ -279,11 +307,11 @@ Each rule has:
 
 ---
 
-## H22 -- Single Source of Truth
+## H23 -- Single Source of Truth
 
 **Principle:** Don't duplicate config, constants, or data that exists in a single source. One source of truth; references everywhere else.
 
-**Hard gate:** H22
+**Hard gate:** H23
 
 **Detection:**
 
@@ -308,11 +336,11 @@ Each rule has:
 
 ---
 
-## H23 -- Early Returns
+## H24 -- Early Returns
 
 **Principle:** Prefer early returns over deep nesting. A function should not have >3 levels of indentation.
 
-**Hard gate:** H23
+**Hard gate:** H24
 
 **Detection:**
 
@@ -337,11 +365,11 @@ Each rule has:
 
 ---
 
-## H24 -- No Unnecessary Abstraction
+## H25 -- No Unnecessary Abstraction
 
 **Principle:** Don't create abstractions for a single use case. A wrapper that's called once is not an abstraction; it's indirection.
 
-**Hard gate:** H24
+**Hard gate:** H25
 
 **Detection:**
 
@@ -366,11 +394,11 @@ Each rule has:
 
 ---
 
-## H25 -- No Speculative Code
+## H26 -- No Speculative Code
 
 **Principle:** Don't include code for concerns not present in the task scope. A parameter that's never read, a branch that's unreachable, or a feature flag for a planned feature is speculative.
 
-**Hard gate:** H25
+**Hard gate:** H26
 
 **Detection:**
 
@@ -396,11 +424,11 @@ Each rule has:
 
 ---
 
-## H26 -- No Manual-Sync Registries
+## H27 -- No Manual-Sync Registries
 
 **Principle:** Avoid registries or mappings that require manual sync when dynamic discovery is simpler and safer.
 
-**Hard gate:** H26
+**Hard gate:** H27
 
 **Detection:**
 
@@ -425,11 +453,11 @@ Each rule has:
 
 ---
 
-## H27 -- No Over-Engineered Discovery
+## H28 -- No Over-Engineered Discovery
 
 **Principle:** Keep explicit lists when discovery would add needless complexity or reduce clarity.
 
-**Hard gate:** H27
+**Hard gate:** H28
 
 **Detection:**
 
@@ -454,11 +482,11 @@ Each rule has:
 
 ---
 
-## H28 -- Code-Decision Ladder Compliance
+## H29 -- Code-Decision Ladder Compliance
 
 **Principle:** Before writing new code, check: does this already exist? Does the standard library do it? Does an installed dependency solve it? Only then write new code.
 
-**Hard gate:** H28
+**Hard gate:** H29
 
 **Detection:**
 
@@ -483,11 +511,11 @@ Each rule has:
 
 ---
 
-## H29 -- Stepdown Rule
+## H30 -- Stepdown Rule
 
 **Principle:** Functions read top-to-bottom. Each function calls functions one level of abstraction below it. A function whose first line is a high-level call and whose next line is a low-level call without a named intermediate violates the stepdown rule.
 
-**Hard gate:** H29
+**Hard gate:** H30
 
 **Detection:**
 
@@ -513,11 +541,11 @@ Each rule has:
 
 ---
 
-## H30 -- Newspaper Order
+## H31 -- Newspaper Order
 
 **Principle:** A file reads like a newspaper article: public API first, private details later. A public function should not appear below a private helper it calls.
 
-**Hard gate:** H30
+**Hard gate:** H31
 
 **Detection:**
 
@@ -542,11 +570,11 @@ Each rule has:
 
 ---
 
-## H31 -- No Flag/Output Arguments
+## H32 -- No Flag/Output Arguments
 
 **Principle:** A function should not take a boolean flag that selects between two behaviors, nor mutate an argument passed by reference instead of returning a value.
 
-**Hard gate:** H31
+**Hard gate:** H32
 
 **Detection:**
 
@@ -571,11 +599,11 @@ Each rule has:
 
 ---
 
-## H32 -- Law of Demeter
+## H33 -- Law of Demeter
 
 **Principle:** A method should not reach through another object to access its parts. A chain of more than one dot (`a.b.c.d`) is a Demeter violation unless it's a fluent builder or DTO.
 
-**Hard gate:** H32
+**Hard gate:** H33
 
 **Detection:**
 
@@ -600,11 +628,11 @@ Each rule has:
 
 ---
 
-## H33 -- No Dead Code
+## H34 -- No Dead Code
 
 **Principle:** Don't add unreachable code or unused exports. Dead code increases maintenance burden and confusion.
 
-**Hard gate:** H33
+**Hard gate:** H34
 
 **Detection:**
 
@@ -630,11 +658,11 @@ Each rule has:
 
 ---
 
-## H34 -- No Magic Values
+## H35 -- No Magic Values
 
 **Principle:** Unexplained literals should be named constants. A magic number like `86400` or a magic string like `"prod"` should have a name.
 
-**Hard gate:** H34
+**Hard gate:** H35
 
 **Detection:**
 
@@ -660,11 +688,11 @@ Each rule has:
 
 ---
 
-## H35 -- Error Handling Quality
+## H36 -- Error Handling Quality
 
 **Principle:** Don't swallow exceptions or lose error context. Every catch block must either re-raise, return a Result, or log with context.
 
-**Hard gate:** H35
+**Hard gate:** H36
 
 **Detection:**
 
@@ -689,11 +717,11 @@ Each rule has:
 
 ---
 
-## H36 -- Logging Quality
+## H37 -- Logging Quality
 
 **Principle:** Don't add debug prints or expose sensitive data in logs. Use semantic logging with appropriate levels.
 
-**Hard gate:** H36
+**Hard gate:** H37
 
 **Detection:**
 
@@ -718,11 +746,11 @@ Each rule has:
 
 ---
 
-## H37 -- Type Safety (Non-Python)
+## H38 -- Type Safety (Non-Python)
 
 **Principle:** Don't use unsafe casts, `any` type, or `as` without type guard. Type safety is a first-class concern.
 
-**Hard gate:** H37
+**Hard gate:** H38
 
 **Detection:**
 
@@ -747,11 +775,11 @@ Each rule has:
 
 ---
 
-## H38 -- No Obvious Performance Issues
+## H39 -- No Obvious Performance Issues
 
 **Principle:** Don't introduce O(n²) scans, nested loops over same data, or synchronous blocking in async context.
 
-**Hard gate:** H38
+**Hard gate:** H39
 
 **Detection:**
 
@@ -806,11 +834,11 @@ Each rule has:
 
 ---
 
-## H39 -- No Multi-Concept Files
+## H40 -- No Multi-Concept Files
 
 **Principle:** Each distinct concept gets its own file. Do not combine multiple classes, errors, types, interfaces, or schemas into a single file.
 
-**Hard gate:** H39
+**Hard gate:** H40
 
 **Detection:**
 

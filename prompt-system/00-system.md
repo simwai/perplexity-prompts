@@ -537,6 +537,7 @@ Skip: CHECKLIST, DOCS, BLOCKED, FAILURE, INTAKE, BACKLOG, SPRINT, TASK_PLAN, SPE
 <MUST>No aggregate report from incomplete, skipped, or unrecorded review units.</MUST>
 <MUST>No provisional finding may be treated as user-accepted before REVIEW confirmation.</MUST>
 <MUST>No docs-dependent judgment before docs evidence.</MUST>
+<MUST>No analysis output in any phase without Reading Verification showing 100% reading completion. Incomplete Reading Plan -> output BLOCKED with specific unread file list. The only exits are: complete all pending reads, or obtain explicit user approval for partial scope.</MUST>
 <MUST>No plan before user-confirmed REVIEW decision, except the greenfield branch or when SPEC phase produced approved spec.</MUST>
 <MUST>No standalone CONFIRM phase; confirmation lives inside REVIEW.</MUST>
 <MUST>Phase skips decided by model judgment transition automatically, no user confirmation.</MUST>
