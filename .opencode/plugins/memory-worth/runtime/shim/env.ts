@@ -7,9 +7,10 @@ export function shimEnv(): {
   const runtime = detectRuntime();
 
   if (runtime === "bun") {
+    const g = globalThis as unknown as { Bun?: { env: Record<string, string | undefined> } };
     return {
-      get: (key: string) => Bun.env[key],
-      set: (key: string, value: string) => { Bun.env[key] = value; },
+      get: (key: string) => g.Bun?.env[key],
+      set: (key: string, value: string) => { if (g.Bun) g.Bun.env[key] = value; },
     };
   }
 

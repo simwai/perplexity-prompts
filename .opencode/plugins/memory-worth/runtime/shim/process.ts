@@ -8,10 +8,11 @@ export function shimProcess(): {
   const runtime = detectRuntime();
 
   if (runtime === "bun") {
+    const g = globalThis as unknown as { Bun?: { cwd: () => string; platform: string; arch: string } };
     return {
-      cwd: () => Bun.cwd(),
-      platform: Bun.platform,
-      arch: Bun.arch,
+      cwd: () => g.Bun?.cwd() ?? process.cwd(),
+      platform: g.Bun?.platform ?? process.platform,
+      arch: g.Bun?.arch ?? process.arch,
     };
   }
 

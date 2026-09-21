@@ -1,6 +1,13 @@
 export const SCHEMA_VERSION = 1;
 
-export const MIGRATIONS = [
+export type Migration = {
+  version: number;
+  statements: string[];
+  seed?: Array<{ sql: string; args: unknown[] }>;
+  params?: Array<{ key: string; value: number }>;
+};
+
+export const MIGRATIONS: Migration[] = [
   {
     version: 1,
     statements: [
