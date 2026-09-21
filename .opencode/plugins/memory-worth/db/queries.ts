@@ -131,9 +131,26 @@ async function loadTags(db: Client, memoryIds: number[]): Promise<Map<number, st
   return joined;
 }
 
+async function loadTaskTypes(db: Client, memoryIds: number[]): Promise<Map<number, string>> {
+  const typesByMemory = new Map<number, string>();
+  if (memoryIds.length === 0) return typesByMemory;
+  const placeholders = memoryIds.map(() => "?").join(", ");
+  const typeRows = await db.execute({
+    sql: `SELECT mp.memory_id AS memory_id, tt.name AS name FROM task_type tt JOIN memory_partition mp ON tt.id = mp.task_type_id WHERE mp.memory_id IN (${placeholders}) ORDER BY mp.id`,
+    args: memoryIds,
+  });
+  for (const row of typeRows.rows) {
+    const memoryId = asNumber(row["memory_id"]);
+    if (!typesByMemory.has(memoryId)) {
+      typesByMemory.set(memoryId, asText(row["name"]));
+    }
+  }
+  return typesByMemory;
+}
+
 export async function getMemory(db: Client, id: number): Promise<SearchResult | null> {
   const result = await db.execute({
-    sql: `SELECT m.id AS id, m.content AS content, m.evidence_count AS evidence_count, m.ema_success AS ema_success, m.ema_failure AS ema_failure, m.created_at AS created_at, ms.name AS status_name FROM memory m JOIN memory_status ms ON m.memory_status_id = ms.id WHERE m.id = ? AND m.deleted_at IS NULL`,
+    sql: `SELECT m.id AS id, m.content AS content, m.evidence_count AS evidence_count, m.ema_success AS ema_success, m.ema_failure AS ema_failure, m.created_at AS created_at FROM memory m WHERE m.id = ? AND m.deleted_at IS NULL`,
     args: [id],
   });
   if (result.rows.length === 0) return null;
@@ -141,12 +158,13 @@ export async function getMemory(db: Client, id: number): Promise<SearchResult | 
   if (!row) return null;
 
   const tags = await loadTags(db, [id]);
+  const taskTypes = await loadTaskTypes(db, [id]);
   const trust = computeTrustScore(asNumber(row["ema_success"]), asNumber(row["ema_failure"]));
   return {
     id: asNumber(row["id"]),
     content: asText(row["content"]),
     tags: tags.get(id) ?? "",
-    task_type: asText(row["status_name"]),
+    task_type: taskTypes.get(id) ?? "general",
     trust_label: trust.label,
     trust_score: Math.round(trust.score * 100) / 100,
     evidence_count: asNumber(row["evidence_count"]),
@@ -193,6 +211,7 @@ export async function searchMemories(
     ids.push(item.id);
   }
   const tags = await loadTags(db, ids);
+  const taskTypes = await loadTaskTypes(db, ids);
 
   if (sessionId && ids.length > 0) {
     const now = epochNow();
@@ -213,7 +232,7 @@ export async function searchMemories(
       id: item.id,
       content: item.content,
       tags: tags.get(item.id) ?? "",
-      task_type: taskTypeName ?? "general",
+      task_type: taskTypes.get(item.id) ?? "general",
       trust_label: trust.label,
       trust_score: Math.round(trust.score * 100) / 100,
       evidence_count: item.evidence_count,
