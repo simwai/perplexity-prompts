@@ -6,7 +6,7 @@ Persistent agent memory with trust signals, invalidation, and self-tuning.
 
 The plugin is a multi-file TypeScript module under `.opencode/plugins/memory-worth/`:
 
-```
+```text
 memory-worth/
   index.ts          -- plugin entry point
   prompt.ts         -- prompt injection fragments

@@ -1,43 +1,33 @@
-import type { ToolDefinition } from "@opencode-ai/plugin";
+import { tool } from "@opencode-ai/plugin";
+import { asNumber } from "../db/decode.js";
+import { epochNow } from "../db/epoch.js";
+import { getToolDb } from "./get-db.js";
 
-export const memorySetStatusTool: ToolDefinition = {
-  name: "memory_set_status",
+export const memorySetStatusTool = tool({
   description: "Set a memory's status: active, archived, invalidated, or merged.",
-  parameters: {
-    type: "object",
-    properties: {
-      id: { type: "number", description: "Memory ID" },
-      status: { type: "string", description: "Status: active, archived, invalidated, or merged" },
-    },
-    required: ["id", "status"],
+  args: {
+    id: tool.schema.number().describe("Memory ID"),
+    status: tool.schema.enum(["active", "archived", "invalidated", "merged"]).describe("Status to set"),
   },
   async execute(args, context) {
-    const id = Number(args.id);
-    const status = String(args.status ?? "").trim().toLowerCase();
-    const client = (context as { $: LibSQLClient }).$;
-
-    const validStatuses = ["active", "archived", "invalidated", "merged"];
-    if (!validStatuses.includes(status)) return { output: `Error: invalid status "${status}". Valid: ${validStatuses.join(", ")}` };
-
-    const existing = await client.execute({
+    const db = await getToolDb(context.directory);
+    const existing = await db.execute({
       sql: `SELECT id FROM memory WHERE id = ? AND deleted_at IS NULL`,
-      args: [id],
+      args: [args.id],
     });
+    if (existing.rows.length === 0) return { output: `Error: Memory ${args.id} not found` };
 
-    if (existing.rows.length === 0) return { output: `Error: Memory ${id} not found` };
-
-    const statusResult = await client.execute({
+    const statusRow = await db.execute({
       sql: `SELECT id FROM memory_status WHERE name = ?`,
-      args: [status],
+      args: [args.status],
     });
+    if (statusRow.rows.length === 0) return { output: `Error: status "${args.status}" not found in lookup table` };
+    const statusId = asNumber(statusRow.rows[0]?.["id"]);
 
-    if (statusResult.rows.length === 0) return { output: `Error: status "${status}" not found in lookup table` };
-
-    await client.execute({
-      sql: `UPDATE memory SET status_id = ?, updated_at = datetime('now') WHERE id = ?`,
-      args: [(statusResult.rows[0] as { id: number }).id, id],
+    await db.execute({
+      sql: `UPDATE memory SET memory_status_id = ?, updated_at = ? WHERE id = ?`,
+      args: [statusId, epochNow(), args.id],
     });
-
-    return { output: JSON.stringify({ set_status: true, id, status }) };
+    return { output: JSON.stringify({ set_status: true, id: args.id, status: args.status }) };
   },
-};
+});

@@ -1,31 +1,19 @@
-import type { ToolDefinition } from "@opencode-ai/plugin";
+import { tool } from "@opencode-ai/plugin";
 import { writeMemory } from "../db/queries.js";
-import type { MemoryInput } from "../core/types.js";
+import { getToolDb } from "./get-db.js";
 
-export const memoryWriteTool: ToolDefinition = {
-  name: "memory_write",
+export const memoryWriteTool = tool({
   description: "Store a piece of knowledge in persistent memory. Searches for near-duplicates before writing.",
-  parameters: {
-    type: "object",
-    properties: {
-      content: { type: "string", description: "The knowledge to store" },
-      tags: { type: "string", description: "Comma-separated tags (optional)" },
-      task_type: { type: "string", description: "Task type bucket (optional, default: general)" },
-    },
-    required: ["content"],
+  args: {
+    content: tool.schema.string().describe("The knowledge to store"),
+    tags: tool.schema.string().optional().describe("Comma-separated tags"),
+    task_type: tool.schema.string().optional().describe("Task type bucket (default: general)"),
   },
   async execute(args, context) {
-    const content = String(args.content ?? "").trim();
+    const content = args.content.trim();
     if (!content) return { output: "Error: content is required" };
-
-    const client = (context as { $: LibSQLClient }).$;
-    const input: MemoryInput = {
-      content,
-      tags: args.tags,
-      task_type: args.task_type,
-    };
-
-    const result = await writeMemory(client, input, 1, 1);
+    const db = await getToolDb(context.directory);
+    const result = await writeMemory(db, { content, tags: args.tags, task_type: args.task_type }, args.task_type ?? "general", "active");
     return { output: JSON.stringify({ stored: true, ...result }) };
   },
-};
+});

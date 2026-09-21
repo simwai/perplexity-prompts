@@ -1,18 +1,20 @@
+import type { Client } from "@libsql/client";
 import { searchMemories } from "../db/queries.js";
 
 export async function injectMemories(
-  client: LibSQLClient,
+  db: Client,
   prompt: string,
   sessionId: string,
-  maxMemories: number = 5
+  maxMemories: number = 5,
 ): Promise<string> {
-  const memories = await searchMemories(client, prompt, maxMemories, undefined, sessionId);
-
+  const memories = await searchMemories(db, prompt, maxMemories, undefined, sessionId);
   if (memories.length === 0) return prompt;
 
-  const memoryBlock = memories
-    .map((m, i) => `[MEMORY ${i + 1}] trust=${m.trust_label} score=${m.trust_score} evidence=${m.evidence_count}\n${m.content}`)
-    .join("\n\n");
-
-  return `${prompt}\n\n--- Relevant memories ---\n${memoryBlock}\n--- End memories ---`;
+  const blocks: string[] = [];
+  for (let i = 0; i < memories.length; i++) {
+    const item = memories[i];
+    if (!item) continue;
+    blocks.push(`[MEMORY ${i + 1}] trust=${item.trust_label} score=${item.trust_score} evidence=${item.evidence_count}\n${item.content}`);
+  }
+  return `${prompt}\n\n--- Relevant memories ---\n${blocks.join("\n\n")}\n--- End memories ---`;
 }

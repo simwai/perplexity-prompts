@@ -1,31 +1,24 @@
-import type { ToolDefinition } from "@opencode-ai/plugin";
+import { tool } from "@opencode-ai/plugin";
+import { epochNow } from "../db/epoch.js";
+import { getToolDb } from "./get-db.js";
 
-export const memoryInvalidateTool: ToolDefinition = {
-  name: "memory_invalidate",
+export const memoryInvalidateTool = tool({
   description: "Mark a memory as invalidated. Invalidated memories are excluded from search results.",
-  parameters: {
-    type: "object",
-    properties: {
-      id: { type: "number", description: "Memory ID to invalidate" },
-    },
-    required: ["id"],
+  args: {
+    id: tool.schema.number().describe("Memory ID to invalidate"),
   },
   async execute(args, context) {
-    const id = Number(args.id);
-    const client = (context as { $: LibSQLClient }).$;
-
-    const existing = await client.execute({
+    const db = await getToolDb(context.directory);
+    const existing = await db.execute({
       sql: `SELECT id FROM memory WHERE id = ? AND deleted_at IS NULL`,
-      args: [id],
+      args: [args.id],
     });
+    if (existing.rows.length === 0) return { output: `Error: Memory ${args.id} not found` };
 
-    if (existing.rows.length === 0) return { output: `Error: Memory ${id} not found` };
-
-    await client.execute({
-      sql: `UPDATE memory SET status_id = (SELECT id FROM memory_status WHERE name = 'invalidated'), updated_at = datetime('now') WHERE id = ?`,
-      args: [id],
+    await db.execute({
+      sql: `UPDATE memory SET memory_status_id = (SELECT id FROM memory_status WHERE name = 'invalidated'), updated_at = ? WHERE id = ?`,
+      args: [epochNow(), args.id],
     });
-
-    return { output: JSON.stringify({ invalidated: true, id }) };
+    return { output: JSON.stringify({ invalidated: true, id: args.id }) };
   },
-};
+});

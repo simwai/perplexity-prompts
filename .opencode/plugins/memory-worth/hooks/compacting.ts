@@ -1,12 +1,5 @@
-export async function handleCompacting(
-  client: LibSQLClient,
-  event: { properties: { sessionID?: string; info?: unknown } }
-): Promise<void> {
-  const sessionId = event.properties?.sessionID;
-  if (!sessionId) return;
+import type { Client } from "@libsql/client";
 
-  await client.execute({
-    sql: `DELETE FROM session_memory WHERE session_id = ?`,
-    args: [sessionId],
-  });
+export async function handleCompacting(db: Client, sessionId: string): Promise<void> {
+  await db.execute({ sql: `DELETE FROM session_memory WHERE session_id = ?`, args: [sessionId] });
 }

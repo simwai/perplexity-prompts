@@ -1,13 +1,12 @@
-import { createConnection, closeConnection } from "./connection.js";
+import type { Client } from "@libsql/client";
 import { MIGRATIONS, SCHEMA_VERSION } from "./schema.js";
 
-export async function runMigrations(client: ReturnType<typeof createConnection> extends Promise<infer T> ? T : never): Promise<void> {
-  const db = await client;
-
+export async function runMigrations(db: Client): Promise<void> {
   await db.execute({ sql: `CREATE TABLE IF NOT EXISTS schema_version (version INTEGER PRIMARY KEY)`, args: [] });
 
-  const versionResult = await db.execute({ sql: `SELECT MAX(version) as v FROM schema_version`, args: [] });
-  const currentVersion = (versionResult.rows[0] as { v: number | undefined })?.v ?? 0;
+  const versionResult = await db.execute({ sql: `SELECT MAX(version) AS v FROM schema_version`, args: [] });
+  const raw = versionResult.rows[0]?.["v"];
+  const currentVersion = typeof raw === "number" ? raw : 0;
 
   for (const migration of MIGRATIONS) {
     if (migration.version <= currentVersion) continue;
@@ -31,10 +30,10 @@ export async function runMigrations(client: ReturnType<typeof createConnection> 
   }
 }
 
-export async function getSchemaVersion(client: ReturnType<typeof createConnection> extends Promise<infer T> ? T : never): Promise<number> {
-  const db = await client;
-  const result = await db.execute({ sql: `SELECT MAX(version) as v FROM schema_version`, args: [] });
-  return (result.rows[0] as { v: number | undefined })?.v ?? 0;
+export async function getSchemaVersion(db: Client): Promise<number> {
+  const result = await db.execute({ sql: `SELECT MAX(version) AS v FROM schema_version`, args: [] });
+  const raw = result.rows[0]?.["v"];
+  return typeof raw === "number" ? raw : 0;
 }
 
 export { SCHEMA_VERSION };

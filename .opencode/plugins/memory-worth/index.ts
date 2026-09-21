@@ -1,70 +1,92 @@
-import { createConnection, closeConnection } from "./db/connection.js";
-import { getTuningParams } from "./db/queries.js";
-import { handleSessionCreated, handleSessionUpdated } from "./hooks/session-events.js";
-import { handleCompacting } from "./hooks/compacting.js";
-import { injectMemories } from "./hooks/chat-message.js";
-import { recordOutcome, classifyOutcome, isOutcomeSignal } from "./hooks/tool-execute-after.js";
-import { memorySearchTool, memoryGetTool, memoryWriteTool, memoryUpdateTool, memoryInvalidateTool, memoryMergeTool, memoryDeleteTool, memorySetStatusTool, memoryStatsTool, memoryTuneTool, memorySynthesizeTool, memoryWakeupTool } from "./tools/index.js";
 import type { Plugin } from "@opencode-ai/plugin";
+import { createConnection, getDbPath } from "./db/connection.js";
+import { ensureTaskType, getTuningParams } from "./db/queries.js";
+import { handleCompacting } from "./hooks/compacting.js";
+import { handleSessionCreated, handleSessionDeleted } from "./hooks/session-events.js";
+import { recordOutcome } from "./hooks/tool-execute-after.js";
+import { classifyOutcome, isOutcomeSignal } from "./outcome.js";
+import { detectRuntime } from "./runtime/detect.js";
+import { fromAsync, isErr } from "./core/result.js";
+import {
+  memoryDeleteTool,
+  memoryGetTool,
+  memoryInvalidateTool,
+  memoryMergeTool,
+  memorySearchTool,
+  memorySetStatusTool,
+  memoryStatsTool,
+  memorySynthesizeTool,
+  memoryTuneTool,
+  memoryUpdateTool,
+  memoryWakeupTool,
+  memoryWriteTool,
+} from "./tools/index.js";
 
-const MemoryWorthPlugin: Plugin = async ({ client, $, directory }) => {
+function readSessionId(properties: unknown): string | undefined {
+  if (typeof properties !== "object" || properties === null) return undefined;
+  if (!("sessionID" in properties)) return undefined;
+  const value = (properties as { sessionID: unknown }).sessionID;
+  return typeof value === "string" ? value : undefined;
+}
+
+const MemoryWorthPlugin: Plugin = async ({ client, directory }) => {
   const db = await createConnection(directory);
+  const runtime = detectRuntime();
+  const logged = await fromAsync(() =>
+    client.app.log({
+      body: {
+        service: "memory-worth",
+        level: "info",
+        message: `memory-worth ready on ${runtime} with database at ${getDbPath(directory)}`,
+      },
+    }),
+  );
+  if (isErr(logged)) {
+    // logging is best-effort and must not break plugin startup
+  }
 
   return {
     event: async ({ event }) => {
-      const eventType = event.type;
-
-      if (eventType === "session.created") {
+      const evt = event as unknown as { type: string; properties?: unknown };
+      if (evt.type === "session.created") {
         await handleSessionCreated(db);
         return;
       }
-
-      if (eventType === "session.updated") {
-        await handleSessionUpdated(db, event as Parameters<typeof handleSessionUpdated>[1]);
-        return;
-      }
-
-      if (eventType === "session.deleted") {
-        return;
+      if (evt.type === "session.deleted") {
+        const sessionId = readSessionId(evt.properties);
+        if (sessionId) await handleSessionDeleted(db, sessionId);
       }
     },
 
-    "chat.message": async ({ prompt, sessionID }) => {
-      if (!sessionID) return prompt;
-      return injectMemories(db, prompt, sessionID, 5);
-    },
-
-    "tool.execute.after": async ({ result, sessionID }) => {
+    "experimental.chat.system.transform": async ({ sessionID }, { system }) => {
       if (!sessionID) return;
-      const text = typeof result === "string" ? result : JSON.stringify(result);
-      if (!isOutcomeSignal(text)) return;
+      system.push(
+        `MEMORY-WORTH (${runtime}): you have persistent memory tools. Search memory before answering when prior context could help; store durable insights with memory_write; prefer updating over duplicating. Trust labels are associational: high means co-occurred with success, low means co-occurred with failure, unproven means insufficient evidence.`,
+      );
+    },
 
+    "tool.execute.after": async (input, output) => {
+      const text = typeof output.output === "string" ? output.output : "";
+      if (!isOutcomeSignal(text)) return;
       const outcome = classifyOutcome(text) === "success";
       const params = await getTuningParams(db);
-      const taskTypeResult = await db.execute({
-        sql: `SELECT id FROM task_type WHERE name = ?`,
-        args: [params.active_partition],
-      });
-      const taskTypeId = taskTypeResult.rows.length > 0 ? (taskTypeResult.rows[0] as { id: number }).id : 1;
+      const taskTypeId = await ensureTaskType(db, params.active_partition);
 
-      const retrievedResult = await db.execute({
-        sql: `SELECT memory_id FROM session_memory WHERE session_id = ? ORDER BY retrieved_at DESC`,
-        args: [sessionID],
+      const retrieved = await db.execute({
+        sql: `SELECT memory_id AS memory_id FROM session_memory WHERE session_id = ? ORDER BY retrieved_at DESC`,
+        args: [input.sessionID],
       });
-
-      for (const row of retrievedResult.rows) {
-        const r = row as unknown as { memory_id: number };
-        await recordOutcome(db, sessionID, r.memory_id, outcome, taskTypeId);
+      for (const row of retrieved.rows) {
+        const value = row["memory_id"];
+        const memoryId = typeof value === "number" ? value : typeof value === "bigint" ? Number(value) : 0;
+        if (memoryId) await recordOutcome(db, input.sessionID, memoryId, outcome, taskTypeId);
       }
-
-      await db.execute({
-        sql: `DELETE FROM session_memory WHERE session_id = ?`,
-        args: [sessionID],
-      });
+      await db.execute({ sql: `DELETE FROM session_memory WHERE session_id = ?`, args: [input.sessionID] });
     },
 
-    "experimental.session.compacting": async (event) => {
-      await handleCompacting(db, event as Parameters<typeof handleCompacting>[0]);
+    "experimental.session.compacting": async (input, output) => {
+      await handleCompacting(db, input.sessionID);
+      output.context.push("memory-worth: session retrieval ledger cleared; long-term memories remain in the database.");
     },
 
     tool: {

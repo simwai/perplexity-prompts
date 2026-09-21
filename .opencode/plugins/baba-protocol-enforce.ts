@@ -271,7 +271,7 @@ function sanitizeGitRemoteVerboseOutput(output: string): string {
 }
 
 function sanitizeGitRemoteGetUrlOutput(output: string): string {
-  return output.replace(/://[^/@]*@/g, "://<redacted>@");
+  return output.replace(/:\/\/[^/@]*@/g, "://<redacted>@");
 }
 
 export default async ({ client, $, project, directory, worktree }: {

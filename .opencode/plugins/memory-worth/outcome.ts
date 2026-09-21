@@ -1,4 +1,4 @@
-import { detectOutcome } from "./tool-execute-after.js";
+import { detectOutcome } from "./hooks/tool-execute-after.js";
 
 export function classifyOutcome(text: string): "success" | "failure" | "inconclusive" {
   const outcome = detectOutcome(text);
