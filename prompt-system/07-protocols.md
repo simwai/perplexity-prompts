@@ -98,6 +98,7 @@ Relevance is defined mechanically. The agent does not decide what to read. The s
 ### Relevance = dependency closure to depth 3
 
 A file IS in scope if ANY of:
+
 - It is the target file
 - It is imported by the target file (forward dependency)
 - It imports the target file (reverse dependency)
@@ -113,6 +114,7 @@ Greenfield targets (no existing source files): Reading Protocol is skipped. Reco
 The Reading Plan is computed and written to session state before any analysis output. The agent cannot add or remove files from the plan.
 
 Format:
+
 ```yaml
 reading_plan:
   scope: <target path>
@@ -127,7 +129,7 @@ reading_plan:
 
 Every analysis output must include a Reading Verification section:
 
-```
+```text
 # Reading Verification
 Planned: N | Completed: M | Status: [complete | incomplete]
 Pending: [specific file paths or "none"]
@@ -146,6 +148,7 @@ In DIRECT mode, Reading Verification is reported as inline text before stating r
 ### Partial scope
 
 When the user approves partial scope:
+
 - Record `reading_plan.status: partial-approved` in session state
 - Deferred files are listed explicitly in the Reading Verification block
 - Analysis proceeds only on the read subset

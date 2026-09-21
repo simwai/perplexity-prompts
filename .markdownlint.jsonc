@@ -20,5 +20,8 @@
   ],
   // Protocol files use inline HTML tags (`<MUST>`, `<MUST_NOT>`, `<HIGH_PRIO>`)
   // as hard-guard markers; these are intentional and must not be removed.
-  "MD033": false
+  "MD033": false,
+  // Windows CRLF line endings can trigger false-positive multi-blank-line
+  // reports at EOF; disable in favor of actual blank-line inspection.
+  "MD012": false
 }
