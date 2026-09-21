@@ -38,7 +38,13 @@ export default async ({ client, $, project, directory, worktree }: {
         console.log(`[startup-gate] Session created: ${sessionID}`);
         
         // Show reminder toast
-        await $`opencode tui toast show --title "STARTUP Required" --message "Emit 00-system.md fingerprint before any response" --variant info`;
+        try {
+          await client.tui.showToast({
+            body: { variant: "info", message: "STARTUP Required: Emit 00-system.md fingerprint before any response" },
+          });
+        } catch {
+          // tui may not be available
+        }
         return;
       }
 
