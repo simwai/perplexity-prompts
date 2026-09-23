@@ -87,8 +87,23 @@ if ($existing -and $existing.Contains('"plugin":') -and -not $Force) {
         $existing = "{`n`n"
     }
     
-    # Remove any existing plugin block to avoid duplicates
-    $cleaned = ($existing -split "`n" | Where-Object { $_ -notmatch '^\s*"plugin":\s*\[' }) -join "`n"
+    # Remove any existing plugin block to avoid duplicates.
+    # Track whether we are inside the plugin array so we drop its contents
+    # and closing bracket too, not just the opening line.
+    $inPluginBlock = $false
+    $cleaned = foreach ($line in $existing -split "`n") {
+        if ($line -match '^\s*"plugin":\s*\[') {
+            $inPluginBlock = $true
+            continue
+        }
+        if ($inPluginBlock -and $line -match '^\s*\],\s*$') {
+            $inPluginBlock = $false
+            continue
+        }
+        if (-not $inPluginBlock) {
+            $line
+        }
+    }
     $cleaned = ($cleaned -split "`n" | Where-Object { $_ -notmatch '^\s*// Global plugins' }) -join "`n"
     
     # Insert plugin block after $schema line
