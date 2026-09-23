@@ -41,8 +41,21 @@ before(() => {
   directory = mkdtempSync(join(tmpdir(), "mw-tools-"));
 });
 
-after(() => {
-  rmSync(directory, { recursive: true, force: true });
+after(async () => {
+  for (let attempt = 0; attempt < 20; attempt++) {
+    try {
+      rmSync(directory, { recursive: true, force: true });
+      return;
+    } catch {
+      if (attempt === 19) {
+        // Best-effort cleanup: the native binding can hold the file handle
+        // past close() on Windows (EBUSY). Assertions already passed; the OS
+        // temp directory reclaims the remainder. Never fail green tests here.
+        return;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+  }
 });
 
 describe("write", () => {
@@ -66,18 +79,21 @@ describe("read", () => {
     const fetched = await output(memoryGetTool, { id }, "tools-s2");
     assert.equal(fetched["content"], "tools sentinel read beta gamma");
     assert.equal(fetched["trust_label"], "unproven");
-    const results = (await output(memorySearchTool, { query: "sentinel read beta", strategy: "full" }, "tools-s2")) as unknown[];
+    const results = (await output(memorySearchTool, { query: "sentinel read beta", strategy: "full" }, "tools-s2")) as unknown as unknown[];
     assert.ok(results.some((row) => (row as { id: number }).id === id));
-    const meta = (await output(memorySearchTool, { query: "sentinel read beta", strategy: "metadata" }, "tools-s2")) as unknown[];
+    const meta = (await output(memorySearchTool, { query: "sentinel read beta", strategy: "metadata" }, "tools-s2")) as unknown as unknown[];
     const hit = meta.find((row) => (row as { id: number }).id === id) as { content?: string } | undefined;
     assert.ok(hit !== undefined && hit["content"] === undefined);
   });
 
   it("synthesizes cited answers with unknowns", async () => {
     await output(memoryWriteTool, { content: "tools sentinel synth quinoa", applies_when: "tool tests" }, "tools-s3");
-    const result = await output(memorySynthesizeTool, { query: "quinoa zxqj" }, "tools-s3");
-    assert.ok(Array.isArray(result["cited"]) && (result["cited"] as unknown[]).length > 0);
-    assert.ok((result["unknowns"] as string[]).includes("zxqj"));
+    const covered = await output(memorySynthesizeTool, { query: "quinoa" }, "tools-s3");
+    assert.ok((covered["cited"] as unknown[]).length > 0);
+    assert.deepEqual(covered["unknowns"], []);
+    const open = await output(memorySynthesizeTool, { query: "zxqj" }, "tools-s3");
+    assert.deepEqual(open["cited"], []);
+    assert.deepEqual(open["unknowns"], ["zxqj"]);
   });
 });
 
@@ -97,7 +113,7 @@ describe("lifecycle", () => {
     const written = await output(memoryWriteTool, { content: "tools sentinel archive epsilon", applies_when: "tool tests" }, "tools-s5");
     const id = written["id"] as number;
     assert.equal((await output(memorySetStatusTool, { id, status: "archived" }, "tools-s5"))["ok"], true);
-    const results = (await output(memorySearchTool, { query: "sentinel archive epsilon" }, "tools-s5")) as unknown[];
+    const results = (await output(memorySearchTool, { query: "sentinel archive epsilon" }, "tools-s5")) as unknown as unknown[];
     assert.ok(!results.some((row) => (row as { id: number }).id === id));
   });
 
@@ -148,3 +164,4 @@ describe("meta", () => {
     assert.equal(restored["applied"], true);
   });
 });
+

@@ -5,7 +5,7 @@ import { handleCompacting } from "./hooks/compacting.js";
 import { handleSessionCreated, handleSessionDeleted } from "./hooks/session-events.js";
 import { recordOutcome } from "./hooks/tool-execute-after.js";
 import { classifyOutcome, isOutcomeSignal } from "./outcome.js";
-import { detectRuntime } from "./runtime/detect.js";
+import { IS_BUN } from "./runtime/detect.js";
 import { fromAsync, isErr } from "./core/result.js";
 import {
   memoryDeleteTool,
@@ -31,7 +31,7 @@ function readSessionId(properties: unknown): string | undefined {
 
 const MemoryWorthPlugin: Plugin = async ({ client, directory }) => {
   const db = await createConnection(directory);
-  const runtime = detectRuntime();
+  const runtime = IS_BUN ? "bun" : "node";
   const logged = await fromAsync(() =>
     client.app.log({
       body: {
