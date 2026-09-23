@@ -10,4 +10,3 @@ Null results reported, not hidden.
 | noisy-05-05 | 240 | 0.015 | 574 | oracle at chance: invalidation carries no signal |
 | windowed-history | 2384 | 0.229 | unbounded | last-500 outcomes per key, no cross-shift memory |
 | no-snapshot | 195 | 0.010 | 260 | mw_before snapshot discarded: identical regret by construction (null) |
-

@@ -16,4 +16,3 @@ Caveats: synthetic keyed facts, clean outcome observation, exploratory constants
 
 Verdict: BOUNDARY
 Rationale: clean-invalidation regret 195 vs vanilla 2645 (margin 92.6%), recovery in 260 episodes
-
