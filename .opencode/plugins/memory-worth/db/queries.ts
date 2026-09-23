@@ -1,6 +1,6 @@
 import type { Client } from "@libsql/client";
-import type { MemoryInput, SearchResult, TuningParams } from "../core/types.js";
-import { computeTrustScore, mwOf, updateEma } from "../core/trust.js";
+import type { MemoryInput, SearchResult, TrustLabel, TuningParams } from "../core/types.js";
+import { computeTrustScore, mwOf, quantileLabel, updateEma } from "../core/trust.js";
 import { DEFAULT_TUNING_PARAMS } from "../core/governance.js";
 import { asNumber, asText } from "./decode.js";
 import { epochInt, epochNow } from "./epoch.js";
@@ -689,4 +689,65 @@ export async function setParameter(db: Client, key: string, value: string, ratio
     "write",
   );
   return { previous };
+}
+
+export async function labelMemory(db: Client, mw: number, sPlus: number, sMinus: number): Promise<TrustLabel> {
+  const minRaw = Number(await getParameter(db, "min_evidence", "3"));
+  const minEv = Number.isFinite(minRaw) ? minRaw : 3;
+  if (sPlus + sMinus < minEv) return "unproven";
+  const rows = await db.execute({
+    sql: `SELECT m.mw AS mw FROM memory m JOIN memory_status ms ON m.status_id = ms.id WHERE ms.name = 'active'`,
+    args: [],
+  });
+  const population: number[] = [];
+  for (const row of rows.rows) {
+    population.push(asNumber(row["mw"]));
+  }
+  const trustRaw = Number(await getParameter(db, "trust_q", "0.70"));
+  const doubtRaw = Number(await getParameter(db, "doubt_q", "0.30"));
+  return quantileLabel(mw, population, Number.isFinite(trustRaw) ? trustRaw : 0.7, Number.isFinite(doubtRaw) ? doubtRaw : 0.3);
+}
+
+export async function findDuplicateFull(db: Client, content: string): Promise<number | null> {
+  const found = await db.execute({
+    sql: `SELECT m.id AS id FROM memory m JOIN memory_status ms ON m.status_id = ms.id WHERE m.content = ? AND ms.name = 'active' LIMIT 1`,
+    args: [content.trim()],
+  });
+  if (found.rows.length === 0) return null;
+  return asNumber(found.rows[0]?.["id"]);
+}
+
+export async function updateMemoryFull(db: Client, id: number, content: string, tags?: string[]): Promise<boolean> {
+  const trimmed = content.trim();
+  if (!trimmed) throw new Error("content is required");
+  const now = epochInt();
+  const writes: Array<{ sql: string; args: Array<string | number | null> }> = [
+    { sql: `UPDATE memory SET content = ?, updated_at = ? WHERE id = ?`, args: [trimmed, now, id] },
+    { sql: `DELETE FROM memory_tag WHERE memory_id = ?`, args: [id] },
+  ];
+  const tagNames: string[] = [];
+  for (const raw of tags ?? []) {
+    const name = raw.trim();
+    if (name) tagNames.push(name);
+  }
+  for (const tagName of tagNames) {
+    writes.push({ sql: `INSERT OR IGNORE INTO tag (name) VALUES (?)`, args: [tagName] });
+  }
+  await db.batch(writes, "write");
+  if (tagNames.length > 0) {
+    const placeholders = tagNames.map(() => "?").join(", ");
+    const tagRows = await db.execute({
+      sql: `SELECT id FROM tag WHERE name IN (${placeholders})`,
+      args: tagNames,
+    });
+    const links: Array<{ sql: string; args: Array<string | number | null> }> = [];
+    for (const row of tagRows.rows) {
+      links.push({ sql: `INSERT OR IGNORE INTO memory_tag (memory_id, tag_id) VALUES (?, ?)`, args: [id, asNumber(row["id"])] });
+    }
+    if (links.length > 0) {
+      await db.batch(links, "write");
+    }
+  }
+  const check = await db.execute({ sql: `SELECT id FROM memory WHERE id = ?`, args: [id] });
+  return check.rows.length > 0;
 }
