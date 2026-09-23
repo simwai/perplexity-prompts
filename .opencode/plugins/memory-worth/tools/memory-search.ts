@@ -1,5 +1,5 @@
 import { tool } from "@opencode-ai/plugin";
-import { asNumber } from "../db/decode.js";
+import { asNumber, asText } from "../db/decode.js";
 import { getParameter, labelMemory, searchMemoriesFull } from "../db/queries.js";
 import { getToolDb } from "./get-db.js";
 
@@ -61,7 +61,7 @@ export const memorySearchTool = tool({
       });
       const tagNames: string[] = [];
       for (const row of tags.rows) {
-        tagNames.push(asNumber(row["name"]) === 0 ? "" : String(row["name"]));
+        tagNames.push(asText(row["name"]));
       }
       results.push({
         id: hit.id,
@@ -70,7 +70,7 @@ export const memorySearchTool = tool({
         mw: hit.mw,
         trust_label,
         usage_count: asNumber(full.rows[0]?.["usage_count"]),
-        tags: tagNames.filter((name) => name.length > 0),
+        tags: tagNames,
         task_type: hit.task_type,
       });
     }

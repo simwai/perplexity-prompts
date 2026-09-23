@@ -1,5 +1,4 @@
 import { tool } from "@opencode-ai/plugin";
-import { asNumber } from "../db/decode.js";
 import { getMemoryFull, labelMemory } from "../db/queries.js";
 import { getToolDb } from "./get-db.js";
 
@@ -13,7 +12,6 @@ export const memoryGetTool = tool({
     const memory = await getMemoryFull(db, args.id);
     if (!memory) return { output: JSON.stringify({ error: `memory ${args.id} not found` }) };
     const trust_label = await labelMemory(db, memory.mw, memory.s_plus, memory.s_minus);
-    void asNumber;
     return { output: JSON.stringify({ ...memory, trust_label }) };
   },
 });
