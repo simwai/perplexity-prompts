@@ -41,7 +41,6 @@
   // opencode plugins. @latest is fine for personal/dev use; pin a version
   // when reproducibility matters.
 "plugin": [
-    "opencode-vibeguard@latest",
     "opencode-adaptive-thinking@latest",
     "opencode-pty",
     "opencode-scheduler",
@@ -55,8 +54,7 @@
     ".opencode/plugins/baba-goal-detect.ts",
     ".opencode/plugins/baba-bootstrap.ts",
     ".opencode/plugins/baba-drift.ts",
-    ".opencode/plugins/baba-lock-enforce.ts",
-    ".opencode/plugins/adaptive-temperature.ts"
+    ".opencode/plugins/baba-lock-enforce.ts"
   ],
 
   // MCP servers mirror the fallback tiers in AGENTS.md, adapted to opencode's
@@ -85,11 +83,11 @@
       "type": "local",
       "command": ["uvx", "arxiv-mcp-server"]
     },
-    // Tier 2 — requires env key; omit if key is not set
+    // Tier 2 — OAuth (no env key required)
     "exa": {
       "type": "remote",
       "url": "https://mcp.exa.ai/mcp",
-      "headers": { "x-api-key": "{env:EXA_API_KEY}" }
+      "oauth": {}
     },
     // Remote OAuth — no key, one-time browser consent via `opencode mcp auth trello`
     "trello": {
