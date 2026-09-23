@@ -1,6 +1,10 @@
 import { join } from "node:path";
 import { mkdir, writeFile } from "node:fs/promises";
 import { ABLATION_NAMES, EPISODES, KEY_COUNT, SHIFT_AT, flippedTypes, runAblation, runDecisive } from "./experiment.js";
+import { buildCorpus, keywordRanker, mwRanker, ndcgAt, recencyRanker, rrfFuse } from "./retrieval.js";
+import { breadthFirst, buildGraph, personalizedPageRank, recallAt, relevantSet } from "./graph.js";
+import { runAssociationStream } from "./hebbian.js";
+import { runBandit } from "./ranking.js";
 
 const SEED = 20260923;
 
@@ -62,6 +66,40 @@ async function main(): Promise<void> {
   }
   ablation.push("");
   await writeFile(join(root, "sim", "ABLATIONS.md"), ablation.join("\n") + "\n", "utf-8");
+
+  const retrieval: string[] = [];
+  retrieval.push("# Retrieval Stages 9-12 — ship verdicts");
+  retrieval.push("");
+  retrieval.push(`Seed: ${SEED} (fixed). Bars pre-registered: RRF clears keyword-only by 5 NDCG points; PPR beats BFS recall; Hebbian beats static; bandit beats static keyword.`);
+  retrieval.push("");
+
+  const corpus = buildCorpus(SEED);
+  const keywordScore = ndcgAt(keywordRanker(corpus.query, corpus.docs), corpus.query.relevant, 10);
+  const fusedScore = ndcgAt(
+    rrfFuse([keywordRanker(corpus.query, corpus.docs), mwRanker(corpus.docs), recencyRanker(corpus.docs)]),
+    corpus.query.relevant,
+    10,
+  );
+  const rrfVerdict = fusedScore >= keywordScore + 0.05 ? "SHIPPED" : "NOT SHIPPED";
+  retrieval.push(`RRF: ${rrfVerdict} (fused ${fusedScore.toFixed(3)} vs keyword ${keywordScore.toFixed(3)})`);
+
+  const graph = buildGraph(SEED);
+  const graphQuery = 7;
+  const graphRelevant = relevantSet(graph, graphQuery);
+  const bfsRecall = recallAt(breadthFirst(graph, graphQuery, 100), graphRelevant, 100);
+  const pprRecall = recallAt(personalizedPageRank(graph, graphQuery), graphRelevant, 100);
+  const pprVerdict = pprRecall > bfsRecall ? "SHIPPED" : "NOT SHIPPED";
+  retrieval.push(`PPR: ${pprVerdict} (ppr recall ${pprRecall.toFixed(3)} vs bfs ${bfsRecall.toFixed(3)} at 2000 nodes)`);
+
+  const stream = runAssociationStream(SEED);
+  const hebbianVerdict = stream.boostedHits > stream.staticHits ? "SHIPPED" : "NOT SHIPPED";
+  retrieval.push(`Hebbian: ${hebbianVerdict} (boosted ${stream.boostedHits} vs static ${stream.staticHits} hits)`);
+
+  const bandit = runBandit(SEED);
+  const rankingVerdict = bandit.cumulative > bandit.staticKeyword ? "SHIPPED" : "NOT SHIPPED";
+  retrieval.push(`Ranking: ${rankingVerdict} (bandit ${bandit.cumulative.toFixed(1)} vs static ${bandit.staticKeyword.toFixed(1)})`);
+  retrieval.push("");
+  await writeFile(join(root, "sim", "RETRIEVAL.md"), retrieval.join("\n") + "\n", "utf-8");
 }
 
 await main();
