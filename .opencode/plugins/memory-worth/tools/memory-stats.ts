@@ -42,8 +42,6 @@ export const memoryStatsTool = tool({
         sql: `SELECT m.mw AS mw, m.s_plus AS s_plus, m.s_minus AS s_minus FROM memory m JOIN memory_status ms ON m.status_id = ms.id WHERE ms.name = 'active'`,
         args: [],
       });
-      const { quantileLabel: _unused } = { quantileLabel };
-      void _unused;
       const minEv = Number(await getParameter(db, "min_evidence", "3"));
       const trustQ = Number(await getParameter(db, "trust_q", "0.70"));
       const doubtQ = Number(await getParameter(db, "doubt_q", "0.30"));
