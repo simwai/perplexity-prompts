@@ -49,7 +49,7 @@ Template field requirements:
 - `CHECKLIST`: `Target scope` [required]; `Focus` [required]; `Scope` [required]; `File inventory` [required]; `System Discovery` [required]; `Pre-review docs log` [required]; `Hard tier` [required]; `Soft tier` [required]; `Logical tier` [optional]; `Verification` [required]; `Batch log` [optional]; `Verdict` [required].
 - `SPEC`: `Path` [required]; `Status` [required]; `User Stories` [required]; `Functional Requirements` [required]; `Success Criteria` [required]; `Assumptions` [optional]; `Open Questions` [optional]; `Allowed next move` [required].
 - `DOCS`: `In scope` [required]; `Verified evidence` [required]; `Reading Verification` [required]; `Status` [required].
-- `REVIEW`: `Multi-file progress` [required]; `Findings` [required]; `Reading Verification` [required]; `Logical Findings` [optional]; `Informational` [optional]; `Confirmed Items` [optional]; `Pending Review Items` [optional]; `Partial Handoff Available` [optional]; `Plan Draft` [optional]; `Decision Items` [optional]; `Cross-team requirements` [optional]; `Verification` [required]; `Decision Needed` [required when findings are present].
+- `REVIEW`: `Multi-file progress` [required]; `Auto-Approval Status` [optional]; `Findings` [required]; `Reading Verification` [required]; `Logical Findings` [optional]; `Informational` [optional]; `Confirmed Items` [optional]; `Pending Review Items` [optional]; `Partial Handoff Available` [optional]; `Plan Draft` [optional]; `Decision Items` [optional]; `Cross-team requirements` [optional]; `Verification` [required]; `Decision Needed` [required when findings are present].
 - `PLAN`: `Target` [required]; `Scope` [required]; `Scope type` [required]; `Pending review items` [required]; `Source` [required]; `System Constraints` [required]; `Will change` [required]; `Will preserve` [required]; `Reading Verification` [required]; `Conventions` [required]; `Risks` [optional]; `Logical constraints` [optional]; `Awaiting` [required].
 - `PATCH`: `Rewrite Contract` [required]; `Patch` [required]; `Self-Review` [required]; `Compliance Audit` [required]; `Constraint Verification` [required]; `Verification` [required]; `Plan-Actual` [required when plan exists]; `Commit/Push Gate` [required when edits exist].
 - `DRIFT`: `Spec` [required]; `Registry check` [required]; `Verified claims` [optional]; `Diverged claims` [optional]; `Orphaned mappings` [optional]; `Code-exceeds-spec` [optional]; `HALT` [optional]; `Fresh-eyes review` [optional]; `Exit` [required].
@@ -401,11 +401,17 @@ the one decision you must confirm]
 Reviewed: [X/Y] files -- [Z] batches complete
 Review mode: [interactive|consolidated]
 
+# Auto-Approval Status
+Clean files (auto-approved): [N] -- [file paths or "none"]
+Files with findings: [M] -- [file paths or "none"]
+
 # Reading Verification
 Planned: N | Completed: M | Status: [complete | incomplete]
 Pending: [specific file paths or "none"]
 
 # Findings
+Emit findings only for files with actual violations. Clean files are auto-approved and do not appear here.
+
 File: [file path or ALL FILES]
 Batch: [lines X-Y or FULL or AGGREGATE -- all files complete] ([N] of [M] for this file, when applicable)
 
@@ -485,6 +491,7 @@ Playwright e2e smoke is aggregate-level (H11): it runs once at verdict time, not
 Do not invent commands. If none exist, record SKIPPED with reason.
 
 # Decision Needed
+<IF>findings_present</IF>
 Please confirm:
 - Accepted violations: [list]
 - Disputed violations: [list]
@@ -493,6 +500,9 @@ Please confirm:
 
 Next batch:
 - [file path] -- [lines X-Y or FULL] -- [next batch, or "all files complete - confirm aggregate decision before PLAN"]
+<ELSE></ELSE>
+No findings requiring confirmation. Auto-advancing to PLAN.
+</IF>
 
 Sections omitted (when applicable):
 - [Cross-team requirements / Validation loop / Open questions / Informational / Confirmed Items / Pending Review Items / Partial Handoff Available / Plan Draft -- list the omitted sections and why]
@@ -871,6 +881,8 @@ persona: [BabaScrumMaster|BabaSensei|BabaTester|BabaDev|BabaReviewer|n/a]
 current_phase: [phase]
 last_valid_phase: [phase]
 mode: [AUTO|DIRECT|STRUCTURED]
+review_mode: [interactive|consolidated|fast-track]
+review_auto_approved_clean: [true|false]
 style_policy: [preserve-local|upgrade-house-style]
 style_policy_source: [STYLE_POLICY.md artifact|INTAKE Stack/Style field|SKIPPED: file-edit -- no write access; policy recorded in conversation carrier|auto-trigger pending]
 style_policy_resolved: [yes|no]
