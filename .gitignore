@@ -48,10 +48,6 @@ chat-export/
 .session-locks/
 .playwright-mcp/
 
-# Claude Code local state (never commit personal overrides)
-.claude/settings.local.json
-CLAUDE.local.md
-
 # Pre-commit cache
 .pre-commit-cache/
 

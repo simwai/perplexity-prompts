@@ -34,9 +34,7 @@ Then describe a task and the agent handles the rest.
 | ⚫ PATCH protocol? | `docs/REFERENCE/PATCH_PROTOCOL.md` |
 | ⚪ Plan-actual gate? | `docs/REFERENCE/PLAN_ACTUAL_GATE.md` |
 | 📋 Session state? | `docs/REFERENCE/SESSION_STATE.md` |
-| 🟢 OpenCode setup? | `docs/PLATFORM_ADAPTERS/OPENCODE.md` |
-| 🔵 Claude Code setup? | `docs/PLATFORM_ADAPTERS/CLAUDE_CODE.md` |
-| 🟡 Codex CLI setup? | `docs/PLATFORM_ADAPTERS/CODEX_CLI.md` |
+| 🟢 OpenCode setup? | `docs/USER_GUIDE/OPENCODE.md` |
 | 📊 Roadmaps? | `docs/PROJECT_MANAGEMENT/ROADMAPS.md` |
 | 📋 Sprints? | `docs/PROJECT_MANAGEMENT/SPRINTS.md` |
 | 🔗 Trello? | `docs/PROJECT_MANAGEMENT/TRELLO_INTEGRATION.md` |
@@ -54,16 +52,11 @@ docs/                  Usage documentation (SNAKE_UPPER_CASE structure)
   GLOSSARY.md          Central terminology reference
   USER_GUIDE/          Getting started, personas, phases, modes, troubleshooting
   REFERENCE/           Canonical system references (mirrors prompt-system/)
-  PLATFORM_ADAPTERS/   OpenCode, Claude Code, Codex CLI setup
   PROJECT_MANAGEMENT/  Roadmaps, sprints, Trello integration
 opencode.jsonc         opencode-native config (optional layer, inert for other agents)
 .opencode/             opencode persona agents and commands (optional layer)
-CLAUDE.md              Claude Code memory that imports AGENTS.md (optional layer)
-.mcp.json              Claude Code project MCP servers, tier 1 only (generated)
-.claude/               Claude Code persona subagents and slash commands (generated)
-.codex/                Codex CLI project config with safe defaults (MCP section generated)
-sync.ps1               Interactive propagation to target projects (runs the generator)
-generate-adapters.ps1  Emits .claude/** and MCP blocks from .opencode/** + opencode.jsonc
+sync.ps1               Interactive propagation to target projects
+generate-adapters.ps1  Adapter generator (no-op; retained for compatibility)
 ```
 
 ---

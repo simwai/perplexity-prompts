@@ -84,6 +84,4 @@ When OpenCode adds the required capabilities, restore the following:
 - [ ] Restore PATCH Test Parallelization Protocol in `07-protocols.md`
 - [ ] Restore `[P]` parallel flag in task-card enrichment rules
 - [ ] Restore parallel references in `01-personas.md` (session flow, BabaReviewer, multi-persona session order, handoff)
-- [ ] Restore parallel references in adapter files (`.opencode/agents/*.md`, `.claude/agents/*.md`)
 - [ ] Update `generate-adapters.ps1` if needed for any new phase templates
-- [ ] Run `generate-adapters.ps1` to regenerate `.claude/`, `.mcp.json`, `.codex/`

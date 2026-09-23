@@ -76,5 +76,3 @@ Ignore `opencode.jsonc` and `.opencode/`. They still follow `AGENTS.md` + `promp
 - Phase flow: `USER_GUIDE/PHASES.md`
 - Execution modes: `USER_GUIDE/EXECUTION_MODES.md`
 - Troubleshooting: `USER_GUIDE/TROUBLESHOOTING.md`
-- Claude Code adapter: `PLATFORM_ADAPTERS/CLAUDE_CODE.md`
-- Codex CLI adapter: `PLATFORM_ADAPTERS/CODEX_CLI.md`

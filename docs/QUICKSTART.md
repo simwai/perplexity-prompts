@@ -48,7 +48,7 @@ source .env  # or .\.env in PowerShell
 
 ```bash
 cd <target-project>
-# Open your AI agent (opencode, Claude Code, Codex, etc.)
+# Open opencode
 # Describe a task:
 ```
 
@@ -89,9 +89,7 @@ Fix typo in README.md line 42.
 | Patch protocol? | `REFERENCE/PATCH_PROTOCOL.md` |
 | Plan-actual gate? | `REFERENCE/PLAN_ACTUAL_GATE.md` |
 | Session state? | `REFERENCE/SESSION_STATE.md` |
-| OpenCode setup? | `PLATFORM_ADAPTERS/OPENCODE.md` |
-| Claude Code setup? | `PLATFORM_ADAPTERS/CLAUDE_CODE.md` |
-| Codex CLI setup? | `PLATFORM_ADAPTERS/CODEX_CLI.md` |
+| OpenCode setup? | `USER_GUIDE/OPENCODE.md` |
 | Project management? | `PROJECT_MANAGEMENT/ROADMAPS.md` |
 
 ---

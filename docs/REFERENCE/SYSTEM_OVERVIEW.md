@@ -15,30 +15,24 @@
   'secondBkg': '#262626', 'tertiaryBkg': '#3d3d3d',
   'textColor': '#fafafa', 'nodeBorder': '#a855f7',
   'clusterBkg': '#2d1b4e', 'clusterBorder': '#a855f7'
-}}}%%
-flowchart TD
-    subgraph PORTABLE["Portable Unit"]
-        AGENTS["AGENTS.md\n📝 Entry Point"]
-        PS["prompt-system/\n⚙️ Core System"]
-    end
-    
-    subgraph ADAPTERS["Adapter Layers"]
-        OPENCODE[".opencode/ + opencode.jsonc\n🟢 OpenCode"]
-        CLAUDE["CLAUDE.md + .mcp.json + .claude/\n🔵 Claude Code"]
-        CODEX[".codex/config.toml\n🟡 Codex CLI"]
-    end
-    
-    AGENTS --> PS
-    PS --> OPENCODE
-    PS --> CLAUDE
-    PS --> CODEX
-    
-    style AGENTS fill:#2d1b4e,stroke:#a855f7
-    style PS fill:#1a1a1a,stroke:#a855f7
-    style OPENCODE fill:#2d1b4e,stroke:#4ade80
-    style CLAUDE fill:#2d1b4e,stroke:#3b82f6
-    style CODEX fill:#2d1b4e,stroke:#fbbf24
-```
+  }}}%%
+  flowchart TD
+      subgraph PORTABLE["Portable Unit"]
+          AGENTS["AGENTS.md\n📝 Entry Point"]
+          PS["prompt-system/\n⚙️ Core System"]
+      end
+      
+      subgraph ADAPTERS["Adapter Layers"]
+          OPENCODE[".opencode/ + opencode.jsonc\n🟢 OpenCode"]
+      end
+      
+      AGENTS --> PS
+      PS --> OPENCODE
+      
+      style AGENTS fill:#2d1b4e,stroke:#a855f7
+      style PS fill:#1a1a1a,stroke:#a855f7
+      style OPENCODE fill:#2d1b4e,stroke:#4ade80
+  ```
 
 | Layer | File(s) | Purpose |
 |---|---|---|
@@ -65,7 +59,6 @@ flowchart TD
 ├── CHANGELOG.md           # Version history
 ├── STYLE_POLICY.md        # Project style policy
 ├── BOOTSTRAP.md           # Bootstrap instructions
-├── CLAUDE.md              # Claude Code memory
 ├── LOGICAL_RUBRICS.md     # Logical rubrics reference
 ├── prompt-system/
 │   ├── 00-system.md       # Orchestrator
@@ -83,12 +76,9 @@ flowchart TD
 │   ├── GLOSSARY.md
 │   ├── USER_GUIDE/
 │   ├── REFERENCE/
-│   ├── PLATFORM_ADAPTERS/
 │   └── PROJECT_MANAGEMENT/
 ├── opencode.jsonc
 ├── .opencode/
-├── .claude/
-├── .codex/
 ├── project-management/
 └── sync.ps1
 ```
@@ -103,7 +93,6 @@ flowchart TD
 | `docs/GLOSSARY.md` | 1 | Central terminology reference |
 | `docs/USER_GUIDE/` | 5 | Getting started, personas, phases, modes, troubleshooting |
 | `docs/REFERENCE/` | 8 | Canonical system references (mirrors `prompt-system/`) |
-| `docs/PLATFORM_ADAPTERS/` | 3 | OpenCode, Claude Code, Codex CLI setup |
 | `docs/PROJECT_MANAGEMENT/` | 3 | Roadmaps, sprints, Trello integration |
 
 ---
@@ -111,7 +100,7 @@ flowchart TD
 ## 🔗 Key Cross-References
 
 | Need | Document |
-|---|---|
+|---|
 | Phase flow | `USER_GUIDE/PHASES.md` |
 | Execution modes | `USER_GUIDE/EXECUTION_MODES.md` |
 | Rubrics | `REFERENCE/RUBRICS.md` |
@@ -121,9 +110,7 @@ flowchart TD
 | PATCH protocol | `REFERENCE/PATCH_PROTOCOL.md` |
 | Plan-actual gate | `REFERENCE/PLAN_ACTUAL_GATE.md` |
 | Session state | `REFERENCE/SESSION_STATE.md` |
-| OpenCode setup | `PLATFORM_ADAPTERS/OPENCODE.md` |
-| Claude Code setup | `PLATFORM_ADAPTERS/CLAUDE_CODE.md` |
-| Codex CLI setup | `PLATFORM_ADAPTERS/CODEX_CLI.md` |
+| OpenCode setup | `USER_GUIDE/OPENCODE.md` |
 
 ---
 

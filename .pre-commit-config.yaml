@@ -6,6 +6,6 @@ repos:
         entry: bash -c 'npx markdown-toc -i "$1"'
         language: system
         types: [markdown]
-        files: '^docs/(USER_GUIDE|PLATFORM_ADAPTERS|PROJECT_MANAGEMENT|QUICKSTART).*\.md$'
+        files: '^docs/(USER_GUIDE|PROJECT_MANAGEMENT|QUICKSTART).*\.md$'
         exclude: '^docs/(GLOSSARY|REFERENCE)/.*\.md$'
         args: [--maxdepth=3, --no-first-h1]

@@ -119,7 +119,8 @@ Thumbs.db
 
 ```bash
 cd <target-project>
-# Open opencode, Claude Code, Codex, etc.
+# Open opencode
+# Describe a task:
 ```
 
 ### 2. Describe Task
@@ -179,5 +180,5 @@ Fix typo in README.md line 42.
 | Execution modes | `USER_GUIDE/EXECUTION_MODES.md` |
 | Common issues | `USER_GUIDE/TROUBLESHOOTING.md` |
 | Architecture | `REFERENCE/SYSTEM_OVERVIEW.md` |
-| Platform adapters | `PLATFORM_ADAPTERS/` |
+| OpenCode adapter | `USER_GUIDE/OPENCODE.md` |
 | Project management | `PROJECT_MANAGEMENT/` |

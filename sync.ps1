@@ -109,8 +109,8 @@ function Sync-Targets {
     )
 
 $source  = $scriptDir
-$files   = @('AGENTS.md', 'opencode.jsonc', 'CLAUDE.md', '.mcp.json', 'BOOTSTRAP.md')
-$folders = @('prompt-system', '.opencode', '.claude', '.cursor', '.codex', '.opencode/agents')
+$files   = @('AGENTS.md', 'opencode.jsonc', 'BOOTSTRAP.md')
+$folders = @('prompt-system', '.opencode', '.opencode/agents')
     $synced     = 0
     $skipped    = 0
     $pushFailed = 0
@@ -355,7 +355,7 @@ function Update-GitTarget {
     }
 
 if ($DryRun) {
-        Write-Host '    [DRY] git add AGENTS.md opencode.jsonc CLAUDE.md .mcp.json prompt-system/ .opencode/ .claude/' -ForegroundColor Gray
+        Write-Host '    [DRY] git add AGENTS.md opencode.jsonc BOOTSTRAP.md prompt-system/ .opencode/' -ForegroundColor Gray
         Write-Host '    [DRY] git commit + git push origin <branch>' -ForegroundColor Gray
         return
     }
@@ -371,7 +371,7 @@ if ($DryRun) {
         return
     }
 
-$paths = @('AGENTS.md', 'opencode.jsonc', 'CLAUDE.md', '.mcp.json', 'BOOTSTRAP.md', 'prompt-system', '.opencode', '.claude', '.cursor', '.codex') |
+$paths = @('AGENTS.md', 'opencode.jsonc', 'BOOTSTRAP.md', 'prompt-system', '.opencode') |
         Where-Object { Test-Path (Join-Path $repoRoot $_) }
     if (-not $paths) { return }
 

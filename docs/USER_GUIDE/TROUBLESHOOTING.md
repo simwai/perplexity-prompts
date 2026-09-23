@@ -129,19 +129,6 @@ npx markdown-toc -i docs/USER_GUIDE/GETTING_STARTED.md
 | Wrong env interp | Use `{env:VAR}` not `${VAR}` in `opencode.jsonc` |
 | Persona not switching | `/baba <persona>` or switch agent in TUI |
 
-### Claude Code
-| Issue | Fix |
-|---|---|
-| MCP pending | Accept workspace trust dialog on first run |
-| Settings not applied | Restart session after editing `.claude/` |
-| Local overrides | Use `.claude/settings.local.json`, `CLAUDE.local.md` (gitignored) |
-
-### Codex CLI
-| Issue | Fix |
-|---|---|
-| Sandbox blocks write | `.codex/config.toml` → `workspace-write = true` |
-| Approvals too strict | `approval-policy = "on-request"` |
-
 ---
 
 ## 📚 Related

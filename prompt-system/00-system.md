@@ -408,6 +408,7 @@ Phase set:
 - `SPRINT` (optional, BabaScrumMaster only)
 - `TASK_PLAN` (optional, BabaScrumMaster only)
 - `SPEC` (optional, BabaScrumMaster only)
+- `BOOTSTRAP` (optional, cold-start spec generation)
 - `CHECKLIST`
 - `DISCUSS`
 - `DOCS`
@@ -419,7 +420,7 @@ Phase set:
 - `DRIFT` (optional, read-only diagnostic)
 - `FAILURE`
 
-`DIRECT` is intentionally absent (it is an execution mode, not a formal phase). `HANDOFF` and `TEST_STRATEGY` are transition artifacts. `SPEC` authors a spec artifact (planning, never implementation). `DRIFT` is read-only and never writes files.
+`DIRECT` is intentionally absent (it is an execution mode, not a formal phase). `HANDOFF` and `TEST_STRATEGY` are transition artifacts. `SPEC` authors a spec artifact (planning, never implementation). `BOOTSTRAP` generates spec artifacts for SPEC phase review. `DRIFT` is read-only and never writes files.
 
 <HIGH_PRIO>
 !!!
@@ -496,6 +497,7 @@ Skip: CHECKLIST, DOCS, BLOCKED, FAILURE, INTAKE, BACKLOG, SPRINT, TASK_PLAN, SPE
 - `START -> STARTUP`: (MANDATORY) read `prompt-system/00-system.md` full, emit fingerprint, then discover and load all files in the load order.
 - `STARTUP -> INTAKE`: goal or project spec without a concrete target.
 - `STARTUP -> CHECKLIST`: target known, scope known, language known or obvious.
+- `STARTUP -> BOOTSTRAP`: target is a codebase with no SPECS/ directory, or explicit `/bootstrap` command.
 - `STARTUP -> DISCUSS`: user input is exploratory.
 - `STARTUP -> BLOCKED`: STARTUP incomplete (fingerprint missing or system files not loaded).
 - `INTAKE -> BACKLOG`: goal and at least one success criterion recorded.
@@ -503,6 +505,7 @@ Skip: CHECKLIST, DOCS, BLOCKED, FAILURE, INTAKE, BACKLOG, SPRINT, TASK_PLAN, SPE
 - `TASK_PLAN -> CHECKLIST`: task card has target, size, ICE, milestone, DoD; approved; spec not in scope.
 - `TASK_PLAN -> SPEC`: spec-authoring in scope.
 - `SPEC -> CHECKLIST`: spec artifact complete (title, status, version, story with GWT, FR, SC) and approved.
+- `BOOTSTRAP -> SPEC`: bootstrap generated Draft spec artifacts, ready for human review and promotion.
 - `CHECKLIST -> DOCS`: docs-sensitive judgment in scope.
 - `CHECKLIST -> REVIEW`: docs out of scope, every checklist checkbox ticked.
 - `CHECKLIST -> PLAN`: greenfield branch (no existing source files, skip recorded).
@@ -731,7 +734,7 @@ A single defined exception to the doom-loop rules, used to raise the confidence 
 ### Enforcement layering
 
 - opencode enforces the hard stop natively: `permission.doom_loop = deny` halts three consecutive identical tool calls at the process level, and per-agent `steps` caps bound the total iteration count (see `opencode.jsonc` and `.opencode/agents/*.md`).
-- Non-opencode agents (Claude Code, Cursor, Codex, Perplexity) enforce these rules from this section alone, because they have no native doom-loop detector. Treat the rules as hard constraints in every mode.
+- Non-opencode agents enforce these rules from this section alone, because they have no native doom-loop detector. Treat the rules as hard constraints in every mode.
 
 ### Log output prohibition
 
@@ -906,7 +909,7 @@ If a transcript already contains a credential from this session:
 
 ### Enforcement layering
 
-- `opencode.jsonc` `instructions` always loads this system so the rule is in standing context. Standalone hosts that do not read `opencode.jsonc` (Claude Code, Cursor, Codex) inherit the rule from `AGENTS.md` and the commit/push gate.
+- `opencode.jsonc` `instructions` always loads this system so the rule is in standing context. Standalone hosts that do not read `opencode.jsonc` inherit the rule from `AGENTS.md` and the commit/push gate.
 - `permission.doom_loop = deny` in `opencode.jsonc` halts repeated identical read steps at the process level, which catches the `git remote -v / get-url` retry pattern (loop protection).
 - The `git push` sanitizer in `sync.ps1` is the second enforcement layer: even if an agent runs the script and captures its output, the URL is already gone before the script's stdout returns to the agent.
 

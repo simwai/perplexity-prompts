@@ -9,7 +9,7 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
-- **Consistency pass: canonical 8-file list, S1-S20 alignment, path normalization.** `prompt-system/02-decision-prompts.md` was merged into `prompt-system/00-system.md` and removed from the file set; `prompt-system/08-plan-actual-gate.md` was added as the eighth system file. All load-order references, adapter source lists, docs, and README counts updated from 7 to 8 files. Soft-tier rubric range corrected from S1-S17 to S1-S20 in all system files, adapter sources, and generated `.claude/` outputs. All `system/` path prefixes normalized to `prompt-system/` across docs, adapters, and conformance checklists. `07-protocols.md` now owns spec-lifecycle and drift-detection references previously misattributed to `06-misc.md`.
+- **Consistency pass: canonical 8-file list, S1-S20 alignment, path normalization.** `prompt-system/02-decision-prompts.md` was merged into `prompt-system/00-system.md` and removed from the file set; `prompt-system/08-plan-actual-gate.md` was added as the eighth system file. All load-order references, adapter source lists, docs, and README counts updated from 7 to 8 files. Soft-tier rubric range corrected from S1-S17 to S1-S20 in all system files, adapter sources, and generated outputs. All `system/` path prefixes normalized to `prompt-system/` across docs, adapters, and conformance checklists. `07-protocols.md` now owns spec-lifecycle and drift-detection references previously misattributed to `06-misc.md`.
 
 ### Removed
 
@@ -22,7 +22,7 @@ Versioning follows [Semantic Versioning](https://semver.org/).
   - `parallel_budget` fields from session state schema
   - `## Sensei State 1..N` and `## Tester State` partitioned session state sections
   - REVIEW Merge Protocol, DOCS Parallel Protocol, and PATCH Test Parallelization Protocol from `07-protocols.md`
-  - Parallel references from all adapter files (`.opencode/agents/*.md`, `.claude/agents/*.md`)
+  - Parallel references from all adapter files (`.opencode/agents/*.md`, `.opencode/commands/*.md`)
 - Documentation of removed features and re-enablement conditions added to `docs/FUTURE_ENHANCEMENTS.md`. Features may be restored when OpenCode exposes a parallel subagent spawning API with concurrent spawn, partitioned session state, timeout/cancellation propagation, structured merge protocol support, and deterministic lint+typecheck sequencing.
 - Java-specific "Javadoc" terminology in the cross-language Comments
   taxonomy was replaced with language-agnostic "Docstrings" / "public-API
@@ -349,7 +349,7 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 ### Removed
 
 - Tavily MCP server removed across all surfaces: `AGENTS.md` Tier 1 block and
-  description bullet, `opencode.jsonc` `mcp` entry, `.codex/config.toml`
+  description bullet, `opencode.jsonc` `mcp` entry,
   `[mcp_servers.tavily]` block, `modules/21-mcp-invocation.txt` signal matrix
   and pairing (web search now maps to `exa` / direct `curl`), `README.md` tool
   list, and `docs/AGENTS-usage.md` (tier table, key table, example config,
