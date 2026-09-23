@@ -600,6 +600,34 @@ If the response drifts into a different phase:
 2. Output only that phase's allowed template.
 3. If the next attempt drifts again, terminate with `FAILURE`.
 
+## Subagent bootstrap
+
+A session spawned via `task` does not inherit the parent's `current_phase`, `last_valid_phase`, or `mode`. The subagent receives a fresh in-memory state carrier initialized to the receiving persona's entry phase and mode. The parent's active phase is irrelevant.
+
+Entry phase mapping:
+
+| Target agent | Entry phase | Mode |
+|---|---|---|
+| `baba-sensei` | `PLAN` | `STRUCTURED` |
+| `baba-dev` | `PATCH` | `STRUCTURED` |
+| `baba-tester` | `TEST_STRATEGY` | `STRUCTURED` |
+| `baba-reviewer` | `REVIEW` | `STRUCTURED` |
+| `baba-scrummaster` | `INTAKE` | `STRUCTURED` |
+| `baba-designer` | `DESIGN_PLAN` | `STRUCTURED` |
+| `explore` | `DIRECT` | `DIRECT` |
+| `general` | `DIRECT` | `DIRECT` |
+
+The subagent's system-reminder is generated from its own initialized phase, not the parent's. Any read-only constraint in the parent's phase is not forwarded.
+
+Fresh in-memory carrier contents:
+- `current_phase`: receiving persona's entry phase
+- `last_valid_phase`: same as `current_phase`
+- `mode`: per the table above
+- `startup_verified`: `true` if the parent's startup was verified; otherwise `false`
+- `read_ledger`: inherited from parent as context-only; subagent may reuse but must not assume parent's phase
+- `mcp_preflight`: inherited from parent
+- `handoff_payload`: the parent's handoff contract fields as input
+
 ## FAILURE
 
 FAILURE is triggered when:

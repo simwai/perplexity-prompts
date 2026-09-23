@@ -49,11 +49,13 @@
     ".opencode/plugins/baba-reading-protocol.ts",
     ".opencode/plugins/baba-protocol-enforce.ts",
     ".opencode/plugins/baba-prompt-system-loader.ts",
+    ".opencode/plugins/baba-convention-review.ts",
     ".opencode/plugins/memory-worth",
     ".opencode/plugins/baba-subtask.ts",
     ".opencode/plugins/baba-goal-detect.ts",
     ".opencode/plugins/baba-bootstrap.ts",
     ".opencode/plugins/baba-drift.ts",
+    ".opencode/plugins/baba-lock-enforce.ts",
     ".opencode/plugins/adaptive-temperature.ts"
   ],
 

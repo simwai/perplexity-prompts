@@ -579,6 +579,15 @@ Conventions:
 - [dominating error-handling/style idiom per touched file, with evidence, and how the plan preserves it]
 - For new files or a new project: [the 05-impl-style.md defaults being established as conventions -- stack, DI container, error idiom, naming, structure -- or the user override recorded in the INTAKE `Stack/Style:` field]
 
+Conventions Review (auto-populated from Discovery Protocol):
+- Style policy: [preserve-local|upgrade-house-style] (from STYLE_POLICY.md, immutable)
+- Error idiom: [dominating pattern per touched file, with file:line evidence]
+- Architecture flags: [from system_evidence.architecture_flags -- high_coupling, circular_dependency, pattern_concentration]
+- API defaults: [versioning/pagination/idempotency/error-shape if API files in scope]
+- Design system: [deferred to DESIGN_PLAN if frontend in scope]
+- Test strategy: [binding/strong/weak hints from BabaTester if loaded]
+- Rule exceptions: [from STYLE_POLICY.md rule_exceptions.H14-H40 if any]
+
 Risks:
 - [risk]
 
@@ -992,6 +1001,31 @@ phase_status: {sensei: [phase|n/a], tester: [phase|n/a], dev: [phase|n/a], merge
 - scored_candidates: [ {file, keyword_match, entry_distance, layer_fit, test_proximity, recency, total} ]
 - inventory_source: discovery|manual|task-card
 ```
+
+## In-memory state carrier (subagent)
+
+A `task`-spawned subagent does not write a `SESSION_STATE-<session_id>.md` file. Its state lives in an in-memory carrier with the same field set as the session state file, minus file-backed fields. The carrier is initialized by the `task` tool per `00-system.md` `## Subagent bootstrap`.
+
+Required carrier fields:
+
+- `session_id`: generated for the subagent or inherited from parent
+- `current_phase`: receiving persona's entry phase
+- `last_valid_phase`: same as `current_phase`
+- `mode`: per `00-system.md` entry-phase table
+- `persona`: target agent name
+- `target`: from handoff payload
+- `scope`: from handoff payload
+- `spec_version`: from handoff payload or `n/a`
+- `style_policy`: inherited from parent
+- `style_policy_resolved`: inherited from parent
+- `startup_verified`: `true` if parent's startup was verified
+- `read_ledger`: inherited from parent (context-only)
+- `mcp_preflight`: inherited from parent
+- `handoff_payload`: parent's handoff contract
+- `phase_status`: initialized to the subagent's persona entry phase
+- `reading_plan`: from handoff scope or `n/a`
+
+The carrier is the single source of truth for the subagent's active phase and mode. Any system-reminder or phase-header check reads from the carrier, not from the parent session.
 
 Compare `target`, `scope`, `session_id`, and `spec_version` with the current request before restoring any phase, approval, or rewrite contract. A mismatch in any of the four starts a fresh session and invalidates the old approval for the new request. A legacy file (no `session_id`) is always a mismatch for approval purposes.
 
