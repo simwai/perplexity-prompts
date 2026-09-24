@@ -22,7 +22,8 @@
 param(
     [switch]$All,
     [switch]$DryRun,
-    [switch]$NoGitPush
+    [switch]$NoGitPush,
+    [switch]$DeleteLegacy
 )
 
 $ErrorActionPreference = 'Stop'
@@ -105,7 +106,8 @@ function Sync-Targets {
     param(
         [hashtable]$Targets,
         [switch]$DryRun,
-        [switch]$NoGitPush
+        [switch]$NoGitPush,
+        [switch]$DeleteLegacy
     )
 
 $source  = $scriptDir
@@ -168,61 +170,63 @@ $folders = @('prompt-system', '.opencode', '.opencode/agents')
             Install-Plugins -TargetPath $target
         }
 
-# Remove legacy folders from old structure
-        $legacyFolders = @('system', 'synced-scripts', 'agent-resources')
-        # Get repo root for submodule check (only if git repo)
-        $repoRoot = $null
-        if (Test-Path (Join-Path $target '.git')) {
-            $repoRoot = & git -C $target rev-parse --show-toplevel 2>&1 | Out-Null; $repoRoot
-        }
-        if (-not $repoRoot) { $repoRoot = $target }
-        foreach ($legacy in $legacyFolders) {
-            $legacyPath = Join-Path $target $legacy
-            if (-not (Test-Path $legacyPath)) { continue }
+        if ($DeleteLegacy) {
+            # Remove legacy folders from old structure
+            $legacyFolders = @('system', 'synced-scripts', 'agent-resources', '.claude', '.cursor', '.codex')
+            # Get repo root for submodule check (only if git repo)
+            $repoRoot = $null
+            if (Test-Path (Join-Path $target '.git')) {
+                $repoRoot = & git -C $target rev-parse --show-toplevel 2>&1 | Out-Null; $repoRoot
+            }
+            if (-not $repoRoot) { $repoRoot = $target }
+            foreach ($legacy in $legacyFolders) {
+                $legacyPath = Join-Path $target $legacy
+                if (-not (Test-Path $legacyPath)) { continue }
 
-            # If this is a git submodule, deinit it before removing contents.
-            $isSubmodule = $false
-            if (Test-Path (Join-Path $legacyPath '.git')) {
-                $isSubmodule = $true
-            } elseif (Test-Path (Join-Path $repoRoot '.gitmodules')) {
-                $modules = Get-Content -LiteralPath (Join-Path $repoRoot '.gitmodules') -Raw -ErrorAction SilentlyContinue
-                if ($modules -match [regex]::Escape($legacy)) {
+                # If this is a git submodule, deinit it before removing contents.
+                $isSubmodule = $false
+                if (Test-Path (Join-Path $legacyPath '.git')) {
                     $isSubmodule = $true
+                } elseif (Test-Path (Join-Path $repoRoot '.gitmodules')) {
+                    $modules = Get-Content -LiteralPath (Join-Path $repoRoot '.gitmodules') -Raw -ErrorAction SilentlyContinue
+                    if ($modules -match [regex]::Escape($legacy)) {
+                        $isSubmodule = $true
+                    }
                 }
-            }
 
-            if ($isSubmodule) {
-                if (-not $DryRun) {
-                    Push-Location $repoRoot
-                    try {
-                        & git submodule deinit -f $legacy 2>&1 | Out-Null
-                    } catch { }
-                    try {
-                        & git rm -f $legacy 2>&1 | Out-Null
-                    } catch { }
-                    Pop-Location
+                if ($isSubmodule) {
+                    if (-not $DryRun) {
+                        Push-Location $repoRoot
+                        try {
+                            & git submodule deinit -f $legacy 2>&1 | Out-Null
+                        } catch { }
+                        try {
+                            & git rm -f $legacy 2>&1 | Out-Null
+                        } catch { }
+                        Pop-Location
+                    }
+                    Write-Host "    DEINIT submodule $legacy\" -ForegroundColor Yellow
                 }
-                Write-Host "    DEINIT submodule $legacy\" -ForegroundColor Yellow
-            }
 
-            if ($DryRun) {
-                Write-Host "    [DRY] REMOVE $legacy\" -ForegroundColor Gray
-            } else {
-                Remove-Item -LiteralPath $legacyPath -Recurse -Force -ErrorAction SilentlyContinue
-                Write-Host "    REMOVED $legacy\" -ForegroundColor Yellow
-            }
-        }
-
-        # Remove stray AGENTS.md symlinks from old structure
-        $agentsLink = Join-Path $target 'AGENTS.md'
-        if (Test-Path $agentsLink -PathType Leaf) {
-            $item = Get-Item -LiteralPath $agentsLink -Force
-            if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) {
                 if ($DryRun) {
-                    Write-Host "    [DRY] REMOVE AGENTS.md symlink" -ForegroundColor Gray
+                    Write-Host "    [DRY] REMOVE $legacy\" -ForegroundColor Gray
                 } else {
-                    Remove-Item -LiteralPath $agentsLink -Force -ErrorAction SilentlyContinue
-                    Write-Host "    REMOVED AGENTS.md symlink" -ForegroundColor Yellow
+                    Remove-Item -LiteralPath $legacyPath -Recurse -Force -ErrorAction SilentlyContinue
+                    Write-Host "    REMOVED $legacy\" -ForegroundColor Yellow
+                }
+            }
+
+            # Remove stray AGENTS.md symlinks from old structure
+            $agentsLink = Join-Path $target 'AGENTS.md'
+            if (Test-Path $agentsLink -PathType Leaf) {
+                $item = Get-Item -LiteralPath $agentsLink -Force
+                if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+                    if ($DryRun) {
+                        Write-Host "    [DRY] REMOVE AGENTS.md symlink" -ForegroundColor Gray
+                    } else {
+                        Remove-Item -LiteralPath $agentsLink -Force -ErrorAction SilentlyContinue
+                        Write-Host "    REMOVED AGENTS.md symlink" -ForegroundColor Yellow
+                    }
                 }
             }
         }
@@ -491,7 +495,7 @@ try {
 
 if ($All) {
     foreach ($key in $keys) { $targets[$key] = $true }
-    Sync-Targets -Targets $targets -DryRun:$DryRun -NoGitPush:$NoGitPush
+    Sync-Targets -Targets $targets -DryRun:$DryRun -NoGitPush:$NoGitPush -DeleteLegacy:$DeleteLegacy
     exit 0
 }
 
@@ -534,6 +538,8 @@ while ($true) {
     Write-Host ($(if ($dryMode) {'ON'} else {'OFF'})) -ForegroundColor $(if ($dryMode) {'Yellow'} else {'DarkGray'})
     Write-Host '  [G]  Git push    ' -NoNewline
     Write-Host ($(if ($gitPush) {'ON'} else {'OFF'})) -ForegroundColor $(if ($gitPush) {'Green'} else {'DarkGray'})
+    Write-Host '  [L]  Delete legacy' -NoNewline
+    Write-Host ($(if ($deleteLegacy) {'ON'} else {'OFF'})) -ForegroundColor $(if ($deleteLegacy) {'Yellow'} else {'DarkGray'})
     Write-Host '  [S]  Sync now'
     Write-Host '  [R]  Rescan'
     Write-Host '  [Q]  Quit'
@@ -563,7 +569,7 @@ while ($true) {
             break
         }
         '^S$' {
-            Sync-Targets -Targets $targets -DryRun:$dryMode -NoGitPush:(-not $gitPush)
+            Sync-Targets -Targets $targets -DryRun:$dryMode -NoGitPush:(-not $gitPush) -DeleteLegacy:$DeleteLegacy
             Write-Host ''
             Write-Host -NoNewline 'Press Enter to return...' -ForegroundColor DarkGray
             Read-Host | Out-Null
