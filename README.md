@@ -46,7 +46,7 @@ Then describe a task and the agent handles the rest.
 
 ```txt
 AGENTS.md              The single entry file — paste at a target repo root
-prompt-system/         The copy-paste unit — 9 system files (00-08 + rules)
+prompt-system/         The copy-paste unit — 8 system files (00-08)
 docs/                  Usage documentation (SNAKE_UPPER_CASE structure)
   QUICKSTART.md        5-minute onboarding
   GLOSSARY.md          Central terminology reference

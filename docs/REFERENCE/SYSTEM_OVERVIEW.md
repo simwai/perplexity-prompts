@@ -58,7 +58,6 @@
 ├── README.md              # Navigation hub
 ├── CHANGELOG.md           # Version history
 ├── STYLE_POLICY.md        # Project style policy
-├── BOOTSTRAP.md           # Bootstrap instructions
 ├── LOGICAL_RUBRICS.md     # Logical rubrics reference
 ├── prompt-system/
 │   ├── 00-system.md       # Orchestrator
@@ -79,7 +78,7 @@
 │   └── PROJECT_MANAGEMENT/
 ├── opencode.jsonc
 ├── .opencode/
-├── project-management/
+├── PROJECT_MANAGEMENT/
 └── sync.ps1
 ```
 

@@ -36,6 +36,11 @@
 | `/structured` | Switch execution mode to STRUCTURED — full phase-gated workflow |
 | `/review-consolidated` | Set `review_mode = consolidated` and enter REVIEW phase |
 | `/review-interactive` | Set `review_mode = interactive` and enter REVIEW phase |
+| `/close` | Close the session |
+| `/consensus` | Toggle multi-model consensus |
+| `/feedback` | Give feedback on output quality |
+| `/feedback-status` | Check feedback status |
+| `/kickoff` | Start a new session with goal intake |
 | `/check-for-blockers` | Scan all sprints for blocked or stalled items and report them with severity |
 | `/check-sprint-progress` | Report story completion, task counts, and phase status across sprints |
 | `/create-roadmap` | Create a new roadmap document |

@@ -28,19 +28,15 @@ Copy-Item -Recurse prompt-system <target-project>\prompt-system
 
 ## 🔐 Configure Secrets (One-time)
 
-```bash
-# At target project root
-echo "EXA_API_KEY=exa-xxx" > .env
-echo ".env" >> .gitignore
-source .env  # or .\.env in PowerShell
-```
+Credentials are loaded from environment variables — never hardcode tokens.
+See `AGENTS.md` MCP Fallback Tiers for what's required and what has fallbacks.
 
 | Service | Key Source | Required |
 |---|---|---|
-| Exa | exa.ai → Dashboard | Tier 2 (optional) |
 | Context7 | None | Tier 1 (always) |
 | Playwright | None (Node 20+) | Tier 1 (always) |
 | Trello | OAuth (browser) | OAuth (optional) |
+| Google Search | None (curl fallback) | Tier 1 (always) |
 
 ---
 
@@ -106,6 +102,9 @@ Fix typo in README.md line 42.
 | `/auto` / `/direct` / `/structured` | Switch execution mode |
 | `/review-consolidated` | Aggregate review mode |
 | `/review-interactive` | Batch-by-batch review mode |
+| `/close` | Close the session |
+| `/consensus` | Toggle multi-model consensus |
+| `/feedback` | Give feedback on output quality |
 
 ---
 
@@ -143,7 +142,7 @@ flowchart LR
 
 Ask your agent: **"List the available MCP tools."**
 
-Expected: Context7, Playwright at minimum. Exa if `EXA_API_KEY` set. Trello after OAuth.
+Expected: Context7, Playwright at minimum. Google Search via curl fallback. Trello after OAuth.
 
 ---
 
