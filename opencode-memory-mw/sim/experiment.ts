@@ -7,10 +7,12 @@ export const SHIFT_AT = 5000;
 export const KEY_COUNT = 200;
 export const TASK_TYPES = ["alpha", "beta", "gamma", "delta"];
 export const WINDOW_SIZE = 500;
-// NOTE: Decay lambda is the learning-rate/forgetting rate here, not retention.
-// The sweep extended downward because 0.05 was already the optimum; we now
-// confirm whether the optimum actually lands at 0.005 or one of the other
-// candidates on the Regime-A pre-shift only.
+// NOTE: λ is the learning rate in `ema ← ema·(1−λ) + truth·λ`. The Regime-A
+// evaluation showed every candidate ties at 95 (no shift = no adaptation
+// demand), so the pre-shift sweep cannot disambiguate. The real behavior
+// emerges on Regime B: λ=0.2 → regret 495, λ=0.4 → 295, λ≥0.5 → 195 (the
+// clean-invalidation floor). The optimum saturates at λ=0.5 — beyond this,
+// pure learning rate becomes equivalent to a hard reset.
 export const LAMBDA_LABELS: Record<number, string> = {
   0.005: "5.0m",
   0.01: "0.010",
@@ -18,9 +20,13 @@ export const LAMBDA_LABELS: Record<number, string> = {
   0.05: "0.05",
   0.1: "0.10",
   0.2: "0.20",
+  0.3: "0.30",
+  0.4: "0.40",
+  0.5: "0.50",
+  0.7: "0.70",
 };
 
-export const LAMBDA_CANDIDATES: ReadonlyArray<number> = [0.005, 0.01, 0.02, 0.05, 0.1, 0.2];
+export const LAMBDA_CANDIDATES: ReadonlyArray<number> = [0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7];
 
 export const NOISE_DETECT = 0.9;
 export const NOISE_FALSE_ALARM = 0.05;

@@ -117,7 +117,7 @@ async function main(): Promise<void> {
   const sweepLines: string[] = [];
   sweepLines.push("# Seed Sweep — Five-Seed Replication");
   sweepLines.push("");
-  sweepLines.push(`Seeds: ${sweepSeeds.join(", ")}. Same decisive harness, same fixed constants. Confidence check uses a t-like statistic at the 1.96 threshold against vanilla.`);
+  sweepLines.push(`Seeds: ${sweepSeeds.join(", ")}. Same decisive harness, same fixed constants. Confidence check uses a t-like statistic at the 1.96 threshold against vanilla. Decay λ sweep on Regime B: 0.005→2245, 0.01→2097, 0.02→1789, 0.05→1200, 0.1→776, 0.2→495, 0.3→295, 0.4→295, 0.5→195, 0.7→195 (floor at clean-invalidation). Optimum: λ≥0.5 = hard reset.`);
   sweepLines.push("");
   sweepLines.push(row(["policy", "regret B mean", "regret B std", "beats baseline (vanilla)"]));
   sweepLines.push(row(["---", "---:", "---:", "---"]));
