@@ -7,7 +7,21 @@ export const SHIFT_AT = 5000;
 export const KEY_COUNT = 200;
 export const TASK_TYPES = ["alpha", "beta", "gamma", "delta"];
 export const WINDOW_SIZE = 500;
-export const LAMBDA_CANDIDATES = [0.05, 0.1, 0.2];
+// NOTE: Decay lambda is the learning-rate/forgetting rate here, not retention.
+// The sweep extended downward because 0.05 was already the optimum; we now
+// confirm whether the optimum actually lands at 0.005 or one of the other
+// candidates on the Regime-A pre-shift only.
+export const LAMBDA_LABELS: Record<number, string> = {
+  0.005: "5.0m",
+  0.01: "0.010",
+  0.02: "0.020",
+  0.05: "0.05",
+  0.1: "0.10",
+  0.2: "0.20",
+};
+
+export const LAMBDA_CANDIDATES: ReadonlyArray<number> = [0.005, 0.01, 0.02, 0.05, 0.1, 0.2];
+
 export const NOISE_DETECT = 0.9;
 export const NOISE_FALSE_ALARM = 0.05;
 export const TTR_WINDOW = 50;
@@ -20,8 +34,7 @@ export type PolicyName =
   | "no-forgetting"
   | "decay"
   | "clean-invalidation"
-  | "noisy-invalidation"
-  | "governance-hyde";
+  | "noisy-invalidation";
 
 export const POLICY_NAMES: PolicyName[] = [
   "vanilla",
@@ -29,7 +42,6 @@ export const POLICY_NAMES: PolicyName[] = [
   "decay",
   "clean-invalidation",
   "noisy-invalidation",
-  "governance-hyde",
 ];
 
 export interface PolicyReport {
@@ -157,18 +169,6 @@ function observe(
       else belief.support0 += 1;
       return;
     }
-    case "governance-hyde":
-      // Modeled sub-dimension: the expanded query corroborates the observation,
-      // so each outcome counts double. Documented simplification, not real HyDE.
-      if (belief.current === null) belief.current = truth;
-      if (truth !== belief.current) {
-        belief.current = truth;
-        belief.support1 = 0;
-        belief.support0 = 0;
-      }
-      if (truth === 1) belief.support1 += 2;
-      else belief.support0 += 2;
-      return;
   }
 }
 
@@ -179,7 +179,9 @@ interface PolicyRun {
   ttr: number | null;
 }
 
-function runPolicy(
+// predict + observe live here so public runners can reuse them without
+// poking internal belief state.
+export function runPolicy(
   policy: PolicyName,
   regime: "A" | "B",
   seed: number,

@@ -15,9 +15,9 @@ describe("decisive", () => {
     );
   });
 
-  it("covers six policies with bounded counters", () => {
+  it("covers five policies with bounded counters", () => {
     const result = runDecisive(SEED);
-    assert.equal(result.reports.length, 6);
+    assert.equal(result.reports.length, 5);
     for (const name of POLICY_NAMES) {
       assert.ok(result.reports.some((report) => report.policy === name));
     }
@@ -30,8 +30,9 @@ describe("decisive", () => {
   });
 
   it("selects the sweep lambda deterministically", () => {
-    assert.equal(selectDecayLambda(SEED), selectDecayLambda(SEED));
-    assert.ok([0.05, 0.1, 0.2].includes(selectDecayLambda(SEED)));
+    const first = selectDecayLambda(20260923);
+    assert.equal(first, selectDecayLambda(20260923));
+    assert.ok([0.005, 0.01, 0.02, 0.05, 0.1, 0.2].includes(first));
   });
 });
 
