@@ -170,9 +170,9 @@ $folders = @('prompt-system', '.opencode', '.opencode/agents')
             Install-Plugins -TargetPath $target
         }
 
-        if ($DeleteLegacy) {
+if ($DeleteLegacy) {
             # Remove legacy folders from old structure
-            $legacyFolders = @('system', 'synced-scripts', 'agent-resources', '.claude', '.cursor', '.codex')
+            $legacyFolders = @('system', 'synced-scripts', 'agent-resources', '.claude', '.cursor', '.codex', 'test')
             # Get repo root for submodule check (only if git repo)
             $repoRoot = $null
             if (Test-Path (Join-Path $target '.git')) {
@@ -213,6 +213,17 @@ $folders = @('prompt-system', '.opencode', '.opencode/agents')
                 } else {
                     Remove-Item -LiteralPath $legacyPath -Recurse -Force -ErrorAction SilentlyContinue
                     Write-Host "    REMOVED $legacy\" -ForegroundColor Yellow
+                }
+            }
+
+            # Remove legacy BOOTSTRAP.md files (superseded by prompt-system/)
+            $bootstrapMd = Join-Path $target 'BOOTSTRAP.md'
+            if (Test-Path $bootstrapMd -PathType Leaf) {
+                if ($DryRun) {
+                    Write-Host "    [DRY] REMOVE BOOTSTRAP.md (legacy)" -ForegroundColor Gray
+                } else {
+                    Remove-Item -LiteralPath $bootstrapMd -Force -ErrorAction SilentlyContinue
+                    Write-Host "    REMOVED BOOTSTRAP.md (legacy)" -ForegroundColor Yellow
                 }
             }
 

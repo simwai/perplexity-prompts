@@ -20,15 +20,32 @@ Copy-Item -Recurse prompt-system <target-project>\prompt-system
 
 ### Multi-Project Sync
 
-For syncing multiple projects, add paths to `targets.json` then run:
+For syncing multiple projects, copy `targets.json.example` to `targets.json`, edit with your project paths, then run:
 
 ```powershell
+# First-time setup
+Copy-Item targets.json.example targets.json
+# Edit targets.json with your project paths (absolute paths)
+# Run sync
 .\sync.ps1 -All
 ```
 
-- Configured paths included in sync menu even before they contain `AGENTS.md`/`prompt-system/`
+- `targets.json` is **gitignored** — machine-specific paths, never committed
+- `targets.json.example` is committed as a template — copy and customize
+- Configured paths appear in sync menu even before they contain `AGENTS.md`/`prompt-system/`
 - Each git repo gets synced files committed + pushed to `origin`
 - Use `-NoGitPush` or toggle `[G]` to skip commit/push
+- Use `-DeleteLegacy` to remove old `.claude/`, `.cursor/`, `.codex/`, `test/`, `BOOTSTRAP.md` files and other legacy artifacts (`system/`, `synced-scripts/`, `agent-resources/`, `CLAUDE.md`)
+
+**Sync options:**
+| Flag | Purpose |
+|---|---|
+| `-All` | Sync all configured targets non-interactively |
+| `-DryRun` | Preview what would be copied without making changes |
+| `-NoGitPush` | Commit locally but skip push to remotes |
+| `-DeleteLegacy` | Remove legacy folders (`.claude/`, `.cursor/`, `.codex/`, `test/`, `system/`, `synced-scripts/`, `agent-resources/`, `CLAUDE.md`, `BOOTSTRAP.md`) |
+
+> **Note:** The `.opencode/` folder is synced from source, but **test folders are NOT part of the source** (they're local development artifacts). Any existing `test/` folders in target projects are considered legacy and will be removed with `-DeleteLegacy`. **BOOTSTRAP.md is also removed** as it's superseded by the `prompt-system/` deployment. The sync only copies: `prompt-system/`, `.opencode/` (without tests), `.opencode/agents/`, and core files (`AGENTS.md`, `opencode.jsonc`, `BOOTSTRAP.md` — the source BOOTSTRAP.md is synced, but legacy copies in targets that predate the system are removed).
 
 ---
 
