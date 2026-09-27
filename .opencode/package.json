@@ -3,8 +3,7 @@
     "@libsql/client": "^0.4.3",
     "beautiful-mermaid": "^1.1.3",
     "opencode-adaptive-thinking": "^0.1.6",
-    "opencode-pty": "^0.3.6",
-    "opencode-scheduler": "^1.3.0",
+"opencode-pty": "^0.3.6",
     "opencode-vibeguard": "^0.1.0"
   },
   "peerDependencies": {

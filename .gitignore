@@ -81,3 +81,6 @@ WIP.md
 
 # Local logs
 .logs/
+
+# Local sync targets (machine-specific paths)
+targets.json
