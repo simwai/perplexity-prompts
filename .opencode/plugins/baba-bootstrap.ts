@@ -30,17 +30,9 @@ export default async ({ client, $, project, directory, worktree }: {
 }) => {
   return {
     event: async ({ event }: { event: any }) => {
-      // Session created - send initial reminder message
+      // Session created - initialize state silently
       if (event.type === "session.created") {
         const sessionID = event.properties.sessionID;
-
-        try {
-          await client.tui.showToast({
-            body: { variant: "warning", message: "Read AGENTS.md & BOOTSTRAP.md First: Follow all instructions 1:1 before responding" },
-          });
-        } catch {
-          // tui may not be available
-        }
         return;
       }
     },
