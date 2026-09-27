@@ -172,7 +172,7 @@ $folders = @('prompt-system', '.opencode', '.opencode/agents')
 
 if ($DeleteLegacy) {
             # Remove legacy folders from old structure
-            $legacyFolders = @('system', 'synced-scripts', 'agent-resources', '.claude', '.cursor', '.codex', 'test')
+            $legacyFolders = @('system', 'synced-scripts', 'agent-resources', '.claude', '.cursor', '.codex')
             # Get repo root for submodule check (only if git repo)
             $repoRoot = $null
             if (Test-Path (Join-Path $target '.git')) {
@@ -224,6 +224,29 @@ if ($DeleteLegacy) {
                 } else {
                     Remove-Item -LiteralPath $bootstrapMd -Force -ErrorAction SilentlyContinue
                     Write-Host "    REMOVED BOOTSTRAP.md (legacy)" -ForegroundColor Yellow
+                }
+            }
+
+            # Remove memory-worth plugin test files (from .opencode source, not project tests)
+            $mwTestFiles = @(
+                Join-Path $target '.opencode\plugins\memory-worth\db\grounding.test.ts'
+                Join-Path $target '.opencode\plugins\memory-worth\db\normalization.test.ts'
+                Join-Path $target '.opencode\plugins\memory-worth\db\round-trip.test.ts'
+                Join-Path $target '.opencode\plugins\memory-worth\db\tuning.test.ts'
+                Join-Path $target '.opencode\plugins\memory-worth\hooks\session-flow.test.ts'
+                Join-Path $target '.opencode\plugins\memory-worth\hooks\session.test.ts'
+                Join-Path $target '.opencode\plugins\memory-worth\core\core.test.ts'
+                Join-Path $target '.opencode\plugins\memory-worth\tools\tools.test.ts'
+                Join-Path $target '.opencode\plugins\memory-worth\runtime\runtime.test.ts'
+            )
+            foreach ($testFile in $mwTestFiles) {
+                if (Test-Path $testFile -PathType Leaf) {
+                    if ($DryRun) {
+                        Write-Host "    [DRY] REMOVE $testFile (memory-worth test)" -ForegroundColor Gray
+                    } else {
+                        Remove-Item -LiteralPath $testFile -Force -ErrorAction SilentlyContinue
+                        Write-Host "    REMOVED $testFile (memory-worth test)" -ForegroundColor Yellow
+                    }
                 }
             }
 
