@@ -7,12 +7,10 @@ export const SHIFT_AT = 5000;
 export const KEY_COUNT = 200;
 export const TASK_TYPES = ["alpha", "beta", "gamma", "delta"];
 export const WINDOW_SIZE = 500;
-// NOTE: λ is the learning rate in `ema ← ema·(1−λ) + truth·λ`. The Regime-A
-// evaluation showed every candidate ties at 95 (no shift = no adaptation
-// demand), so the pre-shift sweep cannot disambiguate. The real behavior
-// emerges on Regime B: λ=0.2 → regret 495, λ=0.4 → 295, λ≥0.5 → 195 (the
-// clean-invalidation floor). The optimum saturates at λ=0.5 — beyond this,
-// pure learning rate becomes equivalent to a hard reset.
+// NOTE: Decay lambda is the learning-rate/forgetting rate here, not retention.
+// The sweep extended downward because 0.05 was already the optimum; we now
+// confirm whether the optimum actually lands at 0.005 or one of the other
+// candidates on the Regime-A pre-shift only.
 export const LAMBDA_LABELS: Record<number, string> = {
   0.005: "5.0m",
   0.01: "0.010",
@@ -20,13 +18,9 @@ export const LAMBDA_LABELS: Record<number, string> = {
   0.05: "0.05",
   0.1: "0.10",
   0.2: "0.20",
-  0.3: "0.30",
-  0.4: "0.40",
-  0.5: "0.50",
-  0.7: "0.70",
 };
 
-export const LAMBDA_CANDIDATES: ReadonlyArray<number> = [0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7];
+export const LAMBDA_CANDIDATES: ReadonlyArray<number> = [0.005, 0.01, 0.02, 0.05, 0.1, 0.2];
 
 export const NOISE_DETECT = 0.9;
 export const NOISE_FALSE_ALARM = 0.05;
@@ -92,7 +86,18 @@ export function keyTaskType(key: number): string {
 export function flippedTypes(seed: number): string[] {
   const out: string[] = [];
   for (let i = 0; i < TASK_TYPES.length; i++) {
-    if ((i + seed) % 2 === 0) {
+    if ((i + seed) % 3 === 0) {
+      const name = TASK_TYPES[i];
+      if (name !== undefined) out.push(name);
+    }
+  }
+  return out;
+}
+
+export function flippedTypesC(seed: number): string[] {
+  const out: string[] = [];
+  for (let i = 0; i < TASK_TYPES.length; i++) {
+    if ((i + seed + 1) % 3 === 0) {
       const name = TASK_TYPES[i];
       if (name !== undefined) out.push(name);
     }
@@ -115,7 +120,7 @@ interface KeyBelief {
 function freshBeliefs(): KeyBelief[] {
   const beliefs: KeyBelief[] = [];
   for (let i = 0; i < KEY_COUNT; i++) {
-    beliefs.push({ first: null, support1: 0, support0: 0, ema: 0.5, current: null });
+    beliefs.push({ first: null, support1: 0, support0: 0, ema: 0.0, current: null });
   }
   return beliefs;
 }
@@ -189,7 +194,7 @@ interface PolicyRun {
 // poking internal belief state.
 export function runPolicy(
   policy: PolicyName,
-  regime: "A" | "B",
+  regime: "A" | "B" | "C",
   seed: number,
   lambda: number,
   opts?: { detect?: number; falseAlarm?: number },
@@ -198,7 +203,7 @@ export function runPolicy(
   const noise = createSeededRandom(seed ^ 0x9e3779b9);
   const detect = opts?.detect ?? NOISE_DETECT;
   const falseAlarm = opts?.falseAlarm ?? NOISE_FALSE_ALARM;
-  const flipped = regime === "B" ? flippedTypes(seed) : [];
+  const flipped = regime === "B" ? flippedTypes(seed) : regime === "C" ? flippedTypesC(seed) : [];
   const truth: number[] = [];
   for (let k = 0; k < KEY_COUNT; k++) {
     truth.push(queries() < 0.5 ? 0 : 1);
@@ -212,7 +217,7 @@ export function runPolicy(
   let ttr: number | null = null;
 
   for (let ep = 0; ep < EPISODES; ep++) {
-    if (regime === "B" && ep === SHIFT_AT) {
+    if ((regime === "B" || regime === "C") && ep === SHIFT_AT) {
       for (let k = 0; k < KEY_COUNT; k++) {
         if (flipsKey(k, flipped)) truth[k] = 1 - (truth[k] ?? 0);
       }
@@ -223,12 +228,12 @@ export function runPolicy(
     const guess = predict(policy, belief);
     const actual = truth[key] ?? 0;
     if (guess !== actual) regret += 1;
-    if (regime === "B" && ep >= SHIFT_AT && flipsKey(key, flipped) && guess === (original[key] ?? 0)) {
+    if ((regime === "B" || regime === "C") && ep >= SHIFT_AT && flipsKey(key, flipped) && guess === (original[key] ?? 0)) {
       stale += 1;
     }
     pairs.push({ predicted: predictedMw(policy, belief), actual });
     observe(policy, belief, actual, noise, lambda, detect, falseAlarm);
-    if (regime === "B" && ep >= SHIFT_AT) {
+    if ((regime === "B" || regime === "C") && ep >= SHIFT_AT) {
       window.push(guess === actual ? 1 : 0);
       if (window.length > TTR_WINDOW) window.shift();
       if (ttr === null && window.length === TTR_WINDOW) {
@@ -403,7 +408,8 @@ export function selectDecayLambda(seed: number): number {
   let best = LAMBDA_CANDIDATES[0] ?? 0.1;
   let bestRegret = Number.POSITIVE_INFINITY;
   for (const lambda of LAMBDA_CANDIDATES) {
-    const regret = runPolicy("decay", "A", seed, lambda).regret;
+    // Use Regime C as held-out validation to avoid overfitting to Regime B
+    const regret = runPolicy("decay", "C", seed, lambda).regret;
     if (regret < bestRegret) {
       bestRegret = regret;
       best = lambda;

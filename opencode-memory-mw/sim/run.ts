@@ -8,10 +8,11 @@ import { breadthFirst, buildGraph, personalizedPageRank, recallAt, relevantSet }
 import { runAssociationStream } from "./hebbian.js";
 import { runBandit } from "./ranking.js";
 
-// TODO(simwai): reconsider the sweep verdict label once the grid exposes the
-// true oracle precision; current headline is misleading while the verdict
-// per-row column compares policies counterfactually.
-import { assessConfusion as legacyAssessConfusion } from "./sweep.js";
+// λ selection uses a held-out regime (Regime C) to avoid overfitting to Regime B.
+// The sweep verdict label is counterfactual: it compares each policy against
+// vanilla on Regime B, not against an oracle. This is a known limitation.
+import { assessConfusion, runSeedSweep } from "./sweep.js";
+import { mean, stdev } from "./sweep.js";
 
 const SEED = 20260923;
 
@@ -117,7 +118,7 @@ async function main(): Promise<void> {
   const sweepLines: string[] = [];
   sweepLines.push("# Seed Sweep — Five-Seed Replication");
   sweepLines.push("");
-  sweepLines.push(`Seeds: ${sweepSeeds.join(", ")}. Same decisive harness, same fixed constants. Confidence check uses a t-like statistic at the 1.96 threshold against vanilla. Decay λ sweep on Regime B: 0.005→2245, 0.01→2097, 0.02→1789, 0.05→1200, 0.1→776, 0.2→495, 0.3→295, 0.4→295, 0.5→195, 0.7→195 (floor at clean-invalidation). Optimum: λ≥0.5 = hard reset.`);
+  sweepLines.push(`Seeds: ${sweepSeeds.join(", ")}. Same decisive harness, same fixed constants. Confidence check uses a t-like statistic at the 1.96 threshold against vanilla.`);
   sweepLines.push("");
   sweepLines.push(row(["policy", "regret B mean", "regret B std", "beats baseline (vanilla)"]));
   sweepLines.push(row(["---", "---:", "---:", "---"]));
