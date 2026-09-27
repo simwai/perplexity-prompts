@@ -717,6 +717,73 @@ export async function findDuplicateFull(db: Client, content: string): Promise<nu
   return asNumber(found.rows[0]?.["id"]);
 }
 
+export async function sweepGrounds(db: Client, changedGrounds: string[]): Promise<number> {
+  if (changedGrounds.length === 0) return 0;
+
+  const placeholders = changedGrounds.map(() => "?").join(", ");
+  const groundRows = await db.execute({
+    sql: `SELECT DISTINCT g.memory_id AS memory_id FROM ground g JOIN ground_kind gk ON g.ground_kind_id = gk.id WHERE g.value IN (${placeholders}) OR gk.name IN (${placeholders})`,
+    args: [...changedGrounds, ...changedGrounds],
+  });
+
+  if (groundRows.rows.length === 0) return 0;
+
+  const memoryIds = groundRows.rows.map((row) => asNumber(row["memory_id"]));
+  if (memoryIds.length === 0) return 0;
+
+  const statusId = await lookupId(db, "memory_status", "invalidated");
+  const now = epochInt();
+
+  const writes: Array<{ sql: string; args: Array<string | number | null> }> = [];
+  for (const memoryId of memoryIds) {
+    writes.push({ sql: `UPDATE memory SET status_id = ?, updated_at = ? WHERE id = ?`, args: [statusId, now, memoryId] });
+  }
+  await db.batch(writes, "write");
+  return memoryIds.length;
+}
+
+export function previewParameterChange(key: string, proposedValue: string, currentParams: Record<string, string>): PreviewResult {
+  const current = currentParams[key];
+  const num = Number(proposedValue);
+
+  switch (key) {
+    case "trust_q": {
+      if (!Number.isFinite(num) || num < 0 || num > 1) return { ok: false, error: "trust_q must be between 0 and 1" };
+      const doubt = Number(currentParams["doubt_q"] ?? DEFAULT_TUNING_PARAMS.doubt_quantile);
+      if (num < doubt) return { ok: false, error: "trust_q must be >= doubt_q" };
+      return { ok: true, previous: current };
+    }
+    case "doubt_q": {
+      if (!Number.isFinite(num) || num < 0 || num > 1) return { ok: false, error: "doubt_q must be between 0 and 1" };
+      const trust = Number(currentParams["trust_q"] ?? DEFAULT_TUNING_PARAMS.trust_quantile);
+      if (trust < num) return { ok: false, error: "doubt_q must be <= trust_q" };
+      return { ok: true, previous: current };
+    }
+    case "min_evidence": {
+      if (!Number.isInteger(num) || num < 1) return { ok: false, error: "min_evidence must be a positive integer" };
+      return { ok: true, previous: current };
+    }
+    case "decay_rate": {
+      if (!Number.isFinite(num) || num <= 0 || num > 1) return { ok: false, error: "decay_rate must be between 0 and 1" };
+      return { ok: true, previous: current };
+    }
+    case "active_partition": {
+      if (!proposedValue.trim()) return { ok: false, error: "active_partition cannot be empty" };
+      return { ok: true, previous: current };
+    }
+    case "tune_interval": {
+      if (!Number.isInteger(num) || num < 1) return { ok: false, error: "tune_interval must be a positive integer" };
+      return { ok: true, previous: current };
+    }
+    case "window_size": {
+      if (!Number.isInteger(num) || num < 1) return { ok: false, error: "window_size must be a positive integer" };
+      return { ok: true, previous: current };
+    }
+    default:
+      return { ok: true, previous: current };
+  }
+}
+
 export async function updateMemoryFull(db: Client, id: number, content: string, tags?: string[]): Promise<boolean> {
   const trimmed = content.trim();
   if (!trimmed) throw new Error("content is required");
