@@ -335,8 +335,19 @@ function Install-Plugins {
         }
     }
 
+    # Track local plugin paths for dependency extraction
+    $localPluginDeps = @()
+
     foreach ($entry in $config.plugin) {
-        if ($entry -match '^\.') { continue }
+        if ($entry -match '^\.') {
+            # Local plugin - extract its dependencies from its package.json
+            $localPluginPath = Join-Path $TargetPath $entry
+            $localPkgJsonPath = Join-Path (Split-Path -Parent $localPluginPath) 'package.json'
+            if (Test-Path $localPkgJsonPath) {
+                $localPluginDeps += $localPkgJsonPath
+            }
+            continue
+        }
         if ($entry -match '^(.+)@(.+)$') {
             $name = $matches[1]; $version = $matches[2]
         } else {
@@ -345,6 +356,27 @@ function Install-Plugins {
         if (-not $deps.ContainsKey($name) -or $deps[$name] -ne $version) {
             $deps[$name] = $version
         }
+    }
+
+    # Add peerDependencies from local plugins
+    foreach ($localPkgJsonPath in $localPluginDeps) {
+        try {
+            $localPkg = Get-Content -LiteralPath $localPkgJsonPath -Raw -Encoding UTF8 | ConvertFrom-Json
+            if ($null -ne $localPkg.peerDependencies) {
+                foreach ($prop in $localPkg.peerDependencies.PSObject.Properties) {
+                    if (-not $deps.ContainsKey($prop.Name)) {
+                        $deps[$prop.Name] = $prop.Value
+                    }
+                }
+            }
+            if ($null -ne $localPkg.dependencies) {
+                foreach ($prop in $localPkg.dependencies.PSObject.Properties) {
+                    if (-not $deps.ContainsKey($prop.Name)) {
+                        $deps[$prop.Name] = $prop.Value
+                    }
+                }
+            }
+        } catch { }
     }
 
     $pkg.dependencies = $deps
