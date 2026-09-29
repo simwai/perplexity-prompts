@@ -38,8 +38,8 @@
     "doom_loop": "deny"
   },
 
-  // opencode plugins. @latest is fine for personal/dev use; pin a version
-  // when reproducibility matters.
+// opencode plugins. @latest is fine for personal/dev use; pin a version
+// when reproducibility matters.
 "plugin": [
     "opencode-vibeguard@latest",
     "opencode-adaptive-thinking@latest",
@@ -49,7 +49,6 @@
     ".opencode/plugins/baba-prompt-system-loader.ts",
     ".opencode/plugins/baba-convention-review.ts",
     ".opencode/plugins/memory-worth",
-    ".opencode/plugins/baba-subtask.ts",
     ".opencode/plugins/baba-goal-detect.ts",
     ".opencode/plugins/baba-bootstrap.ts",
     ".opencode/plugins/baba-drift.ts",

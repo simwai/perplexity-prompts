@@ -1,18 +1,16 @@
 {
   "dependencies": {
+    "@opencode-ai/plugin": "1.18.31",
+    "@opencode-ai/sdk": "1.18.31",
     "@libsql/client": "^0.4.3",
     "beautiful-mermaid": "^1.1.3",
     "opencode-adaptive-thinking": "^0.1.6",
-"opencode-pty": "^0.3.6",
+    "opencode-pty": "^0.3.6",
     "opencode-vibeguard": "^0.1.0"
   },
-  "peerDependencies": {
-    "@opencode-ai/plugin": "1.18.31"
-  },
   "devDependencies": {
-    "@opencode-ai/plugin": "1.18.31",
     "@types/node": "^26.6.2",
-    "ts-node": "^10.9.2"
+    "typescript": "^5.0.0"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"
