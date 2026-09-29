@@ -67,7 +67,7 @@ flowchart TD
 
 | Phase | Purpose | Template | Key Output |
 |---|---|---|---|
-| `STARTUP` | Load system, emit fingerprint | — | Fingerprint + loaded files |
+| `STARTUP` | Load system, verify files loaded | — | Loaded files |
 | `INTAKE` | Goal, stack, scope, criteria, milestones | `INTAKE` | Approved intake → BACKLOG |
 | `BACKLOG` | ICE-prioritized items by milestone | `BACKLOG` | Backlog → SPRINT |
 | `SPRINT` | Selected items, board, criteria | `SPRINT` | Sprint plan → TASK_PLAN |

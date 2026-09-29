@@ -22,7 +22,7 @@
 | **BLOCKED** | Phase emitted when prerequisites missing; documents needed input and next user action | `00-system.md`, `03-output-and-state.md` | Phase transitions |
 | **CONFORMANCE** | Checklist of protocol invariants verified before each phase transition | `docs/REFERENCE/PROTOCOLS.md` | All phases |
 | **DECISION FORMAT** | Required `# Decision Needed` block with 2-3 options, recommended as bold **A** | `00-system.md`, `02-decision-prompts.md` | Review, Plan |
-| **LOOP PROTECTION** | Doom-loop guard: 3 identical read fingerprints without state change = protocol breach | `00-system.md` | Read ledger, MCP |
+| **LOOP PROTECTION** | Doom-loop guard: opencode native `permission.doom_loop=deny` halts 3+ identical calls | `opencode.jsonc` | Process level |
 | **MERGE VERDICT** | BabaReviewer output: MERGE BLOCKED / APPROVED WITH FIXES / LGTM | `01-personas.md`, `04-rubrics.md` | Review, Patch |
 | **MUST-PRESERVE** | Rewrite contract field: constraints the patch must not break | `03-output-and-state.md`, `06-misc.md` | Patch, Contract |
 | **MUST-ELIMINATE** | Rewrite contract field: confirmed violations the patch must remove | `03-output-and-state.md`, `06-misc.md` | Patch, Contract |
@@ -31,7 +31,7 @@
 | **READING PLAN** | Computed dependency closure (depth 3) that must be fully read before analysis output | `07-protocols.md`, `03-output-and-state.md` | Checklist, Review |
 | **REWRITE CONTRACT** | Complete specification for PATCH: target, preserve, eliminate, forbidden, must-use, must-route | `03-output-and-state.md`, `06-misc.md` | Plan, Patch |
 | **SESSION STATE** | Per-session file `SESSION_STATE-<id>.md` tracking phase, approvals, findings, edits, locks | `03-output-and-state.md` | All phases |
-| **STARTUP** | Mandatory first phase: load all system files, emit fingerprint, verify completion | `00-system.md` | All sessions |
+| **STARTUP** | Mandatory first phase: load all system files in full, verify via loader plugin | `00-system.md` | All sessions |
 | **STYLE POLICY** | Project-level choice: `preserve-local` or `upgrade-house-style` recorded in `STYLE_POLICY.md` | `00-system.md`, `05-impl-style.md` | Patch, Convention |
 | **VERIFICATION GATE** | Post-patch: diff inspect, lint, checks, regression baseline/post-fix, Playwright smoke | `06-misc.md`, `08-plan-actual-gate.md` | Patch, Commit |
 
@@ -41,7 +41,7 @@
 
 | Phase | Purpose | Entry From | Exit To |
 |---|---|---|---|
-| `STARTUP` | Load system, emit fingerprint | — | `CHECKLIST` / `INTAKE` / `DISCUSS` / `BLOCKED` |
+| `STARTUP` | Load system, verify files loaded | — | `CHECKLIST` / `INTAKE` / `DISCUSS` / `BLOCKED` |
 | `INTAKE` | Goal, stack, scope, success criteria, milestones | `STARTUP` | `BACKLOG` |
 | `BACKLOG` | ICE-prioritized items grouped by milestone | `INTAKE` | `SPRINT` |
 | `SPRINT` | Selected items, board, completion criteria | `BACKLOG` | `TASK_PLAN` |
