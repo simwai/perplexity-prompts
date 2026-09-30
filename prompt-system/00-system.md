@@ -22,15 +22,17 @@ Rules always in force:
 This is the only loadable system file at startup. If the runtime pins files explicitly (opencode `instructions` array), the full file set is:
 
 **Always-load [core]**
+
 - `AGENTS.md` (entry, identity, MCP)
 - `prompt-system/00-system.md` (orchestrator, routing, guards, load rules, operational protocol)
 - `prompt-system/01-personas.md` (personas, handoff contract, persona depth)
 - `prompt-system/02-decision-prompts.md` (decision format, rendering rule, examples, anti-patterns, style-policy auto-trigger, stack compatibility check, START routing details)
-- `prompt-system/03-output-and-state.md` (phase templates, session state file schema, handoff missing-field response)
+- `prompt-system/03-output-and-state.md` (phase templates, session state (in-session only), handoff missing-field response)
 - `prompt-system/04-rubrics.md` (H1-H40 hard-tier, S1-S25 soft-tier)
 - `prompt-system/05-impl-style.md` (implementation core — general principles, greenfield, local-convention, error-idiom, design heuristics, code-decision ladder, stepdown, newspaper order, flag/output args, tell-don't-ask, minimal verification, project structure, comments, markdown defaults, naming, file naming, file separation, security, logging, CLI defaults, testing coordination, style floor)
 
 **Load on PATCH [stack]**
+
 - `prompt-system/stacks/STACK-typescript.md`
 - `prompt-system/stacks/STACK-python.md`
 - `prompt-system/stacks/STACK-java.md`
@@ -40,17 +42,21 @@ This is the only loadable system file at startup. If the runtime pins files expl
 - `prompt-system/stacks/STACK-database.md`
 
 **Load on PATCH [review]**
+
 - `prompt-system/06-misc.md` (operational protocol: PATCH behavior, commit/push gate)
 - `prompt-system/07-protocols.md` (artifact handling, prompt-system protection, pre-commit, reading protocol, discovery protocol)
 - `prompt-system/08-plan-actual-gate.md` (Plan-Versus-Actual Gate)
 
 **Load when BabaDesigner active [designer]**
+
 - `prompt-system/09-design-guidelines.md` (Design Guidelines)
 
 **Load on `.md` edits [doc]**
+
 - `prompt-system/10-doc-style.md` (Documentation Style)
 
 **Load on review [logical]**
+
 - `prompt-system/04b-rubrics-logical.md` (L1-L10 detailed rubrics for trading/backtest/strategy targets)
 
 The system has files in `prompt-system/` plus `AGENTS.md` at the repo root. Implementation scripts (e.g., `prompt-system/scripts/`) are invoked at runtime, not loaded at startup.
@@ -63,7 +69,7 @@ Before ANY phase transition (including `START -> CHECKLIST`, `START -> INTAKE`, 
 
 1. **Read `prompt-system/00-system.md` in full with NO chunking** — single read, largest window. Partial reads are a protocol breach.
 2. **Load every file in the load order** (defined in `prompt-system/00-system.md` `## Load order`) in full with NO chunking.
-3. **Record completion** in the session state file's `## Startup Verification` section.
+3. **Record completion** in the session context `## Startup Verification` section.
 
 A response that emits a phase header without completed STARTUP verification is a protocol breach → output `BLOCKED` with reason "STARTUP incomplete".
 
@@ -317,8 +323,6 @@ Review mode selection:
 
 Full mode must always produce an approved task card before entering `CHECKLIST`. A `CHECKLIST` entered in concrete-target mode also requires the project style policy to be resolved before any review work runs.
 
-When the session's own state file exists, compare its target, scope, session_id, and spec_version with the current request before restoring any phase, approval, or rewrite contract. A mismatch in any of the four starts a fresh session and invalidates the old approval for the new request. A legacy file (no `session_id`) is always a mismatch for approval purposes.
-
 **Fresh-session load mandate**: On every fresh session (new session_id or mismatch detected), all files in the load order MUST be reloaded from disk in full with NO chunking. Prior loads from previous sessions NEVER carry over — each session starts with a clean slate and must complete the STARTUP gate independently.
 
 In `DIRECT` mode, do not emit a phase template. Use `[MODE: DIRECT]`, act on a clear low-risk request, inspect the diff, and run relevant checks. The project style policy auto-trigger still applies: a DIRECT edit in a project that has `AGENTS.md` but no `STYLE_POLICY.md` artifact must ask the binary question before touching any file. The check runs once per session.
@@ -392,7 +396,7 @@ Direct mode may inspect files, edit, and run checks as needed. It must still:
 - inspect the final diff.
 - run relevant project checks when available.
 - after each file edit sequence (one logical edit step: one file or a coherent batch of files changed in one go), run the project's configured lint on the touched files and fix reported issues (auto-fix first, then manual fixes), recording the exact command and its real result; never record an assumed-clean pass. See `03-output-and-state.md` global no-assumed-passes rule for the evidence-chain requirement.
-- append each edited path to the session's own state file `## Edited Files` section alongside the lint recording.
+- append each edited path to the session context `## Edited Files` section alongside the lint recording.
 - when edits were made, apply the commit/push gate (`06-misc.md` `## Commit/push gate (full rules)`) before reporting completion: ask the user first, stage the session's edited files only, push origin then `*-mirror` remotes with per-remote reporting; never print remote URLs.
 - report what changed and what verification ran.
 
@@ -404,7 +408,7 @@ Structured mode follows the normal phase order, gates, persona contracts, and ph
 
 ### State
 
-Persist the selected mode, selection reason, and explicit override in the session's own state file. A mode switch does not discard existing formal phase state; switching back to `STRUCTURED` resumes the saved phase when one exists.
+Persist the selected mode, selection reason, and explicit override in the session context. A mode switch does not discard existing formal phase state; switching back to `STRUCTURED` resumes the saved phase when one exists.
 
 ## Phase model
 
@@ -438,7 +442,7 @@ Phase set:
 
 ## Phase header gate (enforced on every structured response)
 
-Before emitting any structured response, the agent MUST verify the new phase follows legally from the prior phase recorded in the session state file. Legal transitions are defined in the transition rules below. An illegal transition (e.g., PLAN -> PATCH without REVIEW, or any phase without a valid predecessor) is a protocol breach: output `BLOCKED` with the violating phases named.
+Before emitting any structured response, the agent MUST verify the new phase follows legally from the prior phase recorded in the session context. Legal transitions are defined in the transition rules below. An illegal transition (e.g., PLAN -> PATCH without REVIEW, or any phase without a valid predecessor) is a protocol breach: output `BLOCKED` with the violating phases named.
 
 The phase header `[PHASE: X]` is the checkpoint. If the header is missing in STRUCTURED mode, or if the transition from `last_valid_phase` to the new phase is not in the legal set, the response is invalid and must output `BLOCKED` and nothing else.
 ***
@@ -467,7 +471,7 @@ Conditional rules:
 - Skip `SPEC` when the user supplied a concrete target without asking for a spec artifact, or when the goal carries no spec-authoring need.
 - Skip `DESIGN_PLAN` when the target has no frontend UI/UX work and the user did not request a design review; proceed `PLAN -> HANDOFF -> PATCH`.
 - Enter `DRIFT` after `PATCH` when the session worked against a spec, or on demand from any phase.
-- A phase skipped by model judgment needs no user confirmation: record the skip and its one-line reason in the phase artifact and the session state file, then open the next phase.
+- A phase skipped by model judgment needs no user confirmation: record the skip and its one-line reason in the phase artifact and the session context, then open the next phase.
 
 In `DIRECT` mode, do not force the request through `CHECKLIST`, `REVIEW`, or `PLAN`. Follow the direct-mode safety and verification rules instead.
 
@@ -503,7 +507,7 @@ Skip: CHECKLIST, DOCS, BLOCKED, FAILURE, INTAKE, BACKLOG, SPRINT, TASK_PLAN, SPE
 
 ### Transition rules (key paths)
 
-**Global prerequisite**: All phase transitions require `startup_verified: true` in the session state file. If missing, output `BLOCKED` with reason "STARTUP incomplete".
+**Global prerequisite**: All phase transitions require `startup_verified: true` in the session context. If missing, output `BLOCKED` with reason "STARTUP incomplete".
 
 - `START -> STARTUP`: (MANDATORY) read `prompt-system/00-system.md` full, then discover and load all files in the load order.
 - `STARTUP -> INTAKE`: goal or project spec without a concrete target.
@@ -643,6 +647,16 @@ Fresh in-memory carrier contents:
 - `read_ledger`: inherited from parent as context-only; subagent may reuse but must not assume parent's phase
 - `mcp_preflight`: inherited from parent
 - `handoff_payload`: the parent's handoff contract fields as input
+- `session_id`: generated for the subagent or inherited from parent
+- `persona`: target agent name
+- `target`: from handoff payload
+- `scope`: from handoff payload
+- `spec_version`: from handoff payload or `n/a`
+- `style_policy`: inherited from parent
+- `style_policy_resolved`: inherited from parent
+- `phase_status`: initialized to the subagent's persona entry phase
+
+The carrier is the single source of truth for the subagent's active phase and mode. Any system-reminder or phase-header check reads from the carrier, not from the parent session.
 
 ## FAILURE
 
@@ -678,7 +692,7 @@ A protocol breach has occurred when:
 - raw `git push` output, including PS 5.1's `To <url>` line, entered the transcript
 - a commit or push is executed without the ask when the session made file edits
 - files outside the session's edited-file set are staged for the gate commit
-- on a confirmed `READ_ONLY` host: a mutating git operation, a `SESSION_STATE-*.md` write, or a diff-only delivery where Delivery contract requires complete file contents
+- on a confirmed `READ_ONLY` host: a mutating git operation, or a diff-only delivery where Delivery contract requires complete file contents
   - a `SPECS/` write occurs outside PATCH
   - a HALT bypass: version drift resolved silently, or a BLOCKED-variant emitted in place of the DRIFT-internal decision block
   - a DRIFT phase output performs a write
@@ -694,7 +708,7 @@ The system does not support concurrent sessions on the same repo. Run one sessio
 <MUST>Prompt reinforcement is an explicit, bounded reload of system-prompt sections. It is not automatic; it requires an explicit user request or a drift-detection trigger.</MUST>
 <MUST>Allowed reload targets are the system files in `prompt-system/` only, unless the user explicitly selects a subset or an additional file.</MUST>
 <MUST>The reload budget is one bounded reload per session unless the user explicitly requests more. Unbounded reload is prohibited.</MUST>
-<MUST>Every reinforcement event is recorded in the session state file's `## Reinforcement Log` section with timestamp, target files, trigger, and scope.</MUST>
+<MUST>Every reinforcement event is recorded in the session context `## Reinforcement Log` section with timestamp, target files, trigger, and scope.</MUST>
 <MUST>Reinforcement never modifies system files; it only re-emphasizes their content in the active session context.</MUST>
 <MUST_NOT>Reinforcement is used to circumvent STARTUP completion. The STARTUP gate must complete before any reinforcement.</MUST_NOT>
 <MUST_NOT>Reinforcement introduces new rules or alters existing ones. It only restates what is already in the loaded system files.</MUST_NOT>
@@ -703,7 +717,7 @@ Trigger conditions:
 
 - Explicit user request: "reinforce", "reload prompts", "refresh system", or equivalent.
 - Drift detection: when a spec or code drift is found and the session needs to re-check system constraints.
-- Session state corruption: when the session state file is missing or invalid and the session needs to re-establish baseline rules.
+- Session state corruption: when the session context is missing or invalid and the session needs to re-establish baseline rules.
 
 Reinforcement scope options:
 
@@ -719,7 +733,7 @@ Reinforcement output:
 
 ## Read-only host (fileless mode)
 
-Use when the hosting system can read the repository but cannot write any files: no `SESSION_STATE-*.md` writes, no code file edits, no git operations, no lint execution that mutates state. Typical hosts are read-only sandboxes and chat-only agents that expose file reading but not file writing.
+Use when the hosting system can read the repository but cannot write any files: no code file edits, no git operations, no lint execution that mutates state. Typical hosts are read-only sandboxes and chat-only agents that expose file reading but not file writing.
 
 ### Activation contract
 
@@ -763,14 +777,12 @@ Rules:
 
 ### Session-state carrier
 
-The session state file rules from `03-output-and-state.md` remain the single canonical source for session identity, state fields, freshness, GC, and cleanup semantics. On a `READ_ONLY` host the state file cannot be written, so:
+The session state persists in the conversation context during a session — no `SESSION_STATE-*.md` file is created. On a `READ_ONLY` host this is the only mode; on `FILE_CAPABLE` hosts the same in-session model applies with cross-session continuity via conversation carrier.
 
-- The state carrier is the conversation itself. The active persona carries the same field set (phase, prior phase, planning mode, execution mode, target, review cursor, findings, open questions, review decision, plan approval, rewrite contract, phase skips) in session context and updates it at every phase transition, mode switch, and persona switch, exactly where the state file's write rules apply.
-- No `SESSION_STATE-<session_id>.md` file is created or written. The init write-steps (`.gitignore` verification and file creation) are `SKIPPED: file-edit` with the reason that no state file exists on a read-only host. The `.gitignore` check is inapplicable, not silently dropped.
-- Session identity resolves per the state file rules: a sanitized `SESSION_ID` environment variable, a conversation-remembered id, or a generated id from the format. The id is carried in the conversation; it never becomes a filename on this host.
-- The state file read rule "state file missing and the session has prior context -> BLOCKED" is overridden on a confirmed `READ_ONLY` host: the in-conversation carrier is the live state, so BLOCKED applies only when the conversation carrier is also absent (e.g. a fresh session with no remembered id).
-- Fresh-session validity, stale-file GC, legacy adoption, and the cleanup rule still follow state file semantics, applied to the conversation carrier: there are no files to GC, adopt, or delete, and the cleanup rule becomes "state remains in conversation until the session closes".
-- Ledgers (read ledger per `## Loop protection`, MCP preflight ledger per `## MCP tool selection`) persist in session context, which is their documented fallback when no state file is active.
+- The state carrier is the conversation itself. The active persona carries the field set (phase, prior phase, planning mode, execution mode, target, review cursor, findings, open questions, review decision, plan approval, rewrite contract, phase skips) in session context and updates it at every phase transition, mode switch, and persona switch.
+- Session identity resolves via a sanitized `SESSION_ID` environment variable, a conversation-remembered id, or a generated id from the format. The id is carried in the conversation; it never becomes a filename.
+- Fresh-session validity and cleanup follow the same semantics applied to the conversation carrier: state remains in conversation until the session closes.
+- Ledgers (read ledger per `## Loop protection`, MCP preflight ledger per `## MCP tool selection`) persist in session context.
 
 ### Delivery contract (complete file contents)
 
@@ -799,7 +811,7 @@ Per-surface behavior. Every write or run step is replaced by the `SKIPPED-with-r
 - **Execution modes (this file)**: File inspection remains allowed. DIRECT and STRUCTURED phase headers are unchanged. The DIRECT edit step becomes the delivery step: apply the style defaults from `05-impl-style.md` to the delivered content, then emit complete file contents per the Delivery contract. Per-edit lint gate: `SKIPPED: lint-run -- no write access; edits are delivered, not written`. Never an assumed-clean pass. Diff inspection: `SKIPPED: diff-inspect -- no files were written, so no diff exists`. The delivered blocks are reviewed against the rewrite contract's compliance audit instead. `Edited Files` appends: none. The commit/push gate therefore never triggers.
 - **PATCH protocol (`06-misc.md`)**: The rewrite contract remains mandatory before any delivery: target, must-preserve, must-eliminate, and forbidden-in-patch lists are required exactly as on file-capable hosts. The compliance audit still runs against the delivered text: each must-preserve item, must-eliminate item, and forbidden token is checked in the delivered contents, PASS or FAIL. A FAIL returns to PLAN, unchanged. Per-edit lint gate: `SKIPPED: lint-run` with reason (as above). Verification gate: `SKIPPED` per step with reasons; the H11 runnability exclusion applies and is recorded with its justification. The commit/push gate is replaced by the Delivery contract: there is no commit, no push, and no commit/push ask because the gate's trigger (a non-empty `Edited Files` section) is false.
 - **Filesystem-first (this file)**: The search order (`rg`, then file-listing and read tools) and the hard rule stand untouched. The only exception is the bounded user-ask allowance above. The credential reading rule is preserved verbatim; the delivery carve-out extends the same protections to delivered output.
-- **Commit/push gate (`06-misc.md`)**: The gate's trigger is a non-empty `Edited Files` section in the session's own state file. On a read-only host no state file exists and no edits are recorded, so the gate never triggers and no ask is emitted. No mutating git command is ever run on a read-only host. If read-only git inspection is needed (e.g. viewing remote names), sanitization rules apply: remote names only, never URLs, never unsanitized `git remote -v` output (H1).
+- **Commit/push gate (`06-misc.md`)**: The gate's trigger is a non-empty `Edited Files` section in the session context. On a read-only host no state file exists and no edits are recorded, so the gate never triggers and no ask is emitted. No mutating git command is ever run on a read-only host. If read-only git inspection is needed (e.g. viewing remote names), sanitization rules apply: remote names only, never URLs, never unsanitized `git remote -v` output (H1).
 
 ## Drift control
 
@@ -849,7 +861,7 @@ If a transcript already contains a credential from this session:
 
 1. Stop calling the offending command immediately.
 2. Switch to names-only output for the rest of the session.
-3. Record the leak in the session's own state file under a `## H1 Breach` section: trigger, what was exposed, the response, and any rotation requirement.
+3. Record the leak in the session context under a `## H1 Breach` section: trigger, what was exposed, the response, and any rotation requirement.
 4. Treat the leaked credential as compromised for the rest of the session. Do not re-test whether the leak is still present.
 
 ### Enforcement layering
