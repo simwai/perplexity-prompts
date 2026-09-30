@@ -222,82 +222,8 @@ Pre-review docs log:
 - [ ] Unknowns explicitly called out
 Docs phase: [needed | skipped] -- [one-line reason]
 
-Hard tier:
-- [ ] H1
-- [ ] H2
-- [ ] H3
-- [ ] H4
-- [ ] H5
-- [ ] H6
-- [ ] H7
-- [ ] H8
-- [ ] H9
-- [ ] H10
-- [ ] H11
-- [ ] H12
-- [ ] H13
-- [ ] H14
-- [ ] H15
-- [ ] H16
-- [ ] H17
-- [ ] H18
-- [ ] H19
-- [ ] H20
-- [ ] H21
-- [ ] H22
-- [ ] H23
-- [ ] H24
-- [ ] H25
-- [ ] H26
-- [ ] H27
-- [ ] H28
-- [ ] H29
-- [ ] H30
-- [ ] H31
-- [ ] H32
-- [ ] H33
-- [ ] H34
-- [ ] H35
-- [ ] H36
-- [ ] H37
-- [ ] H38
-- [ ] H39
-- [ ] H40
-  - Greenfield skip: mark `[x] H1-H40 -- skipped (greenfield)` when CHECKLIST/REVIEW are skipped per the greenfield branch.
-
-Soft tier:
-- [ ] S1
-- [ ] S2
-- [ ] S3
-- [ ] S4
-- [ ] S5
-- [ ] S6
-- [ ] S7
-- [ ] S8
-- [ ] S9
-- [ ] S10
-- [ ] S11
-- [ ] S12
-- [ ] S13
-- [ ] S14
-- [ ] S15
-- [ ] S16
-- [ ] S17
-  - Greenfield skip: mark `[x] S1-S17 -- skipped (greenfield)` when CHECKLIST/REVIEW are skipped per the greenfield branch.
-
-Logical tier (L1-L10):
-- [ ] L1 -- [blocking|advisory]
-- [ ] L2 -- [blocking|advisory]
-- [ ] L3 -- [blocking|advisory]
-- [ ] L4 -- [blocking|advisory]
-- [ ] L5 -- [blocking|advisory]
-- [ ] L6 -- [blocking|advisory]
-- [ ] L7 -- [blocking|advisory]
-- [ ] L8 -- [blocking|advisory]
-- [ ] L9 -- [blocking|advisory]
-- [ ] L10 -- [blocking|advisory]
-  - Greenfield skip: mark `[x] L1-L10 -- skipped (greenfield)` when CHECKLIST/REVIEW are skipped per the greenfield branch.
-  - Blocking vs advisory is determined at discovery time per `04-rubrics.md`.
+Rubric coverage: apply H1-H40, S1-S25, L1-L10 from 04-rubrics.md (per scope; L-tier from 04b-rubrics-logical.md when trading/backtest/strategy target)
+  - Greenfield skip: mark `[x] Rubric coverage -- skipped (greenfield)` when CHECKLIST/REVIEW are skipped per the greenfield branch.
 
 Verification:
 - Build: pending -- [command]
@@ -864,7 +790,5 @@ Retry: Reply with "retry" to resume at the last valid phase.
 ## Session State (In-Session Only)
 
 All session state persists in the conversation context during a session — no `SESSION_STATE-*.md` file is created. State includes: phase, persona, target, scope, findings, mitigations, plan approval, rewrite contract, gate results, and cross-session continuity via conversation carrier.
-
-**Cross-session persistence**: Each new session reloads all system files fresh (STARTUP gate). No file-based session restoration. The conversation carrier holds identity (`session_id`, `target`, `scope`, `spec_version`) for continuity when the host preserves context.
 
 **Gate outputs**: Plan-Actual, Commit/Push, Compliance Audit, and Leftover Audit results are emitted directly in the PATCH response — not persisted to a file.
