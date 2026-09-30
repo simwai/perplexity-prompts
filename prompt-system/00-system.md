@@ -21,18 +21,39 @@ Rules always in force:
 
 This is the only loadable system file at startup. If the runtime pins files explicitly (opencode `instructions` array), the full file set is:
 
+**Always-load [core]**
 - `AGENTS.md` (entry, identity, MCP)
-- `prompt-system/00-system.md` (this file: orchestrator, routing, guards, load rules, operational protocol)
+- `prompt-system/00-system.md` (orchestrator, routing, guards, load rules, operational protocol)
 - `prompt-system/01-personas.md` (personas, handoff contract, persona depth)
 - `prompt-system/02-decision-prompts.md` (decision format, rendering rule, examples, anti-patterns, style-policy auto-trigger, stack compatibility check, START routing details)
 - `prompt-system/03-output-and-state.md` (phase templates, session state file schema, handoff missing-field response)
-- `prompt-system/04-rubrics.md` (H1-H12 hard-tier, S1-S20 soft-tier)
-- `prompt-system/05-impl-style.md` (implementation core, stack variants, project-specific tooling)
-- `prompt-system/06-misc.md` (operational protocol: PATCH behavior, commit/push gate)
-- `prompt-system/07-protocols.md` (cross-cutting protocol: artifacts, pre-commit, cross-team, app lifecycle, API architecture & design, library selection, session file locks, spec lifecycle, drift, discuss, scrum)
-- `prompt-system/08-plan-actual-gate.md` (Plan-Versus-Actual Gate verification protocol)
+- `prompt-system/04-rubrics.md` (H1-H40 hard-tier, S1-S25 soft-tier)
+- `prompt-system/05-impl-style.md` (implementation core — general principles, greenfield, local-convention, error-idiom, design heuristics, code-decision ladder, stepdown, newspaper order, flag/output args, tell-don't-ask, minimal verification, project structure, comments, markdown defaults, naming, file naming, file separation, security, logging, CLI defaults, testing coordination, style floor)
 
-The system has files in `prompt-system/` plus `AGENTS.md` at the repo root. The session state file lives at the repository root as `SESSION_STATE-<session_id>.md` and is gitignored. Implementation scripts (e.g., `prompt-system/scripts/session-locks.ps1`) are invoked at runtime, not loaded at startup.
+**Load on PATCH [stack]**
+- `prompt-system/stacks/STACK-typescript.md`
+- `prompt-system/stacks/STACK-python.md`
+- `prompt-system/stacks/STACK-java.md`
+- `prompt-system/stacks/STACK-frontend.md`
+- `prompt-system/stacks/STACK-powershell.md`
+- `prompt-system/stacks/STACK-pinescript.md`
+- `prompt-system/stacks/STACK-database.md`
+
+**Load on PATCH [review]**
+- `prompt-system/06-misc.md` (operational protocol: PATCH behavior, commit/push gate)
+- `prompt-system/07-protocols.md` (artifact handling, prompt-system protection, pre-commit, reading protocol, discovery protocol)
+- `prompt-system/08-plan-actual-gate.md` (Plan-Versus-Actual Gate)
+
+**Load when BabaDesigner active [designer]**
+- `prompt-system/09-design-guidelines.md` (Design Guidelines)
+
+**Load on `.md` edits [doc]**
+- `prompt-system/10-doc-style.md` (Documentation Style)
+
+**Load on review [logical]**
+- `prompt-system/04b-rubrics-logical.md` (L1-L10 detailed rubrics for trading/backtest/strategy targets)
+
+The system has files in `prompt-system/` plus `AGENTS.md` at the repo root. Implementation scripts (e.g., `prompt-system/scripts/`) are invoked at runtime, not loaded at startup.
 
 <HIGH_PRIO>
 

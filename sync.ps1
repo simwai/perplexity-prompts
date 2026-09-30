@@ -168,6 +168,7 @@ $folders = @('prompt-system', '.opencode', '.opencode/agents')
         # Install npm plugins declared in opencode.jsonc
         if (Test-Path (Join-Path $target '.opencode')) {
             Install-Plugins -TargetPath $target
+            Ensure-VibeguardConfig -TargetPath $target
         }
 
 if ($DeleteLegacy) {
