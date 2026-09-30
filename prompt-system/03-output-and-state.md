@@ -473,7 +473,7 @@ Do not offer partial handoff when only one item remains pending.
   expect: [auto-generated]
 
 ## Decision Items (if any)
-- Each decision uses `# Decision Needed` format per `00-system.md`
+- Each decision uses `# Decision Needed` format per `prompt-system/02-decision-prompts.md`
 - Recommended option is **fat bolded** as `**A. option**`
 - No open-ended questions permitted
 
@@ -511,7 +511,7 @@ REVIEW owns confirmation. There is no standalone CONFIRM phase.
 
 Every emitted finding in `# Findings` that is in scope for remediation carries a `Mitigations:` block immediately under the finding line. The block is a mini decision prompt: 2-3 options, recommended option first with `(Recommended)`, and one-line pros and cons per option.
 
-The recommended option is rendered as `**A. option text**` (fat bolded, first position) per the Rendering Rule in `00-system.md`.
+The recommended option is rendered as `**A. option text**` (fat bolded, first position) per the Rendering Rule in `prompt-system/02-decision-prompts.md`.
 
 The `Recommended:` line is optional: include it when one option's pros dominate the others; omit it when the block is left unmarked. The two are equivalent in weight; an unmarked `Mitigations:` block is a valid shape, not a missing one.
 
