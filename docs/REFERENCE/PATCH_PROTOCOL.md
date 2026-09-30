@@ -179,24 +179,7 @@ See `08-plan-actual-gate.md` for the complete Plan-Versus-Actual Gate protocol. 
 - Never use `git add -A`, `git add -u`, `git add .`, or `git add -f`.
 - Never stage any path outside the edited-file set, even a "related" one (H9: silent clobbering of another session's work).
 - Never stage `SESSION_STATE-*.md`; they are gitignored; `git add -f` would force them in, so `-f` is forbidden outright.
-- Never stage `.session-locks/`; it is gitignored, not source.
 - Staging is self-verifying: `git status --short` must show exactly the session's edited files staged and nothing else before committing.
-
-### Lock verification
-
-Before any `git add`, this gate calls `prompt-system/scripts/session-locks.ps1` functions `Verify-LocksForStagedFiles` and `ReReadAndDiffStagedFiles` to verify, for every path in the proposed commit:
-
-- the current session holds the lock for that path (per-file or dependency lock), or
-- the current session released the lock within this PATCH/DIRECT step.
-
-If any path fails the check, staging is refused and the gate surfaces the same three options as Wait and surface (wait longer / skip this file / override-steal). The wait/surface logic lives in `07-protocols.md`; this section does not duplicate it.
-
-After the lock check passes, the gate re-reads the working-tree version of each path and diffs it against the in-memory expected content to catch the read-then-write race that implicit-on-write locking cannot prevent. Any unowned hunk surfaces with the same three options and refuses staging.
-
-SKIPPED-allowlist: recording `SKIPPED -- <reason>` for lock verification is legitimate only when the host has no shell tool to invoke the script, when no staged file overlaps the session's ledger, or on a confirmed `READ_ONLY` host.
-Any other missing lock refuses staging via the wait/skip/steal surface above; a bare SKIPPED outside these three cases is a gate FAIL.
-
-A confirmed `READ_ONLY` host skips this section: the gate trigger is already false, so no staging and no lock check occur.
 
 ### The ask
 
@@ -274,27 +257,24 @@ A session with no file edits does not auto-close; the user closes it explicitly 
 
 ## Leftover Handling
 
-Fix/debug sessions produce three categories of leftovers that must be auto-deleted at the PATCH verification gate. The handling is specified upfront so the agent always knows what to do; no flagging, no escalation, no session failure due to agent uncertainty.
+Fix/debug sessions produce two categories of leftovers that must be auto-deleted at the PATCH verification gate. The handling is specified upfront so the agent always knows what to do; no flagging, no escalation, no session failure due to agent uncertainty.
 
 ### Categories
 
 - **Temp files** -- files created during the session that are not in the session's `## Edited Files` ledger (e.g., temporary test outputs, scratch files, intermediate build artifacts outside configured output directories). Files in the OS temp directory (`$env:TEMP` on Windows, `/tmp` on Unix) are exempt from leftover audit; repo-local temp files are subject to auto-deletion.
-- **Stale locks** -- `.session-locks/<flat-name>.lock/` directories whose `acquired_at` timestamp exceeds `SESSION_LOCK_TTL_MINUTES = 30` (see `07-protocols.md` `## Session file locks`).
 - **Uncommitted session artifacts** -- `SESSION_STATE-*.md` files not staged for commit in the current session.
 
 ### Procedure (auto-delete at PATCH verification gate)
 
-1. **Detect** -- after the compliance audit and before the commit/push gate, scan for leftovers in all three categories.
+1. **Detect** -- after the compliance audit and before the commit/push gate, scan for leftovers in both categories.
 2. **Delete** -- remove detected leftovers:
    - Temp files: `Remove-Item -Force` (or `rm -f`)
-   - Stale locks: `Remove-Item -Recurse -Force` on the lock directory (releases the lock)
    - Uncommitted session artifacts: `Remove-Item -Force` on `SESSION_STATE-*.md` not in the current session's ledger
 3. **Record** -- write a `## Leftover Audit` section to the session state file:
 
    ```markdown
    ## Leftover Audit
    - temp files: [count] removed -- [paths]
-   - stale locks: [count] removed -- [flat-names]
    - uncommitted session artifacts: [count] removed -- [paths]
    ```
 

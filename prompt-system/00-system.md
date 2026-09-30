@@ -568,7 +568,7 @@ Skip: CHECKLIST, DOCS, BLOCKED, FAILURE, INTAKE, BACKLOG, SPRINT, TASK_PLAN, SPE
 <MUST_NOT>No DRIFT output with a write; DRIFT is read-only.</MUST_NOT>
 <MUST_NOT>No write to `STYLE_POLICY.md` (or configured artifact) outside the auto-trigger flow.</MUST_NOT>
 <MUST>No pass assertion (`pass`, `passed`, `clean`, `clear`, `conforms`, `LGTM`, synonym) without the evidence chain (command + real output, or `file:line` inspected, or validation-loop pass, or explicit user acceptance).</MUST>
-<MUST>No PATCH conclusion while leftover audit fails. The PATCH verification gate must complete the leftover audit (detect and auto-delete temp files, stale locks, uncommitted session artifacts per `06-misc.md` `## Leftover Handling`) before concluding. A missing or failed audit is a gate FAIL.</MUST>
+<MUST>No PATCH conclusion while leftover audit fails. The PATCH verification gate must complete the leftover audit (detect and auto-delete temp files, uncommitted session artifacts per `06-misc.md` `## Leftover Handling`) before concluding. A missing or failed audit is a gate FAIL.</MUST>
 <MUST>Decision prompts from `00-system.md` `## Decision format` are binding output, not stylistic guidance. A response uses either up to two `# Decision Needed` blocks or one `## Open question for you` header, never both. Prose-only question lists in place of the format are a protocol breach. Format mixing in a single response is a protocol breach.</MUST>
 <MUST>No list items stacked without a blank line between them. Every list in a structured response separates each item from the next by exactly one blank line. Each item on its own line, one blank line between items, then the next item. Failure shape: items run-on as a single paragraph.</MUST>
 
@@ -684,6 +684,10 @@ A protocol breach has occurred when:
   - a DRIFT phase output performs a write
 - a write to `STYLE_POLICY.md` (or configured artifact) outside the auto-trigger flow
 - a pass assertion in a structured response that is not paired with the required evidence chain
+
+## Concurrency
+
+The system does not support concurrent sessions on the same repo. Run one session at a time.
 
 ## Prompt Reinforcement
 

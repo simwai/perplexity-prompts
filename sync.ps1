@@ -291,7 +291,7 @@ function Ensure-GitignoreEntries {
     }
 
     $content = Get-Content -LiteralPath $gitignorePath -Raw -Encoding UTF8
-    $entries = @('.session-locks/', '.playwright-mcp/')
+    $entries = @('.playwright-mcp/')
     $modified = $false
 
     foreach ($entry in $entries) {

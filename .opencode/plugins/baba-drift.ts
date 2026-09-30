@@ -131,8 +131,7 @@ export default async ({ client, $, project, directory, worktree }: {
                      !file.includes(".git") && 
                      !file.includes("dist/") && 
                      !file.includes("build/") &&
-                     !file.includes("SPECS/") &&
-                     !file.includes(".session-locks/");
+                     !file.includes("SPECS/");
             }).slice(0, 10);
           }
 

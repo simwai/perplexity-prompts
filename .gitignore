@@ -45,7 +45,6 @@ sessions/
 *.session.md
 *.session.json
 chat-export/
-.session-locks/
 .playwright-mcp/
 
 # Pre-commit cache

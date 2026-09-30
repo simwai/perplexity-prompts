@@ -41,15 +41,9 @@ spawning API** with all of the following:
 Until OpenCode ships these capabilities, the active workflow is strictly
 sequential: `CHECKLIST -> DOCS -> REVIEW -> PLAN -> PATCH`.
 
-## Concurrency Control Preserved
+## Concurrency Control (Removed)
 
-The following mechanisms remain active and are unaffected by this removal:
-
-- Session file locks (per-file `.session-locks/*.lock`)
-- Dependency locks (depth-1 graph: importers + imports)
-- Wait/surface/override-steal contention model
-- TTL-based stale lock detection (30 minutes)
-- Commit/push gate lock verification
+Session file locks, dependency locks, wait/surface/override-steal contention model, TTL-based stale lock detection, and commit/push gate lock verification have been removed. The system no longer supports concurrent sessions on the same repo. See `00-system.md` `## Concurrency`.
 
 ## OpenCode Capability Gap
 

@@ -735,8 +735,6 @@ Gate result: ALL PASS required. Any FAIL -> return to PLAN.
 - Regression baseline (expected FAIL): PASS|FAIL/SKIPPED -- [command] -- [note or SKIPPED reason]
 - Regression post-fix (expected PASS): PASS|FAIL/SKIPPED -- [command] -- [note or SKIPPED reason]
 - Playwright smoke: PASS/FAIL/SKIPPED -- [URL] -- [note]
-- Lock acquisition: PASS/FAIL/SKIPPED -- [per-file|dependency] -- [held|released|skipped] -- [note]
-- Lock verification (commit gate): PASS/FAIL/SKIPPED -- [command] -- [notes]
 
 # Plan-Actual
 - Items: [N planned / M landed / K missing]

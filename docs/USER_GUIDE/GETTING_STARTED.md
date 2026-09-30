@@ -111,9 +111,6 @@ secrets/
 # Session state
 SESSION_STATE-*.md
 
-# Locks
-.session-locks/
-
 # OS/Editor
 .DS_Store
 Thumbs.db

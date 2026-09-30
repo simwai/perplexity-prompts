@@ -1,6 +1,6 @@
 # 06-misc
 
-Operational protocol: PATCH behavior, commit/push gate. Cross-cutting protocol details (artifacts, pre-commit, cross-team, app lifecycle, library selection, session file locks, spec lifecycle, drift, discuss, scrum) live in `07-protocols.md`.
+Operational protocol: PATCH behavior, commit/push gate. Cross-cutting protocol details (artifacts, pre-commit, cross-team, app lifecycle, library selection, spec lifecycle, drift, discuss, scrum) live in `07-protocols.md`.
 
 <HIGH_PRIO>
 
@@ -39,7 +39,6 @@ If a library, driver, or SDK appears to mislead during PATCH (unexpected error s
 
 ### Per-edit lint gate
 
-<MUST>Lock acquisition MUST complete before this gate runs for the first write to the file; lint auto-fixes that occur before lock acquisition are a protocol breach.</MUST>
 Before each file edit sequence, confirm the applicable defaults from `05-impl-style.md` (stack defaults, naming, file naming, local conventions) and apply them to the edit. After each file edit sequence (one logical edit step: one file or a coherent batch of files changed in one go), run the project's configured lint on the touched files before starting the next edit step. Follow the order from `07-protocols.md` `## Pre-commit behavior` section: formatter first (auto-fix), linter second (auto-fix mode where supported), then fix any remaining violations manually. When `.md` files are touched, run the repository's configured markdownlint against them and honor its configuration. Re-run lint after manual fixes. A step may not conclude with outstanding auto-fixable issues.
 
 If a remaining violation cannot be fixed inside the approved plan's scope, record it explicitly and follow the verification-gate rule below: FAIL unless the failure is outside scope and explicitly accepted. Record the exact command and its real output per step in the session's own state file; never record an assumed-clean pass. If no lint command exists, record SKIPPED with the reason.
@@ -171,7 +170,7 @@ Before the ask, when the gate triggers, run a Playwright MCP functional smoke of
 
 ### Plan-Versus-Actual Gate
 
-See `08-plan-actual-gate.md` for the complete Plan-Versus-Actual Gate protocol. This gate runs after lock verification and staging and before the commit/push ask, confirming each `Will change` item landed in the staged working tree.
+See `08-plan-actual-gate.md` for the complete Plan-Versus-Actual Gate protocol. This gate runs after staging and before the commit/push ask, confirming each `Will change` item landed in the staged working tree.
 
 ### Staging scope
 
@@ -179,24 +178,7 @@ See `08-plan-actual-gate.md` for the complete Plan-Versus-Actual Gate protocol. 
 - Never use `git add -A`, `git add -u`, `git add .`, or `git add -f`.
 - Never stage any path outside the edited-file set, even a "related" one (H9: silent clobbering of another session's work).
 - Never stage `SESSION_STATE-*.md`; they are gitignored; `git add -f` would force them in, so `-f` is forbidden outright.
-- Never stage `.session-locks/`; it is gitignored, not source.
 - Staging is self-verifying: `git status --short` must show exactly the session's edited files staged and nothing else before committing.
-
-### Lock verification
-
-Before any `git add`, this gate calls `prompt-system/scripts/session-locks.ps1` functions `Verify-LocksForStagedFiles` and `ReReadAndDiffStagedFiles` to verify, for every path in the proposed commit:
-
-- the current session holds the lock for that path (per-file or dependency lock), or
-- the current session released the lock within this PATCH/DIRECT step.
-
-If any path fails the check, staging is refused and the gate surfaces the same three options as Wait and surface (wait longer / skip this file / override-steal). The wait/surface logic lives in `07-protocols.md`; this section does not duplicate it.
-
-After the lock check passes, the gate re-reads the working-tree version of each path and diffs it against the in-memory expected content to catch the read-then-write race that implicit-on-write locking cannot prevent. Any unowned hunk surfaces with the same three options and refuses staging.
-
-SKIPPED-allowlist: recording `SKIPPED -- <reason>` for lock verification is legitimate only when the host has no shell tool to invoke the script, when no staged file overlaps the session's ledger, or on a confirmed `READ_ONLY` host.
-Any other missing lock refuses staging via the wait/skip/steal surface above; a bare SKIPPED outside these three cases is a gate FAIL.
-
-A confirmed `READ_ONLY` host skips this section: the gate trigger is already false, so no staging and no lock check occur.
 
 ### The ask
 
@@ -279,7 +261,6 @@ Fix/debug sessions produce three categories of leftovers that must be auto-delet
 ### Categories
 
 - **Temp files** -- files created during the session that are not in the session's `## Edited Files` ledger (e.g., temporary test outputs, scratch files, intermediate build artifacts outside configured output directories). Files in the OS temp directory (`$env:TEMP` on Windows, `/tmp` on Unix) are exempt from leftover audit; repo-local temp files are subject to auto-deletion.
-- **Stale locks** -- `.session-locks/<flat-name>.lock/` directories whose `acquired_at` timestamp exceeds `SESSION_LOCK_TTL_MINUTES = 30` (see `07-protocols.md` `## Session file locks`).
 - **Uncommitted session artifacts** -- `SESSION_STATE-*.md` files not staged for commit in the current session.
 
 ### Procedure (auto-delete at PATCH verification gate)
@@ -287,14 +268,12 @@ Fix/debug sessions produce three categories of leftovers that must be auto-delet
 1. **Detect** -- after the compliance audit and before the commit/push gate, scan for leftovers in all three categories.
 2. **Delete** -- remove detected leftovers:
    - Temp files: `Remove-Item -Force` (or `rm -f`)
-   - Stale locks: `Remove-Item -Recurse -Force` on the lock directory (releases the lock)
    - Uncommitted session artifacts: `Remove-Item -Force` on `SESSION_STATE-*.md` not in the current session's ledger
 3. **Record** -- write a `## Leftover Audit` section to the session state file:
 
    ```markdown
    ## Leftover Audit
    - temp files: [count] removed -- [paths]
-   - stale locks: [count] removed -- [flat-names]
    - uncommitted session artifacts: [count] removed -- [paths]
    ```
 
@@ -314,7 +293,6 @@ The following concerns were merged out of 11 separate deprecated modules and con
 - App lifecycle (startup validation, graceful shutdown)
 - API architecture & design (REST/HTTP semantics, versioning, rate-limiting, OpenAPI, error shape, pagination, idempotency, caching, edge authn/authz)
 - Library selection (signals, license check, blockers)
-- Session file locks (lock directory, acquisition, release, wait-and-surface)
 - Spec lifecycle (artifact format, L1/L2, registry, quarantine cascade)
 - Drift detection (claims, drift verbs, HALT, fresh-eyes)
 - Discuss mode (purpose, entry/exit, promotion rule)

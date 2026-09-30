@@ -4,7 +4,7 @@ Plan-Versus-Actual Gate verification protocol. Extracted from `06-misc.md` for c
 
 ## Plan-Versus-Actual Gate
 
-A user-approved plan lists `Will change` items; this gate runs after lock verification and staging and before the commit/push ask, and confirms that each item actually landed in the staged working tree. The gate is the answer to "the plan said X, Y, Z - did all three really make it in?" A miss is not a soft warning; it is a hard gate. The commit is refused until the gap is fixed or the user re-plans.
+A user-approved plan lists `Will change` items; this gate runs after staging and before the commit/push ask, and confirms that each item actually landed in the staged working tree. The gate is the answer to "the plan said X, Y, Z - did all three really make it in?" A miss is not a soft warning; it is a hard gate. The commit is refused until the gap is fixed or the user re-plans.
 
 The runner MUST execute each verify command automatically after staging and before the commit/push ask; emitting the command text without running it is a gate FAIL.
 
@@ -50,7 +50,7 @@ This is not a security boundary; it is a guard against accidental plan-author mi
 
 ### Verdict aggregation
 
-- All items PASS -> `GREEN`. Gate proceeds to lock verification and the ask.
+- All items PASS -> `GREEN`. Gate proceeds to the ask.
 - Any item FAIL or SKIPPED -> `RED`. Trigger the auto-retry loop.
 
 ### Auto-retry loop
@@ -64,7 +64,7 @@ This is not a security boundary; it is a guard against accidental plan-author mi
 
 ### Staging interaction
 
-The gate runs AFTER `git add` of the session's edited files and BEFORE the commit. The verify commands must observe the staged state. Lock verification gates what gets staged; the gate verifies what was staged. The ordering inside the commit/push gate is therefore: trigger -> Playwright smoke -> lock verification -> stage -> Plan-Versus-Actual Gate -> the ask.
+The gate runs AFTER `git add` of the session's edited files and BEFORE the commit. The verify commands must observe the staged state. The ordering inside the commit/push gate is therefore: trigger -> Playwright smoke -> stage -> Plan-Versus-Actual Gate -> the ask.
 
 ### Skip conditions (Plan-Versus-Actual)
 
