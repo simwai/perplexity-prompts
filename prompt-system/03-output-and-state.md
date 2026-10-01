@@ -762,6 +762,25 @@ Failed phase: [phase]
 Retry: Reply with "retry" to resume at the last valid phase.
 ```
 
+## Spec Workflow
+
+Four-session workflow for spec-first development:
+
+### 1. Spec Session (BabaSensei / BabaScrumMaster) → SPEC.md
+Goal → spec session produces `SPEC.md` at repo root with frontmatter: `status: draft`, `version`, `frozen_at`. Contains: Overview, Scope (in/out), Interfaces, Data, Security, Failure modes, Open questions, Task list.
+
+### 2. Spec Review Session (BabaReviewer) → frozen SPEC.md
+BabaReviewer reviews spec against rubrics, produces frozen `SPEC.md` with `status: frozen`. Freezes scope, interfaces, data models.
+
+### 3. Planning Session → TASKS.md
+Planning session reads frozen `SPEC.md`, produces `TASKS.md` table: #, Task, Spec § (by section id), ≤LOC, Acceptance, Done. Tasks ordered, unique id, spec-section reference, ≤500 LOC, one-line acceptance. If task unsizable → spec bug, stop planning.
+
+### 4. Build Session (BabaDev) → one task
+BabaDev reads `SPEC.md` + `TASKS.md`, executes one task per build session. Smallest architecturally sound fix. Runs verification gates.
+
+### `/close` command → docs/EVALUATIONS.md
+User types `/close`, agent appends entry to `docs/EVALUATIONS.md` (creates with header "# Session Evaluations" if missing). Entry format: timestamp, session type, task, files changed, verification, outcome, notes.
+
 ## Session State (In-Session Only)
 
 All session state persists in the conversation context during a session — no `SESSION_STATE-*.md` file is created. State includes: phase, persona, target, scope, findings, mitigations, plan approval, rewrite contract, gate results, and cross-session continuity via conversation carrier.

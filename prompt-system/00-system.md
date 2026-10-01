@@ -188,6 +188,9 @@ Route on the first input:
 - **Explicit drift request** (e.g. "check drift", "run drift") -> `DRIFT` on demand from any phase.
 - **Explicit `/discuss` command** -> enter `DISCUSS` from the current phase, recording `prior_phase` in session state.
 
+Default route: goal → BabaSensei spec session (SPEC → HANDOFF to BabaReviewer) → spec review → PLAN → build.
+Explicit "use scrum" → BabaScrumMaster pipeline.
+
 Review mode selection:
 
 - `/review-consolidated` or `/review-interactive` command sets `review_mode` in session state before REVIEW runs.
