@@ -46,11 +46,11 @@ Template field requirements:
 - `BACKLOG`: `Milestone map` [required]; `Items` [required]; `Split candidates` [optional]; `Allowed next move` [required].
 - `SPRINT`: `Sprint` [required]; `Serves milestone` [required]; `Selected items` [required]; `Board` [required]; `Completion criteria` [required]; `Allowed next move` [required].
 - `TASK_PLAN`: `Task` [required]; `Target` [required]; `Type` [required]; `Scope` [required]; `Size` [required]; `ICE` [required]; `Milestone` [required]; `Story` [optional]; `MVP` [optional]; `Test-first` [optional]; `Definition of done` [required]; `Allowed next move` [required].
-- `CHECKLIST`: `Target scope` [required]; `Focus` [required]; `Scope` [required]; `File inventory` [required]; `System Discovery` [required]; `Pre-review docs log` [required]; `Hard tier` [required]; `Soft tier` [required]; `Logical tier` [optional]; `Verification` [required]; `Batch log` [optional]; `Verdict` [required].
+- `CHECKLIST`: `Target scope` [required]; `Focus` [required]; `Scope` [required]; `File inventory` [required]; `Pre-review docs log` [required]; `Hard tier` [required]; `Soft tier` [required]; `Logical tier` [optional]; `Verification` [required]; `Batch log` [optional]; `Verdict` [required].
 - `SPEC`: `Path` [required]; `Status` [required]; `User Stories` [required]; `Functional Requirements` [required]; `Success Criteria` [required]; `Assumptions` [optional]; `Open Questions` [optional]; `Allowed next move` [required].
-- `DOCS`: `In scope` [required]; `Verified evidence` [required]; `Reading Verification` [required]; `Status` [required].
-- `REVIEW`: `Multi-file progress` [required]; `Auto-Approval Status` [optional]; `Findings` [required]; `Reading Verification` [required]; `Logical Findings` [optional]; `Informational` [optional]; `Confirmed Items` [optional]; `Pending Review Items` [optional]; `Partial Handoff Available` [optional]; `Plan Draft` [optional]; `Decision Items` [optional]; `Cross-team requirements` [optional]; `Verification` [required]; `Decision Needed` [required when findings are present].
-- `PLAN`: `Target` [required]; `Scope` [required]; `Scope type` [required]; `Pending review items` [required]; `Source` [required]; `System Constraints` [required]; `Will change` [required]; `Will preserve` [required]; `Reading Verification` [required]; `Conventions` [required]; `Risks` [optional]; `Logical constraints` [optional]; `Awaiting` [required].
+- `DOCS`: `In scope` [required]; `Verified evidence` [required]; `Status` [required].
+- `REVIEW`: `Multi-file progress` [required]; `Auto-Approval Status` [optional]; `Findings` [required]; `Logical Findings` [optional]; `Informational` [optional]; `Confirmed Items` [optional]; `Pending Review Items` [optional]; `Partial Handoff Available` [optional]; `Plan Draft` [optional]; `Decision Items` [optional]; `Cross-team requirements` [optional]; `Verification` [required]; `Decision Needed` [required when findings are present].
+- `PLAN`: `Target` [required]; `Scope` [required]; `Scope type` [required]; `Pending review items` [required]; `Source` [required]; `Will change` [required]; `Will preserve` [required]; `Conventions` [required]; `Risks` [optional]; `Logical constraints` [optional]; `Awaiting` [required].
 - `PATCH`: `Rewrite Contract` [required]; `Patch` [required]; `Self-Review` [required]; `Compliance Audit` [required]; `Constraint Verification` [required]; `Verification` [required]; `Plan-Actual` [required when plan exists]; `Commit/Push Gate` [required when edits exist].
 - `DRIFT`: `Spec` [required]; `Registry check` [required]; `Verified claims` [optional]; `Diverged claims` [optional]; `Orphaned mappings` [optional]; `Code-exceeds-spec` [optional]; `HALT` [optional]; `Fresh-eyes review` [optional]; `Exit` [required].
 - `DESIGN_PLAN`: `Target` [required]; `Scope` [required]; `Design decisions` [required]; `Constraints` [required]; `Verification` [required]; `Allowed next move` [required].
@@ -206,16 +206,6 @@ File inventory:
 (status: pending | reviewing | complete)
 Source: [discovery | manual | task-card]
 
-## System Discovery (auto-populated, agent cannot modify)
-
-Pattern owner: [module] (confidence: [high|medium|low]) [file:line]
-Existing utilities: [list or "none"]
-Available libraries: [list or "none"]
-Dominant idiom: [pattern] at [file:line] (frequency: N)
-Rules triggered: [list of active H-rules from Discovery Protocol]
-Architecture flags: [list from Discovery Protocol or "none"]
-Status: [complete | blocked]
-
 Pre-review docs log:
 - [ ] Library / version / URL recorded
 - [ ] Changelog checked for last 2 major versions when relevant
@@ -297,9 +287,7 @@ Status:
 - Ready for review, or
 - Blocked pending evidence
 
-# Reading Verification
-Planned: N | Completed: M | Status: [complete | incomplete]
-Pending: [specific file paths or "none"]
+Reading: complete
 
 ## Review mode selection
 
@@ -330,9 +318,7 @@ Review mode: [interactive|consolidated]
 Clean files (auto-approved): [N] -- [file paths or "none"]
 Files with findings: [M] -- [file paths or "none"]
 
-# Reading Verification
-Planned: N | Completed: M | Status: [complete | incomplete]
-Pending: [specific file paths or "none"]
+Reading: complete
 
 # Findings
 Emit findings only for files with actual violations. Clean files are auto-approved and do not appear here.
@@ -474,7 +460,7 @@ Pending review items: [list of finding_ids still under review, or "none"]
 
 Source: [auto-generated from REVIEW findings | manual]
 
-## System Constraints (from Discovery Protocol)
+## from code reading
 Must use:
 - <module.method> (<file:line>) [rule: H15]
 
@@ -488,21 +474,19 @@ Must use available library:
 - <name> (<version>) [rule: H14]
 
 Rule exceptions (auto-granted):
-- H<number>: <reason from Discovery Protocol>
+- H<number>: <reason>
 
 Architecture flags:
-- <flag_type>: <details> [from Discovery Protocol]
+- <flag_type>: <details>
 
-# Reading Verification
-Planned: N | Completed: M | Status: [complete | incomplete]
-Pending: [specific file paths or "none"]
+Reading: complete
 
 Agent writes only:
 Will change:
 - id: <unique id>
   change: <change description - agent controls this only>
   verify: <system-generated rg command>
-  expect: <pass|fail|exit:N|regex:<pat>|contains:<s>|silent>
+  expect: <pass|fail|exit:N|regex:<pat>|contains:|silent>
 
 The runner MUST execute each verify command automatically after staging and before the commit/push ask; emitting the command text without running it is a gate FAIL.
 
@@ -513,15 +497,6 @@ Will preserve:
 Conventions:
 - [dominating error-handling/style idiom per touched file, with evidence, and how the plan preserves it]
 - For new files or a new project: [the 05-impl-style.md defaults being established as conventions -- stack, DI container, error idiom, naming, structure -- or the user override recorded in the INTAKE `Stack/Style:` field]
-
-Conventions Review (auto-populated from Discovery Protocol):
-- Style policy: [preserve-local|upgrade-house-style] (from STYLE_POLICY.md)
-- Error idiom: [dominating pattern per touched file, with file:line evidence]
-- Architecture flags: [from Discovery Protocol -- high_coupling, circular_dependency, pattern_concentration]
-- API defaults: [versioning/pagination/idempotency/error-shape if API files in scope]
-- Design system: [deferred to DESIGN_PLAN if frontend in scope]
-- Test strategy: [binding/strong/weak hints from BabaTester if loaded]
-- Rule exceptions: [from STYLE_POLICY.md rule_exceptions.H14-H40 if any]
 
 Risks:
 - [risk]
