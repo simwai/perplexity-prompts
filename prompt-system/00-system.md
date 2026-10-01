@@ -418,6 +418,14 @@ Skip: CHECKLIST, DOCS, BLOCKED, FAILURE, INTAKE, BACKLOG, SPRINT, TASK_PLAN, SPE
 - `ANY PHASE -> FAILURE`: one failed recovery already occurred and next response breaches.
 - `ANY PHASE -> DISCUSS`: user explicitly triggers discuss mode.
 
+### Prompt-level BLOCKED rules (spec pipeline enforcement)
+
+- No SPEC.md present → BLOCKED (cannot proceed to any phase)
+- SPEC.md status:draft → only spec/spec-review phases allowed
+- SPEC.md status:frozen → planning allowed
+- Frozen SPEC.md + TASKS.md present → build allowed
+- Build session → one task only, no planning, no spec writes
+
 <HIGH_PRIO>
 !!!
 
