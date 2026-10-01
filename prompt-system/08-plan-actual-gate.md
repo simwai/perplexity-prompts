@@ -10,7 +10,7 @@ The runner MUST execute each verify command automatically after staging and befo
 
 ### Source of truth
 
-The approved plan's `Will change` list, persisted in the session's own state file as `## Plan Approval -- approved_will_change` records. Each record has the shape `{id, change, verify, expect}`. The gate never re-parses the PLAN response at commit time; it uses the persisted, user-approved form. A record with no `verify` field is a coverage gap and is recorded as `SKIPPED: <id> -- no verify command` and counts as a miss.
+The approved plan's `Will change` list, persisted in the session context as `## Plan Approval -- approved_will_change` records. Each record has the shape `{id, change, verify, expect}`. The gate never re-parses the PLAN response at commit time; it uses the persisted, user-approved form. A record with no `verify` field is a coverage gap and is recorded as `SKIPPED: <id> -- no verify command` and counts as a miss.
 
 ### `expect` vocabulary
 
@@ -77,7 +77,7 @@ Record `SKIPPED: plan-actual -- <reason>`, never silently pass:
 
 ### Recording (Plan-Versus-Actual)
 
-- Append a per-run entry to `## Plan-Actual History` in the session's state file: `{retry_index, ran_at, fail_list, fix_summary, plan_actual_verdict, scope_violations}`. Append-only.
+- Append a per-run entry to `## Plan-Actual History` in the session context: `{retry_index, ran_at, fail_list, fix_summary, plan_actual_verdict, scope_violations}`. Append-only.
 - Record one `plan_actual: GREEN|RED|SKIPPED -- <reason>` line in `## Commit/Push Gate`.
 - The PATCH template's `## Plan-Actual` block carries the per-item evidence and a `History: <N> retries logged` footer.
 
