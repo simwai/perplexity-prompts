@@ -225,12 +225,3 @@ These rules apply across all stacks. A file that mixes classes, types, or interf
 
 The defaults above are a floor, not a ceiling. They never replace the per-edit lint gate or the project checks; they are the minimum, not the maximum. The project style policy in `STYLE_POLICY.md` (`preserve-local` or `upgrade-house-style`) controls how the floor interacts with the file's existing style.
 
-## Load scope
-
-**Always-load** (core): this file — general principles, greenfield rules, local-convention policy, error-idiom consistency, design heuristics, code-decision ladder, stepdown, newspaper order, flag/output arguments, tell-don't-ask, minimal verification floor, project structure, comments, markdown defaults, naming, file naming, file separation, security defaults, logging defaults, command-line defaults, testing coordination, style floor.
-
-**Load on PATCH** (stack): matching `prompt-system/stacks/STACK-<lang>.md` — TypeScript, Python, Java, Frontend, PowerShell, Pine Script, Database.
-
-**Load when BabaDesigner active**: `09-design-guidelines.md` — Design Guidelines.
-
-**Load on `.md` edits**: `10-doc-style.md` — Documentation Style.
