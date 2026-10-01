@@ -84,7 +84,7 @@ Fix typo in README.md line 42.
 | Protocols? | `REFERENCE/PROTOCOLS.md` |
 | Patch protocol? | `REFERENCE/PATCH_PROTOCOL.md` |
 | Plan-actual gate? | `REFERENCE/PLAN_ACTUAL_GATE.md` |
-| Session state? | `REFERENCE/SESSION_STATE.md` |
+| Session context? | `prompt-system/03-output-and-state.md` |
 | OpenCode setup? | `USER_GUIDE/OPENCODE.md` |
 | Project management? | `PROJECT_MANAGEMENT/ROADMAPS.md` |
 
@@ -97,7 +97,7 @@ Fix typo in README.md line 42.
 | `/baba sensei` | Activate BabaSensei for review |
 | `/baba dev` | Activate BabaDev for implementation |
 | `/phase REVIEW` | Declare REVIEW phase |
-| `/approve-plan` | Persist plan approval + rewrite contract |
+| `/approve-plan` | Record plan approval + rewrite contract |
 | `/verify` | Inspect diff, run checks, commit/push gate |
 | `/auto` / `/direct` / `/structured` | Switch execution mode |
 | `/review-consolidated` | Aggregate review mode |

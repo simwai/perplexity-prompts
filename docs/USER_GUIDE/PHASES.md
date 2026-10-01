@@ -72,7 +72,7 @@ flowchart TD
 | `BACKLOG` | ICE-prioritized items by milestone | `BACKLOG` | Backlog → SPRINT |
 | `SPRINT` | Selected items, board, criteria | `SPRINT` | Sprint plan → TASK_PLAN |
 | `TASK_PLAN` | Single task card with DoD | `TASK_PLAN` | Task card → CHECKLIST/SPEC |
-| `SPEC` | Author spec artifact in `SPECS/` | `SPEC` | Spec artifact → CHECKLIST |
+| `SPEC` | Author spec artifact at `SPEC.md` | `SPEC` | Spec artifact → CHECKLIST |
 | `CHECKLIST` | File inventory, criteria, docs log | `CHECKLIST` | Inventory + verdict → DOCS/REVIEW |
 | `DOCS` | Version/evidence for judgments | `DOCS` | Verified evidence → REVIEW |
 | `REVIEW` | Score findings, mitigations, decision | `REVIEW` | Confirmed items → PLAN |
@@ -193,4 +193,4 @@ Reply with: A, B, or C
 | Rules (H13-H40) | `REFERENCE/RULES.md` |
 | Patch protocol | `REFERENCE/PATCH_PROTOCOL.md` |
 | Plan-actual gate | `REFERENCE/PLAN_ACTUAL_GATE.md` |
-| Session state schema | `REFERENCE/SESSION_STATE.md` |
+| Session context (In-Session) | `prompt-system/03-output-and-state.md` |

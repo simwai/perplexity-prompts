@@ -24,8 +24,8 @@ scope, and the upstream ScrumMaster pipeline when a concrete target exists at se
 reason is recorded.
 
 The optional upstream ScrumMaster pipeline (`INTAKE → BACKLOG → SPRINT → TASK_PLAN → SPEC`) runs only
-when the user provides a goal without a concrete target; `SPEC` authors a spec artifact in `SPECS/`
-(planning only — all `SPECS/` writes flow through PATCH). `DRIFT` is an optional read-only diagnostic
+when the user provides a goal without a concrete target; `SPEC` authors a spec artifact at `SPEC.md`
+(planning only — spec writes happen in the SPEC phase and the spec review phase only). `DRIFT` is an optional read-only diagnostic
 phase entered after `PATCH` (spec-backed sessions) or on demand from any phase; it exits to `PLAN`
 (writes needed) or back to the prior phase (clean).
 

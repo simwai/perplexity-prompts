@@ -38,6 +38,7 @@ Copy-Item targets.json.example targets.json
 - Use `-DeleteLegacy` to remove old `.claude/`, `.cursor/`, `.codex/`, `BOOTSTRAP.md` files and other legacy artifacts (`system/`, `synced-scripts/`, `agent-resources/`, `CLAUDE.md`) plus **memory-worth plugin test files** (from `.opencode` source, not project tests)
 
 **Sync options:**
+
 | Flag | Purpose |
 |---|---|
 | `-All` | Sync all configured targets non-interactively |
@@ -54,7 +55,7 @@ Copy-Item targets.json.example targets.json
 | Tool | Minimum Version | Purpose |
 |---|---|---|
 | **Node.js** | 20+ | MCP servers (npx), Playwright |
-| **PowerShell** | 7.6+ (pwsh) | Scripts, session locks, git ops |
+| **PowerShell** | 7.6+ (pwsh) | Scripts, git ops |
 | **Git** | 2.30+ | Version control, commit/push gate |
 
 ---
@@ -108,9 +109,6 @@ secrets/
 *.pem
 *.key
 
-# Session state
-SESSION_STATE-*.md
-
 # OS/Editor
 .DS_Store
 Thumbs.db
@@ -140,16 +138,19 @@ cd <target-project>
 ### 2. Describe Task
 
 **Concrete target (Structured):**
+
 ```text
 Review src/auth/token.ts for security issues.
 ```
 
 **Goal without target (Full mode):**
+
 ```text
 Add user authentication with JWT tokens.
 ```
 
 **Quick fix (Direct):**
+
 ```text
 Fix typo in README.md line 42.
 ```

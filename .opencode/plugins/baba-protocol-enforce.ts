@@ -132,11 +132,11 @@ const PROTOCOL_CHECKS = {
 
   "spec-fileExists": async (_directory: string, _editedFiles: string[], state: any) => {
     const checks = [];
-    const specsDir = "SPECS";
-    const hasSpecs = await fileExists(specsDir);
+    const specFile = "SPEC.md";
+    const hasSpec = await fileExists(specFile);
     const specVersion = state.specVersion;
-    if (!hasSpecs || !specVersion) {
-      checks.push({ protocol: "spec", passed: false, message: "No SPECS/ directory or spec_version not set - DRIFT not applicable" });
+    if (!hasSpec || !specVersion) {
+      checks.push({ protocol: "spec", passed: false, message: "No SPEC.md or spec_version not set - DRIFT not applicable" });
     }
     return checks;
   },

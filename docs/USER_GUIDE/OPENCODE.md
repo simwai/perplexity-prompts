@@ -14,9 +14,9 @@
 | `.opencode/agents/build.md` | Overrides native OpenCode Build with BabaDev rules (requires approved plan + rewrite contract) |
 | `.opencode/commands/baba.md` | `/baba <persona>` — activates a persona and starts the phase flow |
 | `.opencode/commands/phase.md` | `/phase <NAME>` — declares the active phase and enforces its template |
-| `.opencode/commands/approve-plan.md` | `/approve-plan` — persists plan approval + rewrite contract into the session state file |
+| `.opencode/commands/approve-plan.md` | `/approve-plan` — records plan approval + rewrite contract in session context |
 | `.opencode/commands/handoff.md` | `/handoff` — emits the persona handoff contract |
-| `.opencode/commands/resume.md` | `/resume` — restores prior phase from the session state file |
+| `.opencode/commands/resume.md` | `/resume` — restores prior phase from frozen SPEC.md + TASKS.md |
 | `.opencode/commands/verify.md` | `/verify` — inspects diff and runs relevant project checks |
 
 ---
@@ -27,9 +27,9 @@
 |---|---|
 | `/baba <persona>` | Activate a Baba persona (`scrummaster`, `sensei`, `dev`, `tester`, `reviewer`) and start the phase flow |
 | `/phase <NAME>` | Declare the active structured phase |
-| `/approve-plan` | Persist plan approval + rewrite contract into the session state file |
-| `/handoff` | Emit the persona handoff contract and persist it to the session state file |
-| `/resume` | Restore the prior phase from the session state file after DISCUSS or interruption |
+| `/approve-plan` | Record plan approval + rewrite contract in session context |
+| `/handoff` | Emit the persona handoff contract |
+| `/resume` | Restore the prior phase from frozen SPEC.md + TASKS.md |
 | `/verify` | Inspect the diff and run relevant project checks; apply the commit/push gate when edits were made |
 | `/auto` | Switch execution mode to AUTO — agent chooses direct or structured by task risk |
 | `/direct` | Switch execution mode to DIRECT — clear low-risk work without phase templates |
@@ -65,7 +65,7 @@ opencode uses `{env:VAR}`, not `${VAR}`. The `exa` server header is `{env:EXA_AP
 Run `opencode mcp auth trello` once, then restart the session.
 
 ### Native Plan → Build
-Tab to Plan for review/planning; approve with `/approve-plan` (or explicit approval); switch to Build for PATCH. Build refuses to patch without approved plan state in the session state file.
+Tab to Plan for review/planning; approve with `/approve-plan` (or explicit approval); switch to Build for PATCH. Build refuses to patch without approved plan and rewrite contract in session context.
 
 ### Switching Persona
 Switch the agent in the TUI, or run `/baba <persona>`. The personas are defined in `prompt-system/01-personas.md`; agent files reference that file and do not duplicate the content.

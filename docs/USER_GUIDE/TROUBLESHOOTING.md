@@ -49,13 +49,12 @@
 | Remote URLs leaked | `git remote -v` unsanitized | Agent uses `git remote` (names only) + sanitizer |
 | Force-push attempted | Manual git override | Never force-push; gate uses `git push <remote> <branch>` only |
 
-### Session State
+### Session Context
 
 | Issue | Cause | Fix |
 |---|---|---|
 | Old approval restored | Session ID mismatch | Fresh session starts clean; legacy file = mismatch |
-| State file missing | Read-only host | Conversation carrier used instead |
-| `SESSION_STATE-*.md` not gitignored | `.gitignore` outdated | Add `SESSION_STATE-*.md` to `.gitignore` |
+| Context missing | Read-only host | Conversation carrier used instead |
 
 ### File Operations
 
@@ -84,13 +83,10 @@ pwsh --version
 git --version
 ```
 
-### Inspect Session State
+### Inspect Session Context
 ```bash
-# Find current session file
-ls SESSION_STATE-*.md
-
-# Read it
-cat SESSION_STATE-<id>.md
+# Session context is in conversation carrier
+# No session state files to inspect
 ```
 
 ### Check Git Status
@@ -112,7 +108,7 @@ npx markdown-toc -i docs/USER_GUIDE/GETTING_STARTED.md
 
 1. **Read the error/block message** — It contains `Reason`, `Needed now`, `Next required user action`
 2. **Search the codebase** — Agent uses `rg`; you can too: `rg "error pattern" src/`
-3. **Check session state** — `SESSION_STATE-<id>.md` has phase, findings, approvals
+3. **Check session context** — Conversation carrier has phase, findings, approvals
 4. **Review `AGENTS.md`** — Entry point for all rules
 5. **Check `prompt-system/00-system.md`** — Orchestrator, hard guards, transitions
 6. **Ask in DISCUSS** — `/discuss` or "let's talk about..." for exploration
