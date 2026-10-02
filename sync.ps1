@@ -111,8 +111,8 @@ function Sync-Targets {
     )
 
 $source  = $scriptDir
-$files   = @('AGENTS.md', 'opencode.jsonc')
-$folders = @('prompt-system', '.opencode', '.opencode/agents')
+$files   = @('AGENTS.md', 'opencode.jsonc', '.mcp.json')
+$folders = @('prompt-system', '.opencode', '.opencode/agents', '.claude', '.claude/agents', '.claude/skills')
     $synced     = 0
     $skipped    = 0
     $pushFailed = 0
@@ -173,7 +173,7 @@ $folders = @('prompt-system', '.opencode', '.opencode/agents')
 
 if ($DeleteLegacy) {
             # Remove legacy folders from old structure
-            $legacyFolders = @('system', 'synced-scripts', 'agent-resources', '.claude', '.cursor', '.codex')
+            $legacyFolders = @('system', 'synced-scripts', 'agent-resources', '.cursor', '.codex')
             # Get repo root for submodule check (only if git repo)
             $repoRoot = $null
             if (Test-Path (Join-Path $target '.git')) {

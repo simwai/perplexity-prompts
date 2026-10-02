@@ -53,10 +53,18 @@ docs/                  Usage documentation (SNAKE_UPPER_CASE structure)
   USER_GUIDE/          Getting started, personas, phases, modes, troubleshooting
   REFERENCE/           Canonical system references (mirrors prompt-system/)
   PROJECT_MANAGEMENT/  Roadmaps, sprints, Trello integration
+adapters/              Adapter templates (source of truth for generated files)
+  claude/agents/       Claude Code subagent templates
+  claude/skills/       Claude Code slash-command skill templates
+  claude/settings.json Claude Code project settings template
+  opencode/agents/     OpenCode agent templates
+  opencode/commands/   OpenCode command templates
 opencode.jsonc         opencode-native config (optional layer, inert for other agents)
-.opencode/             opencode persona agents and commands (optional layer)
+.opencode/             Generated OpenCode adapters (agents + commands)
+.claude/               Generated Claude Code adapters (agents + skills + settings)
+.mcp.json              Generated MCP server config (shared by both platforms)
 sync.ps1               Interactive propagation to target projects
-generate-adapters.ps1  Adapter generator (no-op; retained for compatibility)
+generate-adapters.ps1  Generates .opencode/ and .claude/ from adapters/
 ```
 
 ---
@@ -64,6 +72,7 @@ generate-adapters.ps1  Adapter generator (no-op; retained for compatibility)
 ## 🎨 Visual Theme
 
 This documentation uses **dark + purple** styling:
+
 - Mermaid diagrams with dark theme and purple-500 accents
 - Emoji/color hints for GitHub/VS Code dark mode
 - CSS variables for HTML export (if generating a site)
