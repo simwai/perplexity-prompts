@@ -303,9 +303,31 @@ function Ensure-GitignoreEntries {
         }
     }
 
-    if ($modified) {
+if ($modified) {
         $content | Set-Content -LiteralPath $gitignorePath -Encoding UTF8 -NoNewline
         Write-Host "    OK  .gitignore augmented" -ForegroundColor Green
+    }
+}
+
+function Ensure-VibeguardConfig {
+    param([string]$TargetPath)
+
+    $sourceConfig = Join-Path $PSScriptRoot '.opencode\vibeguard.config.json'
+    $targetConfig = Join-Path $TargetPath '.opencode\vibeguard.config.json'
+    $targetDir = Join-Path $TargetPath '.opencode'
+
+    if (-not (Test-Path $sourceConfig)) {
+        Write-Warning "    SKIP vibeguard config: source not found at $sourceConfig"
+        return
+    }
+
+    if (-not (Test-Path $targetDir)) {
+        New-Item -ItemType Directory -Path $targetDir -Force | Out-Null
+    }
+
+    if (-not (Test-Path $targetConfig)) {
+        Copy-Item -LiteralPath $sourceConfig -Destination $targetConfig -Force
+        Write-Host "    OK  vibeguard.config.json created" -ForegroundColor Green
     }
 }
 
