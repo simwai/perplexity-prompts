@@ -224,4 +224,3 @@ These rules apply across all stacks. A file that mixes classes, types, or interf
 ## Style floor
 
 The defaults above are a floor, not a ceiling. They never replace the per-edit lint gate or the project checks; they are the minimum, not the maximum. The project style policy in `STYLE_POLICY.md` (`preserve-local` or `upgrade-house-style`) controls how the floor interacts with the file's existing style.
-

@@ -234,4 +234,3 @@ The defaults above are a floor, not a ceiling. They never replace the per-edit l
 **Load when BabaDesigner active**: `09-design-guidelines.md` — Design Guidelines.
 
 **Load on `.md` edits**: `10-doc-style.md` — Documentation Style.
-

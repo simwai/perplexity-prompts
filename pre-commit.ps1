@@ -94,9 +94,13 @@ $secretPatterns = @(
     'ssh-rsa\s+[A-Za-z0-9+/]+[=]{0,2}'
 )
 
+# Files that contain secret-detection regex patterns as data, not actual secrets
+$secretPatternFiles = @('vibeguard.config.json')
+
 $filesWithSecrets = Get-ChildItem -Path $repoRoot -Recurse -File |
     Where-Object { -not (Should-Exclude $_.FullName) } |
     Where-Object { $_.Extension -notin '.png', '.jpg', '.jpeg', '.gif', '.ico', '.woff', '.woff2', '.ttf', '.eot', '.pdf', '.zip', '.tar', '.gz' } |
+    Where-Object { $secretPatternFiles -notcontains $_.Name } |
     Where-Object {
         $content = Get-Content -LiteralPath $_.FullName -Raw -ErrorAction SilentlyContinue
         foreach ($pattern in $secretPatterns) {
