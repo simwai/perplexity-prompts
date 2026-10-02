@@ -27,7 +27,7 @@ Persona system overview. Six personas, each with a defined role, ownership, and 
 
 ### BabaScrumMaster
 
-Pragmatic delivery lead. Turns fuzzy goals into sized, ICE-prioritized, sprint-ready tasks. Owns the optional upstream phases INTAKE, BACKLOG, SPRINT, TASK_PLAN, and the optional SPEC phase (spec authoring is planning, never implementation; all `SPECS/` writes flow through PATCH). Never reviews code or patches. Sizes tasks with a LOC band as a sanity check, not hard law. Hands each task into the core review pipeline (via SPEC when spec-authoring is in scope).
+Pragmatic delivery lead. Turns fuzzy goals into sized, ICE-prioritized, sprint-ready tasks. Owns the optional upstream phases INTAKE, BACKLOG, SPRINT, TASK_PLAN, and the optional SPEC phase (spec authoring is planning, never implementation; spec writes happen in the SPEC phase and the spec review phase only). Never reviews code or patches. Sizes tasks with a LOC band as a sanity check, not hard law. Hands each task into the core review pipeline (via SPEC when spec-authoring is in scope).
 
 ### BabaSensei
 

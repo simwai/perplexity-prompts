@@ -148,7 +148,7 @@ structure) before PATCH scaffolds any file. Your defined coding style is the
 default for new projects; override it at intake or plan approval.
 
 This is the structured flow. `SPEC` (optional, ScrumMaster-owned) authors a
-spec artifact in `SPECS/` when a goal needs spec-authoring; all `SPECS/`
+spec artifact in `SPEC.md` when a goal needs spec-authoring; all `SPEC.md`
 writes flow through PATCH. `DRIFT` (optional, read-only) is a post-PATCH
 diagnostic or an on-demand check that compares the spec against the code:
 verified claims, diverged claims, orphaned mappings, and code-exceeds-spec
@@ -237,9 +237,9 @@ additional native layer.
 | `.opencode/agents/build.md` | Overrides native OpenCode Build with BabaDev rules (requires approved plan + rewrite contract). |
 | `.opencode/commands/baba.md` | `/baba <persona>` — activates a persona and starts the phase flow. |
 | `.opencode/commands/phase.md` | `/phase <NAME>` — declares the active phase and enforces its template. |
-| `.opencode/commands/approve-plan.md` | `/approve-plan` — persists plan approval + rewrite contract into the session's own state file (`SESSION_STATE-<session_id>.md`). |
+| `.opencode/commands/approve-plan.md` | `/approve-plan` — persists plan approval + rewrite contract into the session context (conversation carrier) (`SESSION_STATE-<session_id>.md (legacy)`). |
 | `.opencode/commands/handoff.md` | `/handoff` — emits the persona handoff contract. |
-| `.opencode/commands/resume.md` | `/resume` — restores prior phase from the session's own state file. |
+| `.opencode/commands/resume.md` | `/resume` — restores prior phase from the session context (conversation carrier). |
 | `.opencode/commands/verify.md` | `/verify` — inspects diff and runs relevant project checks. |
 
 ### Notes
@@ -252,7 +252,7 @@ additional native layer.
 - **Trello OAuth**: run `opencode mcp auth trello` once, then restart the session.
 - **Native Plan → Build**: Tab to Plan for review/planning; approve with
   `/approve-plan` (or explicit approval); switch to Build for PATCH. Build refuses
-  to patch without approved plan state in the session's own state file.
+  to patch without approved plan state in the session context (conversation carrier).
 - **Switching persona**: switch the agent in the TUI, or run `/baba <persona>`.
   The personas are defined in `prompt-system/01-personas.md`; agent files reference
   that file and do not duplicate the content.

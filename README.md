@@ -75,7 +75,7 @@ This documentation uses **dark + purple** styling:
 | Tool | Minimum Version | Purpose |
 |---|---|---|
 | Node.js | 20+ | MCP servers (npx), Playwright |
-| PowerShell | 7.6+ (pwsh) | Scripts, session locks, git ops |
+| PowerShell | 7.6+ (pwsh) | Scripts, git ops |
 | Git | 2.30+ | Version control, commit/push gate |
 
 ---

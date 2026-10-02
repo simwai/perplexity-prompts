@@ -108,7 +108,7 @@
 | Protocols | `REFERENCE/PROTOCOLS.md` |
 | PATCH protocol | `REFERENCE/PATCH_PROTOCOL.md` |
 | Plan-actual gate | `REFERENCE/PLAN_ACTUAL_GATE.md` |
-| Session state | `REFERENCE/SESSION_STATE.md` |
+| Session context | `prompt-system/03-output-and-state.md` |
 | OpenCode setup | `USER_GUIDE/OPENCODE.md` |
 
 ---

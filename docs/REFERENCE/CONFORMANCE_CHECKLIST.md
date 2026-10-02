@@ -10,9 +10,9 @@ tool-independent because the core system is a specification, not an application.
 - [x] Missing prerequisites produce only `BLOCKED`.
 - [x] Consolidated review records every file and batch before aggregate output.
 - [x] Aggregate findings remain provisional until explicit confirmation.
-- [x] A mismatched or foreign-session state file (`SESSION_STATE-<session_id>.md`)
+- [x] A mismatched or foreign-session context (`SESSION_STATE-<session_id>.md` legacy)
       cannot restore old approval; approval requires target + scope + session_id match.
-- [x] Session state is per-session: each session owns its own state file, cleans
+- [x] Session context is per-session: each session owns its own context, cleans
       up only its own file, and never deletes another session's; stale-file GC
       runs only at fresh-session init with a named TTL and never touches the
       current session's file.
@@ -72,11 +72,11 @@ tool-independent because the core system is a specification, not an application.
 - [x] HALT semantics: version drift surfaces as a DRIFT-internal decision block
       with exactly one recommended fix path; never a silent fix, never a
       BLOCKED variant (`prompt-system/07-protocols.md` `## Drift detection`).
-- [x] Registry-write governance: every `SPECS/` write (new spec, registry row,
+- [x] Registry-write governance: every `SPEC.md` write (new spec, registry row,
       spec-body edit) flows through PATCH and joins the commit/push gate
       edited-files set (`prompt-system/07-protocols.md` `## Spec lifecycle`,
       `## Commit/push gate`).
 - [x] Spec-version freshness: approval restore requires target + scope +
       session_id + spec_version match, and a version-drift HALT invalidates
-      live Plan Approval (`prompt-system/03-output-and-state.md` `## Session state file`,
+      live Plan Approval (`prompt-system/03-output-and-state.md` `## Session context`,
       `prompt-system/07-protocols.md` `## Drift detection`).

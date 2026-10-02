@@ -388,7 +388,7 @@ Skip: CHECKLIST, DOCS, BLOCKED, FAILURE, INTAKE, BACKLOG, SPRINT, TASK_PLAN, SPE
 - `START -> STARTUP`: (MANDATORY) read `prompt-system/00-system.md` full, then discover and load all files in the load order.
 - `STARTUP -> INTAKE`: goal or project spec without a concrete target.
 - `STARTUP -> CHECKLIST`: target known, scope known, language known or obvious.
-- `STARTUP -> BOOTSTRAP`: target is a codebase with no SPECS/ directory, or explicit `/bootstrap` command.
+- `STARTUP -> BOOTSTRAP`: target is a codebase with no SPEC.md, or explicit `/bootstrap` command.
 - `STARTUP -> DISCUSS`: user input is exploratory.
 - `STARTUP -> BLOCKED`: STARTUP incomplete (system files not loaded).
 - `INTAKE -> BACKLOG`: goal and at least one success criterion recorded.
@@ -452,7 +452,7 @@ Skip: CHECKLIST, DOCS, BLOCKED, FAILURE, INTAKE, BACKLOG, SPRINT, TASK_PLAN, SPE
 <MUST_NOT>No findings from DISCUSS without explicit user promotion.</MUST_NOT>
 <MUST_NOT>DISCUSS cannot transition directly to PATCH.</MUST_NOT>
 <MUST_NOT>No SPEC output before the spec artifact structure is followed.</MUST_NOT>
-<MUST_NOT>No `SPECS/` write outside PATCH.</MUST_NOT>
+<MUST_NOT>No `SPEC.md` write outside PATCH.</MUST_NOT>
 <MUST_NOT>No DRIFT output with a write; DRIFT is read-only.</MUST_NOT>
 <MUST_NOT>No write to `STYLE_POLICY.md` (or configured artifact) outside the auto-trigger flow.</MUST_NOT>
 <MUST>No pass assertion (`pass`, `passed`, `clean`, `clear`, `conforms`, `LGTM`, synonym) without the evidence chain (command + real output, or `file:line` inspected, or validation-loop pass, or explicit user acceptance).</MUST>
@@ -577,7 +577,7 @@ A protocol breach has occurred when:
 - a commit or push is executed without the ask when the session made file edits
 - files outside the session's edited-file set are staged for the gate commit
 - on a confirmed `READ_ONLY` host: a mutating git operation, or a diff-only delivery where Delivery contract requires complete file contents
-  - a `SPECS/` write occurs outside PATCH
+  - a `SPEC.md` write occurs outside PATCH
   - a HALT bypass: version drift resolved silently, or a BLOCKED-variant emitted in place of the DRIFT-internal decision block
   - a DRIFT phase output performs a write
 - a write to `STYLE_POLICY.md` (or configured artifact) outside the auto-trigger flow

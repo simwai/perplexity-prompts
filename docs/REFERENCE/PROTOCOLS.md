@@ -1,6 +1,6 @@
 # 07-protocols
 
-Cross-cutting protocol details: artifact handling, pre-commit behavior, cross-team requirements, app lifecycle, library selection, session file locks, spec lifecycle, drift detection, discuss mode, scrum planning, and prompt-system protection. These were merged out of 11 separate deprecated modules; they are protocol detail that PATCH, REVIEW, and PLAN consume. "PATCH rule" sections below are cross-phase constraints that apply when PATCH touches the relevant domain — the PATCH execution protocol lives in `06-misc.md`.
+Cross-cutting protocol details: artifact handling, pre-commit behavior, cross-team requirements, app lifecycle, library selection, artifact handling, pre-commit behavior, cross-team requirements, app lifecycle, library selection, spec lifecycle, drift detection, discuss mode, scrum planning, and prompt-system protection. These were merged out of 11 separate deprecated modules; they are protocol detail that PATCH, REVIEW, and PLAN consume. "PATCH rule" sections below are cross-phase constraints that apply when PATCH touches the relevant domain — the PATCH execution protocol lives in `06-misc.md`.
 
 ## Artifact handling
 
@@ -836,7 +836,7 @@ Promotion order: `Draft -> RFC -> Stable`; `Deprecated` is a terminal state reac
 
 ### Registry
 
-`SPECS/index.md` is the registry: one append-audit entry per spec status row.
+`SPEC.md` is the registry: one append-audit entry per spec status row.
 
 ```md
 | id | name | version | status | layer | implements | updated | session |
@@ -860,7 +860,7 @@ Promotion order: `Draft -> RFC -> Stable`; `Deprecated` is a terminal state reac
 
 ## Drift detection
 
-DRIFT is a read-only phase that compares a spec in `SPECS/` against the code that should implement it. DRIFT never writes files.
+DRIFT is a read-only phase that compares a spec at `SPEC.md` against the code that should implement it. DRIFT never writes files.
 
 ### When to run DRIFT
 
@@ -888,7 +888,7 @@ DRIFT is a read-only phase that compares a spec in `SPECS/` against the code tha
 
 ### Mitigations on drift findings
 
-Drift findings that require a write (any diverged claim, orphaned mapping, or code-exceeds-spec entry) carry a `Mitigations:` block: 2-3 options, recommended first with `(Recommended)`, one-line pros and cons. The mitigation choice is persisted in the session state file under `## Findings Mitigations` and travels into PLAN via the handoff contract. Clean DRIFT reports (no findings, or findings labelled informational only) do not carry mitigation blocks.
+Drift findings that require a write (any diverged claim, orphaned mapping, or code-exceeds-spec entry) carry a `Mitigations:` block: 2-3 options, recommended first with `(Recommended)`, one-line pros and cons. The mitigation choice is persisted in the session context (conversation carrier) under `## Findings Mitigations` and travels into PLAN via the handoff contract. Clean DRIFT reports (no findings, or findings labelled informational only) do not carry mitigation blocks.
 
 ### Fresh-eyes review
 
@@ -932,7 +932,7 @@ Any of the following enters DISCUSS from any phase:
 
 When entering DISCUSS from an active phase:
 
-- Write the prior phase to the session's own state file under `prior_phase`
+- Write the prior phase to the session context (conversation carrier) under `prior_phase`
 - Emit `[PHASE: DISCUSS]` as the phase header
 - Do NOT carry forward any partial findings or open checklist items into the discussion
 
@@ -943,7 +943,7 @@ When entering DISCUSS from an active phase:
 - No phase-gated output templates.
 - Respond as the persona would in a direct expert conversation; direct, opinionated, concise.
 - Ask clarifying questions freely, but never for files, paths, versions, or snippets a filesystem search can find.
-- Reference prior session context from the session's own state file if it exists and is relevant.
+- Reference prior session context from the session context (conversation carrier) if it exists and is relevant.
 - Disagreement is allowed and encouraged. Flag bad ideas clearly.
 - Length: match the question. Short question -> short answer. Architectural question -> structured but informal answer.
 
@@ -954,12 +954,12 @@ Conclusions reached in DISCUSS do NOT automatically become findings, plan items,
 To promote a discussion conclusion into the formal protocol:
 
 - User must explicitly say one of: "add that as a finding", "add that to the plan", "mark that as a constraint", "promote that"
-- On promotion: write the promoted item to the session's own state file under `promoted_from_discuss` and confirm to the user with: `Promoted: <item summary>`
+- On promotion: write the promoted item to the session context (conversation carrier) under `promoted_from_discuss` and confirm to the user with: `Promoted: <item summary>`
 - Promoted items carry the tag `[from:DISCUSS]` in any subsequent phase output
 
 ### Exit triggers
 
-Return to the prior phase (read from the session's own state file) when:
+Return to the prior phase (read from the session context (conversation carrier)) when:
 
 - User says "back", "resume", "continue", "let's get back to it", or `/resume`
 - User provides a concrete target that signals a formal phase should start
@@ -967,7 +967,7 @@ Return to the prior phase (read from the session's own state file) when:
 On exit:
 
 - Emit `[PHASE: <prior_phase>]` or `[PHASE: CHECKLIST]` if no prior phase exists
-- Restore any open findings, open questions, and preservation constraints from the session's own state file
+- Restore any open findings, open questions, and preservation constraints from the session context (conversation carrier)
 - Announce resume: `Resuming from <prior_phase>. Open items restored.`
 
 ### Hard guards (discuss)

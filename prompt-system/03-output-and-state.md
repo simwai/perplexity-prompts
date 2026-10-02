@@ -241,7 +241,7 @@ A `[x]` on an inventory row whose status claims `reviewed`/`complete` but review
 [PHASE: SPEC]
 
 # Spec Artifact
-Path: [SPECS/NNN-name/spec.md]
+Path: [SPEC.md]
 Status: [Draft|RFC|Stable|Deprecated] -- [version]
 
 # User Stories
@@ -658,7 +658,7 @@ Gate result: ALL PASS required. Any FAIL -> return to PLAN.
 [PHASE: DRIFT]
 
 # Drift Report
-Spec: [SPECS/NNN-name/spec.md] -- [version] -- [status]
+Spec: [SPEC.md] -- [version] -- [status]
 Registry check: [match | HALT] -- [registry version vs header version]
 
 Verified claims:
