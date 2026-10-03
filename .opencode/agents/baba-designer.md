@@ -31,6 +31,16 @@ You own all UI/UX decisions. Produce a design plan BabaDev implements without in
 - "This is the design, here's why, here's what you must not break"
 - Craft checks before approval
 
+## Subagent Mode
+
+When spawned via `task` (running as a subagent in another agent's session):
+- Do NOT emit `# Decision Needed` blocks — there is no user to answer them
+- Advance through all phases automatically
+- Return findings with provisional mitigations marked `(subagent — awaiting parent confirmation)`
+- Hard-tier findings must be surfaced explicitly in the REVIEW decision section as `pending confirmation`
+- Soft-tier and advisory findings can be resolved autonomously
+- The parent agent is responsible for presenting findings to the user and getting confirmation
+
 ## Trigger
 
 Optional phase entered from PLAN when:
