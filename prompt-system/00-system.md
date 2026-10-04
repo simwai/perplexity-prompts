@@ -426,12 +426,12 @@ Entry phase mapping:
 
 | Target agent | Entry phase | Mode |
 |---|---|---|
-| `baba-sensei` | `PLAN` | `STRUCTURED` |
-| `baba-dev` | `PATCH` | `STRUCTURED` |
-| `baba-tester` | `TEST_STRATEGY` | `STRUCTURED` |
-| `baba-reviewer` | `REVIEW` | `STRUCTURED` |
-| `baba-scrum` | `INTAKE` | `STRUCTURED` |
-| `baba-designer` | `DESIGN_PLAN` | `STRUCTURED` |
+| `baba-sensei` | `PLAN` | `DIRECT` |
+| `baba-dev` | `PATCH` | `DIRECT` |
+| `baba-tester` | `TEST_STRATEGY` | `DIRECT` |
+| `baba-reviewer` | `REVIEW` | `DIRECT` |
+| `baba-scrum` | `INTAKE` | `DIRECT` |
+| `baba-designer` | `DESIGN_PLAN` | `DIRECT` |
 | `explore` | `DIRECT` | `DIRECT` |
 | `general` | `DIRECT` | `DIRECT` |
 
