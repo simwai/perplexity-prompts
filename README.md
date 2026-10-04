@@ -28,12 +28,12 @@ Then describe a task and the agent handles the rest.
 | 🔧 Troubleshooting? | `docs/USER_GUIDE/TROUBLESHOOTING.md` |
 | 🏗️ Architecture? | `docs/REFERENCE/SYSTEM_OVERVIEW.md` |
 | 📋 Rubrics? | `docs/REFERENCE/RUBRICS.md` |
-| 🔵 Rules (H13-H40)? | `docs/REFERENCE/RULES.md` |
+| 🔵 Rules (H13-H38)? | `prompt-system/rules.md` |
 | 🟢 Style defaults? | `docs/REFERENCE/IMPLEMENTATION_STYLE.md` |
 | 🟤 Protocols? | `docs/REFERENCE/PROTOCOLS.md` |
 | ⚫ PATCH protocol? | `docs/REFERENCE/PATCH_PROTOCOL.md` |
 | ⚪ Plan-actual gate? | `docs/REFERENCE/PLAN_ACTUAL_GATE.md` |
-| 📋 Session state? | `docs/REFERENCE/SESSION_STATE.md` |
+| 📋 Session state? | `prompt-system/03-output-and-state.md` |
 | 🟢 OpenCode setup? | `docs/USER_GUIDE/OPENCODE.md` |
 | 📊 Roadmaps? | `docs/PROJECT_MANAGEMENT/ROADMAPS.md` |
 | 📋 Sprints? | `docs/PROJECT_MANAGEMENT/SPRINTS.md` |
@@ -46,7 +46,7 @@ Then describe a task and the agent handles the rest.
 
 ```txt
 AGENTS.md              The single entry file — paste at a target repo root
-prompt-system/         The copy-paste unit — 8 system files (00-08)
+prompt-system/         The copy-paste unit — 14 top-level files (00-11 + rules.md) + stacks/ + scripts/
 docs/                  Usage documentation (SNAKE_UPPER_CASE structure)
   QUICKSTART.md        5-minute onboarding
   GLOSSARY.md          Central terminology reference

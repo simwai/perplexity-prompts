@@ -6,15 +6,20 @@
 
   // Guarantees the system core is in every opencode session without relying
   // on the model choosing to read it. Mirrors the AGENTS.md startup instruction.
-  // The system is merged (9 files in prompt-system/ plus AGENTS.md; was 39: bootstrap.txt + 38 modules; 2026-08-31 cycle-removal pass,
-  // then restoration pass to 9 files). All files are pinned so module loading is
-  // fully deterministic. Phase-specific additions are diligence-loaded by the
-  // agent reading 00-system.md's load rules.
-  // Entries are explicit paths, never globs.
+  // The system is merged; it was 39 files (bootstrap.txt + 38 modules) before the
+  // 2026-08-31 cycle-removal pass. Entries here are explicit paths, never globs.
   // AGENTS.md is the sole entry point; prompt-system/ files follow its load order.
+  //
+  // This array pins the always-load [core] set plus the load-on-PATCH [review] set.
+  // 11-triggers.md is core and must stay pinned: it holds every canonical trigger
+  // definition, so omitting it silently disables T-01..T-23 routing.
+  // Conditional additions (stacks/, designer, doc, logical) are deliberately NOT
+  // pinned -- they are diligence-loaded per 00-system.md's load order, so pinning
+  // them would load the whole corpus into every session.
   "instructions": [
     "AGENTS.md",
     "prompt-system/00-system.md",
+    "prompt-system/11-triggers.md",
     "prompt-system/01-personas.md",
     "prompt-system/02-decision-prompts.md",
     "prompt-system/03-output-and-state.md",

@@ -62,3 +62,4 @@
   - Testing: **pytest** + **pytest-asyncio**.
   - Prefer libs that ship `py.typed` marker or have typeshed stubs over untyped alternatives.
 - Linting: `ruff` (lint + format) or `black + isort + flake8`; pre-commit hooks run them on save.
+- Circular import detection: **pycycle**. Run in pre-commit (whole project) and CI. Install via `pdm add --dev pycycle` (preferred), `poetry add --dev pycycle`, or `uv add --dev pycycle`. Run with `pycycle --here --ignore .venv,venv,build,dist,tests,__pycache__`. Configure via `pyproject.toml [tool.pycycle]` if needed (exclude test files, allow specific patterns). Note: may miss cycles in `src/` layout projects — verify manually if output seems unreliable.

@@ -80,7 +80,7 @@ The `prompt-system/` folder and its files are the core system and must be protec
 
 ### Enforcement
 
-- `07-protocols.md` rule detection (H14-H40) must not fire against `prompt-system/` files. The system reads `STYLE_POLICY.md` for project-level exceptions and treats `prompt-system/` as an always-excluded directory.
+- `07-protocols.md` rule detection (H14-H38) must not fire against `prompt-system/` files. The system reads `STYLE_POLICY.md` for project-level exceptions and treats `prompt-system/` as an always-excluded directory.
 - Pre-commit hooks must not include `prompt-system/` in their staged-file patterns.
 - Discovery Protocol searches must exclude `prompt-system/` from the project source tree.
 
@@ -163,7 +163,7 @@ Search scope excludes `prompt-system/` (core system, never part of project work)
 
 ### Rule detection
 
-For each rule in `04-rubrics.md` H14-H40:
+For each rule in `04-rubrics.md` H14-H38:
 
 1. Check if rule applies to target file's context
 2. If yes: add to rule triggers with evidence
@@ -227,6 +227,8 @@ A well-configured pre-commit setup must run at minimum:
 | Test runner | Run fast unit tests only; no integration tests | Fourth |
 | Secret scanner | Block credentials from entering the repo | Always present |
 | File hygiene | Trailing whitespace, end-of-file newline, LF line endings, merge-conflict markers | Always present |
+| Unused dependency/exporter detector (knip) | Detect unused npm packages, exports, and files in TS/JS projects | Recommended (TS/JS) |
+| Circular import detector (pycycle) | Detect circular import chains in Python projects | Recommended (Python) |
 
 Not every project needs all of these. A project with no test suite should not have a failing test hook. Use judgment; flag absence only when the missing check has real risk.
 
@@ -269,6 +271,8 @@ During REVIEW, flag the following:
 - **Hooks exist but skip secret scanner** - hard-tier H1 adjacent. Secret scanning on commit is the last line of defence before push. Flag it clearly.
 - **Hook runs slow integration tests** - soft-tier. Pre-commit must stay fast (under ~30 seconds). Slow tests belong in CI or `pre-push` only.
 - **Hook is present but broken** (exits non-zero on clean code, wrong path, wrong interpreter) - hard-tier. A broken hook is worse than no hook: developers bypass it.
+- **TS/JS project with no knip hook** — soft-tier (S-precommit). State: "No unused dependency detection. Dead code and unused packages may accumulate."
+- **Python project with no pycycle hook** — soft-tier (S-precommit). State: "No circular import detection. Circular imports may go unnoticed."
 
 ### PLAN rule (pre-commit)
 
@@ -293,6 +297,52 @@ When patching or creating hook configuration:
 
 - **For Python projects**: prefer `.pre-commit-config.yaml` with local hooks over custom shell scripts. Formatter: `ruff format` (runs first). Linter: `ruff check --fix` (runs second). Type check: `pyrefly check` with the project's existing config **only if pyrefly is a declared dependency** in `pyproject.toml`. Tests: `pytest -x -q` (fail fast, minimal output).
 
+- **knip (TS/JS) — `.pre-commit-config.yaml`**:
+  ```yaml
+  - repo: https://github.com/webpro-nl/knip
+    rev: v5.30.0
+    hooks:
+      - id: knip
+        name: knip - unused deps/exports/files
+        entry: knip
+        language: node
+        types: [typescript, javascript]
+        pass_filenames: false
+        always_run: true
+  ```
+
+- **pycycle (Python) — `.pre-commit-config.yaml`**:
+  ```yaml
+  - repo: local
+    hooks:
+      - id: pycycle
+        name: pycycle - circular imports
+        entry: pycycle --here --ignore .venv,venv,build,dist,tests,__pycache__
+        language: system
+        types: [python]
+        pass_filenames: false
+        always_run: true
+        # Install via: pdm add --dev pycycle
+  ```
+
+- **knip — `lint-staged` + Husky (Node.js)**:
+  ```json
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": ["prettier --write", "eslint --fix"],
+    "*.{ts,tsx,js,jsx,json}": ["bash -c 'tsc --noEmit'"],
+    "package.json": ["knip"]
+  }
+  ```
+
+- **knip.json template** (minimal):
+  ```json
+  {
+    "entry": ["src/index.ts"],
+    "project": ["src/**/*.ts"],
+    "ignore": ["**/*.test.ts", "**/*.spec.ts", "**/*.config.ts"]
+  }
+  ```
+
 ### Script opt-in marker
 
 If any `.sh` or `.ps1` scripts exist in the repo that should run as hooks, they must declare their intent in the first 5 lines with one of these keywords: `pre-commit`, `format`, `lint`, `test`, `quality`. Scripts without this marker are not picked up as hook candidates.
@@ -311,3 +361,219 @@ For projects with frontend UI:
 - Run axe-core or pa11y against changed pages/components when the change touches markup, templates, or component structure
 - Run lighthouse CI or equivalent for SEO score when the change touches page-level content, meta tags, or routing
 - A11y/SEO failures are soft-tier findings (S23-S26) unless they constitute an accessibility violation under applicable law (e.g., WCAG 2.1 AA required for public sector) - in which case they escalate to H-tier with legal risk noted
+
+## Cross-team requirements
+
+When REVIEW identifies a finding that crosses a team boundary (e.g., a contract change that affects a downstream service, a schema change that requires a migration in a sibling repo, an API deprecation that requires client updates), the cross-team protocol applies.
+
+### When to write a CHANGES_REQUIRED.md
+
+Write a `CHANGES_REQUIRED.md` file when ALL of the following are true:
+
+1. A required change has been identified (hard-tier or soft-tier finding, or a dependency of a fix in the current repo).
+2. The change cannot be made in the current repository: it is owned by another team or resides in a different service, package, or repo.
+3. The target repo or team is within the same project scope (monorepo sibling, shared platform service, same product organisation).
+
+Do NOT write `CHANGES_REQUIRED.md` for:
+
+- Third-party dependencies outside the project's control (open-source packages, external SaaS APIs). File a normal issue or note it in the review findings.
+- Hypothetical future changes with no concrete dependency in the current work.
+- Changes that can be fully handled by the current repo alone.
+
+### File placement
+
+Place the file at the repo root: `CHANGES_REQUIRED.md`. If one already exists, append a new dated section; do not overwrite prior entries. Each section is stamped with the review date so the receiving team knows the order. `CHANGES_REQUIRED.md` must NOT be gitignored. It is a living communication artifact that must be committed and visible to all teams.
+
+### Required file structure
+
+Each entry in `CHANGES_REQUIRED.md` must use this template exactly. Do not omit any field. If a field has no answer, write `N/A`; never leave it blank.
+
+```markdown
+## [YYYY-MM-DD] <short title of the required change>
+
+**Target repo / service**: <name or path - be specific>
+**Requested by**: <current repo name>
+**Priority**: BLOCKING | HIGH | MEDIUM | LOW
+**Depends on**: <finding ID or fix from the current repo that requires this, or N/A>
+
+### Context
+<2-4 sentences. Why is this change needed? What breaks or degrades without it?
+Link to the relevant finding, PR, or issue if available.>
+
+### Required change
+<Exact description of what must be done in the target repo.
+Be concrete: name the file, function, endpoint, schema field, or config key.
+Do not write "improve X" - write "add field Y to schema Z" or "change endpoint A to return B".>
+
+### Acceptance criteria
+- [ ] <Observable, testable outcome 1>
+- [ ] <Observable, testable outcome 2>
+- [ ] <Add as many as needed - each must be independently verifiable>
+
+### Contract / interface changes
+<If the change affects a shared API, event schema, database schema, or SDK contract,
+describe the before and after here. Include field names, types, and any versioning impact.
+If no contract changes: N/A>
+
+### Suggested implementation notes
+<Optional. Hints, references, or constraints the receiving team should know.
+Do not prescribe the implementation - only surface constraints and prior art.>
+```
+
+### Priority definitions
+
+| Priority | Meaning |
+|---|---|
+| `BLOCKING` | The current repo's fix or feature cannot ship without this change. Treat as a release blocker. |
+| `HIGH` | Significant degradation, data inconsistency, or security risk if unaddressed before next release. |
+| `MEDIUM` | Quality or maintainability concern; should be addressed within the current sprint or milestone. |
+| `LOW` | Nice-to-have alignment; no immediate impact if deferred. |
+
+### REVIEW rule (cross-team)
+
+During REVIEW, when a finding cannot be resolved in the current repo:
+
+- Mark the finding with the tag `[cross-team]` in the review output
+- State which repo or team owns the fix
+- Do not mark the finding as resolved until the receiving team confirms completion
+- Include the complete proposed `CHANGES_REQUIRED.md` entry in the REVIEW output. The file itself is created or updated during PATCH only after the entry is accepted and the implementation plan includes it.
+
+### PLAN rule (cross-team)
+
+When a plan includes a dependency on another team:
+
+- The plan must explicitly list all cross-team requirements as a separate section
+- Each cross-team requirement must reference its `CHANGES_REQUIRED.md` entry
+- The plan must state whether the current repo's changes can be merged independently or must be gated behind the cross-team change
+- If gated: mark the relevant plan steps as `BLOCKED pending cross-team`
+
+### Cross-team governance
+
+When emitting a patch that has cross-team dependencies:
+
+- Include the `CHANGES_REQUIRED.md` file (new or updated) as part of the patch output
+- Do not emit a patch that silently ignores a cross-team dependency
+- If the patch introduces a new contract or interface change, the `CHANGES_REQUIRED.md` entry must describe the before/after contract explicitly
+- The `[ ]` acceptance boxes inside the delivered `CHANGES_REQUIRED.md` are data, not phase artifacts; the phase-checkbox-tick rule applies to phase artifacts only
+
+### Closing an entry
+
+When the receiving team has completed their change, the entry should be updated:
+
+- Add `**Resolved**: <date> - <brief note>` below the `**Priority**` line
+- Do not delete the entry; keep the history for audit purposes
+
+### Quarantine cascade notification (spec lifecycle)
+
+When a spec L1 demotion or deprecation cascades -- every `Implements:` L2 dependent auto-demotes -- and the cascade touches code, contracts, or services owned by another repo or team within the same project scope, file a `CHANGES_REQUIRED.md` entry per the template above. The cascade is a cross-team requirement like any other: mark the finding `[cross-team]`, name the owning repo, and do not mark it resolved until the receiving team confirms.
+
+## Scrum planning
+
+Scrum planning covers the optional upstream pipeline (INTAKE, BACKLOG, SPRINT, TASK_PLAN, SPEC) owned by BabaScrumMaster.
+
+### Optionality routing
+
+- User supplies a concrete target (file, module, or code snippet) at START -> skip upstream planning. Skip the entire upstream pipeline. Enter `CHECKLIST` as before. This pipeline never activates.
+- User supplies a goal, feature request, or project spec without a concrete target -> full mode. Enter `INTAKE` first.
+- Full mode must always produce at least one approved task card before the session may enter `CHECKLIST`.
+- `SPRINT` may be skipped on explicit user request (e.g. "no sprints, just size this"). The pipeline then runs `INTAKE -> BACKLOG -> TASK_PLAN` (then `-> SPEC` when spec-authoring is in scope).
+
+### ICE prioritization
+
+Each backlog item scores three factors, each 1-10. `ICE = Impact * Confidence * Ease`.
+
+| Factor | Definition |
+|---|---|
+| **Impact** | How much this item moves the goal (value delivered, effort removed, risk retired) |
+| **Confidence** | How sure we are the approach, scope, and estimate are right |
+| **Ease** | Inverse of implementation effort; derived from the size band |
+
+Ties are broken by size (smaller first), then by milestone target date.
+
+### Size bands (sanity check, not hard law)
+
+| Size | LOC band | Ease guidance |
+|---|---|---|
+| XS | ~50-150 | 8-10 |
+| S | ~150-300 | 6-8 |
+| M | ~300-400 | 4-6 |
+| L | >400 | 1-4 |
+
+The band is a sanity check, not a hard law. A task that is architecturally indivisible may exceed its band with an explicit one-line rationale; Ease is then scored on real effort, not LOC. Size never overrides the smallest-architecturally-sound-fix principle.
+
+### Split rule
+
+Any backlog item at L size, or whose definition of done implies more than one independent deliverable, MUST be split into smaller items before SPRINT selection or TASK_PLAN. Undersized items (XS) may be merged but are never forced to be.
+
+### Milestones
+
+Milestones are project-level checkpoints declared at `INTAKE`. Each has:
+
+- `id` - short machine-readable tag
+- `name`
+- `target` - date or deliverable
+- `definition_of_done` - what "reached" means
+
+Every backlog item carries one milestone tag. A milestone is reached when all tagged items are marked `Done` on the sprint board. Backlog items are grouped by milestone in the milestone map.
+
+### Task-card enrichment rules
+
+- Story grouping: tasks sharing a `Story` id belong to one user story. The story's tasks are ordered MVP-first: `core` tasks (the story's smallest shippable slice) before `supporting` tasks.
+- MVP-first precedence: MVP ordering applies WITHIN a story. Across stories, ICE remains the deterministic pull order (then size, then milestone date).
+- Test-first flag: a plan-level ordering signal that test work precedes implementation for that task. It is never a test-authoring grant: tests are authored only on user request or via the BabaTester handoff.
+- Split rule still applies: a grouped card at L size, or with multiple independent deliverables, MUST be split (or carry an explicit one-line rationale).
+
+## App lifecycle
+
+When a session involves starting, stopping, or smoke-testing a long-running process (dev server, worker, daemon), the lifecycle is:
+
+- `app_lifecycle.start`: spawn the process in the background; record the PID; record the expected startup time.
+- `app_lifecycle.wait_ready`: poll a health endpoint or log pattern until the process is ready, with a timeout equal to the expected startup time plus 30s.
+- `app_lifecycle.smoke`: run the configured smoke check (HTTP probe, library import, entry-point call) against the running process. Record PASS/FAIL/SKIPPED.
+- `app_lifecycle.stop`: send the documented shutdown signal; wait for exit; record the exit code. On a `READ_ONLY` host, every step reports `SKIPPED -- <reason>`.
+
+Smoke runs once per PATCH at the Verification gate. It is not retried per edit.
+
+### Close-session protocol
+
+A session ends in one of three ways:
+
+1. **Explicit command**: user types `/close`.
+2. **Natural language**: user says "close the session", "end session", or "close session".
+3. **Automatic**: the commit/push gate completes in PATCH and the user makes a commit/push decision (A/B/C). This is the default close trigger for sessions that made edits.
+
+When any close trigger fires:
+
+- Record `closed_at`, `closed_by`, `mode_at_close`, `final_commit`, `working_tree`, and `note` in the session context (conversation carrier) `## Session Close` section.
+- If the session made edits and a commit was recorded, the close is automatic after the commit/push gate outcome is written.
+- If the session made no edits, or the user invoked `/close` or natural-language close explicitly, evaluate whether a close-session evaluation is warranted:
+  - Structured sessions with phase artifacts (CHECKLIST onward) -> run evaluation.
+  - Trivial exploratory sessions with no phase artifacts -> skip evaluation; record `evaluation_skipped_reason`.
+- Run the close-session evaluation by spawning a `task` sub-session with `subagent_type: baba-reviewer` using the evaluation prompt from `prompt-system/03-output-and-state.md` `## Session evaluation prompt`.
+- Append the evaluation result to the session context `## Session Close` section.
+- Announce close to the user: session ID, final commit (if any), evaluation verdict (PASS/FAIL/SKIPPED), and one-line summary.
+
+### Startup validation
+
+- Validate required environment variables and configuration before binding ports, accepting traffic, starting workers, or opening durable resources.
+- Distinguish required settings from optional settings and define safe defaults only for settings that are genuinely optional.
+- Treat a missing, malformed, contradictory, or wrong environment/config file as a startup error. Exit non-zero instead of starting in a partial or silently degraded state.
+- Report the exact setting or file that failed and the expected shape, but never include secret values, credentials, or full environment contents in errors.
+- Keep `.env.example` and equivalent configuration documentation aligned with the required startup contract.
+
+### Graceful shutdown
+
+- Handle the runtime's termination signals through one idempotent shutdown path.
+- Stop accepting new work before draining in-flight requests, jobs, or message handlers.
+- Close application resources in dependency order, including servers, worker pools, database connections, queues, and telemetry exporters where present.
+- Bound draining and cleanup with a shutdown timeout. A clean drain may exit successfully; a forced timeout must be observable and exit non-zero.
+- Prevent new background work from being scheduled after shutdown begins.
+- Make repeated shutdown signals safe: the first signal starts cleanup and later signals must not run cleanup concurrently or corrupt state.
+
+### Review checks (app lifecycle)
+
+- Startup validation occurs before externally visible side effects.
+- Invalid configuration cannot produce a successful-looking partial start.
+- Shutdown behavior is testable for clean drain, timeout, repeated signals, and resource cleanup.
+- Error output remains useful without exposing secrets or internal sensitive state.
+

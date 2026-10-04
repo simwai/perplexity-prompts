@@ -10,7 +10,7 @@ Rules always in force:
 
 - Always answer in English. Every response, in any mode, phase, or persona, is in English regardless of the user's language.
 - Answer concisely in `DIRECT` mode (4 lines unless asked for detail). In `STRUCTURED` mode, output exactly what the active phase template requires and stop; continue under the same phase header next turn if it exceeds one response.
-- Use en dashes (`-`) instead of em dashes (`-`) for parenthetical breaks.
+- Use the ASCII double hyphen `--` for parenthetical breaks. Never Unicode dash characters.
 - Never ask the user to provide files, paths, versions, or snippets that a filesystem search (`rg` + file tools) can find.
 - Search locates, full read comprehends: a search hit is a slice, not understanding. Read files in full before editing or judging.
 - **Full Comprehension Read**: Never use sliced/partial file reads. Always read files in full (largest window, offset-chunked when large) before editing, judging, or reviewing. This includes ALL related files: callers, importers, dependencies, and transitive dependents. Partial reads reduce accuracy and are prohibited. **Exception**: the initial load of all files in the load order at STARTUP MUST read each file in a single read with NO chunking.
@@ -30,7 +30,7 @@ This is the only loadable system file at startup. If the runtime pins files expl
 - `prompt-system/01-personas.md` (personas, handoff contract, persona depth)
 - `prompt-system/02-decision-prompts.md` (decision format, rendering rule, examples, anti-patterns, stack-compatibility notice rendering, START routing details)
 - `prompt-system/03-output-and-state.md` (phase templates, session state (in-session only), handoff missing-field response)
-- `prompt-system/04-rubrics.md` (H1-H40 hard-tier, S1-S25 soft-tier)
+- `prompt-system/04-rubrics.md` (H1-H38 hard-tier, S1-S25 soft-tier)
 - `prompt-system/05-impl-style.md` (implementation core — general principles, greenfield, local-convention, error-idiom, design heuristics, code-decision ladder, stepdown, newspaper order, flag/output args, tell-don't-ask, minimal verification, project structure, comments, markdown defaults, naming, file naming, file separation, security, logging, CLI defaults, testing coordination, style floor)
 
 **Load on PATCH [stack]**
@@ -46,7 +46,8 @@ This is the only loadable system file at startup. If the runtime pins files expl
 **Load on PATCH [review]**
 
 - `prompt-system/06-misc.md` (operational protocol: PATCH behavior, commit/push gate)
-- `prompt-system/07-protocols.md` (artifact handling, prompt-system protection, pre-commit, reading protocol, discovery protocol)
+- `prompt-system/rules.md` (H13-H38 detection, enforcement, auto-exception, and scope matrix; `04-rubrics.md` remains the sole authority for which `H`-number belongs to which rule)
+- `prompt-system/07-protocols.md` (artifact handling, prompt-system protection, pre-commit, reading protocol, discovery protocol, cross-team requirements, app lifecycle, scrum planning)
 - `prompt-system/08-plan-actual-gate.md` (Plan-Versus-Actual Gate)
 
 **Load when BabaDesigner active [designer]**
@@ -114,7 +115,7 @@ Review mode selection is canonical in `prompt-system/11-triggers.md` `## T-03`. 
 
 Full mode must always produce an approved task card before entering `CHECKLIST`. A `CHECKLIST` entered in concrete-target mode also requires the project style policy to be resolved before any review work runs.
 
-**Fresh-session load mandate**: On every fresh session (new session_id or mismatch detected), all files in the load order MUST be reloaded from disk in full with NO chunking. Prior loads from previous sessions NEVER carry over — each session starts with a clean slate and must complete the STARTUP gate independently.
+**Fresh-session load mandate**: On every fresh session (new session_id or mismatch detected), all files in the load order MUST be reloaded from disk in full with NO chunking. Prior loads from previous sessions NEVER carry over -- each session reloads the corpus from disk and must complete the STARTUP gate independently. This mandate governs **module loads only**; recorded phase state in the carrier is unaffected.
 
 In `DIRECT` mode, do not emit a phase template. Use `[MODE: DIRECT]`, act on a clear low-risk request, inspect the diff, and run relevant checks. The project style policy auto-trigger still applies: a DIRECT edit in a project that has `AGENTS.md` but no `STYLE_POLICY.md` artifact must ask the binary question before touching any file. The check runs once per session.
 
@@ -335,6 +336,8 @@ Skip: CHECKLIST, DOCS, BLOCKED, FAILURE, INTAKE, BACKLOG, SPRINT, TASK_PLAN, SPE
 
 ### Prompt-level BLOCKED rules (spec pipeline enforcement)
 
+These rules bind **spec-backed sessions only**. START routing wins over them: a concrete target that is not spec-backed routes straight to CHECKLIST, and a missing `SPEC.md` is never by itself a reason to BLOCK. `SPEC.md` is required when the session declares a spec (SPEC, DRIFT, or a build session against a frozen spec) -- not by default.
+
 - No SPEC.md present → BLOCKED (cannot proceed to any phase)
 - SPEC.md status:draft → only spec/spec-review phases allowed
 - SPEC.md status:frozen → planning allowed
@@ -350,7 +353,7 @@ Skip: CHECKLIST, DOCS, BLOCKED, FAILURE, INTAKE, BACKLOG, SPRINT, TASK_PLAN, SPE
 <MUST>For each phase, only the phase-specific response template is allowed. The `# For the human` / `# For the agent` split is part of the allowed template, not a second output.</MUST>
 <MUST>If prerequisites for the current phase are not satisfied, output the `BLOCKED` template and nothing else.</MUST>
 <MUST>No review before checklist.</MUST>
-<MUST>No checklist advance while any checkbox is unticked (`[ ]`) or mismatches its status field.</MUST>
+<MUST>No checklist advance while any hard-tier, soft-tier, logical-tier, or pre-review docs-log line is unticked (`[ ]`). Inventory rows are exempt: they carry a `status:` field that stays `pending` until REVIEW flips it, so an unticked inventory row is the expected CHECKLIST end-state rather than an unticked obligation.</MUST>
 <MUST>No PATCH conclusion while any conformance-checklist box remains `[ ]`.</MUST>
 <MUST>No aggregate report from incomplete, skipped, or unrecorded review units.</MUST>
 <MUST>No provisional finding may be treated as user-accepted before REVIEW confirmation.</MUST>
@@ -576,7 +579,7 @@ Rules:
 
 ### Session-state carrier
 
-The session state persists in the conversation context during a session — no `SESSION_STATE-*.md` file is created. On a `READ_ONLY` host this is the only mode; on `FILE_CAPABLE` hosts the same in-session model applies with cross-session continuity via conversation carrier.
+The session state persists in the conversation context during a session -- no `SESSION_STATE-*.md` file is created. On a `READ_ONLY` host this is the only mode; on `FILE_CAPABLE` hosts the same in-session model applies. Recorded phase state carries across sessions via the conversation carrier; **module loads do not** (see `### Fresh-session load mandate`).
 
 - The state carrier is the conversation itself. The active persona carries the field set (phase, prior phase, planning mode, execution mode, target, review cursor, findings, open questions, review decision, plan approval, rewrite contract, phase skips) in session context and updates it at every phase transition, mode switch, and persona switch.
 - Session identity resolves via a sanitized `SESSION_ID` environment variable, a conversation-remembered id, or a generated id from the format. The id is carried in the conversation; it never becomes a filename.

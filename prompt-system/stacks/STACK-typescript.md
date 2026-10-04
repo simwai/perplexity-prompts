@@ -18,6 +18,7 @@
 - For Node code, assume Node 20 and TS 5.x unless the project states otherwise.
 - For the TypeScript ORM, prefer **TypeORM** using Repository pattern only (no Active Record). Decorator-style entity definition is the single enforced style. MikroORM is acknowledged as more type-safe and robust but production experience shows TypeORM makes fewer real-world problems for this team.
 - DI container: **tsyringe**. Favor constructor injection; wire the composition root at the application entry point. Default to transient lifetime unless a clear singleton or scoped rationale exists.
+- Unused code detection: **knip**. Run in pre-commit (whole project) and CI. Configure `knip.json` with entry points (`src/index.ts`, test files, config files). Use production mode (`!` suffix) to exclude tests. Ignore patterns for generated code, experimental modules, and framework-specific entry points. Install via `npm add -D knip` / `pnpm add -D knip` / `yarn add -D knip`.
 - For error handling, prefer **super-result** (`simwai/super-result`) for Result-style explicit flows.
   - **Style: caller-handled, no chaining.** Use `if (result.ok)` / `if (result.err)` type narrowing.
   - `from(fn)` / `safe(fn)` wrap exactly one function call. The wrapped body must be a single expression; statement blocks inside the wrapper are forbidden.

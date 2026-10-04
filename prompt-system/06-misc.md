@@ -194,7 +194,7 @@ In STRUCTURED mode the ask carries the `[PHASE: PATCH]` header; in DIRECT mode i
 When the commit/push gate completes with a user decision (A/B/C) and the session made file edits, the session closes automatically:
 
 1. Record `closed_at`, `closed_by: automatic`, `mode_at_close`, `final_commit`, `working_tree`, and `note` in the session context `## Session Close` section.
-2. Spawn a `/subtask` to `baba-reviewer` with the evaluation prompt from `prompt-system/03-output-and-state.md` `## Session evaluation prompt`.
+2. Spawn a `task` sub-session with `subagent_type: baba-reviewer` using the evaluation prompt from `prompt-system/03-output-and-state.md` `## Session evaluation prompt`.
 3. Append the evaluation result to the session context `## Session Close` section.
 4. Announce close to the user: session ID, final commit, evaluation verdict, and one-line summary.
 
