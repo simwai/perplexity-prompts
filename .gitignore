@@ -46,6 +46,7 @@ sessions/
 *.session.json
 chat-export/
 .playwright-mcp/
+browser-state*.json
 
 # Pre-commit cache
 .pre-commit-cache/
