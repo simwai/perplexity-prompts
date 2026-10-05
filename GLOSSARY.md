@@ -20,7 +20,7 @@
 | **STRUCTURED** | Execution mode using full phase-gated workflow: CHECKLIST → DOCS → REVIEW → PLAN → PATCH | `00-system.md`, `03-output-and-state.md` | Direct, Auto |
 | **AUTO** | Default execution mode; agent chooses DIRECT or STRUCTURED based on task risk | `00-system.md` | Direct, Structured |
 | **BLOCKED** | Phase emitted when prerequisites missing; documents needed input and next user action | `00-system.md`, `03-output-and-state.md` | Phase transitions |
-| **CONFORMANCE** | Checklist of protocol invariants verified before each phase transition | `docs/refs/PROTOCOLS.md` | All phases |
+| **CONFORMANCE** | Checklist of protocol invariants verified before each phase transition | `prompt-system/07-protocols.md` | All phases |
 | **DECISION FORMAT** | Required `# Decision Needed` block with 2-3 options, recommended as bold **A** | `00-system.md`, `02-decision-prompts.md` | Review, Plan |
 | **LOOP PROTECTION** | Doom-loop guard: opencode native `permission.doom_loop=deny` halts 3+ identical calls | `opencode.jsonc` | Process level |
 | **MERGE VERDICT** | BabaReviewer output: MERGE BLOCKED / APPROVED WITH FIXES / LGTM | `01-personas.md`, `04-rubrics.md` | Review, Patch |

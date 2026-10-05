@@ -136,5 +136,5 @@ BabaDev (implementation)
 
 - Phase flow: `user-guide/PHASES.md`
 - Execution modes: `user-guide/EXECUTION_MODES.md`
-- Handoff contract: `refs/SYSTEM_OVERVIEW.md#handoff-contract`
+- Handoff contract: `SYSTEM_OVERVIEW.md#handoff-contract`
 - Persona definitions: `prompt-system/01-personas.md`

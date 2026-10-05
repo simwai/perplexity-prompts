@@ -172,5 +172,5 @@ BabaDev (PLAN→PATCH)
 - Phase flow: `user-guide/PHASES.md`
 - Phase templates: `prompt-system/03-output-and-state.md`
 - Execution mode rules: `prompt-system/00-system.md`
-- Style defaults: `refs/IMPLEMENTATION_STYLE.md`
-- Patch protocol: `refs/PATCH_PROTOCOL.md`
+- Style defaults: `prompt-system/05-impl-style.md`
+- Patch protocol: `prompt-system/06-misc.md`

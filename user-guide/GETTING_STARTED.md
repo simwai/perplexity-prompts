@@ -194,6 +194,6 @@ Fix typo in README.md line 42.
 | Phase flow details | `user-guide/PHASES.md` |
 | Execution modes | `user-guide/EXECUTION_MODES.md` |
 | Common issues | `user-guide/TROUBLESHOOTING.md` |
-| Architecture | `refs/SYSTEM_OVERVIEW.md` |
+| Architecture | `SYSTEM_OVERVIEW.md` |
 | OpenCode adapter | `user-guide/OPENCODE.md` |
 | Project management | `project-management/` |

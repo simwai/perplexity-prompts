@@ -9,7 +9,7 @@
 | Item | Status | Target | Notes |
 |---|---|---|---|
 | Documentation restructuring | ✅ Complete | 2026-09-22 | New SNAKE_UPPER_CASE structure with dark+purple styling |
-| Pre-commit TOC generation | ✅ Complete | 2026-09-22 | `markdown-toc` hook for docs/ files |
+| Pre-commit TOC generation | ✅ Complete | 2026-09-22 | `markdown-toc` hook for documentation files |
 | Glossary in architecture | ✅ Complete | 2026-09-22 | `GLOSSARY.md` + embedded in `SYSTEM_OVERVIEW.md` |
 | Platform adapter docs | ✅ Complete | 2026-09-22 | OpenCode guide |
 

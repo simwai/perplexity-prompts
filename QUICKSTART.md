@@ -83,13 +83,13 @@ Fix typo in README.md line 42.
 | Phase flow? | `user-guide/PHASES.md` |
 | Execution modes? | `user-guide/EXECUTION_MODES.md` |
 | Troubleshooting? | `user-guide/TROUBLESHOOTING.md` |
-| Architecture? | `refs/SYSTEM_OVERVIEW.md` |
-| Rubrics? | `refs/RUBRICS.md` |
+| Architecture? | `SYSTEM_OVERVIEW.md` |
+| Rubrics? | `prompt-system/04-rubrics.md` |
 | Rules? | `prompt-system/rules.md` |
-| Style defaults? | `refs/IMPLEMENTATION_STYLE.md` |
-| Protocols? | `refs/PROTOCOLS.md` |
-| Patch protocol? | `refs/PATCH_PROTOCOL.md` |
-| Plan-actual gate? | `refs/PLAN_ACTUAL_GATE.md` |
+| Style defaults? | `prompt-system/05-impl-style.md` |
+| Protocols? | `prompt-system/07-protocols.md` |
+| Patch protocol? | `prompt-system/06-misc.md` |
+| Plan-actual gate? | `prompt-system/08-plan-actual-gate.md` |
 | Session context? | `prompt-system/03-output-and-state.md` |
 | OpenCode setup? | `user-guide/OPENCODE.md` |
 | Project management? | `project-management/ROADMAPS.md` |

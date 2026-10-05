@@ -195,8 +195,8 @@ Reply with: A, B, or C
 | Phase templates (full) | `prompt-system/03-output-and-state.md` |
 | Decision format details | `prompt-system/02-decision-prompts.md` |
 | Hard guards | `prompt-system/00-system.md` |
-| Rubrics | `refs/RUBRICS.md` |
+| Rubrics | `prompt-system/04-rubrics.md` |
 | Rules (H13-H38) | `prompt-system/rules.md` |
-| Patch protocol | `refs/PATCH_PROTOCOL.md` |
-| Plan-actual gate | `refs/PLAN_ACTUAL_GATE.md` |
+| Patch protocol | `prompt-system/06-misc.md` |
+| Plan-actual gate | `prompt-system/08-plan-actual-gate.md` |
 | Session context (In-Session) | `prompt-system/03-output-and-state.md` |

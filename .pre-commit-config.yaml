@@ -1,25 +1,26 @@
 repos:
   - repo: local
     hooks:
-      # Formatter: regenerate TOCs in the reference docs, then lint.
+      # Formatter: regenerate TOCs where navigation helps, then lint.
+      # Authoritative list per prompt-system/10-doc-style.md. prompt-system/ core
+      # files are excluded: the load order already fixes their reading sequence.
       - id: markdown-toc
         name: Generate Markdown TOCs
         entry: bash -c 'npx markdown-toc -i "$1"'
         language: system
         types: [markdown]
-        files: '^docs/.*\.md$'
-        exclude: '^docs/(GLOSSARY|refs)/.*\.md$'
+        files: '^(user-guide/|project-management/|SYSTEM_OVERVIEW\.md$|CONFORMANCE\.md$)'
         args: [--maxdepth=3, --no-first-h1]
 
-      # Linter: the delivery surface AGENTS.md deploys. docs/ and SPEC.md are
-      # deliberately out of scope here: docs/ carries a large backlog of
-      # pre-existing violations and SPEC.md is a frozen governance artifact.
+      # Linter: every tracked Markdown file. The repository is at zero violations,
+      # so the gate covers the whole tree rather than a subset.
       - id: markdownlint
-        name: markdownlint (deployed surface)
+        name: markdownlint
         entry: npx markdownlint-cli
         language: system
         types: [markdown]
-        files: '^(prompt-system/|AGENTS\.md$|README\.md$|TASKS\.md$|STYLE_POLICY\.md$)'
+        files: '\.md$'
+        exclude: '^(docs/|node_modules/|opencode-memory-mw/sim/)'
 
       # Static integrity tests. These assert properties of the whole tree rather
       # than of the staged files, so they must not receive filenames.
@@ -40,6 +41,16 @@ repos:
       - id: test-self-review-protocol
         name: Self-review protocol static checks
         entry: pwsh -NoProfile -File prompt-system/scripts/test-self-review-protocol.ps1
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      # Guards the reference-pool manifest serializer. Added after a lossy
+      # Read-Manifest shipped in three copies and silently dropped every pool
+      # member and entry but the last; nothing exercised the round-trip.
+      - id: test-manifest-io
+        name: Reference-pool manifest round-trip
+        entry: pwsh -NoProfile -File prompt-system/scripts/test-manifest-io.ps1
         language: system
         pass_filenames: false
         always_run: true

@@ -115,7 +115,9 @@ Review mode selection is canonical in `prompt-system/11-triggers.md` `## T-03`. 
 
 Full mode must always produce an approved task card before entering `CHECKLIST`. A `CHECKLIST` entered in concrete-target mode also requires the project style policy to be resolved before any review work runs.
 
-**Fresh-session load mandate**: On every fresh session (new session_id or mismatch detected), all files in the load order MUST be reloaded from disk in full with NO chunking. Prior loads from previous sessions NEVER carry over -- each session reloads the corpus from disk and must complete the STARTUP gate independently. This mandate governs **module loads only**; recorded phase state in the carrier is unaffected.
+### Fresh-session load mandate
+
+On every fresh session (new session_id or mismatch detected), all files in the load order MUST be reloaded from disk in full with NO chunking. Prior loads from previous sessions NEVER carry over -- each session reloads the corpus from disk and must complete the STARTUP gate independently. This mandate governs **module loads only**; recorded phase state in the carrier is unaffected.
 
 In `DIRECT` mode, do not emit a phase template. Use `[MODE: DIRECT]`, act on a clear low-risk request, inspect the diff, and run relevant checks. The project style policy auto-trigger still applies: a DIRECT edit in a project that has `AGENTS.md` but no `STYLE_POLICY.md` artifact must ask the binary question before touching any file. The check runs once per session.
 

@@ -21,24 +21,27 @@ Then describe a task and the agent handles the rest.
 
 | Need | Go To |
 |---|---|
-| ⚡ 5-minute onboarding | `docs/QUICKSTART.md` |
-| 🎭 Which persona? | `docs/user-guide/PERSONAS.md` |
-| 🔄 Phase flow? | `docs/user-guide/PHASES.md` |
-| ⚙️ Execution modes? | `docs/user-guide/EXECUTION_MODES.md` |
-| 🔧 Troubleshooting? | `docs/user-guide/TROUBLESHOOTING.md` |
-| 🏗️ Architecture? | `docs/refs/SYSTEM_OVERVIEW.md` |
+| ⚡ 5-minute onboarding | `QUICKSTART.md` |
+| 🎭 Which persona? | `user-guide/PERSONAS.md` |
+| 🔄 Phase flow? | `user-guide/PHASES.md` |
+| ⚙️ Execution modes? | `user-guide/EXECUTION_MODES.md` |
+| 🔧 Troubleshooting? | `user-guide/TROUBLESHOOTING.md` |
+| 🏗️ Architecture? | `ARCHITECTURE.md` |
+| 📖 System overview? | `SYSTEM_OVERVIEW.md` |
 | 📋 Rubrics? | `prompt-system/04-rubrics.md` |
 | 🔵 Rules (H13-H38)? | `prompt-system/rules.md` |
-| 🟢 Style defaults? | `docs/refs/IMPLEMENTATION_STYLE.md` |
-| 🟤 Protocols? | `docs/refs/PROTOCOLS.md` |
-| ⚫ PATCH protocol? | `docs/refs/PATCH_PROTOCOL.md` |
-| ⚪ Plan-actual gate? | `docs/refs/PLAN_ACTUAL_GATE.md` |
+| 🟢 Style defaults? | `prompt-system/05-impl-style.md` |
+| 🟤 Protocols? | `prompt-system/07-protocols.md` |
+| ⚫ PATCH protocol? | `prompt-system/06-misc.md` |
+| ⚪ Plan-actual gate? | `prompt-system/08-plan-actual-gate.md` |
 | 📋 Session state? | `prompt-system/03-output-and-state.md` |
-| 🟢 OpenCode setup? | `docs/user-guide/OPENCODE.md` |
-| 📊 Roadmaps? | `docs/project-management/ROADMAPS.md` |
-| 📋 Sprints? | `docs/project-management/SPRINTS.md` |
-| 🔗 Trello? | `docs/project-management/TRELLO_INTEGRATION.md` |
-| 📖 Glossary? | `docs/GLOSSARY.md` |
+| ✅ Conformance invariants? | `CONFORMANCE.md` |
+| 📘 AGENTS.md usage? | `AGENTS_USAGE.md` |
+| 🟢 OpenCode setup? | `user-guide/OPENCODE.md` |
+| 📊 Roadmaps? | `project-management/ROADMAPS.md` |
+| 📋 Sprints? | `project-management/SPRINTS.md` |
+| 🔗 Trello? | `project-management/TRELLO_INTEGRATION.md` |
+| 📖 Glossary? | `GLOSSARY.md` |
 
 ---
 
@@ -46,13 +49,17 @@ Then describe a task and the agent handles the rest.
 
 ```txt
 AGENTS.md              The single entry file — paste at a target repo root
-prompt-system/         The copy-paste unit — 14 top-level files (00-11 + rules.md) + stacks/ + scripts/
-docs/                  Usage documentation (UPPER_SNAKE_CASE files, kebab-case dirs)
-  QUICKSTART.md        5-minute onboarding
-  GLOSSARY.md          Central terminology reference
-  user-guide/          Getting started, personas, phases, modes, troubleshooting
-  refs/           Canonical system references (mirrors prompt-system/)
-  project-management/  Roadmaps, sprints, Trello integration
+prompt-system/         The deployed unit — 14 top-level files (00-11 + rules.md) + stacks/ + scripts/
+  stacks/              Per-language style sections (loaded on PATCH)
+  scripts/             Integrity suites and reference-pool tooling
+AGENTS_USAGE.md        How to use and deploy the system
+ARCHITECTURE.md        Layer model, review path, portable vs adapter files
+SYSTEM_OVERVIEW.md     File map and cross-references
+CONFORMANCE.md         Protocol invariants verified before each phase transition
+GLOSSARY.md            Central terminology reference
+QUICKSTART.md          5-minute onboarding
+user-guide/            Getting started, personas, phases, modes, troubleshooting
+project-management/    Roadmaps, sprints, Trello integration
 adapters/              Adapter templates (source of truth for generated files)
   claude/agents/       Claude Code subagent templates
   claude/skills/       Claude Code slash-command skill templates
@@ -66,6 +73,9 @@ opencode.jsonc         opencode-native config (optional layer, inert for other a
 sync.ps1               Interactive propagation to target projects
 generate-adapters.ps1  Generates .opencode/ and .claude/ from adapters/
 ```
+
+Only `AGENTS.md` plus `prompt-system/` is deployed to target projects. Everything
+else above is repository documentation and stays local.
 
 ---
 
@@ -99,7 +109,7 @@ Copy-Item -Recurse prompt-system <target-project>\prompt-system
 
 Then paste `AGENTS.md` content as `AGENTS.md` at the target repo root.
 
-For detailed instructions, see `docs/user-guide/GETTING_STARTED.md`.
+For detailed instructions, see `user-guide/GETTING_STARTED.md`.
 
 ### Syncing Multiple Projects
 

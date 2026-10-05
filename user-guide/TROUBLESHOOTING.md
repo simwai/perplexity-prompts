@@ -104,7 +104,7 @@ git log --oneline -5
 
 ```bash
 # Run manually
-npx markdown-toc -i docs/user-guide/GETTING_STARTED.md
+npx markdown-toc -i user-guide/GETTING_STARTED.md
 ```
 
 ---
@@ -138,5 +138,5 @@ npx markdown-toc -i docs/user-guide/GETTING_STARTED.md
 - Phase flow: `user-guide/PHASES.md`
 - Execution modes: `user-guide/EXECUTION_MODES.md`
 - Getting started: `user-guide/GETTING_STARTED.md`
-- System architecture: `refs/SYSTEM_OVERVIEW.md`
+- System architecture: `SYSTEM_OVERVIEW.md`
 - MCP config: `AGENTS.md` (MCP Fallback Tiers section)

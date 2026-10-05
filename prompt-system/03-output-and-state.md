@@ -833,10 +833,10 @@ Planning session reads frozen `SPEC.md`, produces `TASKS.md` table: #, Task, Spe
 
 BabaDev reads `SPEC.md` + `TASKS.md`, executes one task per build session. Smallest architecturally sound fix. Runs verification gates.
 
-### `/close` command → docs/EVALUATIONS.md
+### `/close` command → EVALUATIONS.md
 
 
-User types `/close`, agent appends entry to `docs/EVALUATIONS.md` (creates with header "# Session Evaluations" if missing). Entry format: timestamp, session type, task, files changed, verification, outcome, notes.
+User types `/close`, agent appends entry to `EVALUATIONS.md` (creates with header "# Session Evaluations" if missing). Entry format: timestamp, session type, task, files changed, verification, outcome, notes.
 
 ## Session State (In-Session Only)
 

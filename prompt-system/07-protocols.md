@@ -205,8 +205,9 @@ For each rule in `04-rubrics.md` H14-H38:
 Scan for project architecture/style docs:
 
 - `ARCHITECTURE.md`
+- `SYSTEM_OVERVIEW.md`
 - `ADR/` directory
-- `docs/architecture/`
+- `AGENTS_USAGE.md`
 - `STYLE_POLICY.md`
 - Module-level `README.md` files
 
