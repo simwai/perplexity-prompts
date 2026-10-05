@@ -283,6 +283,17 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 - `modules/19-session-state.txt` — added the `Read Ledger` section (one fingerprint per read step) to make repeat detection durable across turns.
 - `modules/21-mcp-invocation.txt` — added a no-go rule against re-invoking a lookup whose fingerprint already produced a result this session.
 - `modules/30-execution-modes.txt` — DIRECT mode now forbids repeating an identical read step without a state change.
+- `opencode-autotitle` session-titling plugin, vendored under `.opencode/plugins/`
+  so it deploys to every target project through the existing `.opencode/` mirror
+  (upstream `0.1.3`, MIT, commit `40430fb`; generated bundle in
+  `.opencode/plugins/opencode-autotitle-impl/`, no `sync.ps1` change needed).
+  Session titles are derived from conversation context: a keyword title on the
+  first user message, then a model-refined title once the assistant has
+  responded. Manually set titles are never overwritten. The loader entry
+  re-exports only the plugin function, because OpenCode's plugin loader
+  iterates every module export and aborts the whole plugin on the first
+  non-callable one, and the upstream build additionally exports its test
+  helpers and `CHEAP_MODEL_PATTERNS`.
 
 ### Changed (module-system era)
 
