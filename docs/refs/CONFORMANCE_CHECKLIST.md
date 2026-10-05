@@ -78,5 +78,5 @@ tool-independent because the core system is a specification, not an application.
       `## Commit/push gate`).
 - [x] Spec-version freshness: approval restore requires target + scope +
       session_id + spec_version match, and a version-drift HALT invalidates
-      live Plan Approval (`prompt-system/03-output-and-state.md` `## Session context`,
+      live Plan Approval (`prompt-system/03-output-and-state.md` `## Session State (In-Session Only)`,
       `prompt-system/07-protocols.md` `## Drift detection`).

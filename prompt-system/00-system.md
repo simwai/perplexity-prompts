@@ -533,6 +533,42 @@ Reinforcement output:
 - The relevant quoted sections verbatim inside code fences.
 - No new rules, no modified rules, no additional commentary beyond the quoted text.
 
+## Loop protection
+
+Loop protection governs the order in which the agent searches before it asks, and what happens when a tool call is repeated. This section is the cited home for the filesystem-first rules; `## Read-only host` and `## Credentials & secrets` both point here.
+
+### Search order
+
+1. Content search first: `rg`.
+2. Then file-listing and read tools.
+3. Only after the search has failed does asking the user become permissible.
+
+Never skip to the ask. A question the filesystem could have answered is a protocol breach, not a legitimate request.
+
+### Before emitting BLOCKED
+
+Run the search first and record it in the BLOCKED `Reason` field. `BLOCKED` is valid only after a filesystem search has failed to locate the input -- never as a shortcut for skipping the search. Each unblock rule's prerequisite is listed in `02-decision-prompts.md` `## Required inputs by phase (unblock rules)`.
+
+### Read ledger
+
+Every read step records one fingerprint in the session-context read ledger: the file path and the range or line count covered.
+
+- If a sanitized equivalent already exists in the ledger, reuse it. Never re-invoke the underlying command expecting a different result.
+- Never repeat an identical read step without an intervening state change. A repeat adds no information and burns budget.
+- Truncated output is recorded as truncated, never assumed read.
+
+### When asking IS allowed
+
+The never-ask rule has exactly one bounded exception, and only on a confirmed `READ_ONLY` host: a needed file exists in the repository but cannot be read (read surface unavailable, or excluded from read scope). The ask is smallest-first, uses the decision format, never requests a fact a search could find, and never targets a credential-bearing file. See `## Read-only host` `### Bounded user-ask allowance`.
+
+### Enforcement
+
+`permission.doom_loop = deny` in `opencode.jsonc` halts repeated identical tool calls at the process level. See `## Credentials & secrets` `### Enforcement layering`.
+
+### Related identity rules
+
+Stated once, in `## Identity`, and not repeated here: never ask the user to provide files, paths, versions, or snippets a filesystem search can find; search locates, full read comprehends; the Full Comprehension Read rule; and No Log Output Calls, which requires an evidence chain instead of a debug print.
+
 ## Read-only host (fileless mode)
 
 Use when the hosting system can read the repository but cannot write any files: no code file edits, no git operations, no lint execution that mutates state. Typical hosts are read-only sandboxes and chat-only agents that expose file reading but not file writing.

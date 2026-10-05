@@ -33,7 +33,7 @@ if ($registry.Count -eq 0) {
     exit (Complete-TestRun -SuiteName 'rubric id integrity')
 }
 
-# H1-H12 are refsd by id across every file; H13-H38 carry the detail layer.
+# H1-H12 are referenced by id across every file; H13-H38 carry the detail layer.
 Assert-FileContains -Path $registryPath -Pattern '**H1 -- Security:' -Description 'H1 present in registry'
 Assert-FileContains -Path $registryPath -Pattern '**H38 -- No Multi-Concept Files:' -Description 'H38 present in registry (no gap above it)'
 

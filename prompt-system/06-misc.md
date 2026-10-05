@@ -6,8 +6,9 @@ Operational protocol: PATCH behavior, commit/push gate. Cross-cutting protocol d
 
 Prerequisites: explicit user plan approval; complete rewrite contract.
 
-Explicit user plan approval is required before PATCH.
-Complete rewrite contract is required before PATCH.
+<MUST>Explicit user plan approval is required before PATCH.</MUST>
+
+<MUST>Complete rewrite contract is required before PATCH.</MUST>
 
 Rewrite contract fields (all required):
 
@@ -45,7 +46,7 @@ At the same recording step, append each edited path to the session context `## E
 
 ### Bug-fix regression protocol
 
-For each confirmed bug, the patch must record a missed-coverage root cause, add a regression test, run baseline verification (expected FAIL), and run post-fix verification (expected PASS).
+<MUST>For each confirmed bug, the patch must record a missed-coverage root cause, add a regression test, run baseline verification (expected FAIL), and run post-fix verification (expected PASS).</MUST>
 A confirmed bug entering PATCH triggers this protocol. A "confirmed bug" is any defect accepted for correction from REVIEW, production feedback, a security finding, an edge-case report, or a failing test surfaced inside the PATCH handoff. The protocol is canonical here; persona obligations in `01-personas.md` and template rows in `03-output-and-state.md` are specializations and must not duplicate this text.
 
 For each confirmed bug, the patch must, in order:
@@ -59,11 +60,11 @@ A green pre-existing suite is never proof that a confirmed bug is covered. A ful
 
 ### Compliance audit
 
-After every patch, emit a compliance audit section. For each must-preserve item: PASS or FAIL. For each must-eliminate item: PASS or FAIL. For each forbidden token: PASS or FAIL. If any audit item is FAIL, do not emit the patch. Return to PLAN phase.
+<MUST>After every patch, emit a compliance audit section. For each must-preserve item: PASS or FAIL. For each must-eliminate item: PASS or FAIL. For each forbidden token: PASS or FAIL. If any audit item is FAIL, do not emit the patch. Return to PLAN phase.</MUST>
 
 ### Constraint verification
 
-After the compliance audit, verify all system-derived constraints mechanically. This is a non-negotiable gate; a single FAIL returns to PLAN.
+<MUST>After the compliance audit, verify all system-derived constraints mechanically. This is a non-negotiable gate; a single FAIL returns to PLAN.</MUST>
 
 For each item in `Must use`:
 
@@ -99,7 +100,7 @@ Gate result: ALL PASS required. Any FAIL -> return to PLAN with specific constra
 
 ### Self-review verification
 
-After the constraint verification, verify the agent's self-review claims from the PATCH template. This is a non-negotiable gate; a single FALSE claim returns to PLAN.
+<MUST>After the constraint verification, verify the agent's self-review claims from the PATCH template. This is a non-negotiable gate; a single FALSE claim returns to PLAN.</MUST>
 
 For each item in `## Self-Review`:
 
@@ -108,11 +109,11 @@ For each item in `## Self-Review`:
 - Evidence: [rg command output or "n/a"]
 - Result: [TRUE|FALSE]
 
-Gate result: ALL TRUE required. Any FALSE -> return to PLAN with specific self-review violation.
+<MUST>Gate result: ALL TRUE required. Any FALSE -> return to PLAN with specific self-review violation.</MUST>
 
 ## Verification gate
 
-After a successful compliance audit, inspect the resulting diff. Run the project's relevant checks when available (lint, typecheck, tests, or documented equivalents). The Playwright smoke is the functional verification and runs once inside the commit gate, after this gate passes; it is referenced here, not executed here; its PASS|FAIL|SKIPPED outcome is recorded in the gate outcome and the session context. When `.md` files are created or changed, run the project's configured Markdown lint check against them when available and honor the repository configuration. Do not invent commands. If none exist, record SKIPPED with reason. Write verification results to the PATCH template and the session context. If a required check fails, report FAIL and return to PLAN unless the failure is outside scope and explicitly accepted.
+<MUST>After a successful compliance audit, inspect the resulting diff. Run the project's relevant checks when available (lint, typecheck, tests, or documented equivalents). The Playwright smoke is the functional verification and runs once inside the commit gate, after this gate passes; it is referenced here, not executed here; its PASS|FAIL|SKIPPED outcome is recorded in the gate outcome and the session context. When `.md` files are created or changed, run the project's configured Markdown lint check against them when available and honor the repository configuration. Do not invent commands. If none exist, record SKIPPED with reason. Write verification results to the PATCH template and the session context. If a required check fails, report FAIL and return to PLAN unless the failure is outside scope and explicitly accepted.</MUST>
 
 For partial-scope patches, the verification gate checks only the scoped items. Pending review items are not verified and remain untouched in the working tree.
 
@@ -121,7 +122,7 @@ When the patch contains a confirmed bug, the verification gate runs two extra ro
 - **Regression baseline (expected FAIL):** PASS|FAIL/SKIPPED -- <command or n/a> -- <note or SKIPPED reason>.
 - **Regression post-fix (expected PASS):** PASS|FAIL/SKIPPED -- <command or n/a> -- <note or SKIPPED reason>.
 
-Each row is mandatory for every confirmed bug in the patch. A row with `SKIPPED` must carry a concrete reason and the nearest feasible substitute; an unjustified `SKIPPED` is a gate FAIL. A full-suite result is not accepted in either row; the row must name the targeted regression test.
+<MUST>Each row is mandatory for every confirmed bug in the patch. A row with `SKIPPED` must carry a concrete reason and the nearest feasible substitute; an unjustified `SKIPPED` is a gate FAIL. A full-suite result is not accepted in either row; the row must name the targeted regression test.</MUST>
 
 ### Commit/push gate (PATCH trigger)
 
@@ -229,13 +230,37 @@ A session with no file edits does not auto-close; the user closes it explicitly 
 
 ### Hard rules (commit/push)
 
-No commit or push without the ask when edits were made (breach).
+<MUST>No commit or push without the ask when edits were made (breach).</MUST>
 Do not stage files outside the session's edited-file set (H9).
 Do not print or log remote URLs unless sanitized (credentials redacted and verified absent); remote names only (H1).
 Do not force-push (H3: destructive ops).
 Do not run `git clean`, `git reset --hard`, `git checkout --`, `git restore`, or `git stash` (H9: destroys work).
-The gate is not a phase: it runs inside PATCH after verification and inside DIRECT before completion. The pre-ask smoke above is a gate-internal verification step, never a phase and never a second REVIEW pass.
+<MUST>The gate is not a phase: it runs inside PATCH after verification and inside DIRECT before completion. The pre-ask smoke above is a gate-internal verification step, never a phase and never a second REVIEW pass.</MUST>
 
 ## Leftover Handling
 
 Before commit gate, delete repo-local temp files not in PATCH edited-file set. OS temp dir exempt.
+
+### Categories
+
+- **Temp files** -- files created during the session that are not in the session's `## Edited Files` ledger (e.g., temporary test outputs, scratch files, intermediate build artifacts outside configured output directories). Files in the OS temp directory (`$env:TEMP` on Windows, `/tmp` on Unix) are exempt from leftover audit; repo-local temp files are subject to auto-deletion.
+
+- **Uncommitted session artifacts** -- `SESSION_STATE-*.md` (legacy) files not staged for commit in the current session. These are gitignored; a leftover one means a stale state file from an earlier session is still on disk.
+
+### Procedure (auto-delete at PATCH verification gate)
+
+1. **Detect** -- after the compliance audit and before the commit/push gate, scan for leftovers in both categories.
+
+2. **Delete** -- remove detected leftovers. Temp files: `Remove-Item -Force` (or `rm -f`). Uncommitted session artifacts: `Remove-Item -Force` on `SESSION_STATE-*.md` (legacy) not in the current session's ledger.
+
+3. **Record** -- write a `## Leftover Audit` section to the session context (conversation carrier):
+
+   ```markdown
+   ## Leftover Audit
+   - temp files: [count] removed -- [paths]
+   - uncommitted session artifacts: [count] removed -- [paths]
+   ```
+
+4. **Gate** -- the PATCH verification gate reports PASS only if the audit completes (leftovers found and deleted, or none found). A failure to run the audit is a gate FAIL.
+
+<MUST>No PATCH conclusion while the leftover audit fails. The PATCH verification gate must complete the leftover audit (detect and auto-delete temp files, uncommitted session artifacts per this section) before concluding. A missing or failed audit is a gate FAIL.</MUST>

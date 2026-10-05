@@ -74,6 +74,15 @@ if (Test-Path -LiteralPath $agentsPath -PathType Leaf) {
     $files += Get-Item $agentsPath
 }
 
+# docs\ is scanned too. It carries `file.md` + `## Anchor` citations that are just as
+# load-bearing -- a dangling one in docs\ is exactly how `## Loop protection` stayed
+# referenced by four files, including two inside prompt-system\, while the section
+# itself did not exist anywhere.
+$docsRoot = Join-Path $repoRoot 'docs'
+if (Test-Path -LiteralPath $docsRoot -PathType Container) {
+    $files += @(Get-ChildItem -Path $docsRoot -Recurse -Filter '*.md' -File)
+}
+
 foreach ($file in $files) {
     $rel = $file.FullName.Substring($repoRoot.Length).TrimStart('\', '/')
     $text = [System.IO.File]::ReadAllText($file.FullName)
@@ -99,5 +108,42 @@ foreach ($file in $files) {
     }
 }
 
-Write-Host "  checked $checked file+anchor citations across $($files.Count) files"
+# ── Bare-anchor audit (advisory, non-blocking) ──────────────────────────────
+# A backticked `## Anchor` with no preceding `file.md` is ambiguous: it may mean
+# this file, another system file, or a session-context field (`## Edited Files`,
+# `## Plan Approval`) that is not a heading anywhere. Those session-state fields
+# make this check far too noisy to gate on, so it reports and does not fail.
+#
+# It exists because a phantom section is otherwise invisible: `## Loop protection`
+# was cited four times, resolved nowhere, and the blocking pass above could not see
+# it -- two of those citations are self-references with no `file.md` token to pair.
+$barePattern = [regex]'`#{2,4}\s+([^`]+)`'
+$allHeadings = New-Object 'System.Collections.Generic.HashSet[string]'
+foreach ($file in $files) {
+    if (-not $headingCache.ContainsKey($file.FullName)) {
+        $headingCache[$file.FullName] = Get-NormalizedHeadings -Path $file.FullName
+    }
+    foreach ($h in $headingCache[$file.FullName]) { [void]$allHeadings.Add($h) }
+}
+
+$orphans = New-Object System.Collections.Generic.List[string]
+foreach ($file in $files) {
+    $text = [System.IO.File]::ReadAllText($file.FullName)
+    $own = $headingCache[$file.FullName]
+    foreach ($m in $barePattern.Matches($text)) {
+        $anchor = ($m.Groups[1].Value -replace '`', '').Trim().ToLowerInvariant()
+        if (Test-AnchorResolves -Headings $own -Anchor $anchor) { continue }
+        if (Test-AnchorResolves -Headings $allHeadings -Anchor $anchor) { continue }
+        $orphans.Add("$($file.Name) -> ``$anchor``")
+    }
+}
+
+if ($orphans.Count -gt 0) {
+    Write-Warning "  $($orphans.Count) bare ``## anchor`` citations resolve to no heading in any scanned file."
+    Write-Warning "  These are advisory only -- session-context fields such as ``## Edited Files`` are not headings."
+    $orphans | Sort-Object -Unique | Select-Object -First 20 | ForEach-Object { Write-Warning "    $_" }
+    if ($orphans.Count -gt 20) { Write-Warning "    ... and $($orphans.Count - 20) more" }
+}
+
+Write-Host "  checked $checked file+anchor citations across $($files.Count) files ($($orphans.Count) advisory bare-anchor orphans)"
 exit (Complete-TestRun -SuiteName 'cross-reference integrity')

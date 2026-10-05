@@ -593,7 +593,7 @@ Explicit exception: search fields may clear input after submission when the UX p
 
 Temporary user state not yet committed to backend storage must be persisted in
 `localStorage`. Scope: draft form values, unsaved selections, in-progress
-multi-step flows, and transient UI prefs. Exclusions: never store
+multi-step flows, and transient UI preferences. Exclusions: never store
 secrets, tokens, passwords, or sensitive PII in `localStorage`. Require a clear
 expiration or cleanup strategy when the state is no longer relevant. Document
 the storage key naming convention in the component or feature README.
@@ -686,7 +686,7 @@ The tension between "feels at home on the platform" and "couldn't be mistaken fo
 - Timestamps are `TEXT` storing Unix epoch seconds as strings. Named `created_at`, `updated_at`, `deleted_at`.
 - Every column explicit `NOT NULL` or nullable. `BOOLEAN` columns must be `NOT NULL DEFAULT false`.
 - Migrations: forward-only, one change per migration, named with timestamp + description; never edit a migration after it has been applied.
-- Indexes: every foreign key, every column refsd in `WHERE` for non-trivial queries, every column used in `ORDER BY` for sort. Every foreign key must have an explicit index. Add indexes for `WHERE`, `JOIN`, `ORDER BY`, `GROUP BY` columns on tables over ~1k rows.
+- Indexes: every foreign key, every column referenced in `WHERE` for non-trivial queries, every column used in `ORDER BY` for sort. Every foreign key must have an explicit index. Add indexes for `WHERE`, `JOIN`, `ORDER BY`, `GROUP BY` columns on tables over ~1k rows.
 - Queries: parameterized only; no string concatenation; `EXPLAIN ANALYZE` reviewed for queries over 100ms.
 - Transactions: every multi-statement write wraps in a transaction; isolation level chosen explicitly, not defaulted. Neither SQLite nor Postgres supports unsigned integers natively - use `CHECK (col >= 0)` for non-negative constraints.
 
