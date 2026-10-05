@@ -78,6 +78,8 @@ Scope:
 
 The two-section shape is part of the allowed template, not a second output: it does not mix phases and does not violate the phase-header rule. Applies in `STRUCTURED` mode only.
 
+When struggle indicators are present in the session context, the `# For the human` section MAY include a `Struggle indicators:` block before the main narrative. The block is omitted when no indicators are present.
+
 ## `BLOCKED` template
 
 ```txt
@@ -311,6 +313,9 @@ Cadence selection is canonical in `prompt-system/11-triggers.md` `## T-03`. Inte
 [2-4 plain-language sentences: what was reviewed, the headline findings, and
 the one decision you must confirm]
 
+Struggle indicators (when present):
+- [indicator]: [brief description]
+
 # For the agent
 
 # Multi-file progress
@@ -486,6 +491,9 @@ Sections omitted: `Weak hints` is omitted when there are none.
 [2-4 plain-language sentences: why this change, what it touches, and the one
 decision you must approve]
 
+Struggle indicators (when present):
+- [indicator]: [brief description]
+
 # For the agent
 
 # Fix Plan
@@ -594,6 +602,9 @@ Each record carries exactly one `verify` and one `expect`. An absence check uses
 # For the human
 [2-4 plain-language sentences: what changed, what verification ran, and any
 follow-up]
+
+Struggle indicators (when present):
+- [indicator]: [brief description]
 
 # For the agent
 
@@ -840,9 +851,28 @@ User types `/close`, agent appends entry to `EVALUATIONS.md` (creates with heade
 
 ## Session State (In-Session Only)
 
-All session state persists in the conversation context during a session; no session state file is written to disk. State includes: phase, persona, target, scope, findings, mitigations, plan approval, rewrite contract, and gate results. Recorded phase state carries across sessions via the conversation carrier; module loads do not (see the fresh-session load mandate in `prompt-system/00-system.md`).
+All session state persists in the conversation context during a session; no session state file is written to disk. State includes: phase, persona, target, scope, findings, mitigations, plan approval, rewrite contract, gate results, and struggle indicators. Recorded phase state carries across sessions via the conversation carrier; module loads do not (see the fresh-session load mandate in `prompt-system/00-system.md`).
 
 **Gate outputs**: Plan-Actual, Commit/Push, Compliance Audit, and Leftover Audit results are emitted directly in the PATCH response — not persisted to a file.
+
+## Struggle Indicators
+
+Struggle indicators are advisory-only signals recorded in the session context when the session repeats work without advancing. They do not block phase transitions.
+
+- `phase_stall`: the same phase has been entered more than once without a state change in the phase artifact or session context.
+- `repeated_findings`: the same `finding_id` appears in two or more REVIEW batches without a recorded disposition change.
+- `rapid_transitions`: two or more phase transitions occurred within a threshold window without a user confirmation or phase artifact change.
+
+Recording format:
+
+```markdown
+## Struggle Indicators
+- phase_stall: [phase] -- [count] repeats
+- repeated_findings: [finding_id] -- [count] occurrences
+- rapid_transitions: [count] transitions within [window]
+```
+
+When indicators are present, the next structured phase output MAY include a `Struggle indicators:` block in its `# For the human` section. The block is omitted when no indicators are present.
 
 ## Session evaluation prompt
 
@@ -880,6 +910,8 @@ Dimensions:
    any item that was approved but not delivered.
 6. Scope discipline -- Did the patch stay inside the approved plan? Name any
    edit that was not covered by the rewrite contract.
+7. Struggle indicators -- Were any struggle indicators recorded during the session?
+   If present, were they surfaced to the user in the next structured phase output?
 
 Return:
 
