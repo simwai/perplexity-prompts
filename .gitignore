@@ -82,5 +82,8 @@ WIP.md
 # Local logs
 .logs/
 
+# Session lock state (machine-local, recreated per session)
+.session-locks/
+
 # Local sync targets (machine-specific paths)
 targets.json

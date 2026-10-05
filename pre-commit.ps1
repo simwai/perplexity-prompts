@@ -23,7 +23,7 @@ $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 # directory itself when it holds generate-adapters.ps1; otherwise its parent.
 $repoRoot = if (Test-Path (Join-Path $scriptDir 'generate-adapters.ps1')) { $scriptDir } else { Split-Path -Parent $scriptDir }
 
-$totalSteps = 6
+$totalSteps = 7
 Write-Host "Running pre-commit checks..." -ForegroundColor Cyan
 
 # Paths excluded from every check below. `pre-commit.ps1` is deliberately NOT
@@ -72,8 +72,65 @@ function Get-StagedFiles {
     return $result
 }
 
-# ── 1. Generate platform adapters ───────────────────────────────────────────
-Write-Host "`n[1/$totalSteps] Generating adapters..." -ForegroundColor Yellow
+# ── 1. Session lock gate ────────────────────────────────────────────────────
+Write-Host "`n[1/$totalSteps] Checking session locks..." -ForegroundColor Yellow
+
+# Deliberately the first step: every step below it can rewrite files, and a
+# commit that is going to be refused must not first have its tree auto-fixed by
+# this hook.
+#
+# Two-session mode needs SESSION_ID to tell my own lock from a peer's. Without
+# it every live lock is ambiguous -- including locks this same session holds --
+# so the check degrades to a warning rather than refusing a legitimate commit.
+# Set SESSION_ID to opt into the blocking check.
+
+$locksScript = Join-Path $repoRoot 'prompt-system\scripts\session-locks.ps1'
+
+if (-not (Test-Path -LiteralPath $locksScript -PathType Leaf)) {
+    Write-Warning "  session-locks.ps1 not found -- lock gate SKIPPED"
+} else {
+    $lockStrict = [bool]$env:SESSION_ID
+
+    if (-not $lockStrict) {
+        Write-Host "  SESSION_ID unset -- lock check is advisory only (set it to enable the blocking gate)"
+    }
+
+    $stagedForLocks = @(& git -C $repoRoot diff --cached --name-only --diff-filter=ACM 2>$null)
+
+    if (-not $stagedForLocks) {
+        Write-Host "  No staged files -- lock gate SKIPPED" -ForegroundColor Gray
+    } else {
+        . $locksScript
+
+        # An empty owner makes every live lock foreign, which is exactly the
+        # ambiguity that $lockStrict is about.
+        $lockOwner = if ($lockStrict) { $env:SESSION_ID } else { '' }
+        $lockConflicts = @(Get-BlockingPeersForPaths -RepoRelativePaths $stagedForLocks -SessionId $lockOwner -RepoRoot $repoRoot)
+
+        if ($lockConflicts.Count -gt 0) {
+            $lockReport = @($lockConflicts | ForEach-Object {
+                $owners = @($_.Peers | ForEach-Object { "$($_.Owner) ($($_.Type))" }) -join ', '
+                "  $($_.Path) -- held by $owners"
+            })
+
+            if ($lockStrict) {
+                Write-Error "Staged files are held by a live peer session lock:"
+                $lockReport | ForEach-Object { Write-Error $_ }
+                Write-Error "Wait for the peer to commit or release, or skip the path. This hook never steals a lock."
+                exit 1
+            }
+
+            Write-Warning "Live session locks touch staged files (cannot tell own from peer -- SESSION_ID unset):"
+            $lockReport | ForEach-Object { Write-Warning $_ }
+            Write-Warning "  Advisory only. Set SESSION_ID to make this a blocking gate."
+        } else {
+            Write-Host "  No peer session locks on staged files" -ForegroundColor Green
+        }
+    }
+}
+
+# ── 2. Generate platform adapters ───────────────────────────────────────────
+Write-Host "`n[2/$totalSteps] Generating adapters..." -ForegroundColor Yellow
 
 # Snapshot the generated tree before regenerating. The invariant to enforce is
 # "generation changed something", not "the tree differs from the index": a
@@ -119,10 +176,11 @@ if ($regenerated) {
 Write-Host "  Generated adapters already current ($($before.Count) files checked)" -ForegroundColor Green
 
 # ── 2. Prompt-system integrity suites ───────────────────────────────────────
-Write-Host "`n[2/$totalSteps] Running prompt-system integrity suites..." -ForegroundColor Yellow
+Write-Host "`n[3/$totalSteps] Running prompt-system integrity suites..." -ForegroundColor Yellow
 
 $integritySuites = @(
     'prompt-system\scripts\test-rubric-id-integrity.ps1',
+    'prompt-system\scripts\test-session-locks.ps1',
     'prompt-system\scripts\test-cross-reference-integrity.ps1',
     'prompt-system\scripts\test-self-review-protocol.ps1'
 )
@@ -150,7 +208,7 @@ if ($integrityFailed) {
 }
 
 # ── 3. File hygiene (staged files) ──────────────────────────────────────────
-Write-Host "`n[3/$totalSteps] Checking file hygiene..." -ForegroundColor Yellow
+Write-Host "`n[4/$totalSteps] Checking file hygiene..." -ForegroundColor Yellow
 
 $stagedText = @(Get-StagedFiles -Extensions @('.md', '.yaml', '.yml', '.json', '.toml', '.ps1', '.psd1', '.psm1', '.txt'))
 $dirty = @()
@@ -215,7 +273,7 @@ if (-not $stagedText) {
 }
 
 # ── 4. Secret scanning (staged files) ───────────────────────────────────────
-Write-Host "`n[4/$totalSteps] Scanning staged files for secrets..." -ForegroundColor Yellow
+Write-Host "`n[5/$totalSteps] Scanning staged files for secrets..." -ForegroundColor Yellow
 
 $secretPatterns = @(
     'api[_-]?key\s*[:=]\s*["'']?[a-zA-Z0-9_\-]{20,}',
@@ -255,7 +313,7 @@ if ($secrets) {
 Write-Host "  No secrets detected in staged files" -ForegroundColor Green
 
 # ── 5. Markdown lint (staged files) ──────────────────────────────────────────
-Write-Host "`n[5/$totalSteps] Linting staged Markdown..." -ForegroundColor Yellow
+Write-Host "`n[6/$totalSteps] Linting staged Markdown..." -ForegroundColor Yellow
 
 $stagedMd = @(Get-StagedFiles -Extensions @('.md'))
 
@@ -292,7 +350,7 @@ if (-not $stagedMd) {
 }
 
 # ── 6. PowerShell Script Analyzer (staged files) ────────────────────────────
-Write-Host "`n[6/$totalSteps] Analyzing staged PowerShell..." -ForegroundColor Yellow
+Write-Host "`n[7/$totalSteps] Analyzing staged PowerShell..." -ForegroundColor Yellow
 
 $stagedPs = @(Get-StagedFiles -Extensions @('.ps1'))
 

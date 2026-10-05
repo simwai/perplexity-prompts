@@ -505,7 +505,11 @@ A protocol breach has occurred when:
 
 ## Concurrency
 
-The system does not support concurrent sessions on the same repo. Run one session at a time.
+One session at a time is the working assumption: the system is not designed for two agents interleaving edits on one checkout. Run one session at a time unless the session has opted into two-session mode.
+
+Two-session mode is supported when the harness sets `SESSION_ID` and the agent holds file locks. Locks are acquired from first write until the commit lands, and the commit gate refuses to commit a staged file that a live peer session holds. See `07-protocols.md` `## Session file locks`.
+
+Without `SESSION_ID` the commit gate cannot distinguish a session's own lock from a peer's, so it degrades to advisory and the one-session-at-a-time rule is enforced by convention alone.
 
 ## Prompt Reinforcement
 

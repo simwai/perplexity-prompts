@@ -41,9 +41,37 @@ spawning API** with all of the following:
 Until OpenCode ships these capabilities, the active workflow is strictly
 sequential: `CHECKLIST -> DOCS -> REVIEW -> PLAN -> PATCH`.
 
-## Concurrency Control (Removed)
+Session locks are independent of that gate and are already restored. They
+protect against two *separate* sessions interleaving edits on one checkout,
+which is a different hazard from parallel subagents inside one session.
 
-Session file locks, dependency locks, wait/surface/override-steal contention model, TTL-based stale lock detection, and commit/push gate lock verification have been removed. The system no longer supports concurrent sessions on the same repo. See `00-system.md` `## Concurrency`.
+## Concurrency Control (Restored)
+
+Session file locks are no longer removed. They were rebuilt in the current cycle
+after the original implementation was found to be unenforceable.
+
+Original removal was correct in outcome, wrong in mechanism: the lock protocol
+depended on `SESSION_STATE-*.md` filenames for peer detection, and those files
+were deleted by the same refactor, so the protocol was invalidated before its own
+removal. Its write-block enforcement also lived only in a plugin hook, which
+never fired in practice.
+
+### What the rebuild changed
+
+| Original | Rebuilt | Why |
+|---|---|---|
+| Peer identity from `SESSION_STATE-*.md` filenames | `SESSION_ID` env, else process-cached generated id | Those state files no longer exist |
+| Dependency discovery by leaf-name regex | Specifiers resolved to real paths | `src/a/index.ts` and `src/b/index.ts` were reported as dependents |
+| Plugin `tool.execute.before` write-block | Commit gate, `pre-commit.ps1` step 1 | A mid-edit block can wedge the session that holds the lock |
+| Expired locks detected but never reclaimable | Expired locks reclaimed on acquisition | TTL was decorative: detection called it dead while acquisition still refused |
+| 47-line suite covering the happy path | 30 assertions incl. mutation-proven regression | Original suite could not fail on the defect it claimed to guard |
+
+### Current limitation
+
+The commit gate **blocks only when `SESSION_ID` is set**. Without it the gate
+cannot distinguish a session's own lock from a peer's, so it degrades to
+advisory. Two-session mode is therefore opt-in via that variable rather than
+automatic. See `prompt-system/07-protocols.md` `## Session file locks`.
 
 ## OpenCode Capability Gap
 

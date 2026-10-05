@@ -58,7 +58,6 @@
     ".opencode/plugins/baba-goal-detect.ts",
     ".opencode/plugins/baba-bootstrap.ts",
     ".opencode/plugins/baba-drift.ts",
-    ".opencode/plugins/baba-lock-enforce.ts",
     ".opencode/plugins/adaptive-temperature.ts",
     ".opencode/plugins/multi-model-consensus.ts"
   ],

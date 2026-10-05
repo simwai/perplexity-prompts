@@ -1010,9 +1010,63 @@ A protocol that enhances CHECKLIST file inventory initialization when the target
 
 - Evidence recorded in session state under `## Discovery Evidence`.
 
-## Session file locks (Removed)
+## Session file locks
 
-Session file locks, dependency locks, lock acquisition/release, wait/surface/override-steal contention model, TTL-based stale lock detection, and commit/push gate lock verification have been removed. The system no longer supports concurrent sessions on the same repo. See `prompt-system/00-system.md` `## Concurrency`.
+One file, one writer. Two sessions editing one checkout must not silently bundle each other's uncommitted hunks into a single commit. A session holds a lock on a path from its first write until its commit lands.
+
+Loaded for any phase in which file writes may occur. On a `READ_ONLY` host every entry point returns `Skipped` instead of touching the filesystem.
+
+Implementation: `prompt-system/scripts/session-locks.ps1` (dot-source it). Regression suite: `prompt-system/scripts/test-session-locks.ps1`.
+
+### Hard rules
+
+<MUST>A session must hold a lock on a path before writing that path.</MUST>
+
+<MUST>A session must not hold a lock on any path outside its `## Edited Files` ledger.</MUST>
+
+<MUST>Lock acquisition is required on first write, not only in PATCH. Reads never acquire locks. The cost of this choice is a read-then-write race, which the commit gate re-checks at staging time.</MUST>
+
+<MUST_NOT>Auto-steal a live peer lock. Contention always surfaces a user-owned decision set; the library returns options and never selects one.</MUST_NOT>
+
+<MUST_NOT>Release a lock whose `owner` is not this session id. Releasing a peer's lock is refused rather than repaired, because it would erase an ownership record while that session is still writing.</MUST_NOT>
+
+<MUST_NOT>Treat an expired lock as live. A lock older than the TTL is abandoned and may be reclaimed, which is not auto-stealing: no live session can be holding it.</MUST_NOT>
+
+### Where enforcement lives
+
+At the commit gate (`pre-commit.ps1`, step 1), not mid-edit. A mid-edit block can wedge the very session that legitimately holds the lock, and the commit is where the hunk-bundling hazard actually occurs.
+
+The gate runs first because every later step can rewrite files; a commit that is about to be refused must not first have its tree auto-fixed by the hook.
+
+**Two-session mode requires `SESSION_ID`.** The gate cannot tell its own lock from a peer's without it. With `SESSION_ID` set the check blocks; without it the check is advisory, because every live lock is ambiguous -- including locks the committing session itself holds -- and a blocking refusal would reject legitimate commits.
+
+### Lock directory
+
+Location: `.session-locks/<flat-name>.lock/`, where `<flat-name>` is the repo-relative path with separators replaced by `--` (`src--a--index.ts.lock`). Created on first use and gitignored. A worktree sharing `.git/` shares `.session-locks/`; the threat model is two sessions in one checkout, not two clones.
+
+Each directory holds `owner` (session id), `acquired_at` (ISO-8601 UTC), and `dependencies.txt` when the lock was taken as a dependency set.
+
+Liveness is read from `acquired_at` only. Directory mtime is never consulted, because ordinary tooling touches it.
+
+### Acquisition is atomic
+
+A lock is staged in a private directory and moved into place with `[System.IO.Directory]::Move`, which fails when the destination exists. `[System.IO.Directory]::CreateDirectory` is **not** exclusive -- it succeeds silently on an existing directory and would hand the same lock to two sessions.
+
+### Session identity
+
+`SESSION_ID`, else a per-process generated id cached for the process lifetime, so acquire/verify/release agree on a single owner. A per-call fallback would make the three disagree and misattribute a lock.
+
+An earlier revision derived identity from `SESSION_STATE-*.md` filenames. Those files no longer exist, so that lookup was dropped rather than left in place as dead code.
+
+### Dependency discovery
+
+Depth 1, both directions: direct importers and direct imports. Specifiers are **resolved to real paths**, not matched by leaf filename.
+
+The earlier leaf-name fallback reported `src/a/index.ts` and `src/b/index.ts` as dependents of one another purely because both are named `index.ts`. Resolving the specifier removes that class of false positive by construction, and `test-session-locks.ps1` carries a regression assertion for it.
+
+### Read-only host
+
+`BABA_READ_ONLY` set to `1`, `true`, or `yes` makes every entry point return `Skipped` rather than write.
 
 ## Drift detection
 
