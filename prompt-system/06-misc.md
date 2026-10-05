@@ -38,6 +38,14 @@ If a library, driver, or SDK appears to mislead during PATCH (unexpected error s
 
 ### Per-edit lint gate
 
+Before the first file edit in a sequence, acquire a dependency lock on the target path using the session locks module:
+
+- Dot-source `prompt-system/scripts/session-locks.ps1`
+- Call `Enter-DependencyLock -RepoRelativePath <target>` (locks file + depth-1 deps: callers + imports)
+- On `Skipped` (READ_ONLY host): record `SKIPPED: file-edit -- READ_ONLY host` and proceed without lock
+- On `Blocked` (peer holds lock): surface contention decision to user (Wait / Skip / Ask peer to release); do not proceed until resolved
+- On `Success`: proceed with edit; lock held until commit lands
+
 Before each file edit sequence, confirm the applicable defaults from `05-impl-style.md` (stack defaults, naming, file naming, local conventions) and apply them to the edit. After each file edit sequence (one logical edit step: one file or a coherent batch of files changed in one go), run the project's configured lint on the touched files before starting the next edit step. Follow the order from `07-protocols.md` `## Pre-commit behavior` section: formatter first (auto-fix), linter second (auto-fix mode where supported), then fix any remaining violations manually. When `.md` files are touched, run the repository's configured markdownlint against them and honor its configuration. Re-run lint after manual fixes. A step may not conclude with outstanding auto-fixable issues.
 
 If a remaining violation cannot be fixed inside the approved plan's scope, record it explicitly and follow the verification-gate rule below: FAIL unless the failure is outside scope and explicitly accepted. Record the exact command and its real output per step in the session context; never record an assumed-clean pass. If no lint command exists, record SKIPPED with the reason.
@@ -159,6 +167,16 @@ Before the ask, when the gate triggers, run a Playwright MCP functional smoke of
 
 See `08-plan-actual-gate.md` for the complete Plan-Versus-Actual Gate protocol. This gate runs after staging and before the commit/push ask, confirming each `Will change` item landed in the staged working tree.
 
+### Lock contention check (before staging)
+
+Before staging, run `Get-BlockingPeersForPaths` on each path in the session's `## Edited Files`:
+
+- For each path, call `Get-BlockingPeers -RepoRelativePath <path>`
+- If any live peer lock exists (peer != this session, lock within TTL):
+  - Surface as hard gate failure: output `BLOCKED` with reason "peer session holds lock on <path>"
+  - Do not proceed to staging or commit ask
+- On `READ_ONLY` host: record `SKIPPED: git -- READ_ONLY host` and skip
+
 ### Staging scope
 
 - Stage explicit paths from the session's `Edited Files` set only.
@@ -189,6 +207,16 @@ Reply with: A, B, or C
 ```
 
 In STRUCTURED mode the ask carries the `[PHASE: PATCH]` header; in DIRECT mode it carries `[MODE: DIRECT]`.
+
+### Lock release (after commit)
+
+After the commit lands (or after commit-only decision), release dependency locks for all edited paths:
+
+- For each path in `## Edited Files`:
+  - Call `Exit-DependencyLock -RepoRelativePath <path>`
+  - On `Skipped` (READ_ONLY): record `SKIPPED: file-edit -- READ_ONLY host`
+  - On `Refused` (peer owns lock): record warning but do not block — log "lock on <path> owned by <peer>, not released"
+  - On `Success`: record release
 
 ### Auto-close after commit/push
 

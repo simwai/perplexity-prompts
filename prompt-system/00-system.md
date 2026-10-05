@@ -73,6 +73,7 @@ Before ANY phase transition (including `START -> CHECKLIST`, `START -> INTAKE`, 
 1. **Read `prompt-system/00-system.md` in full with NO chunking** — single read, largest window. Partial reads are a protocol breach.
 2. **Load every file in the load order** (defined in `prompt-system/00-system.md` `## Load order`) in full with NO chunking.
 3. **Record completion** in the session context `## Startup Verification` section.
+4. **Initialize SESSION_ID** — resolve from `$env:SESSION_ID` or generate per-process cached id (format: `session-<timestamp>-<PID>-<random>`). Store in session context `session_id` field and export to subprocess environment for lock operations.
 
 A response that emits a phase header without completed STARTUP verification is a protocol breach → output `BLOCKED` with reason "STARTUP incomplete".
 
@@ -266,6 +267,7 @@ Conditional rules:
 - Skip `DESIGN_PLAN` when the target has no frontend UI/UX work and the user did not request a design review; proceed `PLAN -> HANDOFF -> PATCH`.
 - Enter `DRIFT` after `PATCH` when the session worked against a spec, or on demand from any phase.
 - A phase skipped by model judgment needs no user confirmation: record the skip and its one-line reason in the phase artifact and the session context, then open the next phase.
+- Struggle indicators are advisory-only. When the same phase is entered repeatedly without state change, the same finding_id reappears without disposition change, or phase transitions occur faster than a meaningful work threshold, record the indicator in the session context under `## Struggle Indicators`. Indicators do not block phase transitions; they are surfaced in the `# For the human` section of the next phase output when present.
 
 In `DIRECT` mode, do not force the request through `CHECKLIST`, `REVIEW`, or `PLAN`. Follow the direct-mode safety and verification rules instead.
 
@@ -296,6 +298,10 @@ Dimensions:
 3. Best practices - improvements where pros clearly outweigh cons
 4. Auto-correct - apply clear improvements; surface balanced tradeoffs as
    recommendations
+5. Process discipline - fix-loop bounds respected, confidence thresholds
+   triggered, scope is one problem, subagent fallback recorded when applicable
+6. Grounding - change is rooted in a documented problem statement, not a
+   hypothetical improvement
 
 Skip: CHECKLIST, DOCS, BLOCKED, FAILURE, INTAKE, BACKLOG, SPRINT, TASK_PLAN, SPEC, HANDOFF, DRIFT, PLAN, DESIGN_PLAN.
 
@@ -507,9 +513,11 @@ A protocol breach has occurred when:
 
 One session at a time is the working assumption: the system is not designed for two agents interleaving edits on one checkout. Run one session at a time unless the session has opted into two-session mode.
 
-Two-session mode is supported when the harness sets `SESSION_ID` and the agent holds file locks. Locks are acquired from first write until the commit lands, and the commit gate refuses to commit a staged file that a live peer session holds. See `07-protocols.md` `## Session file locks`.
+Two-session mode is supported when the harness sets `SESSION_ID` and the agent holds file locks. Locks are acquired from first write (via `Enter-DependencyLock` at the per-edit lint gate) until the commit lands (released via `Exit-DependencyLock` after commit), and the commit gate refuses to commit a staged file that a live peer session holds (checked via `Get-BlockingPeersForPaths` before staging). See `07-protocols.md` `## Session file locks`.
 
 Without `SESSION_ID` the commit gate cannot distinguish a session's own lock from a peer's, so it degrades to advisory and the one-session-at-a-time rule is enforced by convention alone.
+
+On a confirmed `READ_ONLY` host, all lock operations report `SKIPPED` with reason and no filesystem operations occur.
 
 ## Prompt Reinforcement
 
