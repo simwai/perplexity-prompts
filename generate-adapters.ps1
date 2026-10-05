@@ -115,15 +115,18 @@ if (Test-Path -LiteralPath $opencodeConfigPath -PathType Leaf) {
     $cleaned = ($content -split "`n" | Where-Object { $_.TrimStart() -notmatch '^//' }) -join "`n"
     
     try {
-        $config = $cleaned | ConvertFrom-Json
-        $mcpServers = @{}
+$config = $cleaned | ConvertFrom-Json
+        # Ordered, not a plain hashtable: hashtable enumeration is hash-seeded per
+        # process, so a plain @{} emits the servers in a different order on every
+        # run and leaves .mcp.json permanently dirty after a commit.
+        $mcpServers = [ordered]@{}
         
         if ($config.mcp) {
             foreach ($server in $config.mcp.PSObject.Properties) {
                 $name = $server.Name
                 $val = $server.Value
                 
-                $mcpEntry = @{}
+                $mcpEntry = [ordered]@{}
                 
                 # Translate type
                 switch ($val.type) {
@@ -155,7 +158,7 @@ if (Test-Path -LiteralPath $opencodeConfigPath -PathType Leaf) {
             }
         }
         
-        $mcpOutput = @{ mcpServers = $mcpServers } | ConvertTo-Json -Depth 10
+        $mcpOutput = [ordered]@{ mcpServers = $mcpServers } | ConvertTo-Json -Depth 10
         $mcpOutput | Set-Content -LiteralPath $mcpJsonPath -Encoding UTF8 -Force
         Write-Ok "Generated .mcp.json ($($mcpServers.Count) servers)"
     } catch {

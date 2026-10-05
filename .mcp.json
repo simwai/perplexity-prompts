@@ -1,53 +1,53 @@
 {
   "mcpServers": {
-    "arxiv": {
-      "command": "uvx",
-      "type": "stdio",
-      "args": [
-        "arxiv-mcp-server"
-      ]
-    },
     "context7": {
       "type": "http",
       "url": "https://mcp.context7.com/mcp"
     },
     "playwright": {
-      "command": "npx",
-      "timeout": 30000,
       "type": "stdio",
+      "command": "npx",
       "args": [
         "-y",
         "@playwright/mcp@0.0.80"
-      ]
-    },
-    "g-search": {
-      "command": "npx",
-      "type": "stdio",
-      "args": [
-        "-y",
-        "g-search-mcp"
-      ]
+      ],
+      "timeout": 30000
     },
     "playwright-headless": {
-      "command": "npx",
       "type": "stdio",
+      "command": "npx",
       "args": [
         "-y",
         "@playwright/mcp@0.0.80",
         "--headless"
       ]
     },
+    "g-search": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "g-search-mcp"
+      ]
+    },
+    "arxiv": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "arxiv-mcp-server"
+      ]
+    },
     "exa": {
+      "type": "http",
+      "url": "https://mcp.exa.ai/mcp",
       "headers": {
         "x-api-key": "{env:EXA_API_KEY}"
-      },
-      "type": "http",
-      "url": "https://mcp.exa.ai/mcp"
+      }
     },
     "trello": {
-      "oauth": {},
       "type": "http",
-      "url": "https://mcp.trello.com/v1"
+      "url": "https://mcp.trello.com/v1",
+      "oauth": {}
     }
   }
 }
