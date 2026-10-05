@@ -504,6 +504,9 @@ Pending review items: [list of finding_ids still under review, or "none"]
 
 Source: [auto-generated from REVIEW findings | manual]
 
+Problem statement:
+- [what broke, what failed, what the user experienced -- the failure mode the change addresses, grounded in a real session or report]
+
 ## from code reading
 Must use:
 - <module.method> (<file:line>) [rule: H15]
@@ -660,6 +663,11 @@ Must follow layer:
 - [ ] No magic values introduced (H33)
 - [ ] No debug prints or sensitive data in logs (H35)
 - [ ] No unsafe casts or `any` type used (H36)
+- [ ] Fix loop bounded: if findings required multiple fix rounds, the loop did not exceed the cap and open findings were adjudicated or deferred with rationale
+- [ ] Confidence-based validation run: findings at or below 70% confidence triggered the bounded validation loop before acceptance into the plan
+- [ ] One problem only: patch scope is one problem; no unrelated changes bundled
+- [ ] Problem statement precedes solution: PLAN contains a documented failure mode before the `Will change` items
+- [ ] Subagent fallback recorded: if subagent dispatch was unavailable during review or test strategy, inline execution was used and the degradation reason is recorded in the session context
 
 # Compliance Audit
 - [check]: PASS/FAIL

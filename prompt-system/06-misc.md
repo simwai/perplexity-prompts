@@ -66,6 +66,16 @@ For each confirmed bug, the patch must, in order:
 
 A green pre-existing suite is never proof that a confirmed bug is covered. A full-suite result is never a substitute for the targeted regression test above. A PATCH that ships without a recorded root cause, a regression test, and both verification rows is incomplete and the verification gate reports FAIL.
 
+### Bounded fix-loop protocol for complex findings
+
+When a confirmed bug's fix round does not immediately resolve the finding, the patch must run a bounded fix loop before the verification gate concludes. The loop is not a free retry budget: each round must produce a new hypothesis or a recorded ruling.
+
+- **Rounds 1-3:** BabaDev fixes in the current session. Each round adds one regression test or verification step, runs it, and records the outcome. A round that repeats the same fix without new evidence is a protocol breach.
+- **Round 4-5:** If findings persist after round 3, escalate: dispatch a fresh implementer on a more capable model, or invoke `systematic-debugging` to re-analyze root cause. Record the escalation reason in the session context.
+- **Breaker at round 5:** When round 5's re-verification still leaves findings open, stop. Adjudicate each open finding: park it with a ruling (`Final: Ruling: <finding> -- <why the code stands> -- <cost if wrong>`), or rule on the load-bearing ones and carry the decision into the next task. Silent discard is forbidden.
+
+The loop interacts with the Plan-Actual retry logic as follows: Plan-Actual retries address *verification failures* (a `Will change` item did not land). The fix loop addresses *behavioral findings* (the fix did not resolve the bug). The two loops are separate; a fix-loop round does not consume a Plan-Actual retry, and a Plan-Actual retry does not reset the fix-loop counter.
+
 ### Compliance audit
 
 <MUST>After every patch, emit a compliance audit section. For each must-preserve item: PASS or FAIL. For each must-eliminate item: PASS or FAIL. For each forbidden token: PASS or FAIL. If any audit item is FAIL, do not emit the patch. Return to PLAN phase.</MUST>
@@ -118,6 +128,26 @@ For each item in `## Self-Review`:
 - Result: [TRUE|FALSE]
 
 <MUST>Gate result: ALL TRUE required. Any FALSE -> return to PLAN with specific self-review violation.</MUST>
+
+### Subagent dispatch guidance
+
+When dispatching subagents for review, test strategy, or implementation:
+
+- **Match capability to task.** Mechanical tasks (isolated functions, clear specs, 1-2 files) use the cheapest available model. Integration and judgment tasks (multi-file coordination, pattern matching, debugging) use a standard model. Architecture, design, and final whole-branch review use the most capable available model. Fix-loop rounds 4-5 escalate to a model at least one tier above the implementer that got stuck.
+- **Always specify the model explicitly** when the harness supports it. An omitted model inherits the session's model, which is often the most capable and most expensive.
+- **Turn count beats token price.** Wall-clock and context cost scale with how many turns a subagent takes. The cheapest models routinely take 2-3x the turns on multi-step work, costing more overall. Use a mid-tier model as the floor for reviewers and for implementers working from prose descriptions.
+
+### Subagent fallback
+
+When the subagent dispatch tool is unavailable, disabled, or fails:
+
+- Execute the work inline in the current session instead of inventing a dispatch.
+- Record the degradation in the session context under `## Degraded Execution`: what was attempted, why it fell back, and what capability was lost.
+- Do not silently skip the review or test-strategy step; the fallback is inline execution, not omission.
+
+### Scope discipline: one problem per plan/patch
+
+A PATCH addresses exactly one problem. "Unrelated" means the changes do not share a failure mode, a user-visible behavior, or a root cause. If the work contains multiple independent problems, split them into separate plans and separate patches. Bundled unrelated changes are a protocol breach; the session returns to PLAN for decomposition.
 
 ## Verification gate
 
