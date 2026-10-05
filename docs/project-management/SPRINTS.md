@@ -33,6 +33,6 @@
 
 ## 📚 Related
 
-- Roadmaps: `PROJECT_MANAGEMENT/ROADMAPS.md`
-- Trello integration: `PROJECT_MANAGEMENT/TRELLO_INTEGRATION.md`
+- Roadmaps: `project-management/ROADMAPS.md`
+- Trello integration: `project-management/TRELLO_INTEGRATION.md`
 - Project management overview: `project-management/README.md` (archived)

@@ -263,8 +263,6 @@ additional native layer.
 
 ## Troubleshooting
 
-## Troubleshooting
-
 | Symptom | Cause | Fix |
 |---|---|---|
 | MCP server missing | Token not exported | `echo $EXA_API_KEY` — re-run `source .env` if empty |

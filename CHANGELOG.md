@@ -284,7 +284,7 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 - `modules/21-mcp-invocation.txt` — added a no-go rule against re-invoking a lookup whose fingerprint already produced a result this session.
 - `modules/30-execution-modes.txt` — DIRECT mode now forbids repeating an identical read step without a state change.
 
-### Changed
+### Changed (module-system era)
 
 - `opencode.jsonc` pins all ten always-loaded modules (`00`, `01`, `09`, `12`,
   `14-core`, `21`, `30`, `31`, `32`, `33`) via `instructions`, making module
@@ -346,7 +346,7 @@ Versioning follows [Semantic Versioning](https://semver.org/).
   `bootstrap.txt`, `30-execution-modes.txt`, `06-fix-and-patch-protocol.txt`,
   `25-babadev.txt`, `01-orchestrator.txt`, `docs/conformance-checklist.md`).
 
-### Removed
+### Removed (module-system era)
 
 - Tavily MCP server removed across all surfaces: `AGENTS.md` Tier 1 block and
   description bullet, `opencode.jsonc` `mcp` entry,

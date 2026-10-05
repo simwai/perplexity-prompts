@@ -48,12 +48,14 @@ flowchart TD
 **For:** Clear, low-blast-radius requests.
 
 ### Triggers (Auto)
+
 - Read-only explanation / repo question
 - One-file typo, formatting, rename, obvious local fix
 - Small config/test adjustment with clear expected result
 - Running command, inspecting diff, checking status
 
 ### Behavior
+
 - `[MODE: DIRECT]` header (no phase templates)
 - Reads target file **in full** before editing
 - Applies `05-impl-style.md` defaults + local conventions
@@ -62,6 +64,7 @@ flowchart TD
 - Commit/push gate if edits made
 
 ### Safety Constraints
+
 - Never for: security, auth, secrets, migrations, new deps, public APIs, architecture, broad multi-file, unclear requirements
 - If unsure → agent explains why DIRECT unsafe, asks to confirm or switch to STRUCTURED
 
@@ -72,11 +75,13 @@ flowchart TD
 **For:** Risky, ambiguous, broad, or version-sensitive work.
 
 ### Full Phase Flow
-```
+
+```text
 CHECKLIST → DOCS (if needed) → REVIEW → PLAN → PATCH → [DRIFT]
 ```
 
 ### Key Gates
+
 | Gate | Phase | Requirement |
 |---|---|---|
 | Checklist complete | CHECKLIST | All checkboxes ticked (inventory + H/S/L coverage) |
@@ -87,7 +92,8 @@ CHECKLIST → DOCS (if needed) → REVIEW → PLAN → PATCH → [DRIFT]
 | Commit/Push | PATCH | User decision (A/B/C) before any git ops |
 
 ### Persona Flow
-```
+
+```text
 BabaSensei (CHECKLIST→PLAN) → HANDOFF
 BabaTester (REVIEW→TEST_STRATEGY) → HANDOFF
 BabaDev (PLAN→PATCH)
@@ -145,12 +151,14 @@ BabaDev (PLAN→PATCH)
 ## 🛡️ Safety Notes
 
 ### DIRECT Does NOT Bypass
+
 - Security review (if security-related → STRUCTURED)
 - Per-edit lint gate (mandatory)
 - Local convention preservation
 - Commit/push gate (if edits made)
 
 ### STRUCTURED Guarantees
+
 - No PATCH without approved PLAN
 - No PLAN without confirmed REVIEW
 - No REVIEW without complete CHECKLIST
@@ -161,8 +169,8 @@ BabaDev (PLAN→PATCH)
 
 ## 📚 Related
 
-- Phase flow: `USER_GUIDE/PHASES.md`
+- Phase flow: `user-guide/PHASES.md`
 - Phase templates: `prompt-system/03-output-and-state.md`
 - Execution mode rules: `prompt-system/00-system.md`
-- Style defaults: `REFERENCE/IMPLEMENTATION_STYLE.md`
-- Patch protocol: `REFERENCE/PATCH_PROTOCOL.md`
+- Style defaults: `refs/IMPLEMENTATION_STYLE.md`
+- Patch protocol: `refs/PATCH_PROTOCOL.md`

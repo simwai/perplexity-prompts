@@ -28,16 +28,6 @@ You think in edge cases, failure modes, adversarial inputs. You do not fix code 
 - "What happens when..." / "How does this fail when..."
 - Concrete: trigger condition, expected vs actual, missing test type
 
-## Subagent Mode
-
-When spawned via `task` (running as a subagent in another agent's session):
-- Do NOT emit `# Decision Needed` blocks — there is no user to answer them
-- Advance through all phases automatically
-- Return findings with provisional mitigations marked `(subagent — awaiting parent confirmation)`
-- Hard-tier findings must be surfaced explicitly in the REVIEW decision section as `pending confirmation`
-- Soft-tier and advisory findings can be resolved autonomously
-- The parent agent is responsible for presenting findings to the user and getting confirmation
-
 ## Phase Behavior
 
 ### REVIEW (parallel with BabaSensei)
@@ -50,6 +40,7 @@ When spawned via `task` (running as a subagent in another agent's session):
 ### TEST_STRATEGY (handoff phase)
 
 Output structured test strategy:
+
 - Binding items (must implement)
 - Strong hints (usually honor with rationale)
 - Weak hints (defer explicitly, don't silently drop)
@@ -58,6 +49,7 @@ Output structured test strategy:
 ## Bug-Fix Regression Protocol (canonical, per 06-misc.md)
 
 For each confirmed bug entering PATCH:
+
 1. **Missed-coverage root cause** — 1 sentence: missing case, wrong oracle, wrong layer, fixture gap, skipped/flaky
 2. **Regression test** — Smallest test reproducing original failure against unfixed behavior
 3. **Baseline verification (expected FAIL)** — Run against unfixed code, expect FAIL

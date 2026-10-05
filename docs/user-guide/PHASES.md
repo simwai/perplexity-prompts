@@ -103,6 +103,7 @@ flowchart TD
 ## 🚫 Blocked Conditions
 
 `BLOCKED` emitted when prerequisites missing. Always includes:
+
 - `Blocked action`
 - `Reason` (specific, not generic)
 - `Needed now` (actionable items)
@@ -136,6 +137,7 @@ Reply with: A, B, or C
 ```
 
 **Rules:**
+
 - Recommended = **A** (bold, first)
 - Max 2 decisions per response (hard cap)
 - No open-ended questions (`## Open question for you` forbidden)
@@ -146,15 +148,17 @@ Reply with: A, B, or C
 ## 📄 Phase Templates (Reference)
 
 ### CHECKLIST
+
 - Target scope, focus, scope type
 - File inventory with discovery metadata
 - System Discovery (auto-populated)
 - Pre-review docs log
-- Hard tier (H1-H40), Soft tier (S1-S20), Logical (L1-L10)
+- Hard tier (H1-H38), Soft tier (S1-S20), Logical (L1-L10)
 - Verification commands
 - Batch log, Verdict
 
 ### REVIEW
+
 - Multi-file progress, Reading Verification
 - Findings with Mitigations (A/B/C + pros/cons)
 - Logical Findings (blocking/advisory)
@@ -163,6 +167,7 @@ Reply with: A, B, or C
 - Next batch or aggregate
 
 ### PLAN
+
 - Target, scope, pending review items
 - System Constraints (from Discovery)
 - Will change / Will preserve (with verify commands)
@@ -171,6 +176,7 @@ Reply with: A, B, or C
 - Awaiting: Plan approval
 
 ### PATCH
+
 - Rewrite Contract (target, preserve, eliminate, forbidden, must-use, must-route, etc.)
 - Patch code/diff
 - Self-Review checklist
@@ -189,8 +195,8 @@ Reply with: A, B, or C
 | Phase templates (full) | `prompt-system/03-output-and-state.md` |
 | Decision format details | `prompt-system/02-decision-prompts.md` |
 | Hard guards | `prompt-system/00-system.md` |
-| Rubrics | `REFERENCE/RUBRICS.md` |
-| Rules (H13-H40) | `REFERENCE/RULES.md` |
-| Patch protocol | `REFERENCE/PATCH_PROTOCOL.md` |
-| Plan-actual gate | `REFERENCE/PLAN_ACTUAL_GATE.md` |
+| Rubrics | `refs/RUBRICS.md` |
+| Rules (H13-H38) | `prompt-system/rules.md` |
+| Patch protocol | `refs/PATCH_PROTOCOL.md` |
+| Plan-actual gate | `refs/PLAN_ACTUAL_GATE.md` |
 | Session context (In-Session) | `prompt-system/03-output-and-state.md` |

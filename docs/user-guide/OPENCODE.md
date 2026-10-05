@@ -56,28 +56,34 @@
 ## 🔧 Configuration Notes
 
 ### Restart After Changes
+
 opencode loads config once at startup. After editing `opencode.jsonc`, `.opencode/agents/*`, or `.opencode/commands/*`, quit and restart opencode.
 
 ### Env Interpolation
+
 opencode uses `{env:VAR}`, not `${VAR}`. The `exa` server header is `{env:EXA_API_KEY}`; remove the `exa` entry if the key is absent.
 
 ### Trello OAuth
+
 Run `opencode mcp auth trello` once, then restart the session.
 
 ### Native Plan → Build
+
 Tab to Plan for review/planning; approve with `/approve-plan` (or explicit approval); switch to Build for PATCH. Build refuses to patch without approved plan and rewrite contract in session context.
 
 ### Switching Persona
+
 Switch the agent in the TUI, or run `/baba <persona>`. The personas are defined in `prompt-system/01-personas.md`; agent files reference that file and do not duplicate the content.
 
 ### Perplexity / Other Agents
+
 Ignore `opencode.jsonc` and `.opencode/`. They still follow `AGENTS.md` + `prompt-system/` with prompt-enforced gates.
 
 ---
 
 ## 📚 Related
 
-- Persona details: `USER_GUIDE/PERSONAS.md`
-- Phase flow: `USER_GUIDE/PHASES.md`
-- Execution modes: `USER_GUIDE/EXECUTION_MODES.md`
-- Troubleshooting: `USER_GUIDE/TROUBLESHOOTING.md`
+- Persona details: `user-guide/PERSONAS.md`
+- Phase flow: `user-guide/PHASES.md`
+- Execution modes: `user-guide/EXECUTION_MODES.md`
+- Troubleshooting: `user-guide/TROUBLESHOOTING.md`

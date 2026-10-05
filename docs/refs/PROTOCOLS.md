@@ -59,7 +59,7 @@ When writing or reviewing a `.gitignore`:
 
 ### .gitattributes authoring defaults
 
-The house preference is LF line endings for every repository, including on Windows. When writing or reviewing a `.gitattributes`:
+The house prefs is LF line endings for every repository, including on Windows. When writing or reviewing a `.gitattributes`:
 
 - Place the file at the repo root
 - Default content: `* text=auto eol=lf` (normalize all text files to LF on commit and checkout)
@@ -81,7 +81,7 @@ The `prompt-system/` folder and its files are the core system and must be protec
 
 ### Enforcement
 
-- `07-protocols.md` rule detection (H14-H40) must not fire against `prompt-system/` files. The system reads `STYLE_POLICY.md` for project-level exceptions and treats `prompt-system/` as an always-excluded directory.
+- `07-protocols.md` rule detection (H14-H38) must not fire against `prompt-system/` files. The system reads `STYLE_POLICY.md` for project-level exceptions and treats `prompt-system/` as an always-excluded directory.
 - Pre-commit hooks must not include `prompt-system/` in their staged-file patterns.
 - Discovery Protocol searches must exclude `prompt-system/` from the project source tree.
 
@@ -193,7 +193,7 @@ Search scope excludes `prompt-system/` (core system, never part of project work)
 
 ### Rule detection
 
-For each rule in `docs/REFERENCE/RULES.md` H14-H40:
+For each rule in `prompt-system/rules.md` H14-H38:
 
 1. Check if rule applies to target file's context
 2. If yes: add to rule_triggers with evidence
@@ -207,7 +207,7 @@ Scan for project architecture/style docs:
 
 - `ARCHITECTURE.md`
 - `ADR/` directory
-- `docs/REFERENCE/SYSTEM_OVERVIEW.md`
+- `docs/refs/SYSTEM_OVERVIEW.md`
 - `STYLE_POLICY.md`
 - Module-level `README.md` files
 
@@ -282,7 +282,7 @@ System reads `STYLE_POLICY.md` for project-level rule exceptions:
 
 Project-level exceptions override system defaults. If a rule is disabled for the project, it does not fire. If set to advisory, it flags but doesn't block. If mandatory (default), it blocks on violation.
 
-Rule references use `docs/REFERENCE/RULES.md` as the canonical source.
+Rule references use `prompt-system/rules.md` as the canonical source.
 
 ### Greenfield handling
 
@@ -293,7 +293,7 @@ For greenfield targets (no existing source files):
 - No ownership resolution (no existing code to own the concern)
 - No duplication detection (no existing utilities)
 - Library scan still runs (from manifest)
-- Rules reference `docs/REFERENCE/RULES.md` as canonical source
+- Rules reference `prompt-system/rules.md` as canonical source
 
 ## Pre-commit behavior
 
@@ -336,7 +336,7 @@ Before recommending a pre-commit setup, identify:
 
 If any of these exist, the recommendation must align with them. Do not suggest replacing an existing working setup.
 
-### Hook tool preference
+### Hook tool prefs
 
 - **Node.js projects**: MUST use Husky + lint-staged. `.pre-commit-config.yaml` is not the preferred path for Node.js; use Husky unless the project already has a working pre-commit setup that must be preserved.
 - **Python projects**: MUST use `.pre-commit-config.yaml` with local hooks. Husky is not the preferred path for Python.
@@ -564,7 +564,7 @@ Cross-cutting protocol for REST/HTTP APIs. Loaded when a session touches a servi
 - Model the API around **resources**, not database tables. A resource is a noun the client can name (`Order`, `Invoice`, `Refund`); a table is an implementation detail. Field names in the JSON contract reflect the resource domain, not the storage schema.
 - Use **plural nouns for collection endpoints** (`/orders`, `/users/{id}/sessions`). Singular nouns only for singleton resources that have exactly one instance per parent (`/me`, `/account`).
 - **Nested resources only one level deep.** `/users/{id}/sessions` is fine; `/users/{id}/sessions/{sid}/messages/{mid}/reactions` is not - flatten with a query parameter (`/messages?session_id=...`) or promote to a top-level resource. Deep nesting forces clients to know the hierarchy and complicates authorization.
-- **Relationships by link, not by embedded object.** Reference a related resource by its URL (`"customer": "/customers/42"`) or by a stable ID + the canonical URL pattern, not by embedding the full related object. Embedding creates fan-out and staleness; link-by-URL makes the contract stable across schema changes. Inline expansion, when needed, is opt-in via `?expand=customer` and documented per endpoint.
+- **Relationships by link, not by embedded object.** references a related resource by its URL (`"customer": "/customers/42"`) or by a stable ID + the canonical URL pattern, not by embedding the full related object. Embedding creates fan-out and staleness; link-by-URL makes the contract stable across schema changes. Inline expansion, when needed, is opt-in via `?expand=customer` and documented per endpoint.
 - **Identifiers are opaque strings on the wire.** Never expose internal integer IDs without a layer that decouples them from the storage. UUIDv4 or ULID for new resources; existing integer IDs are acceptable when the contract predates this rule and migration is non-trivial, but new endpoints must use opaque strings.
 - **Field naming consistency.** Pick one case style (camelCase for JSON across the board, or snake_case) and enforce it for the entire API surface. Mixed casing in one response is a contract defect. Date-time fields are always `snake_case` strings in ISO-8601 with explicit timezone offset (or `Z`); pick one and document it.
 
@@ -597,7 +597,7 @@ One canonical error shape across the entire API. Use RFC 7807 `application/probl
 
 Hard rules:
 
-- `type` is a URI (URL or URN) the client can dereference for human-readable documentation. It is stable; renaming it is a breaking change.
+- `type` is a URI (URL or URN) the client can derefs for human-readable documentation. It is stable; renaming it is a breaking change.
 - `title` is human-readable summary, stable per `type`.
 - `status` mirrors the HTTP status code; the body never lies about the status.
 - `detail` is the human-readable explanation for *this* occurrence (may include field values); safe to surface in UI.
@@ -860,6 +860,8 @@ Promotion order: `Draft -> RFC -> Stable`; `Deprecated` is a terminal state reac
 
 ## Drift detection
 
+> Canonical source: `prompt-system/07-protocols.md` `## Drift detection`. That copy is the deployed one -- `AGENTS.md` ships only `AGENTS.md` plus `prompt-system/`. Edit the canonical file, not this one.
+
 DRIFT is a read-only phase that compares a spec at `SPEC.md` against the code that should implement it. DRIFT never writes files.
 
 ### When to run DRIFT
@@ -907,6 +909,8 @@ Drift findings that require a write (any diverged claim, orphaned mapping, or co
 The DRIFT report is bounded: verified claims summarized; diverged, orphaned, and code-exceeds-spec findings listed with locations. If the report exceeds one response, the continue-next-turn rule applies: continue under the same phase header.
 
 ## Discuss mode
+
+> Canonical source: `prompt-system/07-protocols.md` `## Discuss mode`. That copy is the deployed one -- `AGENTS.md` ships only `AGENTS.md` plus `prompt-system/`. Edit the canonical file, not this one.
 
 DISCUSS is a special phase the user can trigger for exploratory conversation. It is not a working phase; no plans, no patches, no findings are produced without explicit user promotion.
 

@@ -41,18 +41,18 @@
 | 🟣 Personas | `prompt-system/01-personas.md` | 6 personas + handoff contract + session flow |
 | 🟠 Decisions | `prompt-system/02-decision-prompts.md` | Decision format, rendering rule, auto-triggers |
 | 🟡 Output | `prompt-system/03-output-and-state.md` | Phase templates, dual-section output, session state schema |
-| 🔴 Rubrics | `prompt-system/04-rubrics.md` | H1-H40, S1-S20, L1-L10 review rubrics |
+| 🔴 Rubrics | `prompt-system/04-rubrics.md` | H1-H38, S1-S20, L1-L10 review rubrics |
 | 🟢 Style | `prompt-system/05-impl-style.md` | Implementation style, stack variants, conventions |
 | ⚫ Patch | `prompt-system/06-misc.md` | PATCH protocol, commit/push gate, leftover handling |
 | 🟤 Protocols | `prompt-system/07-protocols.md` | Cross-cutting protocols (artifacts, pre-commit, drift, etc.) |
 | ⚪ Gate | `prompt-system/08-plan-actual-gate.md` | Plan-vs-actual verification protocol |
-| 🔵 Rules | `prompt-system/rules.md` | H13-H40 mechanical detection/enforcement |
+| 🔵 Rules | `prompt-system/rules.md` | H13-H38 mechanical detection/enforcement |
 
 ---
 
 ## 📂 File Map
 
-```
+```text
 .
 ├── AGENTS.md              # Entry point
 ├── README.md              # Navigation hub
@@ -69,16 +69,15 @@
 │   ├── 06-misc.md         # PATCH protocol
 │   ├── 07-protocols.md    # Protocols
 │   ├── 08-plan-actual-gate.md  # Plan-actual gate
-│   └── rules.md           # H13-H40 rules
+│   └── rules.md           # H13-H38 rules
 ├── docs/
 │   ├── QUICKSTART.md
 │   ├── GLOSSARY.md
-│   ├── USER_GUIDE/
-│   ├── REFERENCE/
-│   └── PROJECT_MANAGEMENT/
+│   ├── user-guide/
+│   ├── refs/
+│   └── project-management/
 ├── opencode.jsonc
 ├── .opencode/
-├── PROJECT_MANAGEMENT/
 └── sync.ps1
 ```
 
@@ -90,9 +89,9 @@
 |---|---|---|
 | `docs/QUICKSTART.md` | 1 | 5-minute onboarding |
 | `docs/GLOSSARY.md` | 1 | Central terminology reference |
-| `docs/USER_GUIDE/` | 5 | Getting started, personas, phases, modes, troubleshooting |
-| `docs/REFERENCE/` | 8 | Canonical system references (mirrors `prompt-system/`) |
-| `docs/PROJECT_MANAGEMENT/` | 3 | Roadmaps, sprints, Trello integration |
+| `docs/user-guide/` | 6 | Getting started, personas, phases, modes, troubleshooting |
+| `docs/refs/` | 11 | Canonical system references (mirrors `prompt-system/`) |
+| `docs/project-management/` | 7 | Roadmaps, sprints, Trello integration |
 
 ---
 
@@ -100,16 +99,16 @@
 
 | Need | Document |
 |---|
-| Phase flow | `USER_GUIDE/PHASES.md` |
-| Execution modes | `USER_GUIDE/EXECUTION_MODES.md` |
-| Rubrics | `REFERENCE/RUBRICS.md` |
-| Rules (H13-H40) | `REFERENCE/RULES.md` |
-| Style defaults | `REFERENCE/IMPLEMENTATION_STYLE.md` |
-| Protocols | `REFERENCE/PROTOCOLS.md` |
-| PATCH protocol | `REFERENCE/PATCH_PROTOCOL.md` |
-| Plan-actual gate | `REFERENCE/PLAN_ACTUAL_GATE.md` |
+| Phase flow | `user-guide/PHASES.md` |
+| Execution modes | `user-guide/EXECUTION_MODES.md` |
+| Rubrics | `refs/RUBRICS.md` |
+| Rules (H13-H38) | `prompt-system/rules.md` |
+| Style defaults | `refs/IMPLEMENTATION_STYLE.md` |
+| Protocols | `refs/PROTOCOLS.md` |
+| PATCH protocol | `refs/PATCH_PROTOCOL.md` |
+| Plan-actual gate | `refs/PLAN_ACTUAL_GATE.md` |
 | Session context | `prompt-system/03-output-and-state.md` |
-| OpenCode setup | `USER_GUIDE/OPENCODE.md` |
+| OpenCode setup | `user-guide/OPENCODE.md` |
 
 ---
 

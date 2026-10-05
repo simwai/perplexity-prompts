@@ -49,21 +49,27 @@ cd <target-project>
 ```
 
 **Example 1 — Code Review (Structured):**
+
 ```text
 Review src/auth/token.ts for security issues.
 ```
+
 → Agent: CHECKLIST → DOCS (Context7) → REVIEW (decision) → PLAN (approval) → PATCH
 
 **Example 2 — Feature Implementation (Structured):**
+
 ```text
 Add rate limiting to the Express API using express-rate-limit.
 ```
+
 → Agent: fetches docs → proposes plan → patches after approval
 
 **Example 3 — Quick Fix (Direct):**
+
 ```text
 Fix typo in README.md line 42.
 ```
+
 → Agent: `[MODE: DIRECT]` → edits → verifies → commits
 
 ---
@@ -72,21 +78,21 @@ Fix typo in README.md line 42.
 
 | Need | Go To |
 |---|---|
-| Deploy details | `USER_GUIDE/GETTING_STARTED.md` |
-| Which persona? | `USER_GUIDE/PERSONAS.md` |
-| Phase flow? | `USER_GUIDE/PHASES.md` |
-| Execution modes? | `USER_GUIDE/EXECUTION_MODES.md` |
-| Troubleshooting? | `USER_GUIDE/TROUBLESHOOTING.md` |
-| Architecture? | `REFERENCE/SYSTEM_OVERVIEW.md` |
-| Rubrics? | `REFERENCE/RUBRICS.md` |
-| Rules? | `REFERENCE/RULES.md` |
-| Style defaults? | `REFERENCE/IMPLEMENTATION_STYLE.md` |
-| Protocols? | `REFERENCE/PROTOCOLS.md` |
-| Patch protocol? | `REFERENCE/PATCH_PROTOCOL.md` |
-| Plan-actual gate? | `REFERENCE/PLAN_ACTUAL_GATE.md` |
+| Deploy details | `user-guide/GETTING_STARTED.md` |
+| Which persona? | `user-guide/PERSONAS.md` |
+| Phase flow? | `user-guide/PHASES.md` |
+| Execution modes? | `user-guide/EXECUTION_MODES.md` |
+| Troubleshooting? | `user-guide/TROUBLESHOOTING.md` |
+| Architecture? | `refs/SYSTEM_OVERVIEW.md` |
+| Rubrics? | `refs/RUBRICS.md` |
+| Rules? | `prompt-system/rules.md` |
+| Style defaults? | `refs/IMPLEMENTATION_STYLE.md` |
+| Protocols? | `refs/PROTOCOLS.md` |
+| Patch protocol? | `refs/PATCH_PROTOCOL.md` |
+| Plan-actual gate? | `refs/PLAN_ACTUAL_GATE.md` |
 | Session context? | `prompt-system/03-output-and-state.md` |
-| OpenCode setup? | `USER_GUIDE/OPENCODE.md` |
-| Project management? | `PROJECT_MANAGEMENT/ROADMAPS.md` |
+| OpenCode setup? | `user-guide/OPENCODE.md` |
+| Project management? | `project-management/ROADMAPS.md` |
 
 ---
 

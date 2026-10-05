@@ -20,6 +20,7 @@
 ## 📋 Persona Details
 
 ### 🟣 BabaScrumMaster
+
 **Pragmatic delivery lead** — Turns fuzzy goals into ICE-prioritized, sprint-ready tasks.
 
 | Owns | Terminal | Key Behavior |
@@ -31,6 +32,7 @@
 ---
 
 ### 🔵 BabaSensei
+
 **Wise, opinionated senior engineer** — Reviews as teaching moments, never patches.
 
 | Owns | Terminal | Key Behavior |
@@ -42,6 +44,7 @@
 ---
 
 ### 🟢 BabaDev
+
 **Senior implementation lead** — Smallest architecturally sound fix first.
 
 | Owns | Terminal | Key Behavior |
@@ -53,6 +56,7 @@
 ---
 
 ### 🟠 BabaTester
+
 **Adversarial QA** — Thinks in edge cases, failure modes, adversarial inputs.
 
 | Owns | Terminal | Key Behavior |
@@ -64,7 +68,8 @@
 ---
 
 ### 🔴 BabaReviewer
-**Quality gate** — Evaluates against H1-H40, S1-S20, blocks merges on hard-tier failures.
+
+**Quality gate** — Evaluates against H1-H38, S1-S20, blocks merges on hard-tier failures.
 
 | Owns | Terminal | Key Behavior |
 |---|---|---|
@@ -75,6 +80,7 @@
 ---
 
 ### ⚫ Process Master
+
 **Embedded enforcer** — Phase ordering, checklist lifecycle, no-skip rules.
 
 | Owns | Terminal | Key Behavior |
@@ -128,7 +134,7 @@ BabaDev (implementation)
 
 ## 📚 Related
 
-- Phase flow: `USER_GUIDE/PHASES.md`
-- Execution modes: `USER_GUIDE/EXECUTION_MODES.md`
-- Handoff contract: `REFERENCE/SYSTEM_OVERVIEW.md#handoff-contract`
+- Phase flow: `user-guide/PHASES.md`
+- Execution modes: `user-guide/EXECUTION_MODES.md`
+- Handoff contract: `refs/SYSTEM_OVERVIEW.md#handoff-contract`
 - Persona definitions: `prompt-system/01-personas.md`

@@ -15,12 +15,12 @@
 | **HANDOFF** | Structured contract transferred between personas; validated before receiver enters phase | `01-personas.md`, `03-output-and-state.md` | Persona, Phase |
 | **ICE** | Prioritization score: Impact × Confidence × Ease (each 1-10); used in backlog/sprint planning | `01-personas.md`, `07-protocols.md` | Backlog, Sprint |
 | **PLAN-ACTUAL GATE** | Verification that each `Will change` item from approved plan landed in staged files | `08-plan-actual-gate.md`, `06-misc.md` | Patch, Commit |
-| **REVIEW** | Phase that scores findings against rubrics (H1-H40, S1-S20, L1-L10) and owns confirmation decision | `00-system.md`, `04-rubrics.md` | Checklist, Plan |
+| **REVIEW** | Phase that scores findings against rubrics (H1-H38, S1-S20, L1-L10) and owns confirmation decision | `00-system.md`, `04-rubrics.md` | Checklist, Plan |
 | **SPEC** | Optional planning artifact at `SPEC.md` with user stories, FRs, SCs | `07-protocols.md`, `01-personas.md` | ScrumMaster, Drift |
 | **STRUCTURED** | Execution mode using full phase-gated workflow: CHECKLIST → DOCS → REVIEW → PLAN → PATCH | `00-system.md`, `03-output-and-state.md` | Direct, Auto |
 | **AUTO** | Default execution mode; agent chooses DIRECT or STRUCTURED based on task risk | `00-system.md` | Direct, Structured |
 | **BLOCKED** | Phase emitted when prerequisites missing; documents needed input and next user action | `00-system.md`, `03-output-and-state.md` | Phase transitions |
-| **CONFORMANCE** | Checklist of protocol invariants verified before each phase transition | `docs/REFERENCE/PROTOCOLS.md` | All phases |
+| **CONFORMANCE** | Checklist of protocol invariants verified before each phase transition | `docs/refs/PROTOCOLS.md` | All phases |
 | **DECISION FORMAT** | Required `# Decision Needed` block with 2-3 options, recommended as bold **A** | `00-system.md`, `02-decision-prompts.md` | Review, Plan |
 | **LOOP PROTECTION** | Doom-loop guard: opencode native `permission.doom_loop=deny` halts 3+ identical calls | `opencode.jsonc` | Process level |
 | **MERGE VERDICT** | BabaReviewer output: MERGE BLOCKED / APPROVED WITH FIXES / LGTM | `01-personas.md`, `04-rubrics.md` | Review, Patch |
@@ -82,12 +82,12 @@
 | `prompt-system/01-personas.md` | Persona definitions, handoff contract, session flow |
 | `prompt-system/02-decision-prompts.md` | Decision format, rendering rule, examples, auto-triggers |
 | `prompt-system/03-output-and-state.md` | Phase templates, dual-section output, session state schema |
-| `prompt-system/04-rubrics.md` | H1-H40, S1-S20, L1-L10 rubrics |
+| `prompt-system/04-rubrics.md` | H1-H38, S1-S20, L1-L10 rubrics |
 | `prompt-system/05-impl-style.md` | Implementation style, stack variants, conventions |
 | `prompt-system/06-misc.md` | PATCH protocol, commit/push gate, leftover handling |
 | `prompt-system/07-protocols.md` | Cross-cutting: artifacts, pre-commit, cross-team, lifecycle, drift, discuss, scrum |
 | `prompt-system/08-plan-actual-gate.md` | Plan-vs-actual verification protocol |
-| `prompt-system/rules.md` | H13-H40 mechanical detection/enforcement rules |
+| `prompt-system/rules.md` | H13-H38 mechanical detection/enforcement rules |
 
 ---
 

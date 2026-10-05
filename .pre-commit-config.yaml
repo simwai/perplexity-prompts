@@ -1,11 +1,45 @@
 repos:
   - repo: local
     hooks:
+      # Formatter: regenerate TOCs in the reference docs, then lint.
       - id: markdown-toc
         name: Generate Markdown TOCs
         entry: bash -c 'npx markdown-toc -i "$1"'
         language: system
         types: [markdown]
         files: '^docs/.*\.md$'
-        exclude: '^docs/(GLOSSARY|REFERENCE)/.*\.md$'
+        exclude: '^docs/(GLOSSARY|refs)/.*\.md$'
         args: [--maxdepth=3, --no-first-h1]
+
+      # Linter: the delivery surface AGENTS.md deploys. docs/ and SPEC.md are
+      # deliberately out of scope here: docs/ carries a large backlog of
+      # pre-existing violations and SPEC.md is a frozen governance artifact.
+      - id: markdownlint
+        name: markdownlint (deployed surface)
+        entry: npx markdownlint-cli
+        language: system
+        types: [markdown]
+        files: '^(prompt-system/|AGENTS\.md$|README\.md$|TASKS\.md$|STYLE_POLICY\.md$)'
+
+      # Static integrity tests. These assert properties of the whole tree rather
+      # than of the staged files, so they must not receive filenames.
+      - id: test-rubric-id-integrity
+        name: Rubric id integrity (H-tier ids map to one title)
+        entry: pwsh -NoProfile -File prompt-system/scripts/test-rubric-id-integrity.ps1
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: test-cross-reference-integrity
+        name: Cross-reference integrity (file+anchor citations resolve)
+        entry: pwsh -NoProfile -File prompt-system/scripts/test-cross-reference-integrity.ps1
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: test-self-review-protocol
+        name: Self-review protocol static checks
+        entry: pwsh -NoProfile -File prompt-system/scripts/test-self-review-protocol.ps1
+        language: system
+        pass_filenames: false
+        always_run: true

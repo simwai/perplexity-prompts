@@ -31,6 +31,7 @@ Edit `project-management/config.md` and change `backend: file` to `backend: trel
 ## 🔧 Trello Setup
 
 ### Prerequisites
+
 1. Run `opencode mcp auth trello` once
 2. Restart the session
 3. Trello tools appear after one-time OAuth consent
@@ -46,6 +47,6 @@ Edit `project-management/config.md` and change `backend: file` to `backend: trel
 
 ## 📚 Related
 
-- Roadmaps: `PROJECT_MANAGEMENT/ROADMAPS.md`
-- Sprints: `PROJECT_MANAGEMENT/SPRINTS.md`
+- Roadmaps: `project-management/ROADMAPS.md`
+- Sprints: `project-management/SPRINTS.md`
 - Project management overview: `project-management/README.md` (archived)

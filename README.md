@@ -22,22 +22,22 @@ Then describe a task and the agent handles the rest.
 | Need | Go To |
 |---|---|
 | ⚡ 5-minute onboarding | `docs/QUICKSTART.md` |
-| 🎭 Which persona? | `docs/USER_GUIDE/PERSONAS.md` |
-| 🔄 Phase flow? | `docs/USER_GUIDE/PHASES.md` |
-| ⚙️ Execution modes? | `docs/USER_GUIDE/EXECUTION_MODES.md` |
-| 🔧 Troubleshooting? | `docs/USER_GUIDE/TROUBLESHOOTING.md` |
-| 🏗️ Architecture? | `docs/REFERENCE/SYSTEM_OVERVIEW.md` |
-| 📋 Rubrics? | `docs/REFERENCE/RUBRICS.md` |
+| 🎭 Which persona? | `docs/user-guide/PERSONAS.md` |
+| 🔄 Phase flow? | `docs/user-guide/PHASES.md` |
+| ⚙️ Execution modes? | `docs/user-guide/EXECUTION_MODES.md` |
+| 🔧 Troubleshooting? | `docs/user-guide/TROUBLESHOOTING.md` |
+| 🏗️ Architecture? | `docs/refs/SYSTEM_OVERVIEW.md` |
+| 📋 Rubrics? | `prompt-system/04-rubrics.md` |
 | 🔵 Rules (H13-H38)? | `prompt-system/rules.md` |
-| 🟢 Style defaults? | `docs/REFERENCE/IMPLEMENTATION_STYLE.md` |
-| 🟤 Protocols? | `docs/REFERENCE/PROTOCOLS.md` |
-| ⚫ PATCH protocol? | `docs/REFERENCE/PATCH_PROTOCOL.md` |
-| ⚪ Plan-actual gate? | `docs/REFERENCE/PLAN_ACTUAL_GATE.md` |
+| 🟢 Style defaults? | `docs/refs/IMPLEMENTATION_STYLE.md` |
+| 🟤 Protocols? | `docs/refs/PROTOCOLS.md` |
+| ⚫ PATCH protocol? | `docs/refs/PATCH_PROTOCOL.md` |
+| ⚪ Plan-actual gate? | `docs/refs/PLAN_ACTUAL_GATE.md` |
 | 📋 Session state? | `prompt-system/03-output-and-state.md` |
-| 🟢 OpenCode setup? | `docs/USER_GUIDE/OPENCODE.md` |
-| 📊 Roadmaps? | `docs/PROJECT_MANAGEMENT/ROADMAPS.md` |
-| 📋 Sprints? | `docs/PROJECT_MANAGEMENT/SPRINTS.md` |
-| 🔗 Trello? | `docs/PROJECT_MANAGEMENT/TRELLO_INTEGRATION.md` |
+| 🟢 OpenCode setup? | `docs/user-guide/OPENCODE.md` |
+| 📊 Roadmaps? | `docs/project-management/ROADMAPS.md` |
+| 📋 Sprints? | `docs/project-management/SPRINTS.md` |
+| 🔗 Trello? | `docs/project-management/TRELLO_INTEGRATION.md` |
 | 📖 Glossary? | `docs/GLOSSARY.md` |
 
 ---
@@ -47,12 +47,12 @@ Then describe a task and the agent handles the rest.
 ```txt
 AGENTS.md              The single entry file — paste at a target repo root
 prompt-system/         The copy-paste unit — 14 top-level files (00-11 + rules.md) + stacks/ + scripts/
-docs/                  Usage documentation (SNAKE_UPPER_CASE structure)
+docs/                  Usage documentation (UPPER_SNAKE_CASE files, kebab-case dirs)
   QUICKSTART.md        5-minute onboarding
   GLOSSARY.md          Central terminology reference
-  USER_GUIDE/          Getting started, personas, phases, modes, troubleshooting
-  REFERENCE/           Canonical system references (mirrors prompt-system/)
-  PROJECT_MANAGEMENT/  Roadmaps, sprints, Trello integration
+  user-guide/          Getting started, personas, phases, modes, troubleshooting
+  refs/           Canonical system references (mirrors prompt-system/)
+  project-management/  Roadmaps, sprints, Trello integration
 adapters/              Adapter templates (source of truth for generated files)
   claude/agents/       Claude Code subagent templates
   claude/skills/       Claude Code slash-command skill templates
@@ -99,7 +99,7 @@ Copy-Item -Recurse prompt-system <target-project>\prompt-system
 
 Then paste `AGENTS.md` content as `AGENTS.md` at the target repo root.
 
-For detailed instructions, see `docs/USER_GUIDE/GETTING_STARTED.md`.
+For detailed instructions, see `docs/user-guide/GETTING_STARTED.md`.
 
 ### Syncing Multiple Projects
 

@@ -173,7 +173,7 @@ Fix typo in README.md line 42.
 
 ---
 
-## 🔍 Troubleshooting Quick Reference
+## 🔍 Troubleshooting Quick reference
 
 | Symptom | Cause | Fix |
 |---|---|---|
@@ -190,10 +190,10 @@ Fix typo in README.md line 42.
 
 | Topic | Document |
 |---|---|
-| Persona selection | `USER_GUIDE/PERSONAS.md` |
-| Phase flow details | `USER_GUIDE/PHASES.md` |
-| Execution modes | `USER_GUIDE/EXECUTION_MODES.md` |
-| Common issues | `USER_GUIDE/TROUBLESHOOTING.md` |
-| Architecture | `REFERENCE/SYSTEM_OVERVIEW.md` |
-| OpenCode adapter | `USER_GUIDE/OPENCODE.md` |
-| Project management | `PROJECT_MANAGEMENT/` |
+| Persona selection | `user-guide/PERSONAS.md` |
+| Phase flow details | `user-guide/PHASES.md` |
+| Execution modes | `user-guide/EXECUTION_MODES.md` |
+| Common issues | `user-guide/TROUBLESHOOTING.md` |
+| Architecture | `refs/SYSTEM_OVERVIEW.md` |
+| OpenCode adapter | `user-guide/OPENCODE.md` |
+| Project management | `project-management/` |

@@ -27,6 +27,6 @@
 
 ## 📚 Related
 
-- Sprint plans: `PROJECT_MANAGEMENT/SPRINTS.md`
-- Trello integration: `PROJECT_MANAGEMENT/TRELLO_INTEGRATION.md`
+- Sprint plans: `project-management/SPRINTS.md`
+- Trello integration: `project-management/TRELLO_INTEGRATION.md`
 - Project management overview: `project-management/README.md` (archived)

@@ -69,12 +69,14 @@
 ## 🔍 Debugging Commands
 
 ### Check MCP Status
+
 ```bash
 # In agent session
 "List available MCP tools"
 ```
 
 ### Verify Environment
+
 ```bash
 # PowerShell
 echo $EXA_API_KEY
@@ -84,12 +86,14 @@ git --version
 ```
 
 ### Inspect Session Context
+
 ```bash
 # Session context is in conversation carrier
 # No session state files to inspect
 ```
 
 ### Check Git Status
+
 ```bash
 git status
 git diff
@@ -97,9 +101,10 @@ git log --oneline -5
 ```
 
 ### Verify Pre-commit
+
 ```bash
 # Run manually
-npx markdown-toc -i docs/USER_GUIDE/GETTING_STARTED.md
+npx markdown-toc -i docs/user-guide/GETTING_STARTED.md
 ```
 
 ---
@@ -118,6 +123,7 @@ npx markdown-toc -i docs/USER_GUIDE/GETTING_STARTED.md
 ## 📞 Platform-Specific
 
 ### OpenCode
+
 | Issue | Fix |
 |---|---|
 | Config not loaded | Restart opencode after editing `opencode.jsonc` or `.opencode/` |
@@ -129,8 +135,8 @@ npx markdown-toc -i docs/USER_GUIDE/GETTING_STARTED.md
 
 ## 📚 Related
 
-- Phase flow: `USER_GUIDE/PHASES.md`
-- Execution modes: `USER_GUIDE/EXECUTION_MODES.md`
-- Getting started: `USER_GUIDE/GETTING_STARTED.md`
-- System architecture: `REFERENCE/SYSTEM_OVERVIEW.md`
+- Phase flow: `user-guide/PHASES.md`
+- Execution modes: `user-guide/EXECUTION_MODES.md`
+- Getting started: `user-guide/GETTING_STARTED.md`
+- System architecture: `refs/SYSTEM_OVERVIEW.md`
 - MCP config: `AGENTS.md` (MCP Fallback Tiers section)

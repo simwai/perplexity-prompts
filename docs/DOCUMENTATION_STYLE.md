@@ -4,7 +4,7 @@ Documentation conventions for all `.md` files in `docs/`. These are enforced via
 
 ## File Naming
 
-All documentation files in `docs/` use **UPPER_SNAKE_CASE** with `.md` extension.
+Documentation **files** in `docs/` use **UPPER_SNAKE_CASE**; documentation **directories** use **kebab-case** (`user-guide/`, `project-management/`, `refs/`).
 
 - File names must be all uppercase with underscores separating words
 - Every file ends with `.md`
@@ -20,7 +20,7 @@ The canonical glossary lives at **`docs/GLOSSARY.md`**. Maintained manually; upd
 TOCs are automatically generated via the `markdown-toc` pre-commit hook.
 
 - **Coverage**: All `docs/**/*.md` files
-- **Excluded**: `docs/GLOSSARY.md` and `docs/REFERENCE/` (manually maintained)
+- **Excluded**: `docs/GLOSSARY.md` and `docs/refs/` (manually maintained)
 - **Depth**: Up to 3 heading levels (`--maxdepth=3`)
 - **First H1**: Not used as TOC anchor (`--no-first-h1`)
 - **Runs**: On every `git commit` via pre-commit
@@ -35,6 +35,7 @@ All diagrams use **GitHub-flavored Mermaid** syntax inside fenced code blocks.
 - **Background**: Dark transparent (GitHub dark mode renders automatically)
 - Use `graph TD` (top-down) or `graph LR` (left-to-right) as appropriate
 - Colors applied via `style` or `classDef` when needed:
+
   ```mermaid
   %%{init: {'theme': 'dark'}}%%
   classDef purple fill:#6B21A8,stroke:#7C3AED,color:#fff;
@@ -81,15 +82,15 @@ docs/
 ├── GLOSSARY.md              # Terminology reference
 ├── ARCHITECTURE.md          # System architecture overview
 ├── QUICKSTART.md            # Getting started guide
-├── PROJECT_MANAGEMENT/      # Project management docs (UPPER_SNAKE_CASE)
+├── project-management/      # Project management docs (kebab-case dir)
 │   ├── TRELLO_INTEGRATION.md
 │   ├── ROADMAPS.md
 │   └── SPRINTS.md
-├── REFERENCE/               # Reference docs (manually maintained)
+├── refs/               # reference docs (manually maintained)
 │   ├── RULES.md
 │   ├── RUBRICS.md
 │   └── PROTOCOLS.md
-├── USER_GUIDE/              # User guides
+├── user-guide/              # User guides
 │   ├── GETTING_STARTED.md
 │   ├── PHASES.md
 │   └── PERSONAS.md

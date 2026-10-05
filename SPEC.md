@@ -11,6 +11,7 @@ Complete rewrite of the prompt-system to be spec-first, removing session state f
 ## Scope (in / out)
 
 **In:**
+
 - Cut: session locks, session state files, duplicated decision format, fresh-session load mandate duplicates, smallest-request rule duplicate, CHECKLIST rubric enumeration, handoff contract bloat, SPEC-writes-through-PATCH rule
 - Split: `05-impl-style.md` into core + 4 stack files + design guidelines + doc style
 - Trim: `07-protocols.md` to keep only artifact handling, prompt-system protection, pre-commit
@@ -21,6 +22,7 @@ Complete rewrite of the prompt-system to be spec-first, removing session state f
 - Enforcement: prompt-level rules only, no runtime enforcement
 
 **Out of scope:**
+
 - Adding PLAN_REVIEW phase with P-tier rubrics
 - Adding more PATCH gates
 - Adding session state sections
@@ -51,6 +53,7 @@ See "Do not" section in the brief - all items there are explicitly out of scope.
 - Prompt-system files: `00-system.md`, `01-personas.md`, `02-decision-prompts.md`, `03-output-and-state.md`, `04-rubrics.md`, `04b-rubrics-logical.md`, `05-impl-style.md`, `06-misc.md`, `07-protocols.md`, `08-plan-actual-gate.md`, `09-design-guidelines.md`, `10-doc-style.md`, `prompt-system/stacks/STACK-typescript.md`, `prompt-system/stacks/STACK-python.md`, `prompt-system/stacks/STACK-java.md`, `prompt-system/stacks/STACK-frontend.md`, `prompt-system/stacks/STACK-powershell.md`, `prompt-system/stacks/STACK-pinescript.md`, `prompt-system/stacks/STACK-database.md`
 - Load order in `00-system.md` annotated with scope: `[core]`, `[review]`, `[on-demand]`, `[stack]`, `[designer]`, `[doc]`
 - **05-impl-style.md split mapping:**
+
   | Source Section | Target File |
   |----------------|-------------|
   | General principles, greenfield rules, local-convention policy, error-idiom consistency, design heuristics, code-decision ladder, minimal verification floor, project structure, comments, markdown defaults, naming, file naming, file separation, security defaults, logging defaults, command-line defaults, testing coordination, style floor | `05-impl-style.md` (core, always-load) |
@@ -63,6 +66,7 @@ See "Do not" section in the brief - all items there are explicitly out of scope.
   | Stack: PowerShell | `prompt-system/stacks/STACK-powershell.md` |
   | Stack: Pine Script | `prompt-system/stacks/STACK-pinescript.md` |
   | Stack: Database | `prompt-system/stacks/STACK-database.md` |
+
 - Phase templates in `03-output-and-state.md` updated for new workflow
 
 ## Data
@@ -122,9 +126,8 @@ Per Part 5 execution order:
 2. **Part 2 reassign personas**
     - 2.1 BabaSensei → spec author (SPEC → HANDOFF to BabaReviewer); default route: goal → BabaSensei spec session; explicit "use scrum" → BabaScrumMaster pipeline
     - 2.2 BabaReviewer → code review + spec review
-   - 2.2 BabaReviewer → code review + spec review
-   - 2.3 BabaScrumMaster unchanged
-   - 2.4 BabaDev unchanged, entry point reads SPEC.md + TASKS.md
+    - 2.3 BabaScrumMaster unchanged
+    - 2.4 BabaDev unchanged, entry point reads SPEC.md + TASKS.md
 
 3. **Part 3 spec workflow**
    - 3.1 Spec session (BabaSensei/BabaScrumMaster) → SPEC.md

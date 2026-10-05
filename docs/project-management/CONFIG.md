@@ -12,6 +12,7 @@ backend: file
 ## Trello Setup
 
 When `backend: trello`, the following must be configured:
+
 - Trello MCP OAuth consent completed via `opencode mcp auth trello`
 - Board ID or board name specified in `board` field below
 

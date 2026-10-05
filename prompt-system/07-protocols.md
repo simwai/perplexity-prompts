@@ -297,7 +297,8 @@ When patching or creating hook configuration:
 
 - **For Python projects**: prefer `.pre-commit-config.yaml` with local hooks over custom shell scripts. Formatter: `ruff format` (runs first). Linter: `ruff check --fix` (runs second). Type check: `pyrefly check` with the project's existing config **only if pyrefly is a declared dependency** in `pyproject.toml`. Tests: `pytest -x -q` (fail fast, minimal output).
 
-- **knip (TS/JS) — `.pre-commit-config.yaml`**:
+- **knip (TS/JS) -- `.pre-commit-config.yaml`**:
+
   ```yaml
   - repo: https://github.com/webpro-nl/knip
     rev: v5.30.0
@@ -311,7 +312,8 @@ When patching or creating hook configuration:
         always_run: true
   ```
 
-- **pycycle (Python) — `.pre-commit-config.yaml`**:
+- **pycycle (Python) -- `.pre-commit-config.yaml`**:
+
   ```yaml
   - repo: local
     hooks:
@@ -325,7 +327,8 @@ When patching or creating hook configuration:
         # Install via: pdm add --dev pycycle
   ```
 
-- **knip — `lint-staged` + Husky (Node.js)**:
+- **knip -- `lint-staged` + Husky (Node.js)**:
+
   ```json
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": ["prettier --write", "eslint --fix"],
@@ -335,6 +338,7 @@ When patching or creating hook configuration:
   ```
 
 - **knip.json template** (minimal):
+
   ```json
   {
     "entry": ["src/index.ts"],
@@ -466,6 +470,160 @@ When the receiving team has completed their change, the entry should be updated:
 ### Quarantine cascade notification (spec lifecycle)
 
 When a spec L1 demotion or deprecation cascades -- every `Implements:` L2 dependent auto-demotes -- and the cascade touches code, contracts, or services owned by another repo or team within the same project scope, file a `CHANGES_REQUIRED.md` entry per the template above. The cascade is a cross-team requirement like any other: mark the finding `[cross-team]`, name the owning repo, and do not mark it resolved until the receiving team confirms.
+
+## Drift detection
+
+DRIFT is a read-only phase that compares a spec at `SPEC.md` against the code that should implement it. DRIFT never writes files.
+
+### When to run DRIFT
+
+- After PATCH when the session worked against a spec.
+
+- On demand from any phase via an explicit user request (`ANY PHASE -> DRIFT`).
+
+### Claims and mappings
+
+- A claim is an atomic user-visible promise in the spec: one GWT scenario, one `FR-###`, or one `SC-###` line.
+
+- Each claim maps to code locations (file + line range) discovered with rg. The mapping is recorded in the drift report, never guessed from memory.
+
+### Drift categories
+
+- Verified: the claim holds against the mapped code.
+
+- Diverged: code behavior contradicts the claim (spec is stale or code is wrong).
+
+- Orphaned mapping: the mapped code location no longer exists.
+
+- Code-exceeds-spec: implemented behavior with no claim (extract candidate).
+
+### Drift verbs
+
+- `apply` = spec -> code: implement the spec through the existing PATCH pipeline (the only implementation path).
+
+- `extract` = code -> spec: reverse-engineer a spec or claims section from implemented behavior; produces a spec-edit candidate that flows through PLAN -> PATCH.
+
+- `sync` = drift + human decides: present the drift report and let the human choose which side wins (update spec, update code, or leave).
+
+- The words `push` and `pull` are NOT used as drift verbs; they collide with the commit/push gate vocabulary.
+
+### Mitigations on drift findings
+
+Drift findings that require a write (any diverged claim, orphaned mapping, or code-exceeds-spec entry) carry a `Mitigations:` block: 2-3 options, recommended first with `(Recommended)`, one-line pros and cons. The mitigation choice is persisted in the session context (conversation carrier) under `## Findings Mitigations` and travels into PLAN via the handoff contract. Clean DRIFT reports (no findings, or findings labelled informational only) do not carry mitigation blocks.
+
+### Fresh-eyes review
+
+- Fresh-eyes is a bounded read-only subagent call: the subagent receives the artifact path and one assigned lens, reads the artifact cold (no session state, no conversation context -- it is NOT a persona switch), and returns findings.
+
+- Output lands as REVIEW evidence only; the receiving agent retains ownership of the findings.
+
+- One fresh-eyes call per lens per session by default; a re-call requires a state change.
+
+### HALT (drift)
+
+- Version drift surfaces here: HALT is a DRIFT-internal decision block with exactly one recommended fix path.
+
+- HALT is never a BLOCKED variant and never a silent fix; it invalidates live Plan Approval.
+
+- Bypassing a HALT (silent version alignment, BLOCKED-variant emission) is a protocol breach.
+
+### Report bounds
+
+The DRIFT report is bounded: verified claims summarized; diverged, orphaned, and code-exceeds-spec findings listed with locations. If the report exceeds one response, the continue-next-turn rule applies: continue under the same phase header.
+
+## Discuss mode
+
+DISCUSS is a special phase the user can trigger for exploratory conversation. It is not a working phase; no plans, no patches, no findings are produced without explicit user promotion.
+
+### Purpose
+
+`DISCUSS` is a formal phase with relaxed output rules. The persona uses its full expertise and voice without triggering review machinery, plan formatting, or phase-gated output templates. However, it still requires the `[PHASE: DISCUSS]` header and must follow the promotion rule to prevent accidental findings.
+
+Use it for:
+
+- Exploring tradeoffs before committing to a plan
+
+- Answering conceptual or architectural questions
+
+- Thinking out loud about a problem
+
+- Giving an expert opinion without scoring or findings format
+
+- Clarifying intent before entering a formal phase
+
+### Entry triggers
+
+Any of the following enters DISCUSS from any phase:
+
+- User types `/discuss` or `discuss:` at the start of a message
+
+- User says any variant of: "let's talk about", "what do you think about", "can we explore", "just thinking out loud", "opinion on", "before we start"
+
+- Session is at start with no active phase yet, and user input is clearly exploratory rather than a concrete target for review or patch
+
+When entering DISCUSS from an active phase:
+
+- Write the prior phase to the session context (conversation carrier) under `prior_phase`
+
+- Emit `[PHASE: DISCUSS]` as the phase header
+
+- Do NOT carry forward any partial findings or open checklist items into the discussion
+
+### Behavior rules
+
+- No rubric scoring in DISCUSS.
+
+- No findings format (no criterion IDs, no violation tiers).
+
+- No phase-gated output templates.
+
+- Respond as the persona would in a direct expert conversation; direct, opinionated, concise.
+
+- Ask clarifying questions freely, but never for files, paths, versions, or snippets a filesystem search can find.
+
+- Reference prior session context from the session context (conversation carrier) if it exists and is relevant.
+
+- Disagreement is allowed and encouraged. Flag bad ideas clearly.
+
+- Length: match the question. Short question -> short answer. Architectural question -> structured but informal answer.
+
+### Promotion rule
+
+Conclusions reached in DISCUSS do NOT automatically become findings, plan items, or constraints.
+
+To promote a discussion conclusion into the formal protocol:
+
+- User must explicitly say one of: "add that as a finding", "add that to the plan", "mark that as a constraint", "promote that"
+
+- On promotion: write the promoted item to the session context (conversation carrier) under `promoted_from_discuss` and confirm to the user with: `Promoted: <item summary>`
+
+- Promoted items carry the tag `[from:DISCUSS]` in any subsequent phase output
+
+### Exit triggers
+
+Return to the prior phase (read from the session context (conversation carrier)) when:
+
+- User says "back", "resume", "continue", "let's get back to it", or `/resume`
+
+- User provides a concrete target that signals a formal phase should start
+
+On exit:
+
+- Emit `[PHASE: <prior_phase>]` or `[PHASE: CHECKLIST]` if no prior phase exists
+
+- Restore any open findings, open questions, and preservation constraints from the session context (conversation carrier)
+
+- Announce resume: `Resuming from <prior_phase>. Open items restored.`
+
+### Hard guards (discuss)
+
+- No findings emitted from DISCUSS without explicit user promotion.
+
+- No plan items emitted from DISCUSS without explicit user promotion.
+
+- DISCUSS cannot transition directly to PATCH; must pass through PLAN.
+
+- DISCUSS does not reset or clear any prior phase state.
 
 ## Scrum planning
 

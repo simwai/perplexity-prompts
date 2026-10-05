@@ -20,7 +20,7 @@ The canonical glossary lives at **`docs/GLOSSARY.md`**. Maintained manually; upd
 TOCs are automatically generated via the `markdown-toc` pre-commit hook.
 
 - **Coverage**: All `docs/**/*.md` files
-- **Excluded**: `docs/GLOSSARY.md` and `docs/REFERENCE/` (manually maintained)
+- **Excluded**: `docs/GLOSSARY.md` and `docs/refs/` (manually maintained)
 - **Depth**: Up to 3 heading levels (`--maxdepth=3`)
 - **First H1**: Not used as TOC anchor (`--no-first-h1`)
 - **Runs**: On every `git commit` via pre-commit
@@ -35,6 +35,7 @@ All diagrams use **GitHub-flavored Mermaid** syntax inside fenced code blocks.
 - **Background**: Dark transparent (GitHub dark mode renders automatically)
 - Use `graph TD` (top-down) or `graph LR` (left-to-right) as appropriate
 - Colors applied via `style` or `classDef` when needed:
+
   ```mermaid
   %%{init: {'theme': 'dark'}}%%
   classDef purple fill:#6B21A8,stroke:#7C3AED,color:#fff;
