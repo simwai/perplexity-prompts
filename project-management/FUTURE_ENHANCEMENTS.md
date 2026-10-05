@@ -51,16 +51,16 @@ Session file locks are no longer removed. They were rebuilt in the current cycle
 after the original implementation was found to be unenforceable.
 
 Original removal was correct in outcome, wrong in mechanism: the lock protocol
-depended on `SESSION_STATE-*.md` filenames for peer detection, and those files
-were deleted by the same refactor, so the protocol was invalidated before its own
-removal. Its write-block enforcement also lived only in a plugin hook, which
+resolved peer identity from a file convention that the session-state removal
+had already eliminated, so peer detection was invalidated before the locks were
+removed. Its write-block enforcement also lived only in a plugin hook, which
 never fired in practice.
 
 ### What the rebuild changed
 
 | Original | Rebuilt | Why |
 |---|---|---|
-| Peer identity from `SESSION_STATE-*.md` filenames | `SESSION_ID` env, else process-cached generated id | Those state files no longer exist |
+| Peer identity from a file convention | `SESSION_ID` env, else process-cached generated id | The original source of identity no longer exists |
 | Dependency discovery by leaf-name regex | Specifiers resolved to real paths | `src/a/index.ts` and `src/b/index.ts` were reported as dependents |
 | Plugin `tool.execute.before` write-block | Commit gate, `pre-commit.ps1` step 1 | A mid-edit block can wedge the session that holds the lock |
 | Expired locks detected but never reclaimable | Expired locks reclaimed on acquisition | TTL was decorative: detection called it dead while acquisition still refused |

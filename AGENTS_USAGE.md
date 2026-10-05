@@ -237,7 +237,7 @@ additional native layer.
 | `.opencode/agents/build.md` | Overrides native OpenCode Build with BabaDev rules (requires approved plan + rewrite contract). |
 | `.opencode/commands/baba.md` | `/baba <persona>` — activates a persona and starts the phase flow. |
 | `.opencode/commands/phase.md` | `/phase <NAME>` — declares the active phase and enforces its template. |
-| `.opencode/commands/approve-plan.md` | `/approve-plan` — persists plan approval + rewrite contract into the session context (conversation carrier) (`SESSION_STATE-<session_id>.md (legacy)`). |
+| `.opencode/commands/approve-plan.md` | `/approve-plan` — persists plan approval + rewrite contract into the session context (conversation carrier). |
 | `.opencode/commands/handoff.md` | `/handoff` — emits the persona handoff contract. |
 | `.opencode/commands/resume.md` | `/resume` — restores prior phase from the session context (conversation carrier). |
 | `.opencode/commands/verify.md` | `/verify` — inspects diff and runs relevant project checks. |

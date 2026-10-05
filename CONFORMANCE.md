@@ -10,12 +10,11 @@ tool-independent because the core system is a specification, not an application.
 - [x] Missing prerequisites produce only `BLOCKED`.
 - [x] Consolidated review records every file and batch before aggregate output.
 - [x] Aggregate findings remain provisional until explicit confirmation.
-- [x] A mismatched or foreign-session context (`SESSION_STATE-<session_id>.md` legacy)
-      cannot restore old approval; approval requires target + scope + session_id match.
-- [x] Session context is per-session: each session owns its own context, cleans
-      up only its own file, and never deletes another session's; stale-file GC
-      runs only at fresh-session init with a named TTL and never touches the
-      current session's file.
+- [x] A session context carried over from a different session cannot restore old
+      approval; approval requires target + scope + session_id match.
+- [x] Session context is per-session: a session reads and writes only its own
+      context and never deletes another session's; a lock owned by a different
+      session_id is refused rather than released.
 - [x] Each persona handoff contains only the fields required by its receiver.
 - [x] PATCH requires explicit approval and all four rewrite-contract fields.
 - [x] Phase artifacts are complete for the work their phase owns before the next phase opens:

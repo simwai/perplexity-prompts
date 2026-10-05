@@ -16,8 +16,6 @@
 
     Session identity resolves from SESSION_ID, else a per-process generated id
     cached for the process lifetime so acquire/verify/release agree on one owner.
-    An earlier revision derived identity from SESSION_STATE-*.md filenames; those
-    files no longer exist, so that lookup was dropped rather than left dead.
 
     Inert on a READ_ONLY host: every entry point returns Skipped instead of
     touching the filesystem.

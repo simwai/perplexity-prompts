@@ -1056,8 +1056,6 @@ A lock is staged in a private directory and moved into place with `[System.IO.Di
 
 `SESSION_ID`, else a per-process generated id cached for the process lifetime, so acquire/verify/release agree on a single owner. A per-call fallback would make the three disagree and misattribute a lock.
 
-An earlier revision derived identity from `SESSION_STATE-*.md` filenames. Those files no longer exist, so that lookup was dropped rather than left in place as dead code.
-
 ### Dependency discovery
 
 Depth 1, both directions: direct importers and direct imports. Specifiers are **resolved to real paths**, not matched by leaf filename.

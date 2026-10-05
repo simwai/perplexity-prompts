@@ -245,22 +245,19 @@ Before commit gate, delete repo-local temp files not in PATCH edited-file set. O
 
 - **Temp files** -- files created during the session that are not in the session's `## Edited Files` ledger (e.g., temporary test outputs, scratch files, intermediate build artifacts outside configured output directories). Files in the OS temp directory (`$env:TEMP` on Windows, `/tmp` on Unix) are exempt from leftover audit; repo-local temp files are subject to auto-deletion.
 
-- **Uncommitted session artifacts** -- `SESSION_STATE-*.md` (legacy) files not staged for commit in the current session. These are gitignored; a leftover one means a stale state file from an earlier session is still on disk.
-
 ### Procedure (auto-delete at PATCH verification gate)
 
-1. **Detect** -- after the compliance audit and before the commit/push gate, scan for leftovers in both categories.
+1. **Detect** -- after the compliance audit and before the commit/push gate, scan for repo-local temp files.
 
-2. **Delete** -- remove detected leftovers. Temp files: `Remove-Item -Force` (or `rm -f`). Uncommitted session artifacts: `Remove-Item -Force` on `SESSION_STATE-*.md` (legacy) not in the current session's ledger.
+2. **Delete** -- remove detected leftovers with `Remove-Item -Force` (or `rm -f`).
 
 3. **Record** -- write a `## Leftover Audit` section to the session context (conversation carrier):
 
    ```markdown
    ## Leftover Audit
    - temp files: [count] removed -- [paths]
-   - uncommitted session artifacts: [count] removed -- [paths]
    ```
 
 4. **Gate** -- the PATCH verification gate reports PASS only if the audit completes (leftovers found and deleted, or none found). A failure to run the audit is a gate FAIL.
 
-<MUST>No PATCH conclusion while the leftover audit fails. The PATCH verification gate must complete the leftover audit (detect and auto-delete temp files, uncommitted session artifacts per this section) before concluding. A missing or failed audit is a gate FAIL.</MUST>
+<MUST>No PATCH conclusion while the leftover audit fails. The PATCH verification gate must complete the leftover audit (detect and auto-delete repo-local temp files per this section) before concluding. A missing or failed audit is a gate FAIL.</MUST>

@@ -621,7 +621,7 @@ Rules:
 
 ### Session-state carrier
 
-The session state persists in the conversation context during a session -- no `SESSION_STATE-*.md` file is created. On a `READ_ONLY` host this is the only mode; on `FILE_CAPABLE` hosts the same in-session model applies. Recorded phase state carries across sessions via the conversation carrier; **module loads do not** (see `### Fresh-session load mandate`).
+The session state persists in the conversation context during a session; no session state file is written to disk. On a `READ_ONLY` host this is the only mode; on `FILE_CAPABLE` hosts the same in-session model applies. Recorded phase state carries across sessions via the conversation carrier; **module loads do not** (see `### Fresh-session load mandate`).
 
 - The state carrier is the conversation itself. The active persona carries the field set (phase, prior phase, planning mode, execution mode, target, review cursor, findings, open questions, review decision, plan approval, rewrite contract, phase skips) in session context and updates it at every phase transition, mode switch, and persona switch.
 - Session identity resolves via a sanitized `SESSION_ID` environment variable, a conversation-remembered id, or a generated id from the format. The id is carried in the conversation; it never becomes a filename.

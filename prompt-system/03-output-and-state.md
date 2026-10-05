@@ -840,7 +840,7 @@ User types `/close`, agent appends entry to `EVALUATIONS.md` (creates with heade
 
 ## Session State (In-Session Only)
 
-All session state persists in the conversation context during a session -- no `SESSION_STATE-*.md` file is created. State includes: phase, persona, target, scope, findings, mitigations, plan approval, rewrite contract, and gate results. Recorded phase state carries across sessions via the conversation carrier; module loads do not (see the fresh-session load mandate in `prompt-system/00-system.md`).
+All session state persists in the conversation context during a session; no session state file is written to disk. State includes: phase, persona, target, scope, findings, mitigations, plan approval, rewrite contract, and gate results. Recorded phase state carries across sessions via the conversation carrier; module loads do not (see the fresh-session load mandate in `prompt-system/00-system.md`).
 
 **Gate outputs**: Plan-Actual, Commit/Push, Compliance Audit, and Leftover Audit results are emitted directly in the PATCH response — not persisted to a file.
 
