@@ -294,6 +294,12 @@ Versioning follows [Semantic Versioning](https://semver.org/).
   iterates every module export and aborts the whole plugin on the first
   non-callable one, and the upstream build additionally exports its test
   helpers and `CHEAP_MODEL_PATTERNS`.
+- `opencode.jsonc` -- dropped the `plugin` entries for `baba-bootstrap.ts` and
+  `baba-convention-review.ts`, which `a5eaa89` deleted from
+  `.opencode/plugins/`. The paths could no longer resolve: opencode listed both
+  as plugin origins and then dropped them as entrypoint-less plugins without
+  logging an error. `sync.ps1` copies this file to every target project, so the
+  dead paths would have propagated to all of them on the next sync.
 
 ### Changed (module-system era)
 
