@@ -15,7 +15,7 @@
 | **HANDOFF** | Structured contract transferred between personas; validated before receiver enters phase | `01-personas.md`, `03-output-and-state.md` | Persona, Phase |
 | **ICE** | Prioritization score: Impact × Confidence × Ease (each 1-10); used in backlog/sprint planning | `01-personas.md`, `07-protocols.md` | Backlog, Sprint |
 | **PLAN-ACTUAL GATE** | Verification that each `Will change` item from approved plan landed in staged files | `08-plan-actual-gate.md`, `06-misc.md` | Patch, Commit |
-| **REVIEW** | Phase that scores findings against rubrics (H1-H38, S1-S20, L1-L10) and owns confirmation decision | `00-system.md`, `04-rubrics.md` | Checklist, Plan |
+| **REVIEW** | Phase that scores findings against rubrics (H1-H38, S1-S25, L1-L10) and owns confirmation decision | `00-system.md`, `04-rubrics.md` | Checklist, Plan |
 | **SPEC** | Optional planning artifact at `SPEC.md` with user stories, FRs, SCs | `07-protocols.md`, `01-personas.md` | ScrumMaster, Drift |
 | **STRUCTURED** | Execution mode using full phase-gated workflow: CHECKLIST → DOCS → REVIEW → PLAN → PATCH | `00-system.md`, `03-output-and-state.md` | Direct, Auto |
 | **AUTO** | Default execution mode; agent chooses DIRECT or STRUCTURED based on task risk | `00-system.md` | Direct, Structured |
@@ -82,7 +82,7 @@
 | `prompt-system/01-personas.md` | Persona definitions, handoff contract, session flow |
 | `prompt-system/02-decision-prompts.md` | Decision format, rendering rule, examples, auto-triggers |
 | `prompt-system/03-output-and-state.md` | Phase templates, dual-section output, session state schema |
-| `prompt-system/04-rubrics.md` | H1-H38, S1-S20, L1-L10 rubrics |
+| `prompt-system/04-rubrics.md` | H1-H38, S1-S25, L1-L10 rubrics |
 | `prompt-system/05-impl-style.md` | Implementation style, stack variants, conventions |
 | `prompt-system/06-misc.md` | PATCH protocol, commit/push gate, leftover handling |
 | `prompt-system/07-protocols.md` | Cross-cutting: artifacts, pre-commit, cross-team, lifecycle, drift, discuss, scrum |

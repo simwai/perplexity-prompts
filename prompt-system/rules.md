@@ -15,7 +15,7 @@ Each rule has:
 
 ---
 
-## H13 -- Incomplete Reading
+## H13 -- Incomplete reading: analysis output emitted without completing the Reading Plan for the current scope
 
 **Principle:** Analysis must not be emitted without completing the Reading Plan for the current scope.
 
@@ -43,7 +43,7 @@ Each rule has:
 
 ---
 
-## H14 -- No Duplication
+## H14 -- No Duplication: fix introduces logic duplicated from an existing utility/helper/validator
 
 **Principle:** DRY - don't repeat logic that exists elsewhere in the codebase.
 
@@ -72,7 +72,7 @@ Each rule has:
 
 ---
 
-## H15 -- Library-First
+## H15 -- Library-First: fix hand-rolls logic that a maintained library already solves
 
 **Principle:** Use an already-installed dependency before hand-rolling. Code-decision ladder rung 5.
 
@@ -101,7 +101,7 @@ Each rule has:
 
 ---
 
-## H16 -- Ownership Routing
+## H16 -- Ownership Routing: fix bypasses the architectural owner of the concern
 
 **Principle:** Route through the architectural owner of a concern. Don't bypass the module that owns the validation, error handling, or business logic.
 
@@ -131,7 +131,7 @@ Each rule has:
 
 ---
 
-## H17 -- Layer Discipline
+## H17 -- Layer Discipline: fix violates architectural layer boundaries
 
 **Principle:** Respect architectural layer boundaries. Controllers must not contain business logic. Services must not access the database directly.
 
@@ -160,7 +160,7 @@ Each rule has:
 
 ---
 
-## H18 -- No Single-Use Abstraction
+## H18 -- No Single-Use Abstraction: fix creates a new function/class/module with <=1 caller
 
 **Principle:** YAGNI. Don't create abstractions that are used only once. A factory with one product, an interface with one implementation, or a helper called from one place is speculative.
 
@@ -191,7 +191,7 @@ Each rule has:
 
 ---
 
-## H19 -- Dominant Idiom Enforcement
+## H19 -- Dominant Idiom Enforcement: fix introduces a new pattern when a dominant pattern exists with high confidence
 
 **Principle:** Don't introduce a new pattern when a dominant pattern already exists. The fix should follow the established idiom of the file and codebase.
 
@@ -221,7 +221,7 @@ Each rule has:
 
 ---
 
-## H20 -- No Over-Engineering
+## H20 -- No Over-Engineering: fix creates unnecessary abstraction layers, wrappers, speculative code, or unrequested genericity
 
 **Principle:** KISS. Don't create unnecessary abstraction layers. A function that does one thing doesn't need a strategy pattern, a factory, and an interface.
 
@@ -267,7 +267,7 @@ Sub-check H20c (speculative code):
 
 ---
 
-## H21 -- Composition Over Inheritance
+## H21 -- Composition Over Inheritance: fix uses class inheritance when composition is dominant in the layer
 
 **Principle:** Prefer composition over class inheritance. Use dependency injection and object composition instead of extending base classes.
 
@@ -296,7 +296,7 @@ Sub-check H20c (speculative code):
 
 ---
 
-## H22 -- Dependency Injection
+## H22 -- Dependency Injection: fix uses `new` or direct instantiation outside the composition root
 
 **Principle:** Use dependency injection over hidden construction. Don't use `new` outside the composition root.
 
@@ -326,7 +326,7 @@ Sub-check H20c (speculative code):
 
 ---
 
-## H23 -- Single Source of Truth
+## H23 -- Single Source of Truth: fix duplicates config/data that exists in a single source
 
 **Principle:** Don't duplicate config, constants, or data that exists in a single source. One source of truth; references everywhere else.
 
@@ -355,7 +355,7 @@ Sub-check H20c (speculative code):
 
 ---
 
-## H24 -- Early Returns
+## H24 -- Early Returns: fix introduces deep nesting (>3 levels) without early returns
 
 **Principle:** Prefer early returns over deep nesting. A function should not have >3 levels of indentation.
 
@@ -384,7 +384,7 @@ Sub-check H20c (speculative code):
 
 ---
 
-## H25 -- No Manual-Sync Registries
+## H25 -- No Manual-Sync Registries: fix creates a registry/mapping that requires manual sync
 
 **Principle:** Avoid registries or mappings that require manual sync when dynamic discovery is simpler and safer.
 
@@ -413,7 +413,7 @@ Sub-check H20c (speculative code):
 
 ---
 
-## H26 -- No Over-Engineered Discovery
+## H26 -- No Over-Engineered Discovery: fix uses dynamic discovery when explicit list is simpler
 
 **Principle:** Keep explicit lists when discovery would add needless complexity or reduce clarity.
 
@@ -442,7 +442,7 @@ Sub-check H20c (speculative code):
 
 ---
 
-## H27 -- Code-Decision Ladder Compliance
+## H27 -- Code-Decision Ladder Compliance: fix adds new code when existing utility/library/standard lib already solves it
 
 **Principle:** Before writing new code, check: does this already exist? Does the standard library do it? Does an installed dependency solve it? Only then write new code.
 
@@ -471,7 +471,7 @@ Sub-check H20c (speculative code):
 
 ---
 
-## H28 -- Stepdown Rule
+## H28 -- Stepdown Rule: fix mixes high-level orchestration with low-level operations without named intermediate
 
 **Principle:** Functions read top-to-bottom. Each function calls functions one level of abstraction below it. A function whose first line is a high-level call and whose next line is a low-level call without a named intermediate violates the stepdown rule.
 
@@ -501,7 +501,7 @@ Sub-check H20c (speculative code):
 
 ---
 
-## H29 -- Newspaper Order
+## H29 -- Newspaper Order: fix places public function below private helper it calls
 
 **Principle:** A file reads like a newspaper article: public API first, private details later. A public function should not appear below a private helper it calls.
 
@@ -530,7 +530,7 @@ Sub-check H20c (speculative code):
 
 ---
 
-## H30 -- No Flag/Output Arguments
+## H30 -- No Flag/Output Arguments: fix introduces boolean flag arguments or mutates output arguments
 
 **Principle:** A function should not take a boolean flag that selects between two behaviors, nor mutate an argument passed by reference instead of returning a value.
 
@@ -559,7 +559,7 @@ Sub-check H20c (speculative code):
 
 ---
 
-## H31 -- Law of Demeter
+## H31 -- Law of Demeter: fix introduces train-wreck chains (a.b.c.d) longer than 1 dot
 
 **Principle:** A method should not reach through another object to access its parts. A chain of more than one dot (`a.b.c.d`) is a Demeter violation unless it's a fluent builder or DTO.
 
@@ -588,7 +588,7 @@ Sub-check H20c (speculative code):
 
 ---
 
-## H32 -- No Dead Code
+## H32 -- No Dead Code: fix adds unreachable code or unused exports
 
 **Principle:** Don't add unreachable code or unused exports. Dead code increases maintenance burden and confusion.
 
@@ -618,7 +618,7 @@ Sub-check H20c (speculative code):
 
 ---
 
-## H33 -- No Magic Values
+## H33 -- No Magic Values: fix introduces unexplained literals that should be named constants
 
 **Principle:** Unexplained literals should be named constants. A magic number like `86400` or a magic string like `"prod"` should have a name.
 
@@ -648,7 +648,7 @@ Sub-check H20c (speculative code):
 
 ---
 
-## H34 -- Error Handling Quality
+## H34 -- Error Handling Quality: fix swallows exceptions or loses error context
 
 **Principle:** Don't swallow exceptions or lose error context. Every catch block must either re-raise, return a Result, or log with context.
 
@@ -677,7 +677,7 @@ Sub-check H20c (speculative code):
 
 ---
 
-## H35 -- Logging Quality
+## H35 -- Logging Quality: fix adds debug prints or exposes sensitive data in logs
 
 **Principle:** Don't add debug prints or expose sensitive data in logs. Use semantic logging with appropriate levels.
 
@@ -706,7 +706,7 @@ Sub-check H20c (speculative code):
 
 ---
 
-## H36 -- Type Safety (Non-Python)
+## H36 -- Type Safety (Non-Python): fix uses unsafe casts, `any` type, or `as` without type guard
 
 **Principle:** Don't use unsafe casts, `any` type, or `as` without type guard. Type safety is a first-class concern.
 
@@ -735,7 +735,7 @@ Sub-check H20c (speculative code):
 
 ---
 
-## H37 -- No Obvious Performance Issues
+## H37 -- No Obvious Performance Issues: fix introduces O(n2) scans, nested loops over same data, or synchronous blocking in async context
 
 **Principle:** Don't introduce O(n²) scans, nested loops over same data, or synchronous blocking in async context.
 
@@ -766,7 +766,7 @@ Sub-check H20c (speculative code):
 
 ---
 
-## H38 -- No Multi-Concept Files
+## H38 -- No Multi-Concept Files: fix combines multiple classes, errors, types, interfaces, or schemas into a single file
 
 **Principle:** Each distinct concept gets its own file. Do not combine multiple classes, errors, types, interfaces, or schemas into a single file.
 

@@ -21,8 +21,8 @@ $systemRoot = Join-Path $PSScriptRoot '..'
 # so stop at whichever comes first.
 $registryPath = Join-Path $systemRoot '04-rubrics.md'
 $registry = @{}
-foreach ($m in [regex]::Matches([System.IO.File]::ReadAllText($registryPath), '(?m)^\*\*H(\d+) -- (.+?)(?:\.\*\*|:)')) {
-    $registry[[int]$m.Groups[1].Value] = $m.Groups[2].Value.Trim()
+foreach ($m in [regex]::Matches([System.IO.File]::ReadAllText($registryPath), '(?m)^\*\*H(\d+) -- (.+?)\s*\*\*')) {
+    $registry[[int]$m.Groups[1].Value] = $m.Groups[2].Value.Trim().TrimEnd('.')
 }
 
 Assert-FileExists -Path $registryPath -Description 'rubric registry (04-rubrics.md)'
@@ -93,5 +93,57 @@ foreach ($file in $scanFiles) {
     }
 }
 
-Write-Host "  scanned $scanned markdown files under prompt-system\"
+Write-Host "  scanned $scanned markdown files under prompt-system\ and docs\refs\"
+
+# 3. Semantic keyword check for .opencode/**/*.ts plugin files.
+#    When a .ts file cites an H id, the surrounding comment or string must
+#    contain at least one keyword from the H id's title. This catches
+#    copy-pasted or misapplied rubric citations in plugin code.
+$opencodeRoot = Join-Path $repoRoot '.opencode'
+if (Test-Path -LiteralPath $opencodeRoot -PathType Container) {
+    $tsFiles = Get-ChildItem -Path $opencodeRoot -Recurse -Filter '*.ts' -File | Where-Object {
+        $_.FullName -notmatch '\\node_modules\\'
+    }
+    $tsScanned = 0
+    foreach ($file in $tsFiles) {
+        $tsScanned++
+        $text = [System.IO.File]::ReadAllText($file.FullName)
+        foreach ($m in [regex]::Matches($text, '(?<![A-Za-z0-9])H(\d+)(?![0-9])')) {
+            $cited = [int]$m.Groups[1].Value
+            if ($cited -le 0 -or $cited -gt 200) { continue }
+            if (-not $registry.ContainsKey($cited)) { continue }
+            $title = $registry[$cited]
+            # Extract candidate keywords: words longer than 3 chars from the title
+            $keywords = ($title -replace '[^a-zA-Z\s]', '').Split(' ', [System.StringSplitOptions]::RemoveEmptyEntries) |
+                Where-Object { $_.Length -gt 3 } |
+                Select-Object -First 6
+            if ($keywords.Count -eq 0) { continue }
+            # Get context window around the citation (200 chars before + 200 after)
+            $idx = $m.Index
+            $start = [Math]::Max(0, $idx - 200)
+            $len = [Math]::Min(400, $text.Length - $start)
+            $context = $text.Substring($start, $len).ToLower()
+            $found = $false
+            foreach ($kw in $keywords) {
+                $kwLower = $kw.ToLower()
+                # Match the keyword itself or common singular/plural variants
+                $variants = @($kwLower)
+                if ($kwLower.EndsWith('s')) { $variants += $kwLower.Substring(0, $kwLower.Length - 1) }
+                else { $variants += $kwLower + 's' }
+                foreach ($variant in $variants) {
+                    if ($context.Contains($variant)) {
+                        $found = $true
+                        break
+                    }
+                }
+                if ($found) { break }
+            }
+            if (-not $found) {
+                $rel = $file.FullName.Substring($repoRoot.Length).TrimStart('\', '/')
+                Add-TestFailure "SEMANTIC CITATION: $rel cites H$cited but context lacks keywords from title: $($keywords -join ', ')"
+            }
+        }
+    }
+    Write-Host "  scanned $tsScanned .ts files under .opencode\ (semantic keyword check)"
+}
 exit (Complete-TestRun -SuiteName 'rubric id integrity')

@@ -23,7 +23,7 @@ The copy-paste unit is `AGENTS.md` + the `prompt-system/` folder:
 Copy-Item -Recurse prompt-system <target-project>\prompt-system
 ```
 
-The `prompt-system/` folder is self-contained (8 system files); all internal references stay valid after the move.
+The `prompt-system/` folder is self-contained (21 files); all internal references stay valid after the move.
 
 ---
 
@@ -231,7 +231,7 @@ additional native layer.
 
 | Path | Purpose |
 |---|---|
-| `opencode.jsonc` | opencode config: auto-loads `AGENTS.md` + the 7 system files via `instructions`, sets the safer planning agent as default, and registers version-pinned MCP servers. |
+| `opencode.jsonc` | opencode config: auto-loads `AGENTS.md` + the 10 system files via `instructions`, sets the safer planning agent as default, and registers version-pinned MCP servers. |
 | `.opencode/agents/baba-*.md` | The five personas as OpenCode subagents. Read-only personas deny `edit` and `bash`; BabaDev alone can edit and run commands. |
 | `.opencode/agents/plan.md` | Overrides native OpenCode Plan with BabaSensei rules (read-only). |
 | `.opencode/agents/build.md` | Overrides native OpenCode Build with BabaDev rules (requires approved plan + rewrite contract). |

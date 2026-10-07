@@ -175,8 +175,20 @@ if ($regenerated) {
 }
 Write-Host "  Generated adapters already current ($($before.Count) files checked)" -ForegroundColor Green
 
-# ── 2. Prompt-system integrity suites ───────────────────────────────────────
-Write-Host "`n[3/$totalSteps] Running prompt-system integrity suites..." -ForegroundColor Yellow
+# ── 2. TypeScript typecheck ──────────────────────────────────────────────────
+Write-Host "`n[3/$totalSteps] Running TypeScript typecheck..." -ForegroundColor Yellow
+
+$tscOutput = & npx tsc --noEmit -p .opencode/tsconfig.json 2>&1
+$tscCode = $LASTEXITCODE
+if ($tscCode -ne 0) {
+    $tscOutput | ForEach-Object { Write-Error "  $_" }
+    Write-Error "TypeScript typecheck failed"
+    exit 1
+}
+Write-Host "  TypeScript typecheck passed" -ForegroundColor Green
+
+# ── 3. Prompt-system integrity suites ───────────────────────────────────────
+Write-Host "`n[4/$totalSteps] Running prompt-system integrity suites..." -ForegroundColor Yellow
 
 $integritySuites = @(
     'prompt-system\scripts\test-rubric-id-integrity.ps1',
@@ -208,7 +220,7 @@ if ($integrityFailed) {
 }
 
 # ── 3. File hygiene (staged files) ──────────────────────────────────────────
-Write-Host "`n[4/$totalSteps] Checking file hygiene..." -ForegroundColor Yellow
+Write-Host "`n[5/$totalSteps] Checking file hygiene..." -ForegroundColor Yellow
 
 $stagedText = @(Get-StagedFiles -Extensions @('.md', '.yaml', '.yml', '.json', '.toml', '.ps1', '.psd1', '.psm1', '.txt'))
 $dirty = @()
@@ -273,7 +285,7 @@ if (-not $stagedText) {
 }
 
 # ── 4. Secret scanning (staged files) ───────────────────────────────────────
-Write-Host "`n[5/$totalSteps] Scanning staged files for secrets..." -ForegroundColor Yellow
+Write-Host "`n[6/$totalSteps] Scanning staged files for secrets..." -ForegroundColor Yellow
 
 $secretPatterns = @(
     'api[_-]?key\s*[:=]\s*["'']?[a-zA-Z0-9_\-]{20,}',
@@ -313,7 +325,7 @@ if ($secrets) {
 Write-Host "  No secrets detected in staged files" -ForegroundColor Green
 
 # ── 5. Markdown lint (staged files) ──────────────────────────────────────────
-Write-Host "`n[6/$totalSteps] Linting staged Markdown..." -ForegroundColor Yellow
+Write-Host "`n[7/$totalSteps] Linting staged Markdown..." -ForegroundColor Yellow
 
 $stagedMd = @(Get-StagedFiles -Extensions @('.md'))
 
@@ -350,7 +362,7 @@ if (-not $stagedMd) {
 }
 
 # ── 6. PowerShell Script Analyzer (staged files) ────────────────────────────
-Write-Host "`n[7/$totalSteps] Analyzing staged PowerShell..." -ForegroundColor Yellow
+Write-Host "`n[8/$totalSteps] Analyzing staged PowerShell..." -ForegroundColor Yellow
 
 $stagedPs = @(Get-StagedFiles -Extensions @('.ps1'))
 

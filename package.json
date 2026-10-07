@@ -21,6 +21,8 @@
   },
   "homepage": "https://gitlab.com/simwai/perplexity-prompts#readme",
   "devDependencies": {
-    "markdownlint-cli": "^0.49.1"
+    "@types/node": "^26.6.4",
+    "markdownlint-cli": "^0.49.1",
+    "typescript": "^7.0.2"
   }
 }
