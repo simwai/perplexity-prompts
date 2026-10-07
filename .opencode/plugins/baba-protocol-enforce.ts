@@ -234,10 +234,6 @@ async function checkProtocols(state: ProtocolState, directory: string) {
 }
 
 // Credential sanitization helpers (H1 compliance)
-function sanitizeGitRemoteGetUrl(name: string): string {
-  return `git remote get-url ${name} | ForEach-Object { $_ -replace '://[^/@]*@', '://<redacted>@' }`;
-}
-
 function sanitizeGitPushOutput(output: string): string {
   return output
     .replace(/^To\s+https?:\/\/\S+$/gm, "To <url>")
@@ -246,14 +242,10 @@ function sanitizeGitPushOutput(output: string): string {
     .replace(/https?:\/\/[^@\s]+@/g, "https://<redacted>@");
 }
 
-function sanitizeGitRemoteVerboseOutput(output: string): string {
-  return output
-    .replace(/^(\S+)\s+https?:\/\/[^\s]+\s+\(fetch\)/gm, "$1 (fetch)")
-    .replace(/^(\S+)\s+https?:\/\/[^\s]+\s+\(push\)/gm, "$1 (push)");
-}
-
-function sanitizeGitRemoteGetUrlOutput(output: string): string {
-  return output.replace(/:\/\/[^/@]*@/g, "://<redacted>@");
+// The before-hook now blocks `git remote get-url` outright via throw,
+// so this helper is largely dead code. Keep it shell-agnostic for safety.
+function sanitizeGitRemoteGetUrl(name: string): string {
+  return "git remote get-url " + name + " [redacted]";
 }
 
 export default async ({ client, $, project, directory, worktree }: {
@@ -267,20 +259,19 @@ export default async ({ client, $, project, directory, worktree }: {
     "tool.execute.before": async (input: { tool: string; args: any }, output: { args: any }) => {
       if (input.tool !== "bash") return;
       
-      const cmd = (input.args?.command || "").trim();
+      const cmd = String(output.args?.command || "").trim();
       
-      // 1. git remote -v → rewrite to git remote (names only)
-      if (cmd === "git remote -v") {
+      // 1. git remote -v / get-url → block via tokenized shell matching,
+      //    so `cd /repo && git remote -v` and `git remote -v | cat` cannot evade.
+      if (/(^|[;&|]\s*)git\b[^;&|]*\bremote\b[^;&|]*\s-v\b/.test(cmd)) {
         output.args.command = "git remote";
         return;
       }
-      
-      // 2. git remote get-url <name> → sanitize via PowerShell
-      const getUrlMatch = cmd.match(/^git remote get-url\s+(\S+)$/);
-      if (getUrlMatch) {
-        const name = getUrlMatch[1];
-        output.args.command = sanitizeGitRemoteGetUrl(name);
-        return;
+      if (/(^|[;&|]\s*)git\b[^;&|]*\bremote\b[^;&|]*\bget-url\b/.test(cmd)) {
+        throw new Error(
+          "H1: `git remote get-url` is blocked -- remote URLs embed OAuth2/PAT tokens. " +
+          "Use `git remote` (names only). If you need to verify a URL shape, ask the user."
+        );
       }
     },
 
@@ -291,19 +282,20 @@ export default async ({ client, $, project, directory, worktree }: {
       let out = output.output || "";
       
       // Belt-and-suspenders: sanitize git remote -v output if it slipped through
-      if (cmd === "git remote -v") {
+      if (/^(|[;&|]\s*)git\b[^;&|]*\s-v\b/.test(cmd)) {
         out = sanitizeGitRemoteVerboseOutput(out);
       }
       
-      // Sanitize git push output
-      if (cmd.startsWith("git push")) {
+// Sanitize git push output
+      if (/^(|[;&|]\s*)git\b[^;&|]*\bpush\b/.test(cmd)) {
         out = sanitizeGitPushOutput(out);
       }
       
-      // Sanitize git remote get-url output
-      if (cmd.match(/^git remote get-url\s+/)) {
-        out = sanitizeGitRemoteGetUrlOutput(out);
-      }
+      // The before-hook now blocks `git remote get-url` outright via throw.
+/// The after-hook sanitization is kept for post-hoc redaction if needed.
+if (/^git remote get-url\s+/.test(cmd)) {
+  out = sanitizeGitRemoteGetUrl(output.args?.command || "");
+}
       
       output.output = out;
     },

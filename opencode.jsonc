@@ -40,7 +40,12 @@
   // instead of auto-approving under permissive setups. Guards credit burn on
   // loop-prone models (Grok-class). Native opencode protection only.
   "permission": {
-    "doom_loop": "deny"
+    "doom_loop": "deny",
+    "git_remote": "deny",
+    "git_push_force": "deny",
+    "env_files": "deny",
+    "pem_files": "deny",
+    "key_files": "deny"
   },
 
 // opencode plugins. @latest is fine for personal/dev use; pin a version

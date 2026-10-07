@@ -23,7 +23,7 @@ $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 # directory itself when it holds generate-adapters.ps1; otherwise its parent.
 $repoRoot = if (Test-Path (Join-Path $scriptDir 'generate-adapters.ps1')) { $scriptDir } else { Split-Path -Parent $scriptDir }
 
-$totalSteps = 7
+$totalSteps = 8
 Write-Host "Running pre-commit checks..." -ForegroundColor Cyan
 
 # Paths excluded from every check below. `pre-commit.ps1` is deliberately NOT
