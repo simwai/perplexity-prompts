@@ -580,6 +580,69 @@ export async function searchMemoriesFull(db: Client, query: string, opts: SpecSe
   return hits;
 }
 
+/**
+ * Ranked full-text search over the v2 `memory` table.
+ *
+ * searchMemoriesFull does a LIKE scan, which cannot rank: every substring hit
+ * ties and ordering falls back to mw/usage_count. This queries the
+ * memory_fts_v2 index (migration 3) with bm25, which orders by how well the
+ * document actually matches the terms. Same SpecSearchHit shape as the LIKE
+ * version, so callers are interchangeable.
+ *
+ * Callers must pass a valid FTS5 MATCH expression. Use buildFtsQuery() from
+ * hooks/chat-message.ts to turn free text into one; passing raw user text
+ * throws on FTS5 operators like - " ( ) * and the boolean keywords.
+ */
+export async function searchMemoriesFts(
+  db: Client,
+  matchQuery: string,
+  opts: SpecSearchOptions = {},
+): Promise<SpecSearchHit[]> {
+  const trimmed = matchQuery.trim();
+  if (!trimmed) return [];
+  const limit = Math.max(1, Math.min(opts.limit ?? 10, 50));
+
+  const conditions = [`memory_fts_v2 MATCH ?`, `ms.name = 'active'`];
+  const args: Array<string | number> = [trimmed];
+  if (opts.project !== undefined) {
+    conditions.push(`m.project = ?`);
+    args.push(opts.project);
+  }
+  if (opts.topic !== undefined) {
+    conditions.push(`m.topic = ?`);
+    args.push(opts.topic);
+  }
+  if (opts.tier !== undefined) {
+    conditions.push(`m.tier_id = (SELECT id FROM memory_tier WHERE name = ?)`);
+    args.push(opts.tier);
+  }
+  args.push(limit);
+
+  const rows = await db.execute({
+    sql: `SELECT m.id AS id, m.content AS content, m.mw AS mw, m.usage_count AS usage_count, tt.name AS task_type
+            FROM memory_fts_v2
+            JOIN memory m ON m.id = memory_fts_v2.rowid
+            JOIN memory_status ms ON m.status_id = ms.id
+            JOIN task_type tt ON m.task_type_id = tt.id
+           WHERE ${conditions.join(" AND ")}
+           ORDER BY bm25(memory_fts_v2)
+           LIMIT ?`,
+    args,
+  });
+
+  const hits: SpecSearchHit[] = [];
+  for (const row of rows.rows) {
+    hits.push({
+      id: asNumber(row["id"]),
+      content: asText(row["content"]),
+      mw: asNumber(row["mw"]),
+      usage_count: asNumber(row["usage_count"]),
+      task_type: asText(row["task_type"]),
+    });
+  }
+  return hits;
+}
+
 export async function applyOutcome(db: Client, memoryId: number, outcome: boolean): Promise<void> {
   const found = await db.execute({
     sql: `SELECT s_plus, s_minus FROM memory WHERE id = ?`,

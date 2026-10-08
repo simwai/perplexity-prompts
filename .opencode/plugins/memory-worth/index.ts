@@ -75,7 +75,13 @@ const MemoryWorthPlugin = async ({ client, directory }: { client: any; directory
       const sessionId = input.sessionID;
       if (!sessionId) return;
       const isFirst = !injectedSessions.has(sessionId);
-      const texts = await buildInjectionTexts(db, sessionId, isFirst);
+      // The digest retrieves against the user's own words, so the request text
+      // has to reach buildInjectionTexts rather than a fixed placeholder.
+      const userText = (output.parts ?? [])
+        .filter((p: any) => p?.type === "text" && typeof p.text === "string")
+        .map((p: any) => p.text)
+        .join("\n");
+      const texts = await buildInjectionTexts(db, sessionId, isFirst, userText);
       if (texts.length === 0) return;
       injectedSessions.add(sessionId);
       const messageId = input.messageID ?? `memory-worth-${sessionId}`;

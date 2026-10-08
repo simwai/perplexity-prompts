@@ -1,4 +1,4 @@
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 3;
 
 export type MigrationSeed = {
   sql: string;
@@ -277,6 +277,40 @@ export const MIGRATIONS: Migration[] = [
       { sql: `INSERT OR IGNORE INTO ground_kind (name) VALUES ('file'), ('symbol'), ('git_ref')`, args: [] },
       { sql: `INSERT OR IGNORE INTO edge_kind (name) VALUES ('references'), ('supersedes'), ('contradicts')`, args: [] },
       { sql: `INSERT OR IGNORE INTO parameter (key, value) VALUES ('trust_q', '0.70'), ('doubt_q', '0.30'), ('min_evidence', '3'), ('active_partition', 'auto'), ('tune_interval', '50'), ('window_size', '50')`, args: [] },
+    ],
+  },
+  {
+    // Migration 2 renamed the v1 tables to *_legacy_v1 and rebuilt memory_fts
+    // over the legacy table, then created a fresh v2 `memory` table. Nothing
+    // ever indexed that new table, so every write through writeMemoryFull /
+    // memory_write landed unindexed while searchMemories kept querying the
+    // empty legacy side. That is why both the digest and the memory_search tool
+    // returned nothing on a database that had rows in it.
+    version: 3,
+    statements: [
+      `DROP TRIGGER IF EXISTS memory_v2_ai`,
+      `DROP TRIGGER IF EXISTS memory_v2_ad`,
+      `DROP TRIGGER IF EXISTS memory_v2_au`,
+      `DROP TABLE IF EXISTS memory_fts_v2`,
+      `CREATE VIRTUAL TABLE IF NOT EXISTS memory_fts_v2 USING fts5(
+        content,
+        content=memory,
+        content_rowid=id
+      )`,
+      `CREATE TRIGGER IF NOT EXISTS memory_v2_ai AFTER INSERT ON memory BEGIN
+        INSERT INTO memory_fts_v2(rowid, content) VALUES (new.id, new.content);
+      END`,
+      `CREATE TRIGGER IF NOT EXISTS memory_v2_ad AFTER DELETE ON memory BEGIN
+        INSERT INTO memory_fts_v2(memory_fts_v2, rowid, content) VALUES ('delete', old.id, old.content);
+      END`,
+      `CREATE TRIGGER IF NOT EXISTS memory_v2_au AFTER UPDATE ON memory BEGIN
+        INSERT INTO memory_fts_v2(memory_fts_v2, rowid, content) VALUES ('delete', old.id, old.content);
+        INSERT INTO memory_fts_v2(rowid, content) VALUES (new.id, new.content);
+      END`,
+      // Backfill anything written before this migration existed.
+      `INSERT INTO memory_fts_v2(rowid, content)
+         SELECT m.id, m.content FROM memory m
+        WHERE m.id NOT IN (SELECT rowid FROM memory_fts_v2)`,
     ],
   },
 ];
