@@ -6,7 +6,8 @@
     "beautiful-mermaid": "^1.1.3",
     "opencode-adaptive-thinking": "^0.1.6",
     "opencode-pty": "^0.3.6",
-    "opencode-vibeguard": "^0.1.0"
+    "opencode-vibeguard": "^0.1.0",
+    "memory-worth": "file:./plugins/memory-worth"
   },
   "devDependencies": {
     "@types/node": "^26.6.2",
