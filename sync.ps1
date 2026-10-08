@@ -362,6 +362,11 @@ function Install-Plugins {
     $localPluginDeps = @()
 
     foreach ($entry in $config.plugin) {
+        # A bare name already declared in package.json is a locally linked
+        # plugin, e.g. "memory-worth": "file:./plugins/memory-worth". Treating
+        # it as an npm package rewrites that declaration to "<name>": "latest"
+        # and then fails to resolve it from the registry.
+        if (-not ($entry -match '^\.') -and $deps.ContainsKey($entry)) { continue }
         if ($entry -match '^\.') {
             # Local plugin - extract its dependencies from its package.json
             $localPluginPath = Join-Path $TargetPath $entry
