@@ -1,7 +1,7 @@
 import { createConnection, getDbPath } from "./db/connection.js";
-import { buildInjectionTexts } from "./hooks/chat-message.js";
+import { buildInjectionTexts, detectAndCaptureMemory } from "./hooks/chat-message.js";
 import { buildCompactionContext } from "./hooks/compacting.js";
-import { handleSessionCreated, handleSessionIdle } from "./hooks/session-events.js";
+import { handleSessionCreated, handleSessionIdle, handleForgetCommand } from "./hooks/session-events.js";
 import { resolveSessionOutcome } from "./hooks/tool-execute-after.js";
 import { buildSystemPrompt } from "./prompt.js";
 import { IS_BUN } from "./runtime/detect.js";
@@ -81,12 +81,33 @@ const MemoryWorthPlugin = async ({ client, directory }: { client: any; directory
         .filter((p: any) => p?.type === "text" && typeof p.text === "string")
         .map((p: any) => p.text)
         .join("\n");
+
+      // Handle "forget that rule" command first
+      const forgot = await handleForgetCommand(db, sessionId, userText);
+      if (forgot) {
+        const forgetText = `forgot the most recent rule`;
+        const messageId = input.messageID ?? `memory-worth-${sessionId}`;
+        const systemPart = { id: `memory-worth-system-${sessionId}`, sessionID: sessionId, messageID: messageId, type: "text" as const, text: buildSystemPrompt() };
+        const memoryPart = { id: `memory-worth-forget-${sessionId}`, sessionID: sessionId, messageID: messageId, type: "text" as const, text: forgetText };
+        output.parts.push(systemPart, memoryPart);
+        return;
+      }
+
       const texts = await buildInjectionTexts(db, sessionId, isFirst, userText);
-      if (texts.length === 0) return;
+
+      // Capture detection — runs on every message, not just first
+      const captureResult = await detectAndCaptureMemory(db, sessionId, userText);
+
+      const allTexts = [...texts];
+      if (captureResult) {
+        allTexts.push(captureResult);
+      }
+
+      if (allTexts.length === 0) return;
       injectedSessions.add(sessionId);
       const messageId = input.messageID ?? `memory-worth-${sessionId}`;
       const systemPart = { id: `memory-worth-system-${sessionId}`, sessionID: sessionId, messageID: messageId, type: "text" as const, text: buildSystemPrompt() };
-      const memoryParts = texts.map((text, index) => ({
+      const memoryParts = allTexts.map((text, index) => ({
         id: `memory-worth-digest-${sessionId}-${index}`,
         sessionID: sessionId,
         messageID: messageId,

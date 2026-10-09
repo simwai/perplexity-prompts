@@ -1,13 +1,13 @@
 {
   "dependencies": {
-    "@opencode-ai/plugin": "1.18.31",
-    "@opencode-ai/sdk": "1.18.31",
     "@libsql/client": "^0.4.3",
+    "@opencode-ai/plugin": "1.18.34",
+    "@opencode-ai/sdk": "1.18.31",
     "beautiful-mermaid": "^1.1.3",
+    "memory-worth": "file:./plugins/memory-worth",
     "opencode-adaptive-thinking": "^0.1.6",
     "opencode-pty": "^0.3.6",
-    "opencode-vibeguard": "^0.1.0",
-    "memory-worth": "file:./plugins/memory-worth"
+    "opencode-vibeguard": "^0.1.0"
   },
   "devDependencies": {
     "@types/node": "^26.6.2",
