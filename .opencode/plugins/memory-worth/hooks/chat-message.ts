@@ -47,7 +47,7 @@ const CAPTURE_MARKERS = {
   prohibition: ["don't", "do not", "avoid", "stop", "never", "no longer"],
   mandate: ["always", "must", "make sure", "from now on", "going forward"],
   correction: ["instead", "rather than", "not", "but", "that's wrong"],
-  explicit: ["remember that", "note that", "i told you"],
+  explicit: ["remember that", "note that", "i told you", "save that", "save this", "save to memory", "remember to", "remember:"],
 } as const;
 
 /**
@@ -93,6 +93,21 @@ function extractCaptureClause(text: string): string | null {
 
   if (!foundMarker) return null;
 
+  // Explicit save instructions ("save that to memory", "remember to X")
+  // refer to content BEFORE the marker — strip the instruction, keep the rest
+  const saveInstructions = ["save that to memory", "save this to memory", "save that", "save this"];
+  for (const instr of saveInstructions) {
+    const idx = lower.indexOf(instr);
+    if (idx >= 0) {
+      const before = text.slice(0, idx).trim().replace(/[,.]+$/, "");
+      if (before.length >= 10 && before.split(/\s+/).length >= 3) {
+        return before;
+      }
+      // If nothing meaningful before, fall through to default extraction
+      break;
+    }
+  }
+
   // Extract the normative clause — everything after the marker
   // This is a simplified extraction; could be improved with NLP
   let clause = text.trim();
@@ -131,21 +146,23 @@ function deriveAppliesWhen(text: string): string {
   const symbolMatch = text.match(/(?:function|method|class|variable|symbol)\s+(\w+)/i);
   if (symbolMatch) return `working with ${symbolMatch[1]}`;
 
-  // Topic keywords
-  const topics: Record<string, string[]> = {
-    "error handling": ["error", "exception", "try", "catch", "throw", "handle"],
-    "validation": ["validat", "schema", "zod", "input", "sanitiz"],
-    "dependencies": ["dependenc", "import", "package", "npm", "pnpm", "yarn", "pdm", "venv"],
-    "testing": ["test", "spec", "mock", "fixture", "coverage"],
-    "git": ["git", "commit", "push", "branch", "merge", "rebase"],
-    "database": ["database", "sql", "query", "migration", "schema"],
-    "api": ["api", "endpoint", "route", "http", "rest", "graphql"],
-    "typescript": ["typescript", "tsconfig", "type", "interface", "generic"],
-    "python": ["python", "pyproject", "pip", "poetry", "pdm", "venv"],
+  // Topic keywords — matched on word boundaries to avoid false positives
+  // (e.g. "rest of the" must not match the REST API topic)
+  const topics: Record<string, RegExp[]> = {
+    "error handling": [/\berror\b/, /\bexception\b/, /\btry\b/, /\bcatch\b/, /\bthrow\b/],
+    "validation": [/\bvalidat\w*\b/, /\bschema\b/, /\bzod\b/, /\binput\b/, /\bsanitiz\w*\b/],
+    "dependencies": [/\bdependenc\w*\b/, /\bimport\b/, /\bpackage\b/, /\bnpm\b/, /\bpnpm\b/, /\byarn\b/, /\bpdm\b/, /\bvenv\b/],
+    "testing": [/\btest\b/, /\bspec\b/, /\bmock\b/, /\bfixture\b/, /\bcoverage\b/],
+    "git": [/\bgit\b/, /\bcommit\b/, /\bpush\b/, /\bbranch\b/, /\bmerge\b/, /\brebase\b/],
+    "database": [/\bdatabase\b/, /\bsql\b/, /\bquery\b/, /\bmigration\b/, /\bschema\b/],
+    "api": [/\bapi\b/, /\bendpoint\b/, /\broute\b/, /\bhttp\b/, /\brest\b(?! of\b|\s+of\b)/, /\bgraphql\b/],
+    "typescript": [/\btypescript\b/, /\btsconfig\b/, /\binterface\b/, /\bgeneric\b/],
+    "python": [/\bpython\b/, /\bpyproject\b/, /\bpip\b/, /\bpoetry\b/, /\bpdm\b/, /\bvenv\b/],
+    "documentation": [/\breadme\b/, /\bmarkdown\b/, /\bdocs\b/, /\bdocumentation\b/, /\bsvg\b/, /\bbanner\b/],
   };
 
-  for (const [topic, keywords] of Object.entries(topics)) {
-    if (keywords.some(k => lower.includes(k))) {
+  for (const [topic, patterns] of Object.entries(topics)) {
+    if (patterns.some(p => p.test(lower))) {
       return topic;
     }
   }
