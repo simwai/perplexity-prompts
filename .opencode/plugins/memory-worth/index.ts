@@ -1,5 +1,6 @@
 import { createConnection, getDbPath } from "./db/connection.js";
 import { buildInjectionTexts, detectAndCaptureMemory } from "./hooks/chat-message.js";
+import { getSessionUserText, pruneSession, recordMessageInfo, recordPart } from "./hooks/message-events.js";
 import { buildCompactionContext } from "./hooks/compacting.js";
 import { handleSessionCreated, handleSessionIdle, handleForgetCommand } from "./hooks/session-events.js";
 import { resolveSessionOutcome } from "./hooks/tool-execute-after.js";
@@ -57,7 +58,24 @@ const MemoryWorthPlugin = async ({ client, directory }: { client: any; directory
       }
       if (evt.type === "session.deleted") {
         const sessionId = readSessionId(evt.properties);
-        if (sessionId) injectedSessions.delete(sessionId);
+        if (sessionId) {
+          injectedSessions.delete(sessionId);
+          pruneSession(sessionId);
+        }
+        return;
+      }
+      if (evt.type === "message.updated") {
+        const info = (evt.properties as { info?: { id?: unknown; sessionID?: unknown; role?: unknown } } | undefined)?.info;
+        if (info && typeof info.id === "string" && typeof info.sessionID === "string" && typeof info.role === "string") {
+          recordMessageInfo({ id: info.id, sessionID: info.sessionID, role: info.role });
+        }
+        return;
+      }
+      if (evt.type === "message.part.updated") {
+        const part = (evt.properties as { part?: { id?: unknown; sessionID?: unknown; messageID?: unknown; type?: unknown; text?: unknown; synthetic?: unknown; ignored?: unknown } } | undefined)?.part;
+        if (part && typeof part.messageID === "string" && typeof part.sessionID === "string" && typeof part.type === "string") {
+          recordPart({ id: typeof part.id === "string" ? part.id : "", sessionID: part.sessionID, messageID: part.messageID, type: part.type, text: typeof part.text === "string" ? part.text : undefined, synthetic: part.synthetic === true, ignored: part.ignored === true });
+        }
         return;
       }
       if (evt.type === "session.idle") {
@@ -75,12 +93,9 @@ const MemoryWorthPlugin = async ({ client, directory }: { client: any; directory
       const sessionId = input.sessionID;
       if (!sessionId) return;
       const isFirst = !injectedSessions.has(sessionId);
-      // The digest retrieves against the user's own words, so the request text
-      // has to reach buildInjectionTexts rather than a fixed placeholder.
-      const userText = (output.parts ?? [])
-        .filter((p: any) => p?.type === "text" && typeof p.text === "string")
-        .map((p: any) => p.text)
-        .join("\n");
+      // Upstream anomalyco/opencode#22831: output.parts is always empty live,
+      // so user text comes from bus-accumulated message parts instead.
+      const userText = getSessionUserText(sessionId);
 
       // Handle "forget that rule" command first
       const forgot = await handleForgetCommand(db, sessionId, userText);
