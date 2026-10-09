@@ -1,4 +1,4 @@
-import type { Client } from "@libsql/client";
+﻿import type { Client } from "@libsql/client";
 import { asNumber, asText } from "../db/decode.js";
 import { ensureTaskType, getTuningParams, labelMemory, setStatusFull } from "../db/queries.js";
 import { epochInt } from "../db/epoch.js";
