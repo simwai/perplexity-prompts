@@ -9,6 +9,8 @@
  * creation time -- no hardcoded list, no drift.
  */
 
+import { readdir } from "node:fs/promises";
+import { join } from "node:path";
 import { sessionIdFromEvent } from "../lib/baba-session-id";
 
 interface LoaderState {
@@ -29,24 +31,33 @@ function relativePromptSystemPath(absPath: string, directory: string): string {
   return normalized;
 }
 
+/**
+ * Required files are enumerated from disk rather than through client.find.files.
+ *
+ * find.files takes a query object of { directory?, query, dirs? } and returns
+ * a flat string array; it has no `type` field, so the previous call passed an
+ * argument the SDK does not define and the call threw into the catch below.
+ * That left the required set empty on every session, and an empty set makes
+ * the enforcement gate return early -- which is why the loader never once
+ * blocked output in the runtime log.
+ */
 async function discoverRequiredFiles(
   client: any,
   directory: string,
 ): Promise<Set<string>> {
   const files = new Set<string>();
   try {
-    const results = await client.find.files({
-      query: { query: "prompt-system/*.md", type: "file" },
+    const entries = await readdir(join(directory, "prompt-system"), {
+      withFileTypes: true,
     });
-    for (const absPath of results) {
-      const rel = relativePromptSystemPath(absPath, directory);
-      if (rel.startsWith("prompt-system/")) {
-        files.add(rel);
-      }
+    for (const entry of entries) {
+      if (!entry.isFile()) continue;
+      if (!entry.name.endsWith(".md")) continue;
+      files.add(`prompt-system/${entry.name}`);
     }
-  } catch {
-    // filesystem discovery unavailable; fall back to empty set
-    // enforcement becomes advisory-only for this session
+  } catch (e: unknown) {
+    // Discovery unavailable; enforcement degrades to advisory-only.
+    console.log(`[prompt-system-loader] discovery failed: ${(e as Error).message}`);
   }
   return files;
 }
