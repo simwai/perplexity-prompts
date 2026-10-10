@@ -109,7 +109,10 @@ export default async (_ctx: any, options?: Record<string, unknown>): Promise<any
       }),
     },
 
-    "command.execute.before": async (input: { command: string; sessionID?: string; arguments?: string }) => {
+    "command.execute.before": async (
+      input: { command: string; sessionID?: string; arguments?: string },
+      output: { parts: Array<Record<string, unknown>> },
+    ) => {
       const { command, sessionID, arguments: args } = input;
       if (!sessionID || command !== "feedback") return;
 
@@ -118,7 +121,37 @@ export default async (_ctx: any, options?: Record<string, unknown>): Promise<any
 
       const state = getSessionState(sessionID, config);
 
+      // Guidance for the model to translate the feedback into concrete deltas
+      // and call apply_feedback. Injected as a system part so the model sees it
+      // in the same turn the feedback was given.
       const contextPrompt = `[ADAPTIVE FEEDBACK]\nUser feedback: "${feedbackText}"\nCurrent settings: temperature=${state.temperature.toFixed(2)}, topP=${state.topP.toFixed(2)}\n\nInterpret this feedback and call \`apply_feedback\` with appropriate deltas for temperature and topP, plus a brief reasoning. Consider how the current settings relate to the feedback when choosing deltas.`;
+      const messageID = `adaptive-temperature-feedback-${sessionID}`;
+      output.parts.push({
+        id: `adaptive-temperature-feedback-${sessionID}`,
+        sessionID,
+        messageID,
+        type: "text" as const,
+        text: contextPrompt,
+      });
+    },
+
+    // Applies the tuned values to the actual generation parameters. Without
+    // this hook the tool only mutates session state and the model's temperature
+    // never changes: opencode seeds temperature/topP here, from
+    // session/llm/request.ts, and uses whatever this hook returns.
+    "chat.params": async (
+      input: { sessionID: string },
+      output: { temperature: number | undefined; topP: number },
+    ) => {
+      const state = sessionStates.get(input.sessionID);
+      if (!state) return;
+
+      // temperature is undefined for models without temperature support, so it
+      // is only written when the runtime provided one.
+      if (output.temperature !== undefined) {
+        output.temperature = state.temperature;
+      }
+      output.topP = state.topP;
     },
 
     "experimental.chat.system.transform": async ({ sessionID, model }: { sessionID?: string; model?: any }, { system }: { system: string[] }) => {

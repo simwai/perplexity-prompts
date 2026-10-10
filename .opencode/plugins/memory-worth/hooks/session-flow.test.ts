@@ -52,7 +52,8 @@ describe("session-flow", () => {
     assert.ok(output.parts.length >= 2);
     const texts = (output.parts as Array<{ text?: string }>).map((part) => part.text ?? "").join("\n");
     assert.ok(texts.includes("memory policy"));
-    assert.ok(texts.includes("session digest"));
+    assert.ok(texts.includes("Session start"));
+    assert.ok(texts.includes("[MEMORY]"));
   });
 
   it("writes via tool hook and survives outcome resolution plus idle", async () => {

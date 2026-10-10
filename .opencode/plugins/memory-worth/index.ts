@@ -1,5 +1,5 @@
 import { createConnection, getDbPath } from "./db/connection.js";
-import { buildInjectionTexts, detectAndCaptureMemory } from "./hooks/chat-message.js";
+import { buildInjectionTexts, detectAndCaptureMemory, forgetInjectionState } from "./hooks/chat-message.js";
 import { getSessionUserText, pruneSession, recordMessageInfo, recordPart } from "./hooks/message-events.js";
 import { buildCompactionContext } from "./hooks/compacting.js";
 import { handleSessionCreated, handleSessionIdle, handleForgetCommand } from "./hooks/session-events.js";
@@ -60,6 +60,7 @@ const MemoryWorthPlugin = async ({ client, directory }: { client: any; directory
         const sessionId = readSessionId(evt.properties);
         if (sessionId) {
           injectedSessions.delete(sessionId);
+          forgetInjectionState(sessionId);
           pruneSession(sessionId);
         }
         return;
@@ -108,7 +109,9 @@ const MemoryWorthPlugin = async ({ client, directory }: { client: any; directory
         return;
       }
 
-      const texts = await buildInjectionTexts(db, sessionId, isFirst, userText);
+      // messageID is stable for one user turn and doubles as the injection
+      // guard, so a turn can never receive the digest twice.
+      const texts = await buildInjectionTexts(db, sessionId, isFirst, userText, input.messageID);
 
       // Capture detection — runs on every message, not just first
       const captureResult = await detectAndCaptureMemory(db, sessionId, userText);

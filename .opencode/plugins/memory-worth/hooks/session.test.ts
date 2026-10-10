@@ -44,7 +44,7 @@ describe("session", () => {
   it("injects once per session", async () => {
     const first = await buildInjectionTexts(db, SESSION, true);
     assert.ok(first.length > 0);
-    assert.ok(first[0]?.includes("session digest"));
+    assert.ok(first[0]?.includes("Session start"));
     assert.deepEqual(await buildInjectionTexts(db, SESSION, false), []);
   });
 

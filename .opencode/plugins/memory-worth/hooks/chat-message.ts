@@ -1,7 +1,59 @@
 import type { Client } from "@libsql/client";
-import { asText } from "../db/decode.js";
-import { getStatsFull, searchMemoriesFts, writeMemoryFull, findDuplicateFull } from "../db/queries.js";
-import { epochInt } from "../db/epoch.js";
+import { asNumber, asText } from "../db/decode.js";
+import { getParameter, getStatsFull, searchMemoriesFts, writeMemoryFull, findDuplicateFull } from "../db/queries.js";
+import { quantileLabel } from "../core/trust.js";
+
+/**
+ * Prefix every line the plugin pushes into the chat so the user can tell
+ * memory activity apart from the conversation. These parts render in the
+ * transcript, which is the only user-facing surface a plugin hook has.
+ */
+const TAG = "[MEMORY]";
+
+/** Counts per trust label for the active population. */
+type TrustBreakdown = { high: number; neutral: number; low: number; unproven: number };
+
+/**
+ * Trust distribution over active memories.
+ *
+ * labelMemory() re-queries the whole active population on every call, so
+ * calling it per row would issue one population query per memory. The
+ * quantiles are resolved once here and applied to every row instead, which is
+ * what labelMemory() would have computed with the same inputs.
+ */
+async function getTrustBreakdown(db: Client): Promise<TrustBreakdown> {
+  const breakdown: TrustBreakdown = { high: 0, neutral: 0, low: 0, unproven: 0 };
+  const rows = await db.execute({
+    sql: `SELECT m.mw AS mw, m.s_plus AS s_plus, m.s_minus AS s_minus FROM memory m JOIN memory_status ms ON m.status_id = ms.id WHERE ms.name = 'active'`,
+    args: [],
+  });
+  if (rows.rows.length === 0) return breakdown;
+
+  const population = rows.rows.map((row) => asNumber(row["mw"]));
+  const trustRaw = Number(await getParameter(db, "trust_q", "0.70"));
+  const doubtRaw = Number(await getParameter(db, "doubt_q", "0.30"));
+  const evidenceRaw = Number(await getParameter(db, "min_evidence", "3"));
+  const trustQ = Number.isFinite(trustRaw) ? trustRaw : 0.7;
+  const doubtQ = Number.isFinite(doubtRaw) ? doubtRaw : 0.3;
+  const minEvidence = Number.isFinite(evidenceRaw) ? evidenceRaw : 3;
+
+  for (const row of rows.rows) {
+    const evidence = asNumber(row["s_plus"]) + asNumber(row["s_minus"]);
+    const label = evidence < minEvidence ? "unproven" : quantileLabel(asNumber(row["mw"]), population, trustQ, doubtQ);
+    breakdown[label] += 1;
+  }
+  return breakdown;
+}
+
+/** Render only the non-empty trust buckets, so an all-unproven store stays short. */
+function formatTrustBreakdown(byTrust: TrustBreakdown): string {
+  const parts: string[] = [];
+  if (byTrust.high > 0) parts.push(`${byTrust.high} high-trust`);
+  if (byTrust.neutral > 0) parts.push(`${byTrust.neutral} neutral`);
+  if (byTrust.low > 0) parts.push(`${byTrust.low} low-trust`);
+  if (byTrust.unproven > 0) parts.push(`${byTrust.unproven} unproven`);
+  return parts.length > 0 ? parts.join(", ") : "none labelled";
+}
 
 /**
  * Words too common to discriminate between memories. Without this the
@@ -187,7 +239,7 @@ export async function detectAndCaptureMemory(
   // Check for exact duplicate
   const duplicate = await findDuplicateFull(db, clause);
   if (duplicate !== null) {
-    return `memory ${duplicate} already exists: "${clause.slice(0, 80)}..."`;
+    return `${TAG} Memory #${duplicate} already says this — nothing new stored. Say "forget that rule" to retire it.`;
   }
 
   // Extract grounds (file/symbol mentions)
@@ -214,15 +266,40 @@ export async function detectAndCaptureMemory(
       confidence: 50,
     });
 
-    return `captured as a durable rule: "${clause.slice(0, 100)}"\n  applies when: ${appliesWhen}\n  say "forget that rule" to remove it`;
+    return (
+      `${TAG} Captured as memory #${stored.id} (tier L2, unproven).\n` +
+      `${TAG}   rule: "${clause.slice(0, 100)}"\n` +
+      `${TAG}   applies when: ${appliesWhen}\n` +
+      `${TAG}   trust rises when it is used and helps; say "forget that rule" to retire it.`
+    );
   } catch (e) {
     const message = e instanceof Error ? e.message : "capture failed";
-    return `(memory capture failed: ${message})`;
+    return `${TAG} Capture failed: ${message}`;
   }
 }
 
 /**
- * Build the once-per-session memory digest injected into the conversation.
+ * Per-session emission state.
+ *
+ * `emitted` guards the turn: chat.message carries a messageID that is stable
+ * for one user turn, so a second injection attempt for the same message is a
+ * no-op regardless of how many paths try. `lastHits` is the previous retrieval
+ * result set, used to avoid re-printing an identical memory list on the next
+ * message of the same session.
+ */
+type SessionState = { emitted: Set<string>; lastHits: string };
+const sessionState = new Map<string, SessionState>();
+
+function stateFor(sessionId: string): SessionState {
+  const existing = sessionState.get(sessionId);
+  if (existing) return existing;
+  const created: SessionState = { emitted: new Set(), lastHits: "" };
+  sessionState.set(sessionId, created);
+  return created;
+}
+
+/**
+ * Build the memory feedback injected into the conversation.
  *
  * The query comes from the user's own message. An earlier version searched the
  * literal string "memory", which against `content LIKE '%memory%'` matched
@@ -230,20 +307,44 @@ export async function detectAndCaptureMemory(
  * looking like it had run. Retrieval now goes through searchMemoriesFts, which
  * queries the memory_fts_v2 index with bm25 ranking instead of scanning with
  * LIKE.
+ *
+ * The session summary is once per session; retrieval runs on every message but
+ * is suppressed when the hit set is unchanged from the previous one, so a
+ * follow-up message about the same topic does not re-print the same memories.
+ *
+ * Idempotent per turn: `messageId` is the emission guard. opencode dispatches
+ * chat.message before messages.transform and before the LLM loop, and passes
+ * output.parts by reference (session/prompt.ts), then persists every part
+ * (sessions.updatePart), so anything pushed here is rendered. The guard means
+ * adding a second delivery path later cannot double-inject the same turn.
  */
 export async function buildInjectionTexts(
   db: Client,
   sessionId: string,
   isFirst: boolean,
   userText = "",
+  messageId?: string,
 ): Promise<string[]> {
-  if (!isFirst) return [];
+  const state = stateFor(sessionId);
+  if (messageId !== undefined) {
+    if (state.emitted.has(messageId)) return [];
+    state.emitted.add(messageId);
+  }
 
-  const stats = await getStatsFull(db);
   const lines: string[] = [];
-  lines.push(
-    `memory-worth session digest: ${stats.total} memories, ${stats.unresolved_episodes} unresolved episodes.`,
-  );
+
+  if (isFirst) {
+    const stats = await getStatsFull(db);
+    const byTrust = await getTrustBreakdown(db);
+    const retired = Object.entries(stats.by_status)
+      .filter(([status]) => status !== "active")
+      .map(([status, count]) => `${count} ${status}`);
+    const tail = retired.length > 0 ? `, ${retired.join(", ")}` : "";
+    lines.push(
+      `${TAG} Session start — ${stats.total} memories (${formatTrustBreakdown(byTrust)}${tail}), ` +
+        `${stats.unresolved_episodes} unresolved episodes.`,
+    );
+  }
 
   const ftsQuery = buildFtsQuery(userText);
   if (!ftsQuery) return lines;
@@ -252,16 +353,21 @@ export async function buildInjectionTexts(
   try {
     hits = await searchMemoriesFts(db, ftsQuery, { limit: 5 });
   } catch (err) {
-    // A malformed MATCH must not break the session; the stats line still stands.
-    lines.push(`(memory retrieval skipped: ${(err as Error).message.slice(0, 120)})`);
+    // A malformed MATCH must not break the session; the summary line still stands.
+    lines.push(`${TAG} Retrieval skipped: ${(err as Error).message.slice(0, 120)}`);
     return lines;
   }
+
+  const hitKey = hits.map((hit) => hit.id).join(",");
+  if (hitKey === state.lastHits) return lines;
+  state.lastHits = hitKey;
 
   if (hits.length === 0) {
-    lines.push(`No stored memory matched this request (query: ${ftsQuery}).`);
+    lines.push(`${TAG} No stored memory matched this request.`);
     return lines;
   }
 
+  lines.push(`${TAG} Retrieved ${hits.length} ${hits.length === 1 ? "memory" : "memories"} for this request:`);
   for (const hit of hits) {
     const tags = await db.execute({
       sql: `SELECT t.name AS name FROM tag t JOIN memory_tag mt ON t.id = mt.tag_id WHERE mt.memory_id = ? ORDER BY t.name LIMIT 3`,
@@ -273,10 +379,14 @@ export async function buildInjectionTexts(
     }
     const tagsText = names.length > 0 ? `, tags: ${names.join(",")}` : "";
     lines.push(
-      `memory ${hit.id} (mw ${Math.round(hit.mw * 100) / 100}, ` +
-        `uses ${hit.usage_count}, task ${hit.task_type}${tagsText}): ` +
-        `${hit.content.slice(0, 200)}`,
+      `${TAG} #${hit.id} (trust ${Math.round(hit.mw * 100) / 100}, used ${hit.usage_count}x, ` +
+        `task ${hit.task_type}${tagsText}): ${hit.content.slice(0, 200)}`,
     );
   }
   return lines;
+}
+
+/** Drop the emission state when a session ends. */
+export function forgetInjectionState(sessionId: string): void {
+  sessionState.delete(sessionId);
 }
