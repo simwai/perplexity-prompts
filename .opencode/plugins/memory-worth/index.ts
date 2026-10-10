@@ -33,6 +33,23 @@ function readSessionId(properties: unknown): string | undefined {
 
 const injectedSessions = new Set<string>();
 
+/**
+ * opencode validates every part and message id against a prefix schema before
+ * persisting it: part ids must start with `prt`, message ids with `msg`. An id
+ * without the prefix is rejected and the part is dropped, so an injected part
+ * silently never reaches the transcript.
+ *
+ * Ids derive from the message id, which opencode guarantees is unique per turn,
+ * so two injections within one session cannot collide.
+ */
+function partId(messageId: string, label: string): string {
+  return `prt_${label}_${messageId}`;
+}
+
+function fallbackMessageId(sessionId: string): string {
+  return `msg_memory_worth_${sessionId}`;
+}
+
 const MemoryWorthPlugin = async ({ client, directory }: { client: any; directory: string }) => {
   const db = await createConnection(directory);
   const runtime = IS_BUN ? "bun" : "node";
@@ -102,9 +119,9 @@ const MemoryWorthPlugin = async ({ client, directory }: { client: any; directory
       const forgot = await handleForgetCommand(db, sessionId, userText);
       if (forgot) {
         const forgetText = `forgot the most recent rule`;
-        const messageId = input.messageID ?? `memory-worth-${sessionId}`;
-        const systemPart = { id: `memory-worth-system-${sessionId}`, sessionID: sessionId, messageID: messageId, type: "text" as const, text: buildSystemPrompt() };
-        const memoryPart = { id: `memory-worth-forget-${sessionId}`, sessionID: sessionId, messageID: messageId, type: "text" as const, text: forgetText };
+        const messageId = input.messageID ?? fallbackMessageId(sessionId);
+        const systemPart = { id: partId(messageId, "system"), sessionID: sessionId, messageID: messageId, type: "text" as const, text: buildSystemPrompt() };
+        const memoryPart = { id: partId(messageId, "forget"), sessionID: sessionId, messageID: messageId, type: "text" as const, text: forgetText };
         output.parts.push(systemPart, memoryPart);
         return;
       }
@@ -123,10 +140,10 @@ const MemoryWorthPlugin = async ({ client, directory }: { client: any; directory
 
       if (allTexts.length === 0) return;
       injectedSessions.add(sessionId);
-      const messageId = input.messageID ?? `memory-worth-${sessionId}`;
-      const systemPart = { id: `memory-worth-system-${sessionId}`, sessionID: sessionId, messageID: messageId, type: "text" as const, text: buildSystemPrompt() };
+      const messageId = input.messageID ?? fallbackMessageId(sessionId);
+      const systemPart = { id: partId(messageId, "system"), sessionID: sessionId, messageID: messageId, type: "text" as const, text: buildSystemPrompt() };
       const memoryParts = allTexts.map((text, index) => ({
-        id: `memory-worth-digest-${sessionId}-${index}`,
+        id: partId(messageId, `digest${index}`),
         sessionID: sessionId,
         messageID: messageId,
         type: "text" as const,

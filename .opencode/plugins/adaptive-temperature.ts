@@ -125,9 +125,12 @@ export default async (_ctx: any, options?: Record<string, unknown>): Promise<any
       // and call apply_feedback. Injected as a system part so the model sees it
       // in the same turn the feedback was given.
       const contextPrompt = `[ADAPTIVE FEEDBACK]\nUser feedback: "${feedbackText}"\nCurrent settings: temperature=${state.temperature.toFixed(2)}, topP=${state.topP.toFixed(2)}\n\nInterpret this feedback and call \`apply_feedback\` with appropriate deltas for temperature and topP, plus a brief reasoning. Consider how the current settings relate to the feedback when choosing deltas.`;
-      const messageID = `adaptive-temperature-feedback-${sessionID}`;
+      // opencode validates part ids against a prefix schema before persisting
+      // them: a part id must start with `prt`. An unprefixed id is rejected and
+      // the guidance never reaches the transcript.
+      const messageID = `msg_adaptive_temperature_${sessionID}`;
       output.parts.push({
-        id: `adaptive-temperature-feedback-${sessionID}`,
+        id: `prt_adaptive_temperature_${sessionID}`,
         sessionID,
         messageID,
         type: "text" as const,

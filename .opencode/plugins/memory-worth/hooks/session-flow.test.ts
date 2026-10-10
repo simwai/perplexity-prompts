@@ -56,6 +56,24 @@ describe("session-flow", () => {
     assert.ok(texts.includes("[MEMORY]"));
   });
 
+  it("prefixes every injected id so opencode accepts the part", async () => {
+    // opencode validates part ids against a prefix schema (prt) and message
+    // ids (msg) before persisting them. A part without the prefix is rejected
+    // and never reaches the transcript, which is silent from the user's side.
+    await hooks.event?.(eventPosted("session.created", "prt-s1") as never);
+    const output = { message: {}, parts: [] as Array<{ id: string; messageID: string }> };
+    await hooks["chat.message"]?.(
+      { sessionID: "prt-s1", messageID: "msg_flow_prt_1" },
+      output as never,
+    );
+
+    assert.ok(output.parts.length >= 2);
+    for (const part of output.parts) {
+      assert.match(part.id, /^prt_/, `part id must start with prt: ${part.id}`);
+      assert.match(part.messageID, /^msg_/, `message id must start with msg: ${part.messageID}`);
+    }
+  });
+
   it("writes via tool hook and survives outcome resolution plus idle", async () => {
     const tool = hooks.tool?.["memory_write"];
     assert.ok(tool !== undefined);
