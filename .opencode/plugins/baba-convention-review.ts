@@ -7,6 +7,7 @@
  */
 
 import { getCurrentPhase } from "../lib/baba-phase-detect";
+import { sessionIdFromEvent } from "../lib/baba-session-id";
 
 interface ConventionState {
   sessionId: string;
@@ -66,22 +67,23 @@ export default async ({ client, $, project, directory, worktree }: {
   worktree: string;
 }) => {
   return {
-    "experimental.chat.messages.transform": async ({
-      input,
-      output,
-    }: {
-      input: any;
-      output: { messages: any[] };
-    }) => {
-      const sessionId = input.sessionID ?? input.session_id;
-      if (!sessionId) return;
-
-      const state = getOrCreateState(sessionId);
+    "experimental.chat.messages.transform": async (
+      input: Record<string, unknown>,
+      output: { messages: any[] },
+    ) => {
+      // This hook's input is typed `{}` and carries no session id, so it is read
+      // off the message info instead.
       const messages = output.messages;
       if (!messages || messages.length === 0) return;
 
       const lastMessage = messages[messages.length - 1];
-      if (!lastMessage.parts) return;
+      if (!lastMessage || !lastMessage.parts) return;
+
+      const sessionId = lastMessage.info?.sessionID ?? lastMessage.sessionID;
+      if (!sessionId) return;
+
+      const info = lastMessage.info;
+      const state = getOrCreateState(sessionId);
 
       let detectedPhase: string | undefined;
       for (const part of lastMessage.parts) {
@@ -95,9 +97,13 @@ export default async ({ client, $, project, directory, worktree }: {
 
       if (detectedPhase !== "PLAN" || state.promptsEmitted) return;
 
-      const info = input.info || {};
-      const editedFiles = info.metadata?.edited_files || [];
-      const systemEvidence = info.metadata?.system_evidence || {};
+      // This hook's input is typed `{}`: it carries neither sessionID nor info,
+      // so both reads below always produced undefined and the prompts never
+      // fired. Session and metadata are read off the message info instead.
+      const editedFiles: string[] = Array.isArray(info?.metadata?.edited_files)
+        ? info.metadata.edited_files
+        : [];
+      const systemEvidence = info?.metadata?.system_evidence ?? {};
 
       const prompts = [
         buildArchitecturePrompt(systemEvidence),
@@ -119,7 +125,7 @@ export default async ({ client, $, project, directory, worktree }: {
 
     event: async ({ event }: { event: any }) => {
       if (event.type === "session.deleted") {
-        const sessionId = event.properties?.sessionID;
+        const sessionId = sessionIdFromEvent(event.properties);
         if (sessionId) conventionStates.delete(sessionId);
       }
     },

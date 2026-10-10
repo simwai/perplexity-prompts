@@ -102,6 +102,20 @@ describe("baba-bootstrap", () => {
     }
   });
 
+  it("reads the session id off the info-shaped session.created payload", async () => {
+    // session.created carries properties.info, not properties.sessionID. Reading
+    // only the latter resolves to undefined and the reminder never fires.
+    const { hooks, promptCalls } = await harness("ok");
+    const session = freshSession();
+
+    await hooks.event?.({
+      event: { type: "session.created", properties: { info: { id: session } } },
+    } as never);
+
+    assert.equal(promptCalls.length, 1);
+    assert.equal(promptCalls[0]?.sessionId, session);
+  });
+
   it("injects exactly once per session", async () => {
     const { hooks } = await harness("throw");
     const session = freshSession();

@@ -13,6 +13,8 @@
  *   3. session.deleted  -> cleanup
  */
 
+import { sessionIdFromEvent } from "../lib/baba-session-id";
+
 interface ReadingPlanFile {
   path: string;
   status: "pending" | "complete" | "deferred";
@@ -201,7 +203,7 @@ export default async ({
 }) => {
   return {
     event: async ({ event }: { event: any }) => {
-      const sessionId = event.properties?.sessionID;
+      const sessionId = sessionIdFromEvent(event.properties);
       if (!sessionId) return;
 
       const state = getOrCreateState(sessionId);

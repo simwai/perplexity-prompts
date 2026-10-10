@@ -9,6 +9,8 @@
  * creation time -- no hardcoded list, no drift.
  */
 
+import { sessionIdFromEvent } from "../lib/baba-session-id";
+
 interface LoaderState {
   requiredFiles: Set<string>;
   loadedFiles: Set<string>;
@@ -58,7 +60,7 @@ export default async ({ client, $, project, directory, worktree }: {
 }) => {
   return {
     event: async ({ event }: { event: any }) => {
-      const sessionId = event.properties?.sessionID;
+      const sessionId = sessionIdFromEvent(event.properties);
       if (!sessionId) return;
 
       if (event.type === "session.created") {
@@ -99,20 +101,24 @@ export default async ({ client, $, project, directory, worktree }: {
     },
 
     "experimental.chat.messages.transform": async (
-      input: any,
+      input: Record<string, unknown>,
       output: { messages: any[] },
     ) => {
-      const sessionId = input.sessionID ?? input.session_id;
-      if (!sessionId) return;
-
-      const state = loaderStates.get(sessionId);
-      if (!state || state.requiredFiles.size === 0) return;
-
       const messages = output.messages;
       if (!messages || messages.length === 0) return;
 
       const lastMessage = messages[messages.length - 1];
-      if (!lastMessage.parts) return;
+      if (!lastMessage || !lastMessage.parts) return;
+
+      // This hook's input is typed `{}` and carries no session id, so it is read
+      // off the message info instead. Reading input.sessionID always yields
+      // undefined and the gate below never runs.
+      const sessionId =
+        lastMessage.info?.sessionID ?? lastMessage.sessionID ?? sessionIdFromEvent(input);
+      if (!sessionId) return;
+
+      const state = loaderStates.get(sessionId);
+      if (!state || state.requiredFiles.size === 0) return;
 
       let detectedPhase: string | undefined;
       for (const part of lastMessage.parts) {

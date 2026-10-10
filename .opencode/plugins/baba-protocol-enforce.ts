@@ -17,6 +17,7 @@ import {
   getCurrentPhase,
   updatePhaseFromMessages,
 } from "../lib/baba-phase-detect";
+import { sessionIdFromEvent } from "../lib/baba-session-id";
 import { access, readFile } from "node:fs/promises";
 
 async function fileExists(path: string): Promise<boolean> {
@@ -250,7 +251,7 @@ export default async ({
     },
 
     event: async ({ event }: { event: any }) => {
-      const sessionId = event.properties?.sessionID;
+      const sessionId = sessionIdFromEvent(event.properties);
       if (!sessionId) return;
 
       let state = protocolStates.get(sessionId);
@@ -285,10 +286,14 @@ export default async ({
     },
 
     "experimental.chat.messages.transform": async (
-      input: any,
+      input: Record<string, unknown>,
       output: { messages: any[] },
     ) => {
-      const sessionId = input.sessionID ?? input.session_id;
+      // This hook's input is typed `{}` and carries no session id, so it is read
+      // off the message info instead. Reading input.sessionID always yields
+      // undefined, which silently disabled phase tracking.
+      const last = output.messages[output.messages.length - 1];
+      const sessionId = last?.info?.sessionID ?? last?.sessionID;
       if (!sessionId) return;
 
       const state = protocolStates.get(sessionId);

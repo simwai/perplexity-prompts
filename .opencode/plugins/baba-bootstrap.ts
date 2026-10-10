@@ -18,6 +18,8 @@
  * holds assistant output until the required prompt-system files are read.
  */
 
+import { sessionIdFromEvent } from "../lib/baba-session-id";
+
 /**
  * opencode validates part and message ids against a prefix schema before
  * persisting them: part ids must start with `prt`, message ids with `msg`. An
@@ -77,7 +79,7 @@ export default async ({ client, $, project, directory, worktree }: {
   return {
     event: async ({ event }: { event: any }) => {
       if (event.type === "session.created") {
-        const sessionId = event.properties?.sessionID;
+        const sessionId = sessionIdFromEvent(event.properties);
         if (!sessionId) return;
         delivered.delete(sessionId);
         if (await deliverViaSessionPrompt(sessionId)) {
@@ -87,7 +89,7 @@ export default async ({ client, $, project, directory, worktree }: {
       }
 
       if (event.type === "session.deleted") {
-        const sessionId = event.properties?.sessionID;
+        const sessionId = sessionIdFromEvent(event.properties);
         if (sessionId) delivered.delete(sessionId);
         return;
       }
