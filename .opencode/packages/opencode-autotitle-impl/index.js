@@ -19,6 +19,7 @@ const CHEAP_MODEL_PATTERNS = [
     /8b/i,
     /7b/i,
 ];
+import { createDebug } from "../../lib/baba-debug.js";
 function findCheapestFromModels(models, log) {
     // Handle both array and object formats
     let modelIds = [];
@@ -450,8 +451,16 @@ export { isTimestampTitle, hasPluginEmoji, shouldModifyTitle, sanitizeTitle, ext
 export const AutoTitle = async ({ client }) => {
     const config = loadConfig();
     const log = createLogger(config.debug, client);
+    const babaLog = createDebug("opencode-autotitle", client);
+    
+    await babaLog.debug("plugin initialized", { 
+      config: { ...config, debug: undefined }, // Don't log full debug config
+      cheapModelPatterns: CHEAP_MODEL_PATTERNS.map(p => p.source)
+    });
+
     if (config.disabled) {
         log.info("Plugin is disabled via OPENCODE_AUTOTITLE_DISABLED");
+        await babaLog.info("plugin disabled via config");
         return {};
     }
     const state = {
@@ -461,6 +470,7 @@ export const AutoTitle = async ({ client }) => {
         cheapestModel: null,
     };
     log.info("AutoTitle plugin initialized");
+    await babaLog.info("plugin initialized");
     // Helper to update session title
     async function updateTitle(sessionId, title) {
         try {
@@ -613,7 +623,63 @@ export const AutoTitle = async ({ client }) => {
             state.pendingAISessions.delete(sessionId);
         }
     }
+    // Debug tool for programmatic inspection
+    const { tool } = await import("@opencode-ai/plugin");
+    const debugTool = tool({
+        description: "Debug opencode-autotitle plugin: dump internal state.",
+        args: {
+            action: tool.schema
+                .enum(["state", "config", "sessions"])
+                .default("state")
+                .describe("What to dump: state (all), config (plugin config), sessions (titled sessions)"),
+        },
+        async execute(args) {
+            const action = args.action ?? "state";
+            switch (action) {
+                case "config":
+                    return JSON.stringify({ 
+                        model: config.model,
+                        provider: config.provider,
+                        maxLength: config.maxLength,
+                        disabled: config.disabled,
+                        debug: config.debug,
+                        cheapModelPatterns: CHEAP_MODEL_PATTERNS.map(p => p.source)
+                    }, null, 2);
+                case "sessions":
+                    return JSON.stringify({
+                        keywordTitled: Array.from(state.keywordTitledSessions),
+                        aiTitled: Array.from(state.aiTitledSessions),
+                        pendingAI: Array.from(state.pendingAISessions),
+                        cheapestModel: state.cheapestModel,
+                    }, null, 2);
+                case "state":
+                default: {
+                    await babaLog.stateDump("opencode-autotitle", {
+                        config: { 
+                            model: config.model,
+                            provider: config.provider,
+                            maxLength: config.maxLength,
+                            disabled: config.disabled,
+                            debug: config.debug,
+                            cheapModelPatterns: CHEAP_MODEL_PATTERNS.map(p => p.source)
+                        },
+                        state: {
+                            keywordTitledCount: state.keywordTitledSessions.size,
+                            aiTitledCount: state.aiTitledSessions.size,
+                            pendingAICount: state.pendingAISessions.size,
+                            cheapestModel: state.cheapestModel,
+                        },
+                    });
+                    return "State dumped to debug outputs (console, file, client.app.log)";
+                }
+            }
+        },
+    });
+
     return {
+        tool: {
+            opencode_autotitle_debug: debugTool,
+        },
         event: async ({ event }) => {
             const e = event;
             if (config.debug) {

@@ -1,4 +1,5 @@
 import { type Plugin, tool } from "@opencode-ai/plugin";
+import { createDebug } from "../lib/baba-debug";
 
 type GenerationConfig = {
   temperature: number;
@@ -58,6 +59,9 @@ function getSessionState(sessionID: string, config: FeedbackConfig): SessionStat
 
 export default async (_ctx: any, options?: Record<string, unknown>): Promise<any> => {
   const config = resolveConfig(options ?? {});
+  const log = createDebug("adaptive-temperature", _ctx?.client);
+
+  await log.debug("plugin initialized", { config: { min: config.min, max: config.max, default: config.default } });
 
   return {
     tool: {
@@ -92,19 +96,48 @@ export default async (_ctx: any, options?: Record<string, unknown>): Promise<any
           );
           state.topP = clamp(state.topP + args.topPDelta, config.min.topP, config.max.topP);
 
-          try {
-            await _ctx.client.app.log({
-              body: {
-                service: "adaptive-temperature",
-                level: "info",
-                message: `Session ${sessionID}: ${args.reasoning} | temperature=${prevTemperature}->${state.temperature}, topP=${prevTopP}->${state.topP}`,
-              },
-            });
-          } catch {
-            // logging may not be available
-          }
+          await log.info("feedback applied", {
+            session: sessionID,
+            reasoning: args.reasoning,
+            prevTemperature,
+            newTemperature: state.temperature,
+            prevTopP,
+            newTopP: state.topP,
+          });
 
           return `Applied feedback: temperature ${prevTemperature.toFixed(2)} -> ${state.temperature.toFixed(2)}, topP ${prevTopP.toFixed(2)} -> ${state.topP.toFixed(2)}`;
+        },
+      }),
+
+      adaptive_temperature_debug: tool({
+        description: "Debug adaptive-temperature plugin: dump internal state, config, or session states.",
+        args: {
+          action: tool.schema
+            .enum(["state", "config", "sessions"])
+            .default("state")
+            .describe("What to dump: state (plugin config), config (resolved config), sessions (all session states)"),
+        },
+        async execute(args) {
+          switch (args.action) {
+            case "config":
+              return JSON.stringify({ min: config.min, max: config.max, default: config.default }, null, 2);
+            case "sessions": {
+              const sessions: Record<string, SessionState> = {};
+              for (const [id, state] of sessionStates.entries()) {
+                sessions[id] = state;
+              }
+              return JSON.stringify(sessions, null, 2);
+            }
+            case "state":
+            default: {
+              await log.stateDump("adaptive-temperature", {
+                config: { min: config.min, max: config.max, default: config.default },
+                sessionCount: sessionStates.size,
+                sessions: Object.fromEntries(sessionStates),
+              });
+              return "State dumped to debug outputs (console, file, client.app.log)";
+            }
+          }
         },
       }),
     },
@@ -119,23 +152,25 @@ export default async (_ctx: any, options?: Record<string, unknown>): Promise<any
       const feedbackText = (args ?? "").trim();
       if (!feedbackText) return;
 
+      await log.debug("feedback command received", { session: sessionID, feedback: feedbackText });
+
       const state = getSessionState(sessionID, config);
 
       // Guidance for the model to translate the feedback into concrete deltas
-      // and call apply_feedback. Injected as a system part so the model sees it
-      // in the same turn the feedback was given.
+      // and call apply_feedback. Using client.session.prompt with noReply to
+      // avoid FOREIGN KEY constraint on synthetic message IDs.
       const contextPrompt = `[ADAPTIVE FEEDBACK]\nUser feedback: "${feedbackText}"\nCurrent settings: temperature=${state.temperature.toFixed(2)}, topP=${state.topP.toFixed(2)}\n\nInterpret this feedback and call \`apply_feedback\` with appropriate deltas for temperature and topP, plus a brief reasoning. Consider how the current settings relate to the feedback when choosing deltas.`;
-      // opencode validates part ids against a prefix schema before persisting
-      // them: a part id must start with `prt`. An unprefixed id is rejected and
-      // the guidance never reaches the transcript.
-      const messageID = `msg_adaptive_temperature_${sessionID}`;
-      output.parts.push({
-        id: `prt_adaptive_temperature_${sessionID}`,
-        sessionID,
-        messageID,
-        type: "text" as const,
-        text: contextPrompt,
-      });
+      try {
+        await _ctx.client.session.prompt({
+          path: { id: sessionID },
+          body: { noReply: true, parts: [{ type: "text", text: contextPrompt }] },
+        });
+        await log.debug("feedback prompt sent to model", { session: sessionID });
+      } catch (e) {
+        await log.warn("failed to send feedback prompt", { session: sessionID, error: String(e) });
+        // If session.prompt fails, the feedback is still recorded in session state
+        // and will be applied on next turn via chat.params hook
+      }
     },
 
     // Applies the tuned values to the actual generation parameters. Without
@@ -148,6 +183,12 @@ export default async (_ctx: any, options?: Record<string, unknown>): Promise<any
     ) => {
       const state = sessionStates.get(input.sessionID);
       if (!state) return;
+
+      await log.debug("chat.params injecting values", {
+        session: input.sessionID,
+        temperature: state.temperature,
+        topP: state.topP,
+      });
 
       // temperature is undefined for models without temperature support, so it
       // is only written when the runtime provided one.
@@ -165,6 +206,11 @@ export default async (_ctx: any, options?: Record<string, unknown>): Promise<any
         ? `temperature=${state.temperature.toFixed(2)}, topP=${state.topP.toFixed(2)}`
         : `temperature=${config.default.temperature.toFixed(2)}, topP=${config.default.topP.toFixed(2)}`;
 
+      await log.debug("system transform adding adaptive feedback reminder", {
+        session: sessionID,
+        currentSettings,
+      });
+
       system.push(
         "ADAPTIVE FEEDBACK: When the user gives feedback about output quality, style, or behavior, call the `apply_feedback` tool with temperatureDelta, topPDelta, and reasoning. " +
           `Current settings: ${currentSettings}. ` +
@@ -177,6 +223,7 @@ export default async (_ctx: any, options?: Record<string, unknown>): Promise<any
       if (event.type === "session.deleted") {
         const sessionID = (event as any).properties?.sessionID;
         if (sessionID) {
+          await log.debug("session deleted, cleaning up state", { session: sessionID });
           sessionStates.delete(sessionID);
         }
       }

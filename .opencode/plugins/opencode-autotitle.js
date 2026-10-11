@@ -4,6 +4,6 @@
 // regexes), which aborts the whole plugin. Only the entry is re-exported here;
 // the generated bundle lives in a subdirectory because the loader globs
 // {plugin,plugins}/*.{ts,js} non-recursively and would otherwise load it twice.
-import AutoTitle from "./opencode-autotitle-impl/index.js"
+import AutoTitle from "../packages/opencode-autotitle-impl/index.js"
 
 export default AutoTitle

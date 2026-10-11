@@ -48,6 +48,13 @@
     "key_files": "deny"
   },
 
+  // Debug output to Windows temp folder
+  "env": {
+    "BABA_DEBUG": "*",
+    "BABA_DEBUG_FILE": "C:\\Users\\Simon\\AppData\\Local\\Temp\\baba-debug.jsonl",
+    "BABA_DEBUG_LEVEL": "info"
+  },
+
 // opencode plugins. @latest is fine for personal/dev use; pin a version
 // when reproducibility matters.
 "plugin": [
@@ -62,13 +69,9 @@
     ".opencode/plugins/baba-convention-review.ts",
     ".opencode/plugins/baba-goal-detect.ts",
     ".opencode/plugins/baba-lock-enforce.ts",
-    // Explicit .ts path, not a package name. opencode resolves every plugin
-    // entry through its own package cache: a bare name is treated as an npm
-    // specifier, and an unresolvable one is skipped silently (no tools, no
-    // error in the log). An explicit path is imported directly, which is how
-    // every other local plugin here resolves. The shim exists because the
-    // plugin itself is a directory.
-    ".opencode/plugins/memory-worth.ts",
+    // memory-worth is a local package in .opencode/packages/memory-worth
+    // (referenced in .opencode/package.json). Load it as a package directory.
+    ".opencode/packages/memory-worth",
     ".opencode/plugins/baba-drift.ts",
     ".opencode/plugins/adaptive-temperature.ts",
     ".opencode/plugins/multi-model-consensus.ts"

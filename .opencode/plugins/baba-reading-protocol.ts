@@ -14,6 +14,8 @@
  */
 
 import { sessionIdFromEvent } from "../lib/baba-session-id";
+import { createDebug } from "../lib/baba-debug";
+import { tool } from "@opencode-ai/plugin";
 
 interface ReadingPlanFile {
   path: string;
@@ -201,7 +203,75 @@ export default async ({
   directory: string;
   worktree: string;
 }) => {
+  const log = createDebug("baba-reading-protocol", client);
+
+  await log.debug("plugin initialized", { directory, maxDepth: 3, maxCalls: 30 });
+
   return {
+    tool: {
+      baba_reading_protocol_debug: tool({
+        description: "Debug baba-reading-protocol plugin: dump internal state.",
+        args: {
+          action: tool.schema
+            .enum(["state", "sessions", "plans"])
+            .default("state")
+            .describe("What to dump: state (all), sessions (reading states per session), plans (reading plans per session)"),
+        },
+        async execute(args) {
+          const action = args.action ?? "state";
+          switch (action) {
+            case "sessions": {
+              const sessions: Record<string, ReadingState> = {};
+              for (const [id, state] of readingStates.entries()) {
+                sessions[id] = {
+                  sessionId: state.sessionId,
+                  plan: state.plan ? {
+                    scope: state.plan.scope,
+                    created_at: state.plan.created_at,
+                    status: state.plan.status,
+                    files: state.plan.files,
+                  } : null,
+                  blocked: state.blocked,
+                  lastUnreadFiles: state.lastUnreadFiles,
+                };
+              }
+              return JSON.stringify(sessions, null, 2);
+            }
+            case "plans": {
+              const plans: Record<string, ReadingPlan | null> = {};
+              for (const [id, state] of readingStates.entries()) {
+                plans[id] = state.plan;
+              }
+              return JSON.stringify(plans, null, 2);
+            }
+            case "state":
+            default: {
+              await log.stateDump("baba-reading-protocol", {
+                sessionCount: readingStates.size,
+                sessions: Object.fromEntries(
+                  Array.from(readingStates.entries()).map(([id, state]) => [
+                    id,
+                    {
+                      sessionId: state.sessionId,
+                      plan: state.plan ? {
+                        scope: state.plan.scope,
+                        created_at: state.plan.created_at,
+                        status: state.plan.status,
+                        files: state.plan.files,
+                      } : null,
+                      blocked: state.blocked,
+                      lastUnreadFiles: state.lastUnreadFiles,
+                    },
+                  ])
+                ),
+              });
+              return "State dumped to debug outputs (console, file, client.app.log)";
+            }
+          }
+        },
+      }),
+    },
+
     event: async ({ event }: { event: any }) => {
       const sessionId = sessionIdFromEvent(event.properties);
       if (!sessionId) return;
@@ -212,13 +282,13 @@ export default async ({
         state.plan = null;
         state.blocked = false;
         state.lastUnreadFiles = [];
-        console.log(`[reading-protocol] Session created: ${sessionId}`);
+        await log.info("session created", { session: sessionId });
         return;
       }
 
       if (event.type === "session.deleted") {
+        await log.debug("session deleted, cleaning up", { session: sessionId });
         readingStates.delete(sessionId);
-        console.log(`[reading-protocol] Session deleted: ${sessionId}`);
         return;
       }
     },
@@ -252,9 +322,7 @@ export default async ({
           status: "in_progress",
           files: files.map((f) => ({ path: f, status: "pending" })),
         };
-        console.log(
-          `[reading-protocol] Reading Plan created for ${sessionId}: ${files.length} files`,
-        );
+        await log.info("reading plan created", { session: sessionId, target: relativeTarget, fileCount: files.length });
       }
 
       // Mark file as complete
@@ -262,7 +330,7 @@ export default async ({
         const fileEntry = state.plan.files.find((f) => f.path === readPath);
         if (fileEntry && fileEntry.status === "pending") {
           fileEntry.status = "complete";
-          console.log(`[reading-protocol] Marked complete: ${readPath}`);
+          await log.debug("file marked complete", { session: sessionId, file: readPath, completedCount: state.plan.files.filter(f => f.status === "complete").length, totalCount: state.plan.files.length });
         }
       }
 
@@ -273,9 +341,7 @@ export default async ({
         state.plan.status = "complete";
         state.blocked = false;
         state.lastUnreadFiles = [];
-        console.log(
-          `[reading-protocol] Reading Plan complete for ${sessionId}`,
-        );
+        await log.info("reading plan complete", { session: sessionId, scope: state.plan.scope });
       }
     },
   };

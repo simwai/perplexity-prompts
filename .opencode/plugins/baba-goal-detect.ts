@@ -25,6 +25,8 @@
  */
 
 import { sessionIdFromEvent } from "../lib/baba-session-id";
+import { createDebug } from "../lib/baba-debug";
+import { tool } from "@opencode-ai/plugin";
 
 const GOAL_VERB = /\b(build|create|implement|implementing|add|make|develop|set\s+up|write|ship|ship a|scaffold|introduce|integrate)\b/i;
 const TARGET_HINTS = /(\.[a-z]{1,4}\b|^\s*\/|@|line\s+\d|l\d+\b|src\/|app\/|lib\/|\/[a-z-]+\.[a-z])/i;
@@ -69,8 +71,20 @@ export default async ({ client, $, project, directory, worktree }: {
   directory: string;
   worktree: string;
 }) => {
+  const log = createDebug("baba-goal-detect", client);
+
+  await log.debug("plugin initialized", {
+    patterns: {
+      goalVerb: GOAL_VERB.source,
+      targetHints: TARGET_HINTS.source,
+      bugHints: BUG_HINTS.source,
+      questionOnly: QUESTION_ONLY.source,
+    },
+  });
+
   async function suggest(sessionId: string): Promise<void> {
     try {
+      await log.debug("sending kickoff suggestion", { session: sessionId });
       await client.session.prompt({
         path: { id: sessionId },
         body: {
@@ -78,16 +92,60 @@ export default async ({ client, $, project, directory, worktree }: {
           parts: [{ type: "text", text: SUGGESTION }],
         },
       });
-    } catch {
+      await log.info("kickoff suggestion sent", { session: sessionId });
+    } catch (e) {
+      await log.warn("failed to send kickoff suggestion", { session: sessionId, error: String(e) });
       // A failed suggestion is not worth surfacing: it is advisory, and the
       // user can always invoke /kickoff themselves.
     }
   }
 
   return {
+    tool: {
+      baba_goal_detect_debug: tool({
+        description: "Debug baba-goal-detect plugin: dump internal state.",
+        args: {
+          action: tool.schema
+            .enum(["state", "assessed", "messages"])
+            .default("state")
+            .describe("What to dump: state (all), assessed (assessed sessions), messages (message text buffer)"),
+        },
+        async execute(args) {
+          const action = args.action ?? "state";
+          switch (action) {
+            case "assessed":
+              return JSON.stringify({ assessed: Array.from(assessed) }, null, 2);
+            case "messages": {
+              const msgs: Record<string, string[]> = {};
+              for (const [id, chunks] of messageText.entries()) {
+                msgs[id] = chunks;
+              }
+              return JSON.stringify(msgs, null, 2);
+            }
+            case "state":
+            default: {
+              await log.stateDump("baba-goal-detect", {
+                assessedCount: assessed.size,
+                assessed: Array.from(assessed),
+                messageTextCount: messageText.size,
+                messageText: Object.fromEntries(messageText),
+              });
+              return "State dumped to debug outputs (console, file, client.app.log)";
+            }
+          }
+        },
+      }),
+    },
+
     event: async ({ event }: { event: any }) => {
       if (event.type === "message.part.updated") {
-        collectText(event.properties?.part);
+        const part = event.properties?.part;
+        await log.debug("message.part.updated", { 
+          messageId: part?.messageID, 
+          sessionId: part?.sessionID, 
+          textLength: part?.text?.length ?? 0 
+        });
+        collectText(part);
         return;
       }
 
@@ -95,6 +153,11 @@ export default async ({ client, $, project, directory, worktree }: {
         const info = event.properties?.info;
         if (!info || info.role !== "user" || typeof info.sessionID !== "string") return;
         if (assessed.has(info.sessionID)) return;
+
+        await log.debug("message.updated - user message, deferring assessment", { 
+          sessionId: info.sessionID, 
+          messageId: info.id 
+        });
 
         // message.updated can arrive before the message's parts, so defer to the
         // next tick and judge whatever text the bus accumulated by then.
@@ -105,9 +168,23 @@ export default async ({ client, $, project, directory, worktree }: {
 
           const chunks = messageText.get(info.id) ?? [];
           const text = chunks.join("\n").trim();
-          if (text.length === 0) return;
-          if (!isGoalLike(text)) return;
+          if (text.length === 0) {
+            await log.debug("no text accumulated for assessment", { sessionId, messageId: info.id });
+            return;
+          }
 
+          const isGoal = isGoalLike(text);
+          await log.debug("goal assessment complete", { 
+            sessionId, 
+            messageId: info.id, 
+            textLength: text.length, 
+            isGoal,
+            textPreview: text.slice(0, 100) 
+          });
+
+          if (!isGoal) return;
+
+          await log.info("goal detected, sending suggestion", { sessionId });
           void suggest(sessionId);
         }, 0);
         return;
@@ -115,7 +192,11 @@ export default async ({ client, $, project, directory, worktree }: {
 
       if (event.type === "session.deleted") {
         const sessionId = sessionIdFromEvent(event.properties);
-        if (sessionId) assessed.delete(sessionId);
+        if (sessionId) {
+          await log.debug("session.deleted, cleaning up", { sessionId });
+          assessed.delete(sessionId);
+          messageText.delete(sessionId);
+        }
       }
     },
   };

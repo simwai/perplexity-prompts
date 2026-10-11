@@ -19,21 +19,8 @@
  */
 
 import { sessionIdFromEvent } from "../lib/baba-session-id";
-
-/**
- * opencode validates part and message ids against a prefix schema before
- * persisting them: part ids must start with `prt`, message ids with `msg`. An
- * id without the prefix is rejected and the part is dropped, which is silent
- * from the user's side. Ids derive from the message id, which opencode
- * guarantees is unique per turn.
- */
-function partId(messageId: string, label: string): string {
-  return `prt_${label}_${messageId}`;
-}
-
-function fallbackMessageId(sessionId: string): string {
-  return `msg_baba_bootstrap_${sessionId}`;
-}
+import { createDebug } from "../lib/baba-debug";
+import { tool } from "@opencode-ai/plugin";
 
 const FIRST_MESSAGE = `# Session Start Reminder
 
@@ -59,8 +46,13 @@ export default async ({ client, $, project, directory, worktree }: {
   directory: string;
   worktree: string;
 }) => {
+  const log = createDebug("baba-bootstrap", client);
+
+  await log.debug("plugin initialized");
+
   async function deliverViaSessionPrompt(sessionId: string): Promise<boolean> {
     try {
+      await log.debug("attempting session.prompt delivery", { session: sessionId });
       await client.session.prompt({
         path: { id: sessionId },
         body: {
@@ -68,8 +60,10 @@ export default async ({ client, $, project, directory, worktree }: {
           parts: [{ type: "text", text: FIRST_MESSAGE }],
         },
       });
+      await log.info("session.prompt delivery succeeded", { session: sessionId });
       return true;
-    } catch {
+    } catch (e) {
+      await log.warn("session.prompt delivery failed, will skip fallback", { session: sessionId, error: String(e) });
       // Session not ready yet, or the endpoint is unavailable. The chat.message
       // hook below covers this case.
       return false;
@@ -77,10 +71,33 @@ export default async ({ client, $, project, directory, worktree }: {
   }
 
   return {
+    tool: {
+      baba_bootstrap_debug: tool({
+        description: "Debug baba-bootstrap plugin: dump internal state.",
+        args: {
+          action: tool.schema
+            .enum(["state", "delivered"])
+            .default("state")
+            .describe("What to dump: state (all), delivered (delivered sessions only)"),
+        },
+        async execute(args) {
+          const action = args.action ?? "state";
+          switch (action) {
+            case "delivered":
+              return JSON.stringify({ delivered: Array.from(delivered) }, null, 2);
+            case "state":
+            default:
+              return JSON.stringify({ deliveredCount: delivered.size, delivered: Array.from(delivered) }, null, 2);
+          }
+        },
+      }),
+    },
+
     event: async ({ event }: { event: any }) => {
       if (event.type === "session.created") {
         const sessionId = sessionIdFromEvent(event.properties);
         if (!sessionId) return;
+        await log.debug("session.created event received", { session: sessionId });
         delivered.delete(sessionId);
         if (await deliverViaSessionPrompt(sessionId)) {
           delivered.add(sessionId);
@@ -90,7 +107,10 @@ export default async ({ client, $, project, directory, worktree }: {
 
       if (event.type === "session.deleted") {
         const sessionId = sessionIdFromEvent(event.properties);
-        if (sessionId) delivered.delete(sessionId);
+        if (sessionId) {
+          await log.debug("session.deleted, cleaning up", { session: sessionId });
+          delivered.delete(sessionId);
+        }
         return;
       }
     },
@@ -103,15 +123,13 @@ export default async ({ client, $, project, directory, worktree }: {
       if (!sessionId) return;
       if (delivered.has(sessionId)) return;
 
+      await log.debug("chat.message hook fired but fallback disabled (FK constraint)", { session: sessionId });
+
+      // NOTE: Part injection removed due to FOREIGN KEY constraint:
+      // fallback message IDs (msg_baba_bootstrap_*) don't exist in message table.
+      // The session.prompt delivery in session.created event is the primary path.
+      // If that failed, the reminder is skipped rather than causing FK errors.
       delivered.add(sessionId);
-      const messageId = input.messageID ?? fallbackMessageId(sessionId);
-      output.parts.push({
-        id: partId(messageId, "bootstrap"),
-        sessionID: sessionId,
-        messageID: messageId,
-        type: "text",
-        text: FIRST_MESSAGE,
-      });
     },
   };
-};
+}

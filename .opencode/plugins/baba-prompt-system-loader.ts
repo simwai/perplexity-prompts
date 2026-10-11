@@ -12,6 +12,8 @@
 import { readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { sessionIdFromEvent } from "../lib/baba-session-id";
+import { createDebug } from "../lib/baba-debug";
+import { tool } from "@opencode-ai/plugin";
 
 interface LoaderState {
   requiredFiles: Set<string>;
@@ -69,13 +71,65 @@ export default async ({ client, $, project, directory, worktree }: {
   directory: string;
   worktree: string;
 }) => {
+  const log = createDebug("baba-prompt-system-loader", client);
+
+  await log.debug("plugin initialized", { directory });
+
   return {
+    tool: {
+      baba_prompt_system_loader_debug: tool({
+        description: "Debug baba-prompt-system-loader plugin: dump internal state.",
+        args: {
+          action: tool.schema
+            .enum(["state", "sessions"])
+            .default("state")
+            .describe("What to dump: state (all), sessions (loader states per session)"),
+        },
+        async execute(args) {
+          const action = args.action ?? "state";
+          switch (action) {
+            case "sessions": {
+              const sessions: Record<string, LoaderState> = {};
+              for (const [id, state] of loaderStates.entries()) {
+                sessions[id] = {
+                  requiredFiles: Array.from(state.requiredFiles),
+                  loadedFiles: Array.from(state.loadedFiles),
+                  lastNotifiedPhase: state.lastNotifiedPhase,
+                  planVersion: state.planVersion,
+                };
+              }
+              return JSON.stringify(sessions, null, 2);
+            }
+            case "state":
+            default: {
+              await log.stateDump("baba-prompt-system-loader", {
+                sessionCount: loaderStates.size,
+                sessions: Object.fromEntries(
+                  Array.from(loaderStates.entries()).map(([id, state]) => [
+                    id,
+                    {
+                      requiredFiles: Array.from(state.requiredFiles),
+                      loadedFiles: Array.from(state.loadedFiles),
+                      lastNotifiedPhase: state.lastNotifiedPhase,
+                      planVersion: state.planVersion,
+                    },
+                  ])
+                ),
+              });
+              return "State dumped to debug outputs (console, file, client.app.log)";
+            }
+          }
+        },
+      }),
+    },
+
     event: async ({ event }: { event: any }) => {
       const sessionId = sessionIdFromEvent(event.properties);
       if (!sessionId) return;
 
       if (event.type === "session.created") {
         const required = await discoverRequiredFiles(client, directory);
+        await log.debug("session.created, discovering required files", { session: sessionId, requiredCount: required.size });
         loaderStates.set(sessionId, {
           requiredFiles: required,
           loadedFiles: new Set(),
@@ -86,6 +140,7 @@ export default async ({ client, $, project, directory, worktree }: {
       }
 
       if (event.type === "session.deleted") {
+        await log.debug("session.deleted, cleaning up", { session: sessionId });
         loaderStates.delete(sessionId);
         return;
       }
@@ -107,6 +162,7 @@ export default async ({ client, $, project, directory, worktree }: {
         const rel = relativePromptSystemPath(input.args.filePath, directory);
         if (state.requiredFiles.has(rel)) {
           state.loadedFiles.add(rel);
+          await log.debug("prompt-system file loaded", { session: sessionId, file: rel, loadedCount: state.loadedFiles.size, requiredCount: state.requiredFiles.size });
         }
       }
     },
@@ -147,7 +203,7 @@ export default async ({ client, $, project, directory, worktree }: {
       if (detectedPhase === "PLAN" && state.planVersion === 1) {
         state.planVersion = 2;
         state.loadedFiles.clear(); // Forces full reload on next reads
-        console.log("[prompt-system-loader] PLAN v1→v2: forcing full reload");
+        await log.info("PLAN v1→v2 transition, forcing full reload", { session: sessionId });
       }
 
       const missing = [...state.requiredFiles].filter(
@@ -161,6 +217,13 @@ export default async ({ client, $, project, directory, worktree }: {
           `Missing files:\n${list}\n` +
           `Assistant output for [PHASE: ${detectedPhase}] is held until all required files are loaded. Please read the missing files first.`;
 
+        await log.warn("blocking output due to missing prompt-system files", { 
+          session: sessionId, 
+          phase: detectedPhase, 
+          missingCount: missing.length,
+          missingFiles: missing 
+        });
+
         if (lastMessage.role === "assistant") {
           lastMessage.parts = [{ type: "text", text: blockingContent }];
         } else {
@@ -169,8 +232,6 @@ export default async ({ client, $, project, directory, worktree }: {
             parts: [{ type: "text", text: blockingContent }],
           });
         }
-
-        console.log(`[prompt-system-loader] BLOCKING output for ${detectedPhase} due to missing files:\n${list}`);
       }
 
       state.lastNotifiedPhase = detectedPhase;

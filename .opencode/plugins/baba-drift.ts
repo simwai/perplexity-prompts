@@ -7,6 +7,7 @@
  */
 
 import { tool } from "@opencode-ai/plugin";
+import { createDebug } from "../lib/baba-debug";
 
 export default async ({
   client,
@@ -21,6 +22,10 @@ export default async ({
   directory: string;
   worktree: string;
 }) => {
+  const log = createDebug("baba-drift", client);
+
+  await log.debug("plugin initialized", { directory });
+
   return {
     tool: {
       drift: tool({
@@ -40,6 +45,12 @@ export default async ({
         },
         async execute(args, context) {
           const { sessionID } = context;
+
+          await log.info("drift tool invoked", { 
+            session: sessionID, 
+            spec: args.spec, 
+            freshEyes: args.freshEyes 
+          });
 
           // Helper: run rg via shell
           async function rg(pattern: string, path: string): Promise<string[]> {
@@ -151,6 +162,7 @@ export default async ({
             if (terms.length === 0) return [];
 
             const pattern = terms.join("|");
+            await log.debug("mapping claim", { session: sessionID, claimId: claim.id, pattern });
             const hits = await rg(pattern, directory);
 
             // Filter to relevant source files, exclude artifacts
@@ -199,8 +211,11 @@ export default async ({
           const specFiles = args.spec ? [args.spec] : await listSpecs();
 
           if (specFiles.length === 0) {
+            await log.warn("no SPEC.md files found", { session: sessionID, directory });
             return "No SPEC.md found. Drift detection requires SPEC.md at repo root.";
           }
+
+          await log.debug("found spec files", { session: sessionID, specFiles });
 
           let report = "# Drift Report\n\n";
           let hasVersionDrift = false;
@@ -215,14 +230,23 @@ export default async ({
             const specContent = await readFile(specPath);
 
             if (!specContent) {
+              await log.warn("could not read spec file", { session: sessionID, specFile });
               report += `## ${specFile}\n⚠️ Could not read spec\n\n`;
               continue;
             }
+
+            await log.debug("read spec file", { session: sessionID, specFile, contentLength: specContent.length });
 
             // Version drift check
             const driftCheck = await checkVersionDrift(specFile, specContent);
             if (driftCheck?.drift) {
               hasVersionDrift = true;
+              await log.warn("version drift detected", { 
+                session: sessionID, 
+                specFile, 
+                specVersion: driftCheck.specVersion, 
+                registryVersion: driftCheck.registryVersion 
+              });
               report += `## ⚠️ HALT: Version Drift Detected in ${specFile}\n`;
               report += `- Spec header version: ${driftCheck.specVersion}\n`;
               report += `- Registry version: ${driftCheck.registryVersion}\n`;
@@ -232,6 +256,8 @@ export default async ({
 
             const claims = parseClaims(specContent);
             totalClaims += claims.length;
+
+            await log.debug("parsed claims", { session: sessionID, specFile, claimCount: claims.length });
 
             report += `## ${specFile} (${claims.length} claims)\n\n`;
 
@@ -277,7 +303,34 @@ export default async ({
             report += `\n---\n## Fresh-Eyes Review Requested\nRun a cold-read subagent for additional lens.\n`;
           }
 
+          await log.info("drift report complete", { 
+            session: sessionID, 
+            verified, 
+            diverged, 
+            orphaned, 
+            exceeds, 
+            totalClaims,
+            hasVersionDrift 
+          });
+
           return report;
+        },
+      }),
+
+      baba_drift_debug: tool({
+        description: "Debug baba-drift plugin: dump internal state.",
+        args: {
+          action: tool.schema
+            .enum(["state"])
+            .default("state")
+            .describe("What to dump: state (plugin state)"),
+        },
+        async execute(args) {
+          await log.stateDump("baba-drift", {
+            directory,
+            // No persistent internal state - tool is stateless
+          });
+          return "State dumped to debug outputs (console, file, client.app.log)";
         },
       }),
     },

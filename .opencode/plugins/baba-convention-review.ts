@@ -8,6 +8,8 @@
 
 import { getCurrentPhase } from "../lib/baba-phase-detect";
 import { sessionIdFromEvent } from "../lib/baba-session-id";
+import { createDebug } from "../lib/baba-debug";
+import { tool } from "@opencode-ai/plugin";
 
 interface ConventionState {
   sessionId: string;
@@ -66,7 +68,43 @@ export default async ({ client, $, project, directory, worktree }: {
   directory: string;
   worktree: string;
 }) => {
+  const log = createDebug("baba-convention-review", client);
+
+  await log.debug("plugin initialized");
+
   return {
+    tool: {
+      baba_convention_review_debug: tool({
+        description: "Debug baba-convention-review plugin: dump internal state.",
+        args: {
+          action: tool.schema
+            .enum(["state", "sessions"])
+            .default("state")
+            .describe("What to dump: state (all), sessions (convention states per session)"),
+        },
+        async execute(args) {
+          const action = args.action ?? "state";
+          switch (action) {
+            case "sessions": {
+              const sessions: Record<string, ConventionState> = {};
+              for (const [id, state] of conventionStates.entries()) {
+                sessions[id] = state;
+              }
+              return JSON.stringify(sessions, null, 2);
+            }
+            case "state":
+            default: {
+              await log.stateDump("baba-convention-review", {
+                sessionCount: conventionStates.size,
+                sessions: Object.fromEntries(conventionStates),
+              });
+              return "State dumped to debug outputs (console, file, client.app.log)";
+            }
+          }
+        },
+      }),
+    },
+
     "experimental.chat.messages.transform": async (
       input: Record<string, unknown>,
       output: { messages: any[] },
@@ -105,6 +143,13 @@ export default async ({ client, $, project, directory, worktree }: {
         : [];
       const systemEvidence = info?.metadata?.system_evidence ?? {};
 
+      await log.debug("PLAN phase detected, checking convention prompts", {
+        session: sessionId,
+        editedFilesCount: editedFiles.length,
+        hasArchitectureFlags: !!systemEvidence.architecture_flags,
+        promptsEmitted: state.promptsEmitted,
+      });
+
       const prompts = [
         buildArchitecturePrompt(systemEvidence),
         buildApiDefaultsPrompt(systemEvidence, editedFiles),
@@ -119,14 +164,21 @@ export default async ({ client, $, project, directory, worktree }: {
         ];
         lastMessage.parts = newParts;
         state.promptsEmitted = true;
-        console.log("[convention-review] Emitted convention prompts at PLAN entry");
+        await log.info("convention prompts emitted", {
+          session: sessionId,
+          promptCount: prompts.length,
+          editedFiles,
+        });
       }
     },
 
     event: async ({ event }: { event: any }) => {
       if (event.type === "session.deleted") {
         const sessionId = sessionIdFromEvent(event.properties);
-        if (sessionId) conventionStates.delete(sessionId);
+        if (sessionId) {
+          await log.debug("session.deleted, cleaning up", { session: sessionId });
+          conventionStates.delete(sessionId);
+        }
       }
     },
   };

@@ -19,6 +19,8 @@ import {
 } from "../lib/baba-phase-detect";
 import { sessionIdFromEvent } from "../lib/baba-session-id";
 import { access, readFile } from "node:fs/promises";
+import { createDebug } from "../lib/baba-debug";
+import { tool } from "@opencode-ai/plugin";
 
 async function fileExists(path: string): Promise<boolean> {
   try {
@@ -210,7 +212,67 @@ export default async ({
   directory: string;
   worktree: string;
 }) => {
+  const log = createDebug("baba-protocol-enforce", client);
+
+  await log.debug("plugin initialized", { directory, phaseTransitions: PHASE_TRANSITIONS });
+
   return {
+    tool: {
+      baba_protocol_enforce_debug: tool({
+        description: "Debug baba-protocol-enforce plugin: dump internal state.",
+        args: {
+          action: tool.schema
+            .enum(["state", "sessions", "protocols"])
+            .default("state")
+            .describe("What to dump: state (all), sessions (protocol states per session), protocols (phase transition config)"),
+        },
+        async execute(args) {
+          const action = args.action ?? "state";
+          switch (action) {
+            case "sessions": {
+              const sessions: Record<string, ProtocolState> = {};
+              for (const [id, state] of protocolStates.entries()) {
+                sessions[id] = {
+                  sessionId: state.sessionId,
+                  currentPhase: state.currentPhase,
+                  specVersion: state.specVersion,
+                  hasSpec: state.hasSpec,
+                  editedFiles: state.editedFiles,
+                  protocolsChecked: Array.from(state.protocolsChecked),
+                  planVersion: state.planVersion,
+                };
+              }
+              return JSON.stringify(sessions, null, 2);
+            }
+            case "protocols":
+              return JSON.stringify({ phaseTransitions: PHASE_TRANSITIONS }, null, 2);
+            case "state":
+            default: {
+              await log.stateDump("baba-protocol-enforce", {
+                sessionCount: protocolStates.size,
+                sessions: Object.fromEntries(
+                  Array.from(protocolStates.entries()).map(([id, state]) => [
+                    id,
+                    {
+                      sessionId: state.sessionId,
+                      currentPhase: state.currentPhase,
+                      specVersion: state.specVersion,
+                      hasSpec: state.hasSpec,
+                      editedFiles: state.editedFiles,
+                      protocolsChecked: Array.from(state.protocolsChecked),
+                      planVersion: state.planVersion,
+                    },
+                  ])
+                ),
+                phaseTransitions: PHASE_TRANSITIONS,
+              });
+              return "State dumped to debug outputs (console, file, client.app.log)";
+            }
+          }
+        },
+      }),
+    },
+
     "tool.execute.before": async (
       input: { tool: string; sessionID: string; callID: string },
       output: { args: any },
@@ -222,10 +284,12 @@ export default async ({
       // 1. git remote -v / get-url → block via tokenized shell matching,
       //    so `cd /repo && git remote -v` and `git remote -v | cat` cannot evade.
       if (/(^|[;&|]\s*)git\b[^;&|]*\bremote\b[^;&|]*\s-v\b/.test(cmd)) {
+        await log.debug("blocking git remote -v, replacing with git remote", { command: cmd });
         output.args.command = "git remote";
         return;
       }
       if (/(^|[;&|]\s*)git\b[^;&|]*\bremote\b[^;&|]*\bget-url\b/.test(cmd)) {
+        await log.warn("blocking git remote get-url", { command: cmd });
         throw new Error(
           "H1: `git remote get-url` is blocked -- remote URLs embed OAuth2/PAT tokens. " +
             "Use `git remote` (names only). If you need to verify a URL shape, ask the user.",
@@ -244,6 +308,7 @@ export default async ({
 
       // Sanitize git push output
       if (/^(|[;&|]\s*)git\b[^;&|]*\bpush\b/.test(cmd)) {
+        await log.debug("sanitizing git push output", { command: cmd });
         out = sanitizeGitPushOutput(out);
       }
 
@@ -272,15 +337,13 @@ export default async ({
         state.currentPhase = "STARTUP";
         state.protocolsChecked.clear();
         state.planVersion = 1;
-        console.log(
-          `[protocol-enforce] Session ${sessionId} created, phase: STARTUP`,
-        );
+        await log.info("session created", { session: sessionId, phase: "STARTUP" });
         return;
       }
 
       if (event.type === "session.deleted") {
+        await log.debug("session deleted, cleaning up", { session: sessionId });
         protocolStates.delete(sessionId);
-        console.log(`[protocol-enforce] Session ${sessionId} deleted`);
         return;
       }
     },
@@ -308,26 +371,23 @@ export default async ({
       state.currentPhase = newPhase;
       state.protocolsChecked.clear();
 
-      console.log(
-        `[protocol-enforce] Session ${sessionId} phase transition: ${previousPhase} -> ${newPhase}`,
-      );
+      await log.info("phase transition", { session: sessionId, from: previousPhase, to: newPhase });
 
       // Signal PLAN v1 start at REVIEW → PLAN transition
       if (previousPhase === "REVIEW" && newPhase === "PLAN") {
         state.planVersion = 1;
-        console.log(
-          "[protocol-enforce] REVIEW→PLAN: planVersion=1 (prompt-system-loader will bump to 2)",
-        );
+        await log.info("REVIEW→PLAN transition, planVersion=1", { session: sessionId });
       }
 
       const checks = await checkProtocols(state, directory);
       const failed = checks.filter((c) => !c.passed);
 
       if (failed.length > 0) {
-        console.log(
-          `[protocol-enforce] Protocol checks failed for ${newPhase}:`,
-          failed.map((f) => `${f.protocol}: ${f.message}`).join(", "),
-        );
+        await log.warn("protocol checks failed", { 
+          session: sessionId, 
+          phase: newPhase, 
+          failed: failed.map((f) => `${f.protocol}: ${f.message}`) 
+        });
       }
     },
   };
