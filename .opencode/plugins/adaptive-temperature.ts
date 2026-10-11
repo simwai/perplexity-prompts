@@ -110,12 +110,12 @@ export default async (_ctx: any, options?: Record<string, unknown>): Promise<any
       }),
 
       adaptive_temperature_debug: tool({
-        description: "Debug adaptive-temperature plugin: dump internal state, config, or session states.",
+        description: "Debug adaptive-temperature plugin: dump internal state.",
         args: {
           action: tool.schema
-            .enum(["state", "config", "sessions"])
+            .enum(["state", "sessions", "config"])
             .default("state")
-            .describe("What to dump: state (plugin config), config (resolved config), sessions (all session states)"),
+            .describe("What to dump: state (all), sessions (adaptive temperature states per session), config (plugin config)"),
         },
         async execute(args) {
           switch (args.action) {

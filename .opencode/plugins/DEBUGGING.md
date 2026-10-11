@@ -1,0 +1,459 @@
+# Baba Plugin Debugging Infrastructure
+
+All Baba plugins include a unified debug system that makes internal behavior visible, queryable, and auditable across **4 output destinations simultaneously**.
+
+---
+
+## Quick Start
+
+Debug works **out of the box** — no configuration required:
+
+```bash
+opencode
+```
+
+Default behavior:
+
+- **Console (stderr)**: All `info`/`warn`/`error` logs visible immediately
+- **opencode log viewer**: All logs via `client.app.log` (integrated UI)
+- **File (JSONL)**: On by default — writes to `%TEMP%\baba-debug.jsonl`. Override the path with `BABA_DEBUG_FILE`.
+
+---
+
+## Configuration
+
+> **Set these as real OS environment variables, not opencode config keys.** The
+> opencode config schema sets `additionalProperties: false` and declares no
+> `env` property, so an `env` block in `opencode.jsonc` is silently discarded and
+> never reaches `process.env`. Set them before launching opencode:
+>
+> ```powershell
+> $env:BABA_DEBUG_LEVEL = "debug"; opencode
+> ```
+
+| Environment Variable | Default | Description |
+|---------------------|---------|-------------|
+| `BABA_DEBUG` | `*` (all plugins) | Comma-separated plugin list, `*` for all, empty string `""` to disable |
+| `BABA_DEBUG_LEVEL` | `info` | Minimum level: `debug` \| `info` \| `warn` \| `error` |
+| `BABA_DEBUG_FILE` | (disabled) | Path for JSONL file output (e.g., `/tmp/baba-debug.jsonl`) |
+| `BABA_DEBUG_MAX_LINES` | `10000` | On-disk rotation cap — oldest lines are trimmed past this |
+
+### Examples
+
+```bash
+# All plugins, debug level, with file output
+BABA_DEBUG=* BABA_DEBUG_LEVEL=debug BABA_DEBUG_FILE=/tmp/baba.jsonl opencode
+
+# Specific plugins only
+BABA_DEBUG=baba-lock-enforce,baba-drift,baba-prompt-system-loader opencode
+
+# Disable entirely
+BABA_DEBUG="" opencode
+
+# Production: warn+ only, file output
+BABA_DEBUG=* BABA_DEBUG_LEVEL=warn BABA_DEBUG_FILE=/var/log/baba.jsonl opencode
+```
+
+---
+
+## Output Destinations
+
+### 1. Console (stderr) — Always On
+
+Structured single-line format:
+
+```text
+[baba-lock-enforce] WARN: lock contention detected, blocking write {"session":"abc123","filePath":"src/foo.ts","owner":"session-xyz"}
+[adaptive-temperature] INFO: feedback applied {"session":"abc123","reasoning":"too random","prevTemperature":0.7,"newTemperature":0.6}
+```
+
+### 2. opencode Log Viewer — Always On
+
+Access via opencode UI: **Logs → Service: plugin-name**
+
+- Same data as console, filterable by service, level, session
+- Includes full structured `extra` metadata
+
+### 3. File (JSONL) — Optional
+
+Each line is valid JSON:
+
+```json
+{"ts":"2026-10-11T15:19:30.537Z","plugin":"file-test","level":"info","msg":"file output test","meta":{"writtenTo":"C:\\Users\\Simon\\AppData\\Local\\Temp\\baba-debug-test.jsonl"}}
+{"ts":"2026-10-11T15:19:30.538Z","plugin":"baba-lock-enforce","level":"warn","msg":"lock contention detected","meta":{"session":"abc123","filePath":"src/foo.ts","owner":"session-xyz"}}
+```
+
+Query with `jq`:
+
+```bash
+# All warnings/errors
+jq 'select(.level=="warn" or .level=="error")' baba-debug.jsonl
+
+# Specific plugin
+jq 'select(.plugin=="baba-lock-enforce")' baba-debug.jsonl
+
+# Specific session
+jq 'select(.meta.session=="abc123")' baba-debug.jsonl
+```
+
+### 4. Debug Tools — Programmatic Inspection
+
+Every plugin exposes a `baba_<plugin>_debug` tool callable from the model:
+
+```text
+# Dump lock state
+baba_lock_enforce_debug { "action": "liveLocks" }
+
+# Dump all plugin state
+baba_drift_debug { "action": "state" }
+
+# Dump session titles
+opencode_autotitle_debug { "action": "sessions" }
+
+# Dump convention review states
+baba_convention_review_debug { "action": "sessions" }
+```
+
+**Common actions:**
+
+| Plugin | Actions |
+|--------|---------|
+| `baba-lock-enforce` | `state`, `liveLocks`, `config` |
+| `baba-drift` | `state` |
+| `baba-convention-review` | `state`, `sessions` |
+| `baba-prompt-system-loader` | `state`, `sessions` |
+| `baba-protocol-enforce` | `state`, `sessions`, `protocols` |
+| `baba-reading-protocol` | `state`, `sessions`, `plans` |
+| `baba-goal-detect` | `state`, `assessed`, `messages` |
+| `baba-bootstrap` | `state`, `delivered` |
+| `baba-system-reminder-override` | `state`, `markers`, `override` |
+| `multi-model-consensus` | `state`, `enabled`, `lastTool` |
+| `opencode-autotitle` | `state`, `config`, `sessions` |
+| `memory-worth` | `state`, `stats`, `recent` |
+| `adaptive-temperature` | `state`, `config`, `sessions` |
+
+---
+
+## Log Levels
+
+| Level | When Used | Visible by Default |
+|-------|-----------|-------------------|
+| `debug` | Verbose internal state, every function call, detailed flow | ❌ (use `BABA_DEBUG_LEVEL=debug`) |
+| `info` | Key events: initialization, phase transitions, tool invocations, completions | ✅ |
+| `warn` | Recoverable issues: contention, failed deliveries, missing files, fallbacks | ✅ |
+| `error` | Failures: blocked operations, exceptions, unavailable resources | ✅ |
+
+---
+
+## Session Metadata
+
+Every log entry includes structured `meta`:
+
+```json
+{
+  "session": "abc123-def456",
+  "filePath": "src/foo.ts",
+  "owner": "session-xyz",
+  "lockPath": ".session-locks/src--foo.ts.lock",
+  "dependencies": ["src/bar.ts"],
+  "phase": "PLAN",
+  "reasoning": "too random"
+}
+```
+
+**Standard fields:**
+
+- `session` — opencode session ID (always present when available)
+- `phase` — Current Baba phase (STARTUP, CHECKLIST, REVIEW, PLAN, PATCH, DRIFT)
+- `tool` / `command` — Tool or command that triggered the log
+- Plugin-specific fields (see per-plugin sections below)
+
+---
+
+## Per-Plugin Debug Reference
+
+### adaptive-temperature
+
+| Event | Level | Meta |
+|-------|-------|------|
+| Plugin init | info | config (min/max/default temp, topP) |
+| Feedback applied | info | session, reasoning, prev/new temperature, prev/new topP |
+| Feedback command received | debug | session, feedback text |
+| System transform | debug | session, current settings |
+| Chat.params injection | debug | session, injected temperature, topP |
+| Session cleanup | debug | session |
+
+### baba-bootstrap
+
+| Event | Level | Meta |
+|-------|-------|------|
+| Plugin init | info | — |
+| session.created | debug | session |
+| session.prompt delivery success | info | session |
+| session.prompt delivery failed | warn | session, error |
+| Fallback disabled (FK constraint) | debug | session |
+| Session cleanup | debug | session |
+
+### baba-goal-detect
+
+| Event | Level | Meta |
+|-------|-------|------|
+| Plugin init | info | patterns (goalVerb, targetHints, bugHints, questionOnly) |
+| message.part.updated | debug | messageId, sessionId, textLength |
+| message.updated (user) | debug | sessionId, messageId |
+| Goal assessment | debug | sessionId, messageId, textLength, isGoal, textPreview |
+| Goal detected → suggestion | info | sessionId |
+| Suggestion sent | info | sessionId |
+| Suggestion failed | warn | sessionId, error |
+| Session cleanup | debug | sessionId |
+
+### baba-system-reminder-override
+
+| Event | Level | Meta |
+|-------|-------|------|
+| Plugin init | info | markers, overrideLength |
+| Reminder replaced | info | originalBlocks, replacedCount |
+
+### multi-model-consensus
+
+| Event | Level | Meta |
+|-------|-------|------|
+| Plugin init | info | config (kiloBaseUrl, flashModel, ultraModel, timeouts) |
+| consensus_review invoked | debug | session, promptLength, originalLength |
+| Consensus disabled | debug | session |
+| Skipped (recent tool use) | debug | session |
+| Consensus started | info | session, models |
+| Single model succeeded | warn | session, model |
+| Judge merge | debug | session, judgeModel |
+| Judge merge failed | warn | session, error |
+| /consensus command | debug | session, arg |
+| Mode enabled/disabled | info | session |
+| System transform | debug | session, state |
+| Tool use tracking | debug | session, tool |
+| Session cleanup | debug | session |
+
+### memory-worth
+
+| Event | Level | Meta |
+|-------|-------|------|
+| Plugin init | debug | runtime, dbPath |
+| session.created | debug | — |
+| session.deleted | debug | sessionId |
+| message.updated | debug | sessionId, messageId, role |
+| message.part.updated | debug | sessionId, messageId, partType, textLength |
+| session.idle | debug | sessionId |
+| session.compacted | debug | sessionId |
+| chat.message | debug | sessionId, userTextLength |
+| Forget command | info | sessionId |
+| detectAndCaptureMemory | debug | sessionId |
+| tool.execute.after | debug | sessionId, outputLength |
+| session.compacting | debug | sessionId, linesCount |
+
+### baba-convention-review
+
+| Event | Level | Meta |
+|-------|-------|------|
+| Plugin init | info | — |
+| PLAN phase detected | debug | session, editedFilesCount, hasArchitectureFlags, promptsEmitted |
+| Prompts emitted | info | session, promptCount, editedFiles |
+
+### baba-drift
+
+| Event | Level | Meta |
+|-------|-------|------|
+| Plugin init | info | directory |
+| drift tool invoked | info | session, spec, freshEyes |
+| Spec files found | debug | session, specFiles |
+| Spec file read | debug | session, specFile, contentLength |
+| Claims parsed | debug | session, specFile, claimCount |
+| Claim mapping | debug | session, claimId, pattern |
+| Version drift detected | warn | session, specFile, specVersion, registryVersion |
+| Drift report complete | info | session, verified, diverged, orphaned, exceeds, totalClaims, hasVersionDrift |
+
+### baba-prompt-system-loader
+
+| Event | Level | Meta |
+|-------|-------|------|
+| Plugin init | info | directory |
+| session.created | debug | session, requiredCount |
+| Prompt-system file loaded | debug | session, file, loadedCount, requiredCount |
+| PLAN v1→v2 transition | info | session |
+| Output blocked | warn | session, phase, missingCount, missingFiles |
+
+### baba-protocol-enforce
+
+| Event | Level | Meta |
+|-------|-------|------|
+| Plugin init | info | directory, phaseTransitions |
+| git remote -v blocked | debug | command |
+| git remote get-url blocked | warn | command |
+| git push sanitized | debug | command |
+| Session created | info | session, phase |
+| Session deleted | debug | session |
+| Phase transition | info | session, from, to |
+| REVIEW→PLAN transition | info | session |
+| Protocol checks failed | warn | session, phase, failed[] |
+
+### baba-reading-protocol
+
+| Event | Level | Meta |
+|-------|-------|------|
+| Plugin init | info | directory, maxDepth, maxCalls |
+| Session created | info | session |
+| Reading plan created | info | session, target, fileCount |
+| File marked complete | debug | session, file, completedCount, totalCount |
+| Reading plan complete | info | session, scope |
+
+### baba-lock-enforce
+
+| Event | Level | Meta |
+|-------|-------|------|
+| Plugin init | debug | directory, lockTtlMinutes, writeTools, readOnlyHost |
+| acquire_lock invoked | debug | session, filePath, dependencies |
+| Lock acquired | info | session, filePath, flatName |
+| acquire_lock failed | warn | session, error |
+| acquire_lock blocked | warn | session, filePath, owner |
+| release_lock invoked | debug | filePath |
+| Lock released | info | filePath |
+| release_lock failed | warn | filePath, reason |
+| check_lock invoked | debug | session, filePath |
+| check_lock: no lock | debug | session, filePath |
+| check_lock: lock found | debug | session, filePath, owner |
+| Write contention check | debug | session, filePath, tool |
+| Contention detected (blocked) | warn | session, filePath, owner, lockPath, dependencies |
+
+### opencode-autotitle
+
+| Event | Level | Meta |
+|-------|-------|------|
+| Plugin init | info | config, cheapModelPatterns |
+| Keyword title set | info | fullTitle |
+| AI title set | info | fullTitle |
+| Session idle / title gen | debug | session, userPreview, assistantPreview |
+| Model selected | debug | providerID/modelID |
+| Custom title detected | debug | session, title |
+
+---
+
+## Troubleshooting
+
+### No logs appearing?
+
+```bash
+# Check if plugin loaded
+grep "plugin initialized" /tmp/baba-debug.jsonl
+
+# Verify plugin name matches BABA_DEBUG filter
+BABA_DEBUG=* BABA_DEBUG_LEVEL=debug opencode 2>&1 | head -20
+```
+
+### File not created?
+
+- The file destination is on by default — check the path first: `%TEMP%\baba-debug.jsonl`
+- `BABA_DEBUG_LEVEL=info` (the default) suppresses every `debug` line, so an
+  empty-looking file usually means level filtering, not a broken sink. Run with
+  `BABA_DEBUG_LEVEL=debug` to see `plugin initialized`
+- Confirm `BABA_DEBUG` is not set to `""` — that disables logging entirely
+- Path must be writable by the opencode process
+- Windows: use a real path like `C:\temp\baba.jsonl`, not `/tmp/`
+
+### Too much noise?
+
+```bash
+# Reduce to warn+ only
+BABA_DEBUG_LEVEL=warn opencode
+
+# Filter to specific plugin
+BABA_DEBUG=baba-lock-enforce opencode
+```
+
+### Missing session IDs?
+
+- Session ID comes from opencode event bus
+- Some early hooks (session.created) may not have it yet
+- `client.app.log` receives it automatically when available
+
+---
+
+## Adding Debug to New Plugins
+
+```typescript
+import { createDebug } from "../lib/baba-debug";
+import { tool } from "@opencode-ai/plugin";
+
+export default async ({ client, directory }: any) => {
+  const log = createDebug("my-new-plugin", client);
+  
+  await log.debug("plugin initialized", { directory, customConfig: "value" });
+  
+  return {
+    tool: {
+      my_new_plugin_debug: tool({
+        description: "Debug my-new-plugin: dump internal state.",
+        args: {
+          action: tool.schema
+            .enum(["state", "config"])
+            .default("state")
+            .describe("What to dump"),
+        },
+        async execute(args) {
+          await log.stateDump("my-new-plugin", {
+            config: { customConfig: "value" },
+            internalState: myInternalState,
+          });
+          return "State dumped to debug outputs";
+        },
+      }),
+    },
+    
+    "tool.execute.after": async (input) => {
+      await log.debug("tool executed", { tool: input.tool, session: input.sessionID });
+    },
+  };
+};
+```
+
+**Required patterns:**
+
+1. `const log = createDebug("plugin-name", client)` at factory start
+2. `await log.debug("plugin initialized", { config })` immediately after
+3. Use `log.debug/info/warn/error` at all key decision points
+4. Add `baba_<plugin>_debug` tool with `stateDump`
+5. Include `session` in meta whenever available
+
+---
+
+## Integration with opencode
+
+### Viewing logs in opencode UI
+
+1. Open opencode
+2. Navigate to **Logs** tab
+3. Filter by **Service** = plugin name (e.g., `baba-lock-enforce`)
+4. Filter by **Level** = warn/error for issues
+
+### Programmatic access
+
+```bash
+# Tail live JSONL
+tail -f /tmp/baba-debug.jsonl | jq '.'
+
+# Search for contention events
+jq 'select(.msg | contains("contention"))' /tmp/baba-debug.jsonl
+
+# Timeline for a session
+jq 'select(.meta.session=="abc123") | .ts + " " + .level + " " + .msg' /tmp/baba-debug.jsonl
+```
+
+---
+
+## Philosophy
+
+> **Debug is not optional.** Every plugin behavior is visible by default. The system is designed so that:
+>
+> - Production runs at `info` level (key events only)
+> - Development runs at `debug` level (full trace)
+> - Issues are reproducible via `stateDump` tools
+> - No "works on my machine" — logs are structured and portable
+
+The debug system replaces ad-hoc `console.log` with a consistent, filterable, multi-destination observability layer that works the same way across all 13 Baba plugins.

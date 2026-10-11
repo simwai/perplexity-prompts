@@ -78,9 +78,9 @@ export default async ({ client, $, project, directory, worktree }: {
         description: "Debug baba-convention-review plugin: dump internal state.",
         args: {
           action: tool.schema
-            .enum(["state", "sessions"])
+            .enum(["state", "sessions", "config"])
             .default("state")
-            .describe("What to dump: state (all), sessions (convention states per session)"),
+            .describe("What to dump: state (all), sessions (convention states per session), config (plugin config)"),
         },
         async execute(args) {
           const action = args.action ?? "state";

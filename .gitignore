@@ -71,19 +71,17 @@ scratch/
 todo.md
 WIP.md
 
-# Scratch and WIP files
-*.tmp
-*.bak
-*.orig
-scratch/
-todo.md
-WIP.md
-
 # Local logs
 .logs/
 
 # Session lock state (machine-local, recreated per session)
 .session-locks/
+
+# Local plugin runtime state (machine-local; schema rebuilt by db/migrate.ts)
+.opencode/memory.db
+.opencode/memory.db-journal
+.opencode/memory.db-wal
+.opencode/memory.db-shm
 
 # Local sync targets (machine-specific paths)
 targets.json

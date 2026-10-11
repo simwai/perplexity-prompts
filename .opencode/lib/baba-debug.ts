@@ -5,6 +5,8 @@
  */
 
 import { type Plugin } from "@opencode-ai/plugin";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 export type DebugLevel = "debug" | "info" | "warn" | "error";
 
@@ -25,6 +27,7 @@ type LogDestination = "console" | "file" | "client" | "all";
 
 interface DebugConfig {
   enabled: boolean;
+  pluginFilter: string[] | "*";
   level: DebugLevel;
   destinations: LogDestination[];
   filePath?: string;
@@ -40,11 +43,24 @@ const LEVEL_ORDER: Record<DebugLevel, number> = {
 
 let globalConfig: DebugConfig | null = null;
 const fileBuffers = new Map<string, string[]>();
+const fileWriteQueues = new Map<string, Promise<void>>();
+const fileLineCounts = new Map<string, number>();
+
+/**
+ * Default JSONL sink.
+ *
+ * The opencode config schema sets `Config.additionalProperties: false` and
+ * declares no `env` property, so a config-declared BABA_DEBUG_FILE is silently
+ * dropped and never reaches `process.env`. Defaulting the path here keeps the
+ * file destination alive without an out-of-band OS environment variable.
+ * BABA_DEBUG_FILE still overrides it when it really is set.
+ */
+export const DEFAULT_DEBUG_FILE = join(tmpdir(), "baba-debug.jsonl");
 
 function parseDebugEnv(): DebugConfig {
   const debugEnv = process.env.BABA_DEBUG;
   const levelEnv = (process.env.BABA_DEBUG_LEVEL ?? "info").toLowerCase() as DebugLevel;
-  const fileEnv = process.env.BABA_DEBUG_FILE;
+  const fileEnv = process.env.BABA_DEBUG_FILE || DEFAULT_DEBUG_FILE;
   const maxLinesEnv = parseInt(process.env.BABA_DEBUG_MAX_LINES ?? "10000", 10);
 
   // Default: all plugins enabled unless explicitly disabled
@@ -59,11 +75,15 @@ function parseDebugEnv(): DebugConfig {
     }
   }
 
-  const destinations: LogDestination[] = ["console", "client"];
-  if (fileEnv) destinations.push("file");
+  const destinations: LogDestination[] = ["console", "client", "file"];
+
+  // Store the plugin filter (string[] | "*") in enabled for shouldLog to use
+  // Boolean enabled flag is derived from it
+  const isEnabled = enabledPlugins.length > 0 || enabledPlugins === "*";
 
   return {
-    enabled: enabledPlugins.length > 0 || enabledPlugins === "*",
+    enabled: isEnabled,
+    pluginFilter: enabledPlugins,
     level: LEVEL_ORDER[levelEnv] !== undefined ? levelEnv : "info",
     destinations,
     filePath: fileEnv,
@@ -76,7 +96,8 @@ function shouldLog(pluginName: string, level: DebugLevel): boolean {
     globalConfig = parseDebugEnv();
   }
   if (!globalConfig.enabled) return false;
-  if (globalConfig.enabled !== "*" && !globalConfig.enabled.includes(pluginName)) return false;
+  const filter = (globalConfig as any).pluginFilter ?? "*";
+  if (filter !== "*" && !filter.includes(pluginName)) return false;
   return LEVEL_ORDER[level] >= LEVEL_ORDER[globalConfig.level];
 }
 
@@ -87,24 +108,55 @@ function writeToConsole(entry: DebugEntry): void {
   console.error(`[${entry.plugin}] ${entry.level.toUpperCase()}: ${entry.msg}${metaStr}`);
 }
 
+/**
+ * Keep only the newest `maxLines` entries.
+ *
+ * The buffer limit alone never trimmed the file: every flush appended and then
+ * cleared the in-memory buffer, so the on-disk log grew without bound for the
+ * whole process lifetime.
+ */
+async function rotateIfOversized(filePath: string, maxLines: number, added: number): Promise<void> {
+  const written = (fileLineCounts.get(filePath) ?? 0) + added;
+  fileLineCounts.set(filePath, written);
+  if (written <= maxLines) return;
+
+  const fs = await import("node:fs/promises");
+  const lines = (await fs.readFile(filePath, "utf-8")).split("\n").filter(Boolean);
+  const kept = lines.slice(-maxLines);
+  await fs.writeFile(filePath, `${kept.join("\n")}\n`, "utf-8");
+  fileLineCounts.set(filePath, kept.length);
+}
+
 async function writeToFile(entry: DebugEntry, filePath: string, maxLines: number): Promise<void> {
-  const line = JSON.stringify(entry);
   const buffer = fileBuffers.get(filePath) ?? [];
-  buffer.push(line);
-  
-  if (buffer.length > maxLines) {
-    buffer.splice(0, buffer.length - maxLines);
-  }
+  buffer.push(JSON.stringify(entry));
   fileBuffers.set(filePath, buffer);
 
-  // Async flush - don't await to avoid blocking
-  try {
-    const fs = await import("node:fs/promises");
-    await fs.writeFile(filePath, buffer.join("\n") + "\n", { flag: "a" });
-    buffer.length = 0; // Clear after successful write
-  } catch {
-    // Keep in buffer for next attempt
-  }
+  // Serialize per path. Concurrent emit() calls share one buffer, so an
+  // unserialized append can flush the same line twice or interleave two writes.
+  const queued = (fileWriteQueues.get(filePath) ?? Promise.resolve())
+    .then(async () => {
+      const pending = fileBuffers.get(filePath) ?? [];
+      if (pending.length === 0) return;
+      const batch = pending.splice(0, pending.length);
+      const fs = await import("node:fs/promises");
+      try {
+        await fs.appendFile(filePath, `${batch.join("\n")}\n`, "utf-8");
+      } catch (err) {
+        // Requeue so the next flush retries rather than losing the entries.
+        const current = fileBuffers.get(filePath) ?? [];
+        current.unshift(...batch);
+        fileBuffers.set(filePath, current);
+        throw err;
+      }
+      await rotateIfOversized(filePath, maxLines, batch.length);
+    })
+    .catch(() => {
+      // Logging must never break the caller.
+    });
+
+  fileWriteQueues.set(filePath, queued);
+  await queued;
 }
 
 async function writeToClient(client: any, entry: DebugEntry): Promise<void> {
@@ -134,6 +186,8 @@ export class BabaDebug {
   }
 
   private shouldLog(level: DebugLevel): boolean {
+    const filter = (this.config as any).pluginFilter ?? "*";
+    if (filter !== "*" && !filter.includes(this.pluginName)) return false;
     return LEVEL_ORDER[level] >= LEVEL_ORDER[this.config.level];
   }
 
@@ -235,18 +289,22 @@ export function getDebugConfig(): DebugConfig {
 }
 
 /**
- * Flush any pending file buffers. Call on session end.
+ * Flush anything still buffered. Normal flushes drain on their own, so this is
+ * a shutdown safety net: await the per-path queue first, then append whatever
+ * survived a failed write.
  */
 export async function flushDebugBuffers(): Promise<void> {
-  for (const [filePath, buffer] of fileBuffers.entries()) {
-    if (buffer.length > 0) {
-      try {
-        const fs = await import("node:fs/promises");
-        await fs.writeFile(filePath, buffer.join("\n") + "\n", { flag: "a" });
-        buffer.length = 0;
-      } catch {
-        // Best effort
-      }
+  const { maxFileLines } = getDebugConfig();
+  for (const [filePath, buffer] of fileBuffers) {
+    await fileWriteQueues.get(filePath);
+    const pending = buffer.splice(0, buffer.length);
+    if (pending.length === 0) continue;
+    const fs = await import("node:fs/promises");
+    try {
+      await fs.appendFile(filePath, `${pending.join("\n")}\n`, "utf-8");
+      await rotateIfOversized(filePath, maxFileLines, pending.length);
+    } catch {
+      buffer.unshift(...pending);
     }
   }
 }

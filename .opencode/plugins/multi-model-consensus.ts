@@ -128,7 +128,7 @@ export default async (_ctx: any): Promise<any> => {
           action: tool.schema
             .enum(["state", "enabled", "lastTool"])
             .default("state")
-            .describe("What to dump: state (all), enabled (enabled sessions), lastTool (last tool use timestamps)"),
+            .describe("What to dump: state (all), enabled (mode state), lastTool (tracked tool usage)"),
         },
         async execute(args) {
           const action = args.action ?? "state";

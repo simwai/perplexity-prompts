@@ -48,12 +48,17 @@
     "key_files": "deny"
   },
 
-  // Debug output to Windows temp folder
-  "env": {
-    "BABA_DEBUG": "*",
-    "BABA_DEBUG_FILE": "C:\\Users\\Simon\\AppData\\Local\\Temp\\baba-debug.jsonl",
-    "BABA_DEBUG_LEVEL": "info"
-  },
+  // Plugin debug output needs no config here. The config schema sets
+  // additionalProperties: false and declares no `env` property, so an `env`
+  // block was silently dropped and never reached process.env -- that is why
+  // baba-debug.jsonl never appeared. .opencode/lib/baba-debug.ts now defaults
+  // the JSONL sink to %TEMP%\baba-debug.jsonl. Console and the in-app log
+  // viewer are always on. To retune, set these as real OS environment
+  // variables before launching opencode:
+  //   BABA_DEBUG_FILE    -- override the JSONL path
+  //   BABA_DEBUG_LEVEL   -- "debug" for the full trace incl. "plugin initialized"
+  //   BABA_DEBUG         -- comma-separated plugin names, or "" to disable
+  //   BABA_DEBUG_MAX_LINES -- on-disk rotation cap (default 10000)
 
 // opencode plugins. @latest is fine for personal/dev use; pin a version
 // when reproducibility matters.

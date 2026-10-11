@@ -108,7 +108,7 @@ export default async ({ client, $, project, directory, worktree }: {
           action: tool.schema
             .enum(["state", "assessed", "messages"])
             .default("state")
-            .describe("What to dump: state (all), assessed (assessed sessions), messages (message text buffer)"),
+            .describe("What to dump: state (all), assessed (assessed sessions), messages (message tracking)"),
         },
         async execute(args) {
           const action = args.action ?? "state";
@@ -162,7 +162,7 @@ export default async ({ client, $, project, directory, worktree }: {
         // message.updated can arrive before the message's parts, so defer to the
         // next tick and judge whatever text the bus accumulated by then.
         const sessionId = info.sessionID;
-        setTimeout(() => {
+        setTimeout(async () => {
           if (assessed.has(sessionId)) return;
           assessed.add(sessionId);
 

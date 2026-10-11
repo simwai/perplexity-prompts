@@ -89,7 +89,7 @@ export default async ({ client, $, project, directory, worktree }: {
           const action = args.action ?? "state";
           switch (action) {
             case "sessions": {
-              const sessions: Record<string, LoaderState> = {};
+              const sessions: Record<string, { requiredFiles: string[]; loadedFiles: string[]; lastNotifiedPhase: string; planVersion: number }> = {};
               for (const [id, state] of loaderStates.entries()) {
                 sessions[id] = {
                   requiredFiles: Array.from(state.requiredFiles),
@@ -113,7 +113,7 @@ export default async ({ client, $, project, directory, worktree }: {
                       lastNotifiedPhase: state.lastNotifiedPhase,
                       planVersion: state.planVersion,
                     },
-                  ])
+                  ]),
                 ),
               });
               return "State dumped to debug outputs (console, file, client.app.log)";

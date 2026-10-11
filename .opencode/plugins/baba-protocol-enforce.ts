@@ -230,7 +230,7 @@ export default async ({
           const action = args.action ?? "state";
           switch (action) {
             case "sessions": {
-              const sessions: Record<string, ProtocolState> = {};
+              const sessions: Record<string, { sessionId: string; currentPhase: string; specVersion: string | null; hasSpec: boolean; editedFiles: string[]; protocolsChecked: string[]; planVersion: number }> = {};
               for (const [id, state] of protocolStates.entries()) {
                 sessions[id] = {
                   sessionId: state.sessionId,

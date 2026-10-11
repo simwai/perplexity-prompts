@@ -321,9 +321,9 @@ export default async ({
         description: "Debug baba-drift plugin: dump internal state.",
         args: {
           action: tool.schema
-            .enum(["state"])
+            .enum(["state", "sessions", "drift"])
             .default("state")
-            .describe("What to dump: state (plugin state)"),
+            .describe("What to dump: state (all), sessions (drift states per session), drift (drift report)"),
         },
         async execute(args) {
           await log.stateDump("baba-drift", {

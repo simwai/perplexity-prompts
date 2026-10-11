@@ -48,7 +48,7 @@ export default async (_ctx: any) => {
           action: tool.schema
             .enum(["state", "markers", "override"])
             .default("state")
-            .describe("What to dump: state (all), markers (detection markers), override (override text)"),
+            .describe("What to dump: state (all), markers (detected markers), override (override text)"),
         },
         async execute(args) {
           const action = args.action ?? "state";
