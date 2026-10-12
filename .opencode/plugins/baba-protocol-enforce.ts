@@ -1,5 +1,5 @@
 /**
- * Protocol Enforcement Plugin for opencode
+ * Protocol Enforcement Plugin for opencode (V2)
  *
  * Enforces cross-cutting protocols at phase transitions:
  * - Artifact handling (gitignore, .gitattributes)
@@ -8,19 +8,26 @@
  * - Library selection
  * - Spec lifecycle / DRIFT
  *
- * Phase transitions are detected via phase-detect.ts, which parses
- * assistant message text for [PHASE: X] headers. opencode session
- * metadata does not carry phase information.
+ * Phase transitions are detected via baba-phase-detect, which parses assistant
+ * message text for [PHASE: X] headers. opencode session metadata does not carry
+ * phase information, so the phase is re-derived from the message history the
+ * `context` session hook hands over.
+ *
+ * V2 changes:
+ *   - `tool.execute.before` / `tool.execute.after` became `ctx.tool.hook(...)`.
+ *     The mutable argument bag is `event.input` (V1: `output.args`), and a
+ *     throw from `execute.before` still cancels the call.
+ *   - `experimental.chat.messages.transform` became `ctx.session.hook("context")`,
+ *     which supplies `event.messages` and `event.sessionID` directly -- the V1
+ *     hook's input was typed `{}` and carried no id at all.
+ *   - The V1 `event` hook became an async-iterable `ctx.event.subscribe()`.
  */
 
-import {
-  getCurrentPhase,
-  updatePhaseFromMessages,
-} from "../lib/baba-phase-detect";
-import { sessionIdFromEvent } from "../lib/baba-session-id";
 import { access, readFile } from "node:fs/promises";
+import { Plugin } from "@opencode/plugin";
+import { getCurrentPhase, updatePhaseFromMessages } from "../lib/baba-phase-detect";
 import { createDebug } from "../lib/baba-debug";
-import { tool } from "@opencode-ai/plugin";
+import { subscribeToEvents } from "../lib/baba-session-id";
 
 async function fileExists(path: string): Promise<boolean> {
   try {
@@ -43,7 +50,13 @@ interface ProtocolState {
 
 const protocolStates = new Map<string, ProtocolState>();
 
-const PHASE_TRANSITIONS = {
+interface ProtocolCheck {
+  protocol: string;
+  passed: boolean;
+  message: string;
+}
+
+const PHASE_TRANSITIONS: Record<string, string[]> = {
   REVIEW: ["artifact-handling", "pre-commit"],
   PLAN: ["cross-team"],
   PATCH: [],
@@ -51,13 +64,12 @@ const PHASE_TRANSITIONS = {
   CHECKLIST: ["artifact-handling"],
 };
 
-const PROTOCOL_CHECKS = {
-  "artifact-handling": async (
-    directory: string,
-    _editedFiles: string[],
-    _state: any,
-  ) => {
-    const checks = [];
+const PROTOCOL_CHECKS: Record<
+  string,
+  (directory: string, editedFiles: string[], state: ProtocolState) => Promise<ProtocolCheck[]>
+> = {
+  "artifact-handling": async (directory) => {
+    const checks: ProtocolCheck[] = [];
     const gitignorePath = `${directory}/.gitignore`;
     const hasGitignore = await fileExists(gitignorePath);
     if (!hasGitignore) {
@@ -91,12 +103,8 @@ const PROTOCOL_CHECKS = {
     return checks;
   },
 
-  "pre-commit": async (
-    directory: string,
-    _editedFiles: string[],
-    _state: any,
-  ) => {
-    const checks = [];
+  "pre-commit": async (directory) => {
+    const checks: ProtocolCheck[] = [];
     const precommitPath = `${directory}/.pre-commit-config.yaml`;
     const huskyPath = `${directory}/.husky/pre-commit`;
     const hasPrecommit = await fileExists(precommitPath);
@@ -107,39 +115,31 @@ const PROTOCOL_CHECKS = {
         passed: false,
         message: "No pre-commit hooks configured (pre-commit or husky)",
       });
-    } else {
-      if (hasPrecommit) {
-        const content = await readFile(precommitPath, "utf-8");
-        const required = ["formatter", "linter", "secret"];
-        for (const req of required) {
-          if (!content.toLowerCase().includes(req)) {
-            checks.push({
-              protocol: "pre-commit",
-              passed: false,
-              message: `Pre-commit may lack ${req} hook`,
-            });
-          }
+    } else if (hasPrecommit) {
+      const content = await readFile(precommitPath, "utf-8");
+      const required = ["formatter", "linter", "secret"];
+      for (const req of required) {
+        if (!content.toLowerCase().includes(req)) {
+          checks.push({
+            protocol: "pre-commit",
+            passed: false,
+            message: `Pre-commit may lack ${req} hook`,
+          });
         }
       }
     }
     return checks;
   },
 
-  "cross-team": async (
-    directory: string,
-    _editedFiles: string[],
-    _state: any,
-  ) => {
-    const checks = [];
+  "cross-team": async (directory) => {
+    const checks: ProtocolCheck[] = [];
     const changesPath = `${directory}/CHANGES_REQUIRED.md`;
     const hasChanges = await fileExists(changesPath);
     if (hasChanges) {
       const content = await readFile(changesPath, "utf-8");
       const unresolved = content
         .split("## ")
-        .filter(
-          (s: string) => s.includes("Priority:") && !s.includes("Resolved:"),
-        ).length;
+        .filter((s) => s.includes("Priority:") && !s.includes("Resolved:")).length;
       if (unresolved > 0) {
         checks.push({
           protocol: "cross-team",
@@ -151,12 +151,8 @@ const PROTOCOL_CHECKS = {
     return checks;
   },
 
-  "spec-fileExists": async (
-    directory: string,
-    _editedFiles: string[],
-    state: any,
-  ) => {
-    const checks = [];
+  "spec-fileExists": async (directory, _editedFiles, state) => {
+    const checks: ProtocolCheck[] = [];
     const specFile = `${directory}/SPEC.md`;
     const hasSpec = await fileExists(specFile);
     const specVersion = state.specVersion;
@@ -171,20 +167,17 @@ const PROTOCOL_CHECKS = {
   },
 };
 
-async function checkProtocols(state: ProtocolState, directory: string) {
-  const requiredProtocols =
-    PHASE_TRANSITIONS[state.currentPhase as keyof typeof PHASE_TRANSITIONS] ||
-    [];
-  const allChecks = [];
+async function checkProtocols(state: ProtocolState, directory: string): Promise<ProtocolCheck[]> {
+  const requiredProtocols = PHASE_TRANSITIONS[state.currentPhase] ?? [];
+  const allChecks: ProtocolCheck[] = [];
 
   for (const protocol of requiredProtocols) {
     if (state.protocolsChecked.has(protocol)) continue;
-    const checkFn = PROTOCOL_CHECKS[protocol as keyof typeof PROTOCOL_CHECKS];
-    if (checkFn) {
-      const checks = await checkFn(directory, state.editedFiles, state);
-      allChecks.push(...checks);
-      state.protocolsChecked.add(protocol);
-    }
+    const checkFn = PROTOCOL_CHECKS[protocol];
+    if (!checkFn) continue;
+    const checks = await checkFn(directory, state.editedFiles, state);
+    allChecks.push(...checks);
+    state.protocolsChecked.add(protocol);
   }
 
   return allChecks;
@@ -199,93 +192,118 @@ function sanitizeGitPushOutput(output: string): string {
     .replace(/https?:\/\/[^@\s]+@/g, "https://<redacted>@");
 }
 
-export default async ({
-  client,
-  $,
-  project,
-  directory,
-  worktree,
-}: {
-  client: any;
-  $: any;
-  project: any;
-  directory: string;
-  worktree: string;
-}) => {
-  const log = createDebug("baba-protocol-enforce", client);
+function readStringField(input: unknown, key: string): string | undefined {
+  if (typeof input !== "object" || input === null) return undefined;
+  const value = (input as Record<string, unknown>)[key];
+  return typeof value === "string" ? value : undefined;
+}
 
-  await log.debug("plugin initialized", { directory, phaseTransitions: PHASE_TRANSITIONS });
+function readDataString(event: unknown, key: string): string | undefined {
+  if (typeof event !== "object" || event === null) return undefined;
+  const data = (event as Record<string, unknown>).data;
+  if (typeof data !== "object" || data === null) return undefined;
+  const value = (data as Record<string, unknown>)[key];
+  return typeof value === "string" && value.length > 0 ? value : undefined;
+}
 
-  return {
-    tool: {
-      baba_protocol_enforce_debug: tool({
+/** Narrows the mutable V2 tool input bag to its shell command argument. */
+function readCommand(event: { input: unknown }): { set: (next: string) => void; raw: string } | undefined {
+  if (typeof event.input !== "object" || event.input === null) return undefined;
+  const args = event.input as { command?: unknown };
+  const raw = String(args.command ?? "").trim();
+  return { set: (next: string) => { args.command = next; }, raw };
+}
+
+export default Plugin.define({
+  id: "baba-protocol-enforce",
+
+  setup(ctx) {
+    const directory = ctx.location.directory;
+    const log = createDebug("baba-protocol-enforce");
+
+    void log.debug("plugin initialized", { directory, phaseTransitions: PHASE_TRANSITIONS });
+
+    void subscribeToEvents(ctx.event.subscribe(), async (event) => {
+      if (event.type !== "session.created" && event.type !== "session.deleted") return;
+      const sessionId = readDataString(event, "sessionID");
+      if (!sessionId) return;
+
+      if (event.type === "session.created") {
+        protocolStates.set(sessionId, {
+          sessionId,
+          currentPhase: "STARTUP",
+          specVersion: null,
+          hasSpec: false,
+          editedFiles: [],
+          protocolsChecked: new Set(),
+          planVersion: 1,
+        });
+        await log.info("session created", { session: sessionId, phase: "STARTUP" });
+        return;
+      }
+
+      void log.debug("session deleted, cleaning up", { session: sessionId });
+      protocolStates.delete(sessionId);
+    });
+
+    void ctx.tool.transform((editor) => {
+      editor.add({
+        name: "baba_protocol_enforce_debug",
         description: "Debug baba-protocol-enforce plugin: dump internal state.",
-        args: {
-          action: tool.schema
-            .enum(["state", "sessions", "protocols"])
-            .default("state")
-            .describe("What to dump: state (all), sessions (protocol states per session), protocols (phase transition config)"),
+        input: {
+          type: "object",
+          properties: {
+            action: {
+              type: "string",
+              enum: ["state", "sessions", "protocols"],
+              default: "state",
+              description:
+                "What to dump: state (all), sessions (protocol states per session), protocols (phase transition config)",
+            },
+          },
         },
-        async execute(args) {
-          const action = args.action ?? "state";
-          switch (action) {
-            case "sessions": {
-              const sessions: Record<string, { sessionId: string; currentPhase: string; specVersion: string | null; hasSpec: boolean; editedFiles: string[]; protocolsChecked: string[]; planVersion: number }> = {};
-              for (const [id, state] of protocolStates.entries()) {
-                sessions[id] = {
-                  sessionId: state.sessionId,
-                  currentPhase: state.currentPhase,
-                  specVersion: state.specVersion,
-                  hasSpec: state.hasSpec,
-                  editedFiles: state.editedFiles,
-                  protocolsChecked: Array.from(state.protocolsChecked),
-                  planVersion: state.planVersion,
-                };
-              }
-              return JSON.stringify(sessions, null, 2);
+        async execute(input: unknown) {
+          const action = readStringField(input, "action") ?? "state";
+          if (action === "sessions") {
+            const sessions: Record<string, unknown> = {};
+            for (const [id, state] of protocolStates) {
+              sessions[id] = {
+                sessionId: state.sessionId,
+                currentPhase: state.currentPhase,
+                specVersion: state.specVersion,
+                hasSpec: state.hasSpec,
+                editedFiles: state.editedFiles,
+                protocolsChecked: [...state.protocolsChecked],
+                planVersion: state.planVersion,
+              };
             }
-            case "protocols":
-              return JSON.stringify({ phaseTransitions: PHASE_TRANSITIONS }, null, 2);
-            case "state":
-            default: {
-              await log.stateDump("baba-protocol-enforce", {
-                sessionCount: protocolStates.size,
-                sessions: Object.fromEntries(
-                  Array.from(protocolStates.entries()).map(([id, state]) => [
-                    id,
-                    {
-                      sessionId: state.sessionId,
-                      currentPhase: state.currentPhase,
-                      specVersion: state.specVersion,
-                      hasSpec: state.hasSpec,
-                      editedFiles: state.editedFiles,
-                      protocolsChecked: Array.from(state.protocolsChecked),
-                      planVersion: state.planVersion,
-                    },
-                  ])
-                ),
-                phaseTransitions: PHASE_TRANSITIONS,
-              });
-              return "State dumped to debug outputs (console, file, client.app.log)";
-            }
+            return { output: JSON.stringify(sessions, null, 2) };
           }
+          if (action === "protocols") {
+            return { output: JSON.stringify({ phaseTransitions: PHASE_TRANSITIONS }, null, 2) };
+          }
+          await log.stateDump("baba-protocol-enforce", {
+            sessionCount: protocolStates.size,
+            sessions: Object.fromEntries(protocolStates),
+            phaseTransitions: PHASE_TRANSITIONS,
+          });
+          return { output: "State dumped to debug outputs (console, file, client.app.log)" };
         },
-      }),
-    },
+      });
+    });
 
-    "tool.execute.before": async (
-      input: { tool: string; sessionID: string; callID: string },
-      output: { args: any },
-    ) => {
-      if (input.tool !== "bash") return;
+    void ctx.tool.hook("execute.before", async (event) => {
+      if (event.tool !== "bash") return;
 
-      const cmd = String(output.args?.command || "").trim();
+      const command = readCommand(event);
+      if (!command) return;
+      const cmd = command.raw;
 
-      // 1. git remote -v / get-url → block via tokenized shell matching,
-      //    so `cd /repo && git remote -v` and `git remote -v | cat` cannot evade.
+      // git remote -v / get-url: block via tokenized shell matching, so
+      // `cd /repo && git remote -v` and `git remote -v | cat` cannot evade.
       if (/(^|[;&|]\s*)git\b[^;&|]*\bremote\b[^;&|]*\s-v\b/.test(cmd)) {
         await log.debug("blocking git remote -v, replacing with git remote", { command: cmd });
-        output.args.command = "git remote";
+        command.set("git remote");
         return;
       }
       if (/(^|[;&|]\s*)git\b[^;&|]*\bremote\b[^;&|]*\bget-url\b/.test(cmd)) {
@@ -295,74 +313,35 @@ export default async ({
             "Use `git remote` (names only). If you need to verify a URL shape, ask the user.",
         );
       }
-    },
+    });
 
-    "tool.execute.after": async (
-      input: { tool: string; args: any },
-      output: { output: string },
-    ) => {
-      if (input.tool !== "bash") return;
+    void ctx.tool.hook("execute.after", async (event) => {
+      if (event.tool !== "bash") return;
+      if (event.status !== "completed") return;
 
-      const cmd = (input.args?.command || "").trim();
-      let out = output.output || "";
+      const command = readCommand(event);
+      if (!command) return;
+      if (!/^(|[;&|]\s*)git\b[^;&|]*\bpush\b/.test(command.raw)) return;
 
-      // Sanitize git push output
-      if (/^(|[;&|]\s*)git\b[^;&|]*\bpush\b/.test(cmd)) {
-        await log.debug("sanitizing git push output", { command: cmd });
-        out = sanitizeGitPushOutput(out);
-      }
+      const result = event.result as { output?: unknown; content?: unknown };
+      const out = typeof result?.output === "string" ? result.output : undefined;
+      if (out === undefined) return;
 
-      output.output = out;
-    },
+      await log.debug("sanitizing git push output", { command: command.raw });
+      // Result fields are readonly, so the sanitized text goes back through a
+      // fresh object rather than an in-place mutation.
+      (event as { result: unknown }).result = { ...result, output: sanitizeGitPushOutput(out) };
+    });
 
-    event: async ({ event }: { event: any }) => {
-      const sessionId = sessionIdFromEvent(event.properties);
-      if (!sessionId) return;
-
-      let state = protocolStates.get(sessionId);
-      if (!state) {
-        state = {
-          sessionId,
-          currentPhase: "STARTUP",
-          specVersion: null,
-          hasSpec: false,
-          editedFiles: [],
-          protocolsChecked: new Set(),
-          planVersion: 1,
-        };
-        protocolStates.set(sessionId, state);
-      }
-
-      if (event.type === "session.created") {
-        state.currentPhase = "STARTUP";
-        state.protocolsChecked.clear();
-        state.planVersion = 1;
-        await log.info("session created", { session: sessionId, phase: "STARTUP" });
-        return;
-      }
-
-      if (event.type === "session.deleted") {
-        await log.debug("session deleted, cleaning up", { session: sessionId });
-        protocolStates.delete(sessionId);
-        return;
-      }
-    },
-
-    "experimental.chat.messages.transform": async (
-      input: Record<string, unknown>,
-      output: { messages: any[] },
-    ) => {
-      // This hook's input is typed `{}` and carries no session id, so it is read
-      // off the message info instead. Reading input.sessionID always yields
-      // undefined, which silently disabled phase tracking.
-      const last = output.messages[output.messages.length - 1];
-      const sessionId = last?.info?.sessionID ?? last?.sessionID;
-      if (!sessionId) return;
+    void ctx.session.hook("context", async (event) => {
+      const sessionId = event.sessionID;
+      if (typeof sessionId !== "string" || sessionId.length === 0) return;
+      if (!Array.isArray(event.messages)) return;
 
       const state = protocolStates.get(sessionId);
       if (!state) return;
 
-      updatePhaseFromMessages(sessionId, output.messages);
+      updatePhaseFromMessages(sessionId, event.messages);
 
       const newPhase = getCurrentPhase(sessionId);
       if (!newPhase || newPhase === state.currentPhase) return;
@@ -373,22 +352,26 @@ export default async ({
 
       await log.info("phase transition", { session: sessionId, from: previousPhase, to: newPhase });
 
-      // Signal PLAN v1 start at REVIEW → PLAN transition
+      // Signal PLAN v1 start at REVIEW -> PLAN transition
       if (previousPhase === "REVIEW" && newPhase === "PLAN") {
         state.planVersion = 1;
-        await log.info("REVIEW→PLAN transition, planVersion=1", { session: sessionId });
+        await log.info("REVIEW->PLAN transition, planVersion=1", { session: sessionId });
       }
 
       const checks = await checkProtocols(state, directory);
       const failed = checks.filter((c) => !c.passed);
 
       if (failed.length > 0) {
-        await log.warn("protocol checks failed", { 
-          session: sessionId, 
-          phase: newPhase, 
-          failed: failed.map((f) => `${f.protocol}: ${f.message}`) 
+        await log.warn("protocol checks failed", {
+          session: sessionId,
+          phase: newPhase,
+          failed: failed.map((f) => `${f.protocol}: ${f.message}`),
         });
       }
-    },
-  };
-};
+    });
+
+    return () => {
+      protocolStates.clear();
+    };
+  },
+});

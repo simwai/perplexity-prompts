@@ -377,49 +377,80 @@ BABA_DEBUG=baba-lock-enforce opencode
 
 ## Adding Debug to New Plugins
 
-```typescript
-import { createDebug } from "../lib/baba-debug";
-import { tool } from "@opencode-ai/plugin";
+OpenCode Desktop runs 1.19.0, which is the **V2** plugin API. New plugins must
+use the V2 entrypoint; the V1 shape below will not load.
 
-export default async ({ client, directory }: any) => {
-  const log = createDebug("my-new-plugin", client);
-  
-  await log.debug("plugin initialized", { directory, customConfig: "value" });
-  
-  return {
-    tool: {
-      my_new_plugin_debug: tool({
+```typescript
+import { Plugin } from "@opencode/plugin";
+import { createDebug } from "../lib/baba-debug";
+import { subscribeToEvents } from "../lib/baba-session-id";
+
+export default Plugin.define({
+  id: "my-new-plugin",
+
+  setup(ctx) {
+    // V2 has no client.app.log, so the logger gets no client. Console and
+    // JSONL-file destinations still work.
+    const log = createDebug("my-new-plugin");
+
+    void log.debug("plugin initialized", { directory: ctx.location.directory });
+
+    void ctx.tool.transform((editor) => {
+      editor.add({
+        name: "my_new_plugin_debug",
         description: "Debug my-new-plugin: dump internal state.",
-        args: {
-          action: tool.schema
-            .enum(["state", "config"])
-            .default("state")
-            .describe("What to dump"),
+        input: {
+          type: "object",
+          properties: {
+            action: {
+              type: "string",
+              enum: ["state", "config"],
+              default: "state",
+              description: "What to dump",
+            },
+          },
         },
-        async execute(args) {
+        async execute(input: unknown) {
+          const action = readAction(input);
+          void action;
           await log.stateDump("my-new-plugin", {
             config: { customConfig: "value" },
-            internalState: myInternalState,
           });
-          return "State dumped to debug outputs";
+          return { output: "State dumped to debug outputs" };
         },
-      }),
-    },
-    
-    "tool.execute.after": async (input) => {
-      await log.debug("tool executed", { tool: input.tool, session: input.sessionID });
-    },
-  };
-};
+      });
+    });
+
+    void ctx.tool.hook("execute.after", async (event) => {
+      await log.debug("tool executed", { tool: event.tool, session: event.sessionID });
+    });
+
+    void subscribeToEvents(ctx.event.subscribe(), async (event) => {
+      // The session id moved to event.data under V2.
+      await log.debug("event", { type: event.type });
+    });
+
+    return () => { /* cleanup */ };
+  },
+});
 ```
 
 **Required patterns:**
 
-1. `const log = createDebug("plugin-name", client)` at factory start
-2. `await log.debug("plugin initialized", { config })` immediately after
-3. Use `log.debug/info/warn/error` at all key decision points
-4. Add `baba_<plugin>_debug` tool with `stateDump`
-5. Include `session` in meta whenever available
+1. `Plugin.define({ id, setup })` from `@opencode/plugin` -- the V1 default
+   async-function export does not load under V2
+2. `createDebug(pluginName)` with no client -- V2 has no `client.app.log`
+3. Register tools with `ctx.tool.transform`; schemas are **JSON Schema**, not Zod
+4. `execute` args arrive as `unknown`; narrow them, never cast to `any`
+5. `execute` returns `{ output: string }`, not a bare string
+6. Read the session id from `event.data.sessionID`, not `event.properties`
+7. `$` (Bun shell) is not on the V2 context -- use `node:fs/promises`
+
+8. `const log = createDebug("plugin-name", client)` at factory start
+9. `await log.debug("plugin initialized", { config })` immediately after
+10. Use `log.debug/info/warn/error` at all key decision points
+11. Add `baba_<plugin>_debug` tool with `stateDump`
+12. Include `session` in meta whenever available
 
 ---
 

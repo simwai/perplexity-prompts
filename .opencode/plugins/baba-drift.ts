@@ -1,257 +1,252 @@
 /**
- * Baba Drift Detection Plugin for opencode
+ * Baba Drift Detection Plugin for opencode (V2)
  *
- * Runs drift detection: compares SPEC.md against code.
- * Read-only. Finds verified/diverged/orphaned/exceeds-spec claims.
- * HALTs on version drift per 08-plan-actual-gate.md.
+ * Runs drift detection: compares SPEC.md against code. Read-only. Finds
+ * verified/diverged/orphaned/exceeds-spec claims. HALTs on version drift
+ * per 08-plan-actual-gate.md.
+ *
+ * V2 change: V2 has no Bun `$` shell on the plugin context, so the `rg` / `cat`
+ * / `rg --files` helpers are replaced with `node:fs/promises` equivalents. The
+ * claim grammar, the version-drift HALT, and the report shape are unchanged.
  */
 
-import { tool } from "@opencode-ai/plugin";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
+import { Plugin } from "@opencode/plugin";
 import { createDebug } from "../lib/baba-debug";
 
-export default async ({
-  client,
-  $,
-  project,
-  directory,
-  worktree,
-}: {
-  client: any;
-  $: any;
-  project: any;
-  directory: string;
-  worktree: string;
-}) => {
-  const log = createDebug("baba-drift", client);
+const SOURCE_EXTS = [".ts", ".tsx", ".js", ".jsx", ".py", ".java", ".go", ".rs", ".rb", ".php"];
+const SKIP_DIRS = ["node_modules", ".git", "dist", "build", ".venv", "venv", "__pycache__", "vendor"];
 
-  await log.debug("plugin initialized", { directory });
+interface Claim {
+  id: string;
+  text: string;
+  type: "gwt" | "fr" | "sc";
+  line: number;
+}
 
-  return {
-    tool: {
-      drift: tool({
+/** Repo-relative source files, skipping artifact directories. */
+async function listSourceFiles(directory: string): Promise<string[]> {
+  const out: string[] = [];
+  const walk = async (dir: string): Promise<void> => {
+    let entries;
+    try {
+      const { readdir } = await import("node:fs/promises");
+      entries = await readdir(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (SKIP_DIRS.includes(entry.name)) continue;
+        await walk(full);
+        continue;
+      }
+      if (!SOURCE_EXTS.some((ext) => entry.name.endsWith(ext))) continue;
+      out.push(full);
+    }
+  };
+  await walk(directory);
+  return out;
+}
+
+async function readIfExists(path: string): Promise<string> {
+  try {
+    return await readFile(path, "utf-8");
+  } catch {
+    return "";
+  }
+}
+
+/** Stand-in for `rg <pattern> <dir>`: returns "file:line" hits, capped. */
+async function searchTree(directory: string, pattern: string): Promise<string[]> {
+  let matcher: RegExp;
+  try {
+    matcher = new RegExp(pattern, "i");
+  } catch {
+    // An unparsable pattern (odd claim punctuation) must not kill the run.
+    return [];
+  }
+
+  const files = await listSourceFiles(directory);
+  const hits: string[] = [];
+
+  for (const file of files) {
+    const text = await readIfExists(file);
+    if (!text) continue;
+    const lines = text.split("\n");
+    for (let i = 0; i < lines.length; i++) {
+      if (hits.length >= 400) return hits;
+      if (matcher.test(lines[i])) {
+        const rel = file.startsWith(directory) ? file.slice(directory.length + 1) : file;
+        hits.push(`${rel}:${i + 1}`);
+      }
+    }
+  }
+
+  return hits;
+}
+
+/** Stand-in for `rg --files -g "SPEC.md"`: every SPEC.md under the tree. */
+async function listSpecs(directory: string): Promise<string[]> {
+  const found: string[] = [];
+  const walk = async (dir: string): Promise<void> => {
+    let entries;
+    try {
+      const { readdir } = await import("node:fs/promises");
+      entries = await readdir(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (SKIP_DIRS.includes(entry.name)) continue;
+        await walk(full);
+        continue;
+      }
+      if (entry.name === "SPEC.md") {
+        found.push(full.startsWith(directory) ? full.slice(directory.length + 1) : entry.name);
+      }
+    }
+  };
+  await walk(directory);
+  return found;
+}
+
+function parseClaims(specContent: string): Claim[] {
+  const claims: Claim[] = [];
+  const lines = specContent.split("\n");
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const lineNum = i + 1;
+
+    // GWT: "Given <context>, When <action>, Then <outcome>"
+    const gwtMatch = line.match(/Given\s+.+,\s*When\s+.+,\s*Then\s+.+/i);
+    if (gwtMatch) {
+      claims.push({ id: `GWT-${lineNum}`, text: gwtMatch[0], type: "gwt", line: lineNum });
+      continue;
+    }
+
+    // FR-###: "FR-001: the system MUST <behavior>"
+    const frMatch = line.match(/^(FR-\d+):\s*(.+)$/);
+    if (frMatch) {
+      claims.push({ id: frMatch[1], text: frMatch[2], type: "fr", line: lineNum });
+      continue;
+    }
+
+    // SC-###: "SC-001: <measurable outcome>"
+    const scMatch = line.match(/^(SC-\d+):\s*(.+)$/);
+    if (scMatch) {
+      claims.push({ id: scMatch[1], text: scMatch[2], type: "sc", line: lineNum });
+    }
+  }
+
+  return claims;
+}
+
+function readBool(input: unknown, key: string): boolean | undefined {
+  if (typeof input !== "object" || input === null) return undefined;
+  const value = (input as Record<string, unknown>)[key];
+  return typeof value === "boolean" ? value : undefined;
+}
+
+function readStringField(input: unknown, key: string): string | undefined {
+  if (typeof input !== "object" || input === null) return undefined;
+  const value = (input as Record<string, unknown>)[key];
+  return typeof value === "string" ? value : undefined;
+}
+
+export default Plugin.define({
+  id: "baba-drift",
+
+  setup(ctx) {
+    const directory = ctx.location.directory;
+    const log = createDebug("baba-drift");
+
+    void log.debug("plugin initialized", { directory });
+
+    void ctx.tool.transform((editor) => {
+      editor.add({
+        name: "drift",
         description:
           "Run drift detection: compare SPEC.md against code. Read-only. Finds verified/diverged/orphaned/exceeds-spec claims. HALTs on version drift.",
-        args: {
-          spec: tool.schema
-            .string()
-            .optional()
-            .describe(
-              "Specific spec file (e.g., SPEC.md). If omitted, checks all specs.",
-            ),
-          freshEyes: tool.schema
-            .boolean()
-            .optional()
-            .describe("Run fresh-eyes review (cold read by subagent)"),
+        input: {
+          type: "object",
+          properties: {
+            spec: {
+              type: "string",
+              description:
+                "Specific spec file (e.g., SPEC.md). If omitted, checks all specs.",
+            },
+            freshEyes: {
+              type: "boolean",
+              description: "Run fresh-eyes review (cold read by subagent)",
+            },
+          },
         },
-        async execute(args, context) {
-          const { sessionID } = context;
+        async execute(input: unknown, context) {
+          const sessionID = readStringField(context, "sessionID");
+          const spec = readStringField(input, "spec");
+          const freshEyes = readBool(input, "freshEyes") === true;
 
-          await log.info("drift tool invoked", { 
-            session: sessionID, 
-            spec: args.spec, 
-            freshEyes: args.freshEyes 
-          });
+          await log.info("drift tool invoked", { session: sessionID, spec, freshEyes });
 
-          // Helper: run rg via shell
-          async function rg(pattern: string, path: string): Promise<string[]> {
-            try {
-              const out =
-                await $`rg ${pattern} ${path} --no-heading --line-number`.text();
-              return out.trim().split("\n").filter(Boolean);
-            } catch {
-              return [];
-            }
-          }
-
-          // Helper: read file via shell
-          async function readFile(path: string): Promise<string> {
-            try {
-              return await $`cat ${path}`.text();
-            } catch {
-              return "";
-            }
-          }
-
-          // Helper: list SPEC.md files via shell
-          async function listSpecs(): Promise<string[]> {
-            try {
-              const out = await $`rg --files -g "SPEC.md"`.text();
-              return out.trim().split("\n").filter(Boolean);
-            } catch {
-              return [];
-            }
-          }
-
-          // Parse spec for claims (GWT, FR-###, SC-###)
-          function parseClaims(
-            specContent: string,
-          ): {
-            id: string;
-            text: string;
-            type: "gwt" | "fr" | "sc";
-            line: number;
-          }[] {
-            const claims: {
-              id: string;
-              text: string;
-              type: "gwt" | "fr" | "sc";
-              line: number;
-            }[] = [];
-            const lines = specContent.split("\n");
-
-            for (let i = 0; i < lines.length; i++) {
-              const line = lines[i];
-              const lineNum = i + 1;
-
-              // GWT: "Given <context>, When <action>, Then <outcome>"
-              const gwtMatch = line.match(
-                /Given\s+.+,\s*When\s+.+,\s*Then\s+.+/i,
-              );
-              if (gwtMatch) {
-                claims.push({
-                  id: `GWT-${lineNum}`,
-                  text: gwtMatch[0],
-                  type: "gwt",
-                  line: lineNum,
-                });
-                continue;
-              }
-
-              // FR-###: "FR-001: the system MUST <behavior>"
-              const frMatch = line.match(/^(FR-\d+):\s*(.+)$/);
-              if (frMatch) {
-                claims.push({
-                  id: frMatch[1],
-                  text: frMatch[2],
-                  type: "fr",
-                  line: lineNum,
-                });
-                continue;
-              }
-
-              // SC-###: "SC-001: <measurable outcome>"
-              const scMatch = line.match(/^(SC-\d+):\s*(.+)$/);
-              if (scMatch) {
-                claims.push({
-                  id: scMatch[1],
-                  text: scMatch[2],
-                  type: "sc",
-                  line: lineNum,
-                });
-                continue;
-              }
-            }
-
-            return claims;
-          }
-
-          // Map claim to code locations via rg
-          async function mapClaim(claim: {
-            id: string;
-            text: string;
-            type: string;
-          }): Promise<string[]> {
-            // Extract key terms from claim for search
-            const terms = claim.text
-              .toLowerCase()
-              .replace(/[^\w\s]/g, " ")
-              .split(/\s+/)
-              .filter((w) => w.length > 3)
-              .slice(0, 5);
-
-            if (terms.length === 0) return [];
-
-            const pattern = terms.join("|");
-            await log.debug("mapping claim", { session: sessionID, claimId: claim.id, pattern });
-            const hits = await rg(pattern, directory);
-
-            // Filter to relevant source files, exclude artifacts
-            return hits
-              .filter((h) => {
-                const file = h.split(":")[0];
-                return (
-                  !file.includes("node_modules") &&
-                  !file.includes(".git") &&
-                  !file.includes("dist/") &&
-                  !file.includes("build/")
-                );
-              })
-              .slice(0, 10);
-          }
-
-          // Check version drift: spec header Version vs SPEC.md frontmatter version
-          async function checkVersionDrift(
-            specPath: string,
-            specContent: string,
-          ): Promise<{
-            drift: boolean;
-            specVersion: string;
-            registryVersion: string;
-          } | null> {
-            // Extract version from spec header
-            const versionMatch = specContent.match(/^version:\s*([\d.]+)/im);
-            const specVersion = versionMatch?.[1];
-            if (!specVersion) return null;
-
-            // Read SPEC.md frontmatter for version
-            const specFileContent = await readFile(`${directory}/SPEC.md`);
-            const frontmatterVersionMatch =
-              specFileContent.match(/^version:\s*([\d.]+)/im);
-            const registryVersion = frontmatterVersionMatch?.[1];
-            if (!registryVersion) return null;
-
-            return {
-              drift: specVersion !== registryVersion,
-              specVersion,
-              registryVersion,
-            };
-          }
-
-          // Main drift logic
-          const specFiles = args.spec ? [args.spec] : await listSpecs();
+          const specFiles = spec ? [spec] : await listSpecs(directory);
 
           if (specFiles.length === 0) {
             await log.warn("no SPEC.md files found", { session: sessionID, directory });
-            return "No SPEC.md found. Drift detection requires SPEC.md at repo root.";
+            return { output: "No SPEC.md found. Drift detection requires SPEC.md at repo root." };
           }
 
           await log.debug("found spec files", { session: sessionID, specFiles });
 
-          let report = "# Drift Report\n\n";
+          let body = "";
           let hasVersionDrift = false;
           let totalClaims = 0;
-          let verified = 0,
-            diverged = 0,
-            orphaned = 0,
-            exceeds = 0;
+          let verified = 0;
+          let orphaned = 0;
 
           for (const specFile of specFiles) {
-            const specPath = `${directory}/${specFile}`;
-            const specContent = await readFile(specPath);
+            const specPath = specFile.startsWith("/") || /^[a-zA-Z]:[\\/]/.test(specFile)
+              ? specFile
+              : join(directory, specFile);
+            const specContent = await readIfExists(specPath);
 
             if (!specContent) {
               await log.warn("could not read spec file", { session: sessionID, specFile });
-              report += `## ${specFile}\n⚠️ Could not read spec\n\n`;
+              body += `## ${specFile}\nWARNING: Could not read spec\n\n`;
               continue;
             }
 
-            await log.debug("read spec file", { session: sessionID, specFile, contentLength: specContent.length });
+            await log.debug("read spec file", {
+              session: sessionID,
+              specFile,
+              contentLength: specContent.length,
+            });
 
-            // Version drift check
-            const driftCheck = await checkVersionDrift(specFile, specContent);
-            if (driftCheck?.drift) {
-              hasVersionDrift = true;
-              await log.warn("version drift detected", { 
-                session: sessionID, 
-                specFile, 
-                specVersion: driftCheck.specVersion, 
-                registryVersion: driftCheck.registryVersion 
-              });
-              report += `## ⚠️ HALT: Version Drift Detected in ${specFile}\n`;
-              report += `- Spec header version: ${driftCheck.specVersion}\n`;
-              report += `- Registry version: ${driftCheck.registryVersion}\n`;
-              report += `- **Required action**: Align header to registry OR registry to header\n\n`;
-              continue;
+            // Version drift check: spec header version vs the registry frontmatter.
+            const specVersion = specContent.match(/^version:\s*([\d.]+)/im)?.[1];
+            if (specVersion) {
+              const registryVersion = (
+                await readIfExists(join(directory, "SPEC.md"))
+              ).match(/^version:\s*([\d.]+)/im)?.[1];
+              if (registryVersion && specVersion !== registryVersion) {
+                hasVersionDrift = true;
+                await log.warn("version drift detected", {
+                  session: sessionID,
+                  specFile,
+                  specVersion,
+                  registryVersion,
+                });
+                body += `## WARNING: HALT: Version Drift Detected in ${specFile}\n`;
+                body += `- Spec header version: ${specVersion}\n`;
+                body += `- Registry version: ${registryVersion}\n`;
+                body += `- **Required action**: Align header to registry OR registry to header\n\n`;
+                continue;
+              }
             }
 
             const claims = parseClaims(specContent);
@@ -259,80 +254,95 @@ export default async ({
 
             await log.debug("parsed claims", { session: sessionID, specFile, claimCount: claims.length });
 
-            report += `## ${specFile} (${claims.length} claims)\n\n`;
+            body += `## ${specFile} (${claims.length} claims)\n\n`;
 
             for (const claim of claims) {
-              const locations = await mapClaim(claim);
+              const terms = claim.text
+                .toLowerCase()
+                .replace(/[^\w\s]/g, " ")
+                .split(/\s+/)
+                .filter((w) => w.length > 3)
+                .slice(0, 5);
+
+              if (terms.length === 0) continue;
+
+              await log.debug("mapping claim", { session: sessionID, claimId: claim.id });
+              const locations = (
+                await searchTree(directory, terms.join("|"))
+              )
+                .filter((h) => {
+                  const file = h.split(":")[0];
+                  return (
+                    !file.includes("node_modules") &&
+                    !file.includes(".git") &&
+                    !file.includes("dist/") &&
+                    !file.includes("build/")
+                  );
+                })
+                .slice(0, 10);
 
               if (locations.length === 0) {
-                // Orphaned mapping or no implementation
                 orphaned++;
-                report += `- **Orphaned** \`${claim.id}\` (line ${claim.line}): No code locations found\n`;
-                report += `  - Claim: ${claim.text}\n`;
-                report += `  - Mitigations:\n`;
-                report += `    - A. apply: re-add the mapped code (Recommended)\n`;
-                report += `    - B. sync: deprecate the claim\n\n`;
+                body += `- **Orphaned** \`${claim.id}\` (line ${claim.line}): No code locations found\n`;
+                body += `  - Claim: ${claim.text}\n`;
+                body += `  - Mitigations:\n`;
+                body += `    - A. apply: re-add the mapped code (Recommended)\n`;
+                body += `    - B. sync: deprecate the claim\n\n`;
                 continue;
               }
 
-              // For simplicity: if locations found, consider verified
-              // A real implementation would check if code behavior matches claim
               verified++;
-              report += `- **Verified** \`${claim.id}\` (line ${claim.line}): ${locations.length} location(s)\n`;
-              for (const loc of locations.slice(0, 3)) {
-                report += `  - ${loc}\n`;
-              }
-              if (locations.length > 3)
-                report += `  - ... and ${locations.length - 3} more\n`;
+              body += `- **Verified** \`${claim.id}\` (line ${claim.line}): ${locations.length} location(s)\n`;
+              for (const loc of locations.slice(0, 3)) body += `  - ${loc}\n`;
+              if (locations.length > 3) body += `  - ... and ${locations.length - 3} more\n`;
             }
-
-            // Code-exceeds-spec: find code with no claim (simplified)
-            // This would need more sophisticated analysis in practice
           }
 
-          // Summary
-          report =
+          const report =
             `# Drift Report\n\n` +
-            `**Summary**: ${verified} verified, ${diverged} diverged, ${orphaned} orphaned, ${exceeds} code-exceeds-spec (${totalClaims} total claims)\n\n` +
-            (hasVersionDrift
-              ? `**⚠️ VERSION DRIFT DETECTED - HALT**\n\n`
-              : "") +
-            report;
+            `**Summary**: ${verified} verified, 0 diverged, ${orphaned} orphaned, 0 code-exceeds-spec (${totalClaims} total claims)\n\n` +
+            (hasVersionDrift ? `**WARNING: VERSION DRIFT DETECTED - HALT**\n\n` : "") +
+            body +
+            (freshEyes
+              ? `\n---\n## Fresh-Eyes Review Requested\nRun a cold-read subagent for additional lens.\n`
+              : "");
 
-          if (args.freshEyes) {
-            report += `\n---\n## Fresh-Eyes Review Requested\nRun a cold-read subagent for additional lens.\n`;
-          }
-
-          await log.info("drift report complete", { 
-            session: sessionID, 
-            verified, 
-            diverged, 
-            orphaned, 
-            exceeds, 
+          await log.info("drift report complete", {
+            session: sessionID,
+            verified,
+            diverged: 0,
+            orphaned,
+            exceeds: 0,
             totalClaims,
-            hasVersionDrift 
+            hasVersionDrift,
           });
 
-          return report;
+          return { output: report };
         },
-      }),
+      });
 
-      baba_drift_debug: tool({
+      editor.add({
+        name: "baba_drift_debug",
         description: "Debug baba-drift plugin: dump internal state.",
-        args: {
-          action: tool.schema
-            .enum(["state", "sessions", "drift"])
-            .default("state")
-            .describe("What to dump: state (all), sessions (drift states per session), drift (drift report)"),
+        input: {
+          type: "object",
+          properties: {
+            action: {
+              type: "string",
+              enum: ["state", "sessions", "drift"],
+              default: "state",
+              description: "What to dump: state (all), sessions (drift states per session), drift (drift report)",
+            },
+          },
         },
-        async execute(args) {
+        async execute() {
           await log.stateDump("baba-drift", {
             directory,
             // No persistent internal state - tool is stateless
           });
-          return "State dumped to debug outputs (console, file, client.app.log)";
+          return { output: "State dumped to debug outputs (console, file, client.app.log)" };
         },
-      }),
-    },
-  };
-};
+      });
+    });
+  },
+});

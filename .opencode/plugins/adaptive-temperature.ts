@@ -1,5 +1,24 @@
-import { type Plugin, tool } from "@opencode-ai/plugin";
+/**
+ * Adaptive Temperature plugin for opencode (V2)
+ *
+ * Lets the model tune generation parameters from user feedback instead of the
+ * user editing config. The model reports a delta; the plugin clamps it into
+ * range, remembers it per session, and applies it to the next model call.
+ *
+ * V2 changes:
+ *   - `chat.params` became `ctx.session.hook("context")` with the values now
+ *     written to `event.options.temperature` / `event.options.topP` (semantic
+ *     generation options) rather than to a bespoke output object.
+ *   - `command.execute.before` has no V2 global hook. The plugin owns the
+ *     `feedback` command, so it is registered through `ctx.command.transform`.
+ *   - The guidance prompt that used to go out as `client.session.prompt({noReply})`
+ *     is now prepended to `event.system` on the following model request, which
+ *     is the V2-native way to speak to the model without spending a turn.
+ */
+
+import { Plugin } from "@opencode/plugin";
 import { createDebug } from "../lib/baba-debug";
+import { subscribeToEvents } from "../lib/baba-session-id";
 
 type GenerationConfig = {
   temperature: number;
@@ -17,13 +36,10 @@ type SessionState = {
   topP: number;
 };
 
-type ApplyFeedbackArgs = {
-  temperatureDelta: number;
-  topPDelta: number;
-  reasoning: string;
-};
-
 const sessionStates = new Map<string, SessionState>();
+
+/** Feedback text awaiting the guidance pass on the next model request. */
+const pendingFeedback = new Map<string, string>();
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
@@ -57,32 +73,113 @@ function getSessionState(sessionID: string, config: FeedbackConfig): SessionStat
   return initial;
 }
 
-export default async (_ctx: any, options?: Record<string, unknown>): Promise<any> => {
-  const config = resolveConfig(options ?? {});
-  const log = createDebug("adaptive-temperature", _ctx?.client);
+function readNumber(value: unknown): number | undefined {
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
 
-  await log.debug("plugin initialized", { config: { min: config.min, max: config.max, default: config.default } });
+function readStringField(input: unknown, key: string): string | undefined {
+  if (typeof input !== "object" || input === null) return undefined;
+  const value = (input as Record<string, unknown>)[key];
+  return typeof value === "string" ? value : undefined;
+}
 
-  return {
-    tool: {
-      apply_feedback: tool({
+/** Extracts the user's argument text from a slash-command invocation. */
+function readPromptText(prompt: unknown): string {
+  if (typeof prompt !== "object" || prompt === null) return "";
+  const direct = readStringField(prompt, "text");
+  if (direct) return direct;
+  const parts = (prompt as { parts?: unknown }).parts;
+  if (Array.isArray(parts)) {
+    const chunks = parts
+      .map((part) => readStringField(part, "text"))
+      .filter((t): t is string => typeof t === "string" && t.length > 0);
+    if (chunks.length > 0) return chunks.join("\n");
+  }
+  return "";
+}
+
+export default Plugin.define({
+  id: "adaptive-temperature",
+
+  setup(ctx) {
+    const config = resolveConfig(ctx.options);
+    const log = createDebug("adaptive-temperature");
+
+    void log.debug("plugin initialized", {
+      config: { min: config.min, max: config.max, default: config.default },
+    });
+
+    void subscribeToEvents(ctx.event.subscribe(), async (event) => {
+      if (event.type !== "session.deleted") return;
+      const sessionID = readDataString(event, "sessionID");
+      if (!sessionID) return;
+      void log.debug("session deleted, cleaning up state", { session: sessionID });
+      sessionStates.delete(sessionID);
+      pendingFeedback.delete(sessionID);
+    });
+
+    void ctx.command.transform((editor) => {
+      editor.add({
+        name: "feedback",
+        description: "Adjust generation parameters from feedback about output quality or style.",
+        async execute(input: { sessionID: string; prompt: unknown }) {
+          const sessionID = readStringField(input, "sessionID");
+          if (!sessionID) return;
+          const feedbackText = readPromptText(input.prompt).trim();
+          if (!feedbackText) return;
+
+          await log.debug("feedback command received", { session: sessionID, feedback: feedbackText });
+          const state = getSessionState(sessionID, config);
+
+          // Guidance is delivered on the next model request rather than via a
+          // synthetic prompt, which is what produced FOREIGN KEY errors under V1.
+          pendingFeedback.set(sessionID, feedbackText);
+          void log.debug("feedback queued for next model request", {
+            session: sessionID,
+            currentSettings: {
+              temperature: state.temperature,
+              topP: state.topP,
+            },
+          });
+        },
+      });
+    });
+
+    void ctx.tool.transform((editor) => {
+      editor.add({
+        name: "apply_feedback",
         description:
           "Apply generation parameter adjustments based on user feedback. Call this when the user gives feedback about output quality, style, or behavior.",
-        args: {
-          temperatureDelta: tool.schema
-            .number()
-            .describe("Delta to apply to temperature (-1.0 to 1.0). Positive increases randomness, negative decreases it."),
-          topPDelta: tool.schema
-            .number()
-            .describe("Delta to apply to topP (-1.0 to 1.0). Positive increases token diversity, negative narrows focus."),
-          reasoning: tool.schema
-            .string()
-            .describe("Brief explanation of why these adjustments address the feedback."),
+        input: {
+          type: "object",
+          properties: {
+            temperatureDelta: {
+              type: "number",
+              description:
+                "Delta to apply to temperature (-1.0 to 1.0). Positive increases randomness, negative decreases it.",
+            },
+            topPDelta: {
+              type: "number",
+              description:
+                "Delta to apply to topP (-1.0 to 1.0). Positive increases token diversity, negative narrows focus.",
+            },
+            reasoning: {
+              type: "string",
+              description: "Brief explanation of why these adjustments address the feedback.",
+            },
+          },
+          required: ["temperatureDelta", "topPDelta", "reasoning"],
         },
-        async execute(args, context) {
-          const { sessionID } = context;
-          if (!sessionID) {
-            return "Error: session ID required";
+        async execute(input: unknown, context) {
+          const sessionID = readStringField(context, "sessionID");
+          if (!sessionID) return { output: "Error: session ID required" };
+
+          const temperatureDelta = readNumber(readField(input, "temperatureDelta"));
+          const topPDelta = readNumber(readField(input, "topPDelta"));
+          const reasoning = readStringField(input, "reasoning") ?? "";
+
+          if (temperatureDelta === undefined || topPDelta === undefined) {
+            return { output: "Error: temperatureDelta and topPDelta must be numbers" };
           }
 
           const state = getSessionState(sessionID, config);
@@ -90,143 +187,141 @@ export default async (_ctx: any, options?: Record<string, unknown>): Promise<any
           const prevTopP = state.topP;
 
           state.temperature = clamp(
-            state.temperature + args.temperatureDelta,
+            state.temperature + temperatureDelta,
             config.min.temperature,
             config.max.temperature,
           );
-          state.topP = clamp(state.topP + args.topPDelta, config.min.topP, config.max.topP);
+          state.topP = clamp(state.topP + topPDelta, config.min.topP, config.max.topP);
 
           await log.info("feedback applied", {
             session: sessionID,
-            reasoning: args.reasoning,
+            reasoning,
             prevTemperature,
             newTemperature: state.temperature,
             prevTopP,
             newTopP: state.topP,
           });
 
-          return `Applied feedback: temperature ${prevTemperature.toFixed(2)} -> ${state.temperature.toFixed(2)}, topP ${prevTopP.toFixed(2)} -> ${state.topP.toFixed(2)}`;
+          return {
+            output:
+              `Applied feedback: temperature ${prevTemperature.toFixed(2)} -> ${state.temperature.toFixed(2)}, ` +
+              `topP ${prevTopP.toFixed(2)} -> ${state.topP.toFixed(2)}`,
+          };
         },
-      }),
-
-      adaptive_temperature_debug: tool({
-        description: "Debug adaptive-temperature plugin: dump internal state.",
-        args: {
-          action: tool.schema
-            .enum(["state", "sessions", "config"])
-            .default("state")
-            .describe("What to dump: state (all), sessions (adaptive temperature states per session), config (plugin config)"),
-        },
-        async execute(args) {
-          switch (args.action) {
-            case "config":
-              return JSON.stringify({ min: config.min, max: config.max, default: config.default }, null, 2);
-            case "sessions": {
-              const sessions: Record<string, SessionState> = {};
-              for (const [id, state] of sessionStates.entries()) {
-                sessions[id] = state;
-              }
-              return JSON.stringify(sessions, null, 2);
-            }
-            case "state":
-            default: {
-              await log.stateDump("adaptive-temperature", {
-                config: { min: config.min, max: config.max, default: config.default },
-                sessionCount: sessionStates.size,
-                sessions: Object.fromEntries(sessionStates),
-              });
-              return "State dumped to debug outputs (console, file, client.app.log)";
-            }
-          }
-        },
-      }),
-    },
-
-    "command.execute.before": async (
-      input: { command: string; sessionID?: string; arguments?: string },
-      output: { parts: Array<Record<string, unknown>> },
-    ) => {
-      const { command, sessionID, arguments: args } = input;
-      if (!sessionID || command !== "feedback") return;
-
-      const feedbackText = (args ?? "").trim();
-      if (!feedbackText) return;
-
-      await log.debug("feedback command received", { session: sessionID, feedback: feedbackText });
-
-      const state = getSessionState(sessionID, config);
-
-      // Guidance for the model to translate the feedback into concrete deltas
-      // and call apply_feedback. Using client.session.prompt with noReply to
-      // avoid FOREIGN KEY constraint on synthetic message IDs.
-      const contextPrompt = `[ADAPTIVE FEEDBACK]\nUser feedback: "${feedbackText}"\nCurrent settings: temperature=${state.temperature.toFixed(2)}, topP=${state.topP.toFixed(2)}\n\nInterpret this feedback and call \`apply_feedback\` with appropriate deltas for temperature and topP, plus a brief reasoning. Consider how the current settings relate to the feedback when choosing deltas.`;
-      try {
-        await _ctx.client.session.prompt({
-          path: { id: sessionID },
-          body: { noReply: true, parts: [{ type: "text", text: contextPrompt }] },
-        });
-        await log.debug("feedback prompt sent to model", { session: sessionID });
-      } catch (e) {
-        await log.warn("failed to send feedback prompt", { session: sessionID, error: String(e) });
-        // If session.prompt fails, the feedback is still recorded in session state
-        // and will be applied on next turn via chat.params hook
-      }
-    },
-
-    // Applies the tuned values to the actual generation parameters. Without
-    // this hook the tool only mutates session state and the model's temperature
-    // never changes: opencode seeds temperature/topP here, from
-    // session/llm/request.ts, and uses whatever this hook returns.
-    "chat.params": async (
-      input: { sessionID: string },
-      output: { temperature: number | undefined; topP: number },
-    ) => {
-      const state = sessionStates.get(input.sessionID);
-      if (!state) return;
-
-      await log.debug("chat.params injecting values", {
-        session: input.sessionID,
-        temperature: state.temperature,
-        topP: state.topP,
       });
 
-      // temperature is undefined for models without temperature support, so it
-      // is only written when the runtime provided one.
-      if (output.temperature !== undefined) {
-        output.temperature = state.temperature;
-      }
-      output.topP = state.topP;
-    },
+      editor.add({
+        name: "adaptive_temperature_debug",
+        description: "Debug adaptive-temperature plugin: dump internal state.",
+        input: {
+          type: "object",
+          properties: {
+            action: {
+              type: "string",
+              enum: ["state", "sessions", "config"],
+              default: "state",
+              description:
+                "What to dump: state (all), sessions (adaptive temperature states per session), config (plugin config)",
+            },
+          },
+        },
+        async execute(input: unknown) {
+          const action = readStringField(input, "action");
+          if (action === "config") {
+            return {
+              output: JSON.stringify({ min: config.min, max: config.max, default: config.default }, null, 2),
+            };
+          }
+          if (action === "sessions") {
+            return { output: JSON.stringify(Object.fromEntries(sessionStates), null, 2) };
+          }
+          await log.stateDump("adaptive-temperature", {
+            config: { min: config.min, max: config.max, default: config.default },
+            sessionCount: sessionStates.size,
+            sessions: Object.fromEntries(sessionStates),
+          });
+          return { output: "State dumped to debug outputs (console, file, client.app.log)" };
+        },
+      });
+    });
 
-    "experimental.chat.system.transform": async ({ sessionID, model }: { sessionID?: string; model?: any }, { system }: { system: string[] }) => {
-      if (!sessionID) return;
+    void ctx.session.hook("context", async (event) => {
+      const sessionID = event.sessionID;
+      if (typeof sessionID !== "string" || sessionID.length === 0) return;
 
+      // 1. Apply the tuned values. opencode seeds temperature/topP from this
+      //    hook, so without writing them the tool would only mutate state.
       const state = sessionStates.get(sessionID);
+      if (state) {
+        await log.debug("context injecting values", {
+          session: sessionID,
+          temperature: state.temperature,
+          topP: state.topP,
+        });
+
+        // temperature is undefined for models without temperature support, so it
+        // is only written when the runtime already provided one.
+        if (event.options.temperature !== undefined) {
+          event.options.temperature = state.temperature;
+        }
+        event.options.topP = state.topP;
+      }
+
+      if (!Array.isArray(event.system)) return;
+
+      // 2. Consume queued feedback: tell the model to interpret it.
+      const feedbackText = pendingFeedback.get(sessionID);
+      if (feedbackText !== undefined) {
+        pendingFeedback.delete(sessionID);
+        const current = state ?? getSessionState(sessionID, config);
+        const guidance =
+          `[ADAPTIVE FEEDBACK]\nUser feedback: "${feedbackText}"\n` +
+          `Current settings: temperature=${current.temperature.toFixed(2)}, topP=${current.topP.toFixed(2)}\n\n` +
+          "Interpret this feedback and call `apply_feedback` with appropriate deltas for temperature and topP, plus a brief reasoning. " +
+          "Consider how the current settings relate to the feedback when choosing deltas.";
+        event.system = [{ type: "text", text: guidance }, ...event.system];
+        await log.debug("feedback guidance injected", { session: sessionID });
+      }
+
+      // 3. Standing reminder about the feedback loop.
       const currentSettings = state
         ? `temperature=${state.temperature.toFixed(2)}, topP=${state.topP.toFixed(2)}`
         : `temperature=${config.default.temperature.toFixed(2)}, topP=${config.default.topP.toFixed(2)}`;
 
-      await log.debug("system transform adding adaptive feedback reminder", {
+      await log.debug("context adding adaptive feedback reminder", {
         session: sessionID,
         currentSettings,
       });
 
-      system.push(
-        "ADAPTIVE FEEDBACK: When the user gives feedback about output quality, style, or behavior, call the `apply_feedback` tool with temperatureDelta, topPDelta, and reasoning. " +
-          `Current settings: ${currentSettings}. ` +
-          "Interpret the feedback relative to current settings and return small, bounded deltas. " +
-          "Example feedback -> adjustment: 'too random' -> temperatureDelta=-0.1, topPDelta=-0.05; 'too boring' -> temperatureDelta=0.1, topPDelta=0.05; 'too narrow' -> temperatureDelta=0.0, topPDelta=0.1; 'too verbose' -> temperatureDelta=-0.05, topPDelta=0.0.",
-      );
-    },
+      event.system = [
+        ...event.system,
+        {
+          type: "text",
+          text:
+            "ADAPTIVE FEEDBACK: When the user gives feedback about output quality, style, or behavior, call the `apply_feedback` tool with temperatureDelta, topPDelta, and reasoning. " +
+            `Current settings: ${currentSettings}. ` +
+            "Interpret the feedback relative to current settings and return small, bounded deltas. " +
+            "Example feedback -> adjustment: 'too random' -> temperatureDelta=-0.1, topPDelta=-0.05; 'too boring' -> temperatureDelta=0.1, topPDelta=0.05; 'too narrow' -> temperatureDelta=0.0, topPDelta=0.1; 'too verbose' -> temperatureDelta=-0.05, topPDelta=0.0.",
+        },
+      ];
+    });
 
-    event: async ({ event }: { event: any }) => {
-      if (event.type === "session.deleted") {
-        const sessionID = (event as any).properties?.sessionID;
-        if (sessionID) {
-          await log.debug("session deleted, cleaning up state", { session: sessionID });
-          sessionStates.delete(sessionID);
-        }
-      }
-    },
-  };
-};
+    return () => {
+      sessionStates.clear();
+      pendingFeedback.clear();
+    };
+  },
+});
+
+function readDataString(event: unknown, key: string): string | undefined {
+  if (typeof event !== "object" || event === null) return undefined;
+  const data = (event as Record<string, unknown>).data;
+  if (typeof data !== "object" || data === null) return undefined;
+  const value = (data as Record<string, unknown>)[key];
+  return typeof value === "string" && value.length > 0 ? value : undefined;
+}
+
+function readField(input: unknown, key: string): unknown {
+  if (typeof input !== "object" || input === null) return undefined;
+  return (input as Record<string, unknown>)[key];
+}

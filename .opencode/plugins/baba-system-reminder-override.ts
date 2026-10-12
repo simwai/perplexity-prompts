@@ -1,18 +1,22 @@
 /**
- * Baba System-Reminder Override Plugin for opencode
+ * Baba System-Reminder Override Plugin for opencode (V2)
  *
- * Intercepts the native runtime plan->build system-reminder injection
- * and replaces it with a stable, explicit reminder that matches the
- * project's preferred wording.
+ * Intercepts the native runtime plan->build system-reminder injection and
+ * replaces it with a stable, explicit reminder that matches the project's
+ * preferred wording.
  *
- * Hook: experimental.chat.system.transform
- * Trigger: every assistant turn where the system prompt array contains
- * the runtime-generated plan-to-build reminder text.
+ * V2 mapping: the V1 `experimental.chat.system.transform` hook became
+ * `ctx.session.hook("context")`, and `output.system` changed from `string[]`
+ * to `SystemPart[]` (objects with `text`, not bare strings).
+ *
+ * Hook: ctx.session.hook("context")
+ * Trigger: every model request whose system array contains the
+ * runtime-generated plan-to-build reminder text.
  * Effect: replace that reminder with the canonical override text.
  */
 
+import { Plugin } from "@opencode/plugin";
 import { createDebug } from "../lib/baba-debug";
-import { tool } from "@opencode-ai/plugin";
 
 const PLAN_TO_BUILD_MARKERS = [
   "operational mode has changed from plan to build",
@@ -32,68 +36,82 @@ function isPlanToBuildReminder(text: string): boolean {
   return PLAN_TO_BUILD_MARKERS.every((marker) => lower.includes(marker));
 }
 
-export default async (_ctx: any) => {
-  const log = createDebug("baba-system-reminder-override", _ctx?.client);
+/** Tool args arrive as `unknown`; the JSON Schema cannot narrow them for TS. */
+function readAction(input: unknown): string {
+  if (typeof input !== "object" || input === null || !("action" in input)) return "state";
+  const action = (input as { action: unknown }).action;
+  return typeof action === "string" ? action : "state";
+}
 
-  await log.debug("plugin initialized", {
-    markers: PLAN_TO_BUILD_MARKERS,
-    overrideLength: OVERRIDE_REMINDER.length,
-  });
+export default Plugin.define({
+  id: "baba-system-reminder-override",
 
-  return {
-    tool: {
-      baba_system_reminder_override_debug: tool({
+  setup(ctx) {
+    // V2 has no client.app.log surface, so the debug logger gets no client.
+    // Console and JSONL-file destinations are unaffected.
+    const log = createDebug("baba-system-reminder-override");
+
+    void log.debug("plugin initialized", {
+      markers: PLAN_TO_BUILD_MARKERS,
+      overrideLength: OVERRIDE_REMINDER.length,
+    });
+
+    void ctx.tool.transform((editor) => {
+      editor.add({
+        name: "baba_system_reminder_override_debug",
         description: "Debug baba-system-reminder-override plugin: dump internal state.",
-        args: {
-          action: tool.schema
-            .enum(["state", "markers", "override"])
-            .default("state")
-            .describe("What to dump: state (all), markers (detected markers), override (override text)"),
+        input: {
+          type: "object",
+          properties: {
+            action: {
+              type: "string",
+              enum: ["state", "markers", "override"],
+              default: "state",
+              description:
+                "What to dump: state (all), markers (detection markers), override (override text)",
+            },
+          },
         },
-        async execute(args) {
-          const action = args.action ?? "state";
+        async execute(input: unknown) {
+          const action = readAction(input);
           switch (action) {
             case "markers":
-              return JSON.stringify({ markers: PLAN_TO_BUILD_MARKERS }, null, 2);
+              return { output: JSON.stringify({ markers: PLAN_TO_BUILD_MARKERS }, null, 2) };
             case "override":
-              return JSON.stringify({ override: OVERRIDE_REMINDER }, null, 2);
+              return { output: JSON.stringify({ override: OVERRIDE_REMINDER }, null, 2) };
             case "state":
-            default: {
+            default:
               await log.stateDump("baba-system-reminder-override", {
                 markers: PLAN_TO_BUILD_MARKERS,
                 overrideLength: OVERRIDE_REMINDER.length,
               });
-              return "State dumped to debug outputs (console, file, client.app.log)";
-            }
+              return { output: "State dumped to debug outputs (console, file, client.app.log)" };
           }
         },
-      }),
-    },
+      });
+    });
 
-    "experimental.chat.system.transform": async (
-      _ctx: unknown,
-      { system }: { system: string[] },
-    ): Promise<void> => {
+    void ctx.session.hook("context", async (event) => {
+      const system = event.system;
       if (!Array.isArray(system)) return;
 
-      let replaced = false;
-      const changed = system.map((block) => {
-        const isMatch = isPlanToBuildReminder(block);
-        if (isMatch) replaced = true;
-        return isMatch ? OVERRIDE_REMINDER : block;
+      let replacedCount = 0;
+      // SystemPart fields are readonly, so a matching block is rebuilt rather
+      // than mutated in place.
+      const next = system.map((part) => {
+        if (part?.type !== "text" || typeof part.text !== "string") return part;
+        if (!isPlanToBuildReminder(part.text)) return part;
+        replacedCount++;
+        return { ...part, text: OVERRIDE_REMINDER };
       });
 
-      if (replaced) {
-        await log.info("replaced plan-to-build reminder", { 
-          originalBlocks: system.length, 
-          replacedCount: changed.filter((v, i) => v !== system[i]).length 
+      if (replacedCount > 0) {
+        event.system = next;
+        await log.info("replaced plan-to-build reminder", {
+          originalBlocks: system.length,
+          replacedCount,
         });
       }
-
-      if (changed.length !== system.length || changed.some((v, i) => v !== system[i])) {
-        system.length = 0;
-        system.push(...changed);
-      }
-    },
-  };
-};
+    });
+  },
+});

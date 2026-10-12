@@ -60,9 +60,11 @@
   //   BABA_DEBUG         -- comma-separated plugin names, or "" to disable
   //   BABA_DEBUG_MAX_LINES -- on-disk rotation cap (default 10000)
 
-// opencode plugins. @latest is fine for personal/dev use; pin a version
-// when reproducibility matters.
-"plugin": [
+// opencode plugins. Renamed `plugin` -> `plugins` for OpenCode 1.19.0 (V2),
+// which reads only the plural key and silently drops the singular one.
+// `@latest` is fine for personal/dev use; pin a version when
+// reproducibility matters.
+"plugins": [
     "opencode-vibeguard@latest",
     "opencode-adaptive-thinking@latest",
     "opencode-pty",

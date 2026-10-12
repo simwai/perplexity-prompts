@@ -1,5 +1,5 @@
 /**
- * Lock Enforcement Plugin for opencode
+ * Lock Enforcement Plugin for opencode (V2)
  *
  * Surfaces session-lock contention for two editing sessions sharing one checkout.
  *
@@ -27,12 +27,21 @@
  * caller has to make; the plugin does not pick for them.
  *
  * Inert on a READ_ONLY host (BABA_READ_ONLY=1).
+ *
+ * V2 changes: entrypoint, tool registration, and the execute.before hook moved
+ * to the V2 APIs. The on-disk lock protocol, the TTL, and the contention rules
+ * are unchanged.
  */
 
-import { type Plugin, tool } from "@opencode-ai/plugin";
 import { mkdir, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import { Plugin } from "@opencode/plugin";
 import { createDebug } from "../lib/baba-debug";
+
+/** Mirrors ConvertTo-FlatName: strip leading ./ or /, then separators become --. */
+function toFlatName(repoRelativePath: string): string {
+  return repoRelativePath.replace(/\\/g, "/").replace(/^[./]+/, "").replace(/[/\\]/g, "--");
+}
 
 const WRITE_TOOLS = new Set(["write", "edit", "patch"]);
 
@@ -46,14 +55,6 @@ function isReadOnlyHost(): boolean {
 
 function getLockRoot(repoRoot: string): string {
   return resolve(repoRoot, ".session-locks");
-}
-
-/** Mirrors ConvertTo-FlatName: strip leading ./ or /, then separators become --. */
-function toFlatName(repoRelativePath: string): string {
-  return repoRelativePath
-    .replace(/\\/g, "/")
-    .replace(/^[./]+/, "")
-    .replace(/[/\\]/g, "--");
 }
 
 function toRepoRelative(path: string, repoRoot: string): string {
@@ -218,16 +219,19 @@ async function acquireFileLock(
 
   try {
     await mkdir(resolve(lockPath, ".."), { recursive: true });
-  } catch (err: any) {
-    return { Success: false, error: `cannot prepare lock root: ${err?.message ?? String(err)}` };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    return { Success: false, error: `cannot prepare lock root: ${message}` };
   }
 
   // EEXIST is the exclusive signal: another session already holds this path.
   try {
     await mkdir(lockPath);
-  } catch (err: any) {
-    if (err?.code !== "EEXIST") {
-      return { Success: false, error: `cannot create lock: ${err?.message ?? String(err)}` };
+  } catch (err: unknown) {
+    const code = (err as { code?: string }).code;
+    if (code !== "EEXIST") {
+      const message = err instanceof Error ? err.message : String(err);
+      return { Success: false, error: `cannot create lock: ${message}` };
     }
     const existing = await readLockInfo(lockPath);
     if (isLive(existing)) {
@@ -253,9 +257,10 @@ async function acquireFileLock(
     if (dependencies.length > 0) {
       await writeFile(resolve(lockPath, "dependencies.txt"), dependencies.join("\n"), "utf-8");
     }
-  } catch (err: any) {
+  } catch (err: unknown) {
     await rm(lockPath, { recursive: true, force: true }).catch(() => {});
-    return { Success: false, error: `cannot write lock metadata: ${err?.message ?? String(err)}` };
+    const message = err instanceof Error ? err.message : String(err);
+    return { Success: false, error: `cannot write lock metadata: ${message}` };
   }
 
   return { Success: true, FlatName: `${flat}.lock` };
@@ -265,156 +270,242 @@ async function releaseFileLock(repoRoot: string, filePath: string): Promise<{ Su
   const lockPath = resolve(getLockRoot(repoRoot), `${toFlatName(toRepoRelative(filePath, repoRoot))}.lock`);
   try {
     await rm(lockPath, { recursive: true, force: true });
-  } catch (err: any) {
-    return { Success: false, Reason: `cannot remove lock: ${err?.message ?? String(err)}` };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    return { Success: false, Reason: `cannot remove lock: ${message}` };
   }
   return { Success: true };
 }
 
-const LockEnforcePlugin: Plugin = async ({ client, directory }: any) => {
-  const log = createDebug("baba-lock-enforce", client);
+function readStringField(input: unknown, key: string): string | undefined {
+  if (typeof input !== "object" || input === null) return undefined;
+  const value = (input as Record<string, unknown>)[key];
+  return typeof value === "string" ? value : undefined;
+}
 
-  await log.debug("plugin initialized", { 
-    directory, 
-    lockTtlMinutes: LOCK_TTL_MINUTES,
-    writeTools: Array.from(WRITE_TOOLS),
-    readOnlyHost: isReadOnlyHost(),
-  });
+function readStringArray(input: unknown, key: string): string[] {
+  if (typeof input !== "object" || input === null) return [];
+  const value = (input as Record<string, unknown>)[key];
+  if (!Array.isArray(value)) return [];
+  return value.filter((v): v is string => typeof v === "string");
+}
 
-  return {
-    tool: {
-      baba_lock_enforce_debug: tool({
-        description: "Debug baba-lock-enforce plugin: dump internal state or live locks.",
-        args: {
-          action: tool.schema
-            .enum(["state", "liveLocks", "config"])
-            .default("state")
-            .describe("What to dump: state (all), liveLocks (current live locks), config (plugin config)"),
-        },
-        async execute(args) {
-          const action = args.action ?? "state";
-          switch (action) {
-            case "liveLocks": {
-              const live = await readLiveLocks(directory);
-              return JSON.stringify({ liveLocks: live.map(e => ({ lockPath: e.lockPath, owner: e.info.owner, acquiredAt: e.info.acquiredAt, dependencies: e.info.dependencies })) }, null, 2);
-            }
-            case "config":
-              return JSON.stringify({ 
-                lockTtlMinutes: LOCK_TTL_MINUTES,
-                writeTools: Array.from(WRITE_TOOLS),
-                readOnlyHost: isReadOnlyHost(),
-              }, null, 2);
-            case "state":
-            default: {
-              const live = await readLiveLocks(directory);
-              await log.stateDump("baba-lock-enforce", {
-                liveLocksCount: live.length,
-                liveLocks: live.map(e => ({ lockPath: e.lockPath, owner: e.info.owner, acquiredAt: e.info.acquiredAt, dependencies: e.info.dependencies })),
-                config: {
-                  lockTtlMinutes: LOCK_TTL_MINUTES,
-                  writeTools: Array.from(WRITE_TOOLS),
-                  readOnlyHost: isReadOnlyHost(),
-                },
-              });
-              return "State dumped to debug outputs (console, file, client.app.log)";
-            }
-          }
-        },
-      }),
+export default Plugin.define({
+  id: "baba-lock-enforce",
 
-      acquire_lock: tool({
+  setup(ctx) {
+    const directory = ctx.location.directory;
+    const log = createDebug("baba-lock-enforce");
+
+    void log.debug("plugin initialized", {
+      directory,
+      lockTtlMinutes: LOCK_TTL_MINUTES,
+      writeTools: [...WRITE_TOOLS],
+      readOnlyHost: isReadOnlyHost(),
+    });
+
+    void ctx.tool.transform((editor) => {
+      editor.add({
+        name: "acquire_lock",
         description:
           "Acquire a session file lock for a file. Locks live in .session-locks/ and are shared with " +
           "prompt-system/scripts/session-locks.ps1, so both surfaces see the same locks.",
-        args: {
-          filePath: tool.schema.string().describe("Absolute or repo-relative path to lock"),
-          dependencies: tool.schema
-            .array(tool.schema.string())
-            .optional()
-            .describe("Additional repo-relative paths this lock should cover."),
+        input: {
+          type: "object",
+          properties: {
+            filePath: { type: "string", description: "Absolute or repo-relative path to lock" },
+            dependencies: {
+              type: "array",
+              items: { type: "string" },
+              description: "Additional repo-relative paths this lock should cover.",
+            },
+          },
+          required: ["filePath"],
         },
-        async execute(args: any, context: any) {
-          const sessionId = context?.sessionID;
-          if (!sessionId) return "Error: session ID required";
-          if (isReadOnlyHost()) return "Lock acquisition skipped: READ_ONLY host";
+        async execute(input: unknown, context) {
+          const sessionId = readStringField(context, "sessionID");
+          if (!sessionId) return { output: "Error: session ID required" };
+          if (isReadOnlyHost()) return { output: "Lock acquisition skipped: READ_ONLY host" };
 
-          await log.debug("acquire_lock invoked", { session: sessionId, filePath: args.filePath, dependencies: args.dependencies });
-          const result = await acquireFileLock(directory, sessionId, args.filePath, args.dependencies ?? []);
+          const filePath = readStringField(input, "filePath");
+          if (!filePath) return { output: "Error: filePath required" };
+          const dependencies = readStringArray(input, "dependencies");
+
+          await log.debug("acquire_lock invoked", { session: sessionId, filePath, dependencies });
+          const result = await acquireFileLock(directory, sessionId, filePath, dependencies);
           if (result.error) {
             await log.warn("acquire_lock failed", { session: sessionId, error: result.error });
-            return `Lock check failed: ${result.error}`;
+            return { output: `Lock check failed: ${result.error}` };
           }
           if (result.Success) {
-            await log.info("lock acquired", { session: sessionId, filePath: args.filePath, flatName: result.FlatName });
-            return `Lock acquired: ${args.filePath} (${result.FlatName})`;
+            await log.info("lock acquired", { session: sessionId, filePath, flatName: result.FlatName });
+            return { output: `Lock acquired: ${filePath} (${result.FlatName})` };
           }
 
           const decision = result.Decision ? `\nOptions: ${result.Decision.join(", ")}` : "";
-          await log.warn("acquire_lock blocked", { session: sessionId, filePath: args.filePath, owner: result.Owner });
-          return `Failed to acquire lock for ${args.filePath}${result.Owner ? ` (held by ${result.Owner})` : ""}${decision}`;
+          await log.warn("acquire_lock blocked", { session: sessionId, filePath, owner: result.Owner });
+          return {
+            output:
+              `Failed to acquire lock for ${filePath}` +
+              `${result.Owner ? ` (held by ${result.Owner})` : ""}${decision}`,
+          };
         },
-      }),
+      });
 
-      release_lock: tool({
+      editor.add({
+        name: "release_lock",
         description: "Release a session file lock after editing is complete.",
-        args: {
-          filePath: tool.schema.string().describe("Absolute or repo-relative path to unlock"),
+        input: {
+          type: "object",
+          properties: {
+            filePath: { type: "string", description: "Absolute or repo-relative path to unlock" },
+          },
+          required: ["filePath"],
         },
-        async execute(args: any) {
-          if (isReadOnlyHost()) return "Lock release skipped: READ_ONLY host";
-          await log.debug("release_lock invoked", { filePath: args.filePath });
-          const result = await releaseFileLock(directory, args.filePath);
+        async execute(input: unknown) {
+          if (isReadOnlyHost()) return { output: "Lock release skipped: READ_ONLY host" };
+          const filePath = readStringField(input, "filePath");
+          if (!filePath) return { output: "Error: filePath required" };
+
+          await log.debug("release_lock invoked", { filePath });
+          const result = await releaseFileLock(directory, filePath);
           if (result.Success) {
-            await log.info("lock released", { filePath: args.filePath });
-            return `Lock released: ${args.filePath}`;
+            await log.info("lock released", { filePath });
+            return { output: `Lock released: ${filePath}` };
           }
-          await log.warn("release_lock failed", { filePath: args.filePath, reason: result.Reason });
-          return `Failed to release lock: ${result.Reason}`;
+          await log.warn("release_lock failed", { filePath, reason: result.Reason });
+          return { output: `Failed to release lock: ${result.Reason}` };
         },
-      }),
+      });
 
-      check_lock: tool({
+      editor.add({
+        name: "check_lock",
         description: "Report which live session, if any, holds a lock on a file.",
-        args: {
-          filePath: tool.schema.string().describe("Absolute or repo-relative path to check"),
+        input: {
+          type: "object",
+          properties: {
+            filePath: { type: "string", description: "Absolute or repo-relative path to check" },
+          },
+          required: ["filePath"],
         },
-        async execute(args: any, context: any) {
-          const sessionId = context?.sessionID;
-          if (!sessionId) return "Error: session ID required";
-          if (isReadOnlyHost()) return "Lock check skipped: READ_ONLY host";
+        async execute(input: unknown, context) {
+          const sessionId = readStringField(context, "sessionID");
+          if (!sessionId) return { output: "Error: session ID required" };
+          if (isReadOnlyHost()) return { output: "Lock check skipped: READ_ONLY host" }
 
-          await log.debug("check_lock invoked", { session: sessionId, filePath: args.filePath });
-          const contention = await findContention(directory, sessionId, args.filePath);
+          const filePath = readStringField(input, "filePath");
+          if (!filePath) return { output: "Error: filePath required" };
+
+          await log.debug("check_lock invoked", { session: sessionId, filePath });
+          const contention = await findContention(directory, sessionId, filePath);
           if (!contention) {
-            await log.debug("check_lock: no live lock", { session: sessionId, filePath: args.filePath });
-            return `No live lock on ${args.filePath}`;
+            await log.debug("check_lock: no live lock", { session: sessionId, filePath });
+            return { output: `No live lock on ${filePath}` };
           }
-          await log.debug("check_lock: lock found", { session: sessionId, filePath: args.filePath, owner: contention.owner });
-          return `${args.filePath} is locked by ${contention.owner} (${contention.lockPath})`;
+          await log.debug("check_lock: lock found", { session: sessionId, filePath, owner: contention.owner });
+          return { output: `${filePath} is locked by ${contention.owner} (${contention.lockPath})` };
         },
-      }),
-    },
+      });
 
-    "tool.execute.before": async (input: { tool: string; sessionID?: string }, output: { args: any }) => {
-      if (!WRITE_TOOLS.has(input.tool)) return;
+      editor.add({
+        name: "baba_lock_enforce_debug",
+        description: "Debug baba-lock-enforce plugin: dump internal state or live locks.",
+        input: {
+          type: "object",
+          properties: {
+            action: {
+              type: "string",
+              enum: ["state", "liveLocks", "config"],
+              default: "state",
+              description:
+                "What to dump: state (all), liveLocks (current live locks), config (plugin config)",
+            },
+          },
+        },
+        async execute(input: unknown) {
+          const action = readStringField(input, "action") ?? "state";
+          if (action === "liveLocks") {
+            const live = await readLiveLocks(directory);
+            return {
+              output: JSON.stringify(
+                {
+                  liveLocks: live.map((e) => ({
+                    lockPath: e.lockPath,
+                    owner: e.info.owner,
+                    acquiredAt: e.info.acquiredAt,
+                    dependencies: e.info.dependencies,
+                  })),
+                },
+                null,
+                2,
+              ),
+            };
+          }
+          if (action === "config") {
+            return {
+              output: JSON.stringify(
+                {
+                  lockTtlMinutes: LOCK_TTL_MINUTES,
+                  writeTools: [...WRITE_TOOLS],
+                  readOnlyHost: isReadOnlyHost(),
+                },
+                null,
+                2,
+              ),
+            };
+          }
+          const live = await readLiveLocks(directory);
+          await log.stateDump("baba-lock-enforce", {
+            liveLocksCount: live.length,
+            liveLocks: live.map((e) => ({
+              lockPath: e.lockPath,
+              owner: e.info.owner,
+              acquiredAt: e.info.acquiredAt,
+              dependencies: e.info.dependencies,
+            })),
+            config: {
+              lockTtlMinutes: LOCK_TTL_MINUTES,
+              writeTools: [...WRITE_TOOLS],
+              readOnlyHost: isReadOnlyHost(),
+            },
+          });
+          return { output: "State dumped to debug outputs (console, file, client.app.log)" };
+        },
+      });
+    });
+
+    void ctx.tool.hook("execute.before", async (event) => {
+      if (!WRITE_TOOLS.has(event.tool)) return;
       if (isReadOnlyHost()) return;
 
-      // The session id lives on the hook input. The previous implementation read
-      // it from output.args, where write args are only { filePath }, so the hook
-      // never fired at all.
-      const sessionId = input.sessionID;
-      if (!sessionId) return;
+      // The session id lives on the hook event. Reading it from the tool args
+      // never works: write args are only { filePath }, so the hook never fired.
+      const sessionId = event.sessionID;
+      if (typeof sessionId !== "string" || sessionId.length === 0) return;
 
-      const filePath = output.args?.filePath ?? output.args?.path;
+      const input = event.input;
+      if (typeof input !== "object" || input === null) return;
+      const args = input as { filePath?: unknown; path?: unknown };
+      const filePath = typeof args.filePath === "string"
+        ? args.filePath
+        : typeof args.path === "string"
+          ? args.path
+          : undefined;
       if (!filePath) return;
 
-      await log.debug("tool.execute.before: checking contention", { session: sessionId, filePath, tool: input.tool });
+      await log.debug("execute.before: checking contention", { session: sessionId, filePath, tool: event.tool });
       const contention = await findContention(directory, sessionId, filePath);
 
       if (!contention) return;
 
       const deps = contention.dependencies.length ? ` (covers ${contention.dependencies.join(", ")})` : "";
-      await log.warn("lock contention detected, blocking write", { session: sessionId, filePath, owner: contention.owner, lockPath: contention.lockPath, dependencies: contention.dependencies });
+      await log.warn("lock contention detected, blocking write", {
+        session: sessionId,
+        filePath,
+        owner: contention.owner,
+        lockPath: contention.lockPath,
+        dependencies: contention.dependencies,
+      });
       throw new Error(
         `[LOCK CONTENTION] Write blocked: another live session holds "${filePath}".\n` +
           `Owner: ${contention.owner}${deps}\n` +
@@ -424,8 +515,6 @@ const LockEnforcePlugin: Plugin = async ({ client, directory }: any) => {
           `  - coordinate and hand this edit to the other session\n` +
           `  - confirm the other session is idle, then remove the lock directory yourself`,
       );
-    },
-  };
-};
-
-export default LockEnforcePlugin;
+    });
+  },
+});

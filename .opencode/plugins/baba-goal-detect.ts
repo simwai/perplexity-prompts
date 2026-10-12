@@ -1,57 +1,61 @@
 /**
- * Baba Goal Detection Plugin for opencode
+ * Baba Goal Detection Plugin for opencode (V2)
  *
  * Watches the first user message in a session. If the message looks like a
  * free-text goal (no concrete target) AND the user has not already invoked a
  * command, surfaces a one-time suggestion to run /kickoff.
  *
- * Heuristics (conservative — one false positive per session max, dismissible):
+ * Heuristics (conservative -- one false positive per session max, dismissible):
  *   Goal-like:   contains action verbs (build|create|implement|add|make|develop|set up|write)
  *                AND a noun phrase after the verb
  *   Not a goal:  mentions a file path (./, src/, @, .ts, .py, .md), a bug report
  *                (bug, fix, broken, error, crash), a line number, or starts with
  *                a slash command (already explicit)
  *
- * Delivery is a noReply session prompt. The previous implementation used
- * client.message.create, which is not a method on the SDK client, and read
- * messages off a session.updated event, whose payload carries a Session object
- * with no messages on it. Both paths threw or returned early, so the plugin
- * never fired.
+ * V2 change: the V2 event bus has no `message.part.updated` or `message.updated`
+ * events, so user text cannot be accumulated from the bus. It is read straight
+ * off the `context` session hook's `event.messages`, which also removes the
+ * defer-to-next-tick hack the old bus path needed.
  *
- * User text comes from the event bus, not from chat.message's output.parts:
- * upstream anomalyco/opencode#22831 shows the runtime always hands that hook
- * an empty array, so reading it directly no-ops live. message.part.updated
- * carries the real text.
+ * V2 change: the V1 delivery used `client.session.prompt({ noReply: true })`,
+ * which no longer exists. The suggestion is prepended to `event.system` on the
+ * same model request that carried the goal, so no extra turn is spent on it.
  */
 
-import { sessionIdFromEvent } from "../lib/baba-session-id";
+import { Plugin } from "@opencode/plugin";
 import { createDebug } from "../lib/baba-debug";
-import { tool } from "@opencode-ai/plugin";
+import { subscribeToEvents } from "../lib/baba-session-id";
 
 const GOAL_VERB = /\b(build|create|implement|implementing|add|make|develop|set\s+up|write|ship|ship a|scaffold|introduce|integrate)\b/i;
 const TARGET_HINTS = /(\.[a-z]{1,4}\b|^\s*\/|@|line\s+\d|l\d+\b|src\/|app\/|lib\/|\/[a-z-]+\.[a-z])/i;
 const BUG_HINTS = /\b(bug|fix|broken|error|crash|fail|fails|regression|hotfix|stack trace|exception)\b/i;
 const QUESTION_ONLY = /^(how|what|why|when|where|can you explain|is there)\b/i;
 
-const SUGGESTION = `Goal-like first message detected. Suggested next step: run /kickoff with the goal text to bootstrap roadmap → sprint → stories → ICE scores → task card in one consolidated flow. If this is already a concrete target, ignore this note.`;
+const SUGGESTION = `Goal-like first message detected. Suggested next step: run /kickoff with the goal text to bootstrap roadmap -> sprint -> stories -> ICE scores -> task card in one consolidated flow. If this is already a concrete target, ignore this note.`;
 
 /** Sessions already assessed, so the check runs on the first message only. */
 const assessed = new Set<string>();
 
-/** Text parts seen per message, keyed by message id, accumulated from the bus. */
-const messageText = new Map<string, string[]>();
-
-function collectText(part: any): void {
-  if (!part || typeof part !== "object") return;
-  if (part.type !== "text" || typeof part.text !== "string") return;
-  if (part.synthetic === true || part.ignored === true) return;
-  if (part.text.length === 0) return;
-
-  const key = part.messageID;
-  if (typeof key !== "string") return;
-  const chunks = messageText.get(key) ?? [];
-  chunks.push(part.text);
-  messageText.set(key, chunks);
+/** Newest user message text from the session history. */
+function newestUserText(messages: readonly unknown[]): string | undefined {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const message = messages[i] as { role?: unknown; parts?: unknown } | null;
+    if (!message || message.role !== "user") continue;
+    if (!Array.isArray(message.parts)) continue;
+    const chunks: string[] = [];
+    for (const part of message.parts) {
+      const text = (part as { type?: unknown; text?: unknown }).text;
+      const type = (part as { type?: unknown }).type;
+      const synthetic = (part as { synthetic?: unknown }).synthetic;
+      if (type !== "text" || typeof text !== "string") continue;
+      if (synthetic === true) continue;
+      if (text.length === 0) continue;
+      chunks.push(text);
+    }
+    if (chunks.length === 0) continue;
+    return chunks.join("\n").trim();
+  }
+  return undefined;
 }
 
 function isGoalLike(text: string): boolean {
@@ -64,140 +68,95 @@ function isGoalLike(text: string): boolean {
   return true;
 }
 
-export default async ({ client, $, project, directory, worktree }: {
-  client: any;
-  $: any;
-  project: any;
-  directory: string;
-  worktree: string;
-}) => {
-  const log = createDebug("baba-goal-detect", client);
+export default Plugin.define({
+  id: "baba-goal-detect",
 
-  await log.debug("plugin initialized", {
-    patterns: {
-      goalVerb: GOAL_VERB.source,
-      targetHints: TARGET_HINTS.source,
-      bugHints: BUG_HINTS.source,
-      questionOnly: QUESTION_ONLY.source,
-    },
-  });
+  setup(ctx) {
+    const log = createDebug("baba-goal-detect");
 
-  async function suggest(sessionId: string): Promise<void> {
-    try {
-      await log.debug("sending kickoff suggestion", { session: sessionId });
-      await client.session.prompt({
-        path: { id: sessionId },
-        body: {
-          noReply: true,
-          parts: [{ type: "text", text: SUGGESTION }],
+    void log.debug("plugin initialized", {
+      patterns: {
+        goalVerb: GOAL_VERB.source,
+        targetHints: TARGET_HINTS.source,
+        bugHints: BUG_HINTS.source,
+        questionOnly: QUESTION_ONLY.source,
+      },
+    });
+
+    void subscribeToEvents(ctx.event.subscribe(), async (event) => {
+      if (event.type !== "session.deleted") return;
+      const data = (event as { data?: unknown }).data;
+      if (typeof data !== "object" || data === null) return;
+      const sessionId = (data as Record<string, unknown>).sessionID;
+      if (typeof sessionId !== "string" || sessionId.length === 0) return;
+      void log.debug("session.deleted, cleaning up", { sessionId });
+      assessed.delete(sessionId);
+    });
+
+    void ctx.tool.transform((editor) => {
+      editor.add({
+        name: "baba_goal_detect_debug",
+        description: "Debug baba-goal-detect plugin: dump internal state.",
+        input: {
+          type: "object",
+          properties: {
+            action: {
+              type: "string",
+              enum: ["state", "assessed", "messages"],
+              default: "state",
+              description:
+                "What to dump: state (all), assessed (assessed sessions), messages (message tracking)",
+            },
+          },
+        },
+        async execute(input: unknown) {
+          const action = readStringField(input, "action") ?? "state";
+          if (action === "assessed") {
+            return { output: JSON.stringify({ assessed: [...assessed] }, null, 2) };
+          }
+          await log.stateDump("baba-goal-detect", {
+            assessedCount: assessed.size,
+            assessed: [...assessed],
+          });
+          return { output: "State dumped to debug outputs (console, file, client.app.log)" };
         },
       });
-      await log.info("kickoff suggestion sent", { session: sessionId });
-    } catch (e) {
-      await log.warn("failed to send kickoff suggestion", { session: sessionId, error: String(e) });
-      // A failed suggestion is not worth surfacing: it is advisory, and the
-      // user can always invoke /kickoff themselves.
-    }
-  }
+    });
 
-  return {
-    tool: {
-      baba_goal_detect_debug: tool({
-        description: "Debug baba-goal-detect plugin: dump internal state.",
-        args: {
-          action: tool.schema
-            .enum(["state", "assessed", "messages"])
-            .default("state")
-            .describe("What to dump: state (all), assessed (assessed sessions), messages (message tracking)"),
-        },
-        async execute(args) {
-          const action = args.action ?? "state";
-          switch (action) {
-            case "assessed":
-              return JSON.stringify({ assessed: Array.from(assessed) }, null, 2);
-            case "messages": {
-              const msgs: Record<string, string[]> = {};
-              for (const [id, chunks] of messageText.entries()) {
-                msgs[id] = chunks;
-              }
-              return JSON.stringify(msgs, null, 2);
-            }
-            case "state":
-            default: {
-              await log.stateDump("baba-goal-detect", {
-                assessedCount: assessed.size,
-                assessed: Array.from(assessed),
-                messageTextCount: messageText.size,
-                messageText: Object.fromEntries(messageText),
-              });
-              return "State dumped to debug outputs (console, file, client.app.log)";
-            }
-          }
-        },
-      }),
-    },
+    void ctx.session.hook("context", async (event) => {
+      const sessionId = event.sessionID;
+      if (typeof sessionId !== "string" || sessionId.length === 0) return;
+      if (assessed.has(sessionId)) return;
+      if (!Array.isArray(event.messages)) return;
 
-    event: async ({ event }: { event: any }) => {
-      if (event.type === "message.part.updated") {
-        const part = event.properties?.part;
-        await log.debug("message.part.updated", { 
-          messageId: part?.messageID, 
-          sessionId: part?.sessionID, 
-          textLength: part?.text?.length ?? 0 
-        });
-        collectText(part);
-        return;
-      }
+      const text = newestUserText(event.messages);
+      if (!text) return;
 
-      if (event.type === "message.updated") {
-        const info = event.properties?.info;
-        if (!info || info.role !== "user" || typeof info.sessionID !== "string") return;
-        if (assessed.has(info.sessionID)) return;
+      assessed.add(sessionId);
+      const isGoal = isGoalLike(text);
 
-        await log.debug("message.updated - user message, deferring assessment", { 
-          sessionId: info.sessionID, 
-          messageId: info.id 
-        });
+      void log.debug("goal assessment complete", {
+        sessionId,
+        textLength: text.length,
+        isGoal,
+        textPreview: text.slice(0, 100),
+      });
 
-        // message.updated can arrive before the message's parts, so defer to the
-        // next tick and judge whatever text the bus accumulated by then.
-        const sessionId = info.sessionID;
-        setTimeout(async () => {
-          if (assessed.has(sessionId)) return;
-          assessed.add(sessionId);
+      if (!isGoal) return;
 
-          const chunks = messageText.get(info.id) ?? [];
-          const text = chunks.join("\n").trim();
-          if (text.length === 0) {
-            await log.debug("no text accumulated for assessment", { sessionId, messageId: info.id });
-            return;
-          }
+      await log.info("goal detected, injecting kickoff suggestion", { sessionId });
+      if (!Array.isArray(event.system)) return;
+      event.system = [{ type: "text", text: SUGGESTION }, ...event.system];
+    });
 
-          const isGoal = isGoalLike(text);
-          await log.debug("goal assessment complete", { 
-            sessionId, 
-            messageId: info.id, 
-            textLength: text.length, 
-            isGoal,
-            textPreview: text.slice(0, 100) 
-          });
+    return () => {
+      assessed.clear();
+    };
+  },
+});
 
-          if (!isGoal) return;
-
-          await log.info("goal detected, sending suggestion", { sessionId });
-          void suggest(sessionId);
-        }, 0);
-        return;
-      }
-
-      if (event.type === "session.deleted") {
-        const sessionId = sessionIdFromEvent(event.properties);
-        if (sessionId) {
-          await log.debug("session.deleted, cleaning up", { sessionId });
-          assessed.delete(sessionId);
-          messageText.delete(sessionId);
-        }
-      }
-    },
-  };
-};
+function readStringField(input: unknown, key: string): string | undefined {
+  if (typeof input !== "object" || input === null) return undefined;
+  const value = (input as Record<string, unknown>)[key];
+  return typeof value === "string" ? value : undefined;
+}
