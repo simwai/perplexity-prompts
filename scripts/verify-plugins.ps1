@@ -115,7 +115,14 @@ foreach ($configPath in $configs) {
         continue
     }
 
-    $entries = @($config.plugin)
+    # OpenCode 1.19.0 (V2) reads the plural `plugins` key; V1 read `plugin`.
+    # Both are checked so a config on either API is verified. A missing key
+    # yields nothing, and the null from a present-but-absent key is filtered.
+    $entries = @()
+    foreach ($key in @("plugins", "plugin")) {
+        if ($null -ne $config.$key) { $entries += @($config.$key) }
+    }
+    $entries = @($entries | Where-Object { $null -ne $_ })
     if ($entries.Count -eq 0) {
         Write-Host "  ok    $configPath declares no plugin entries"
         continue
@@ -123,7 +130,12 @@ foreach ($configPath in $configs) {
 
     $configDir = Split-Path -Parent $configPath
     foreach ($entry in $entries) {
+        # V1 allowed the [spec, options] tuple form.
         $spec = if ($entry -is [array]) { $entry[0] } else { $entry }
+        if ($null -eq $spec -or "$spec".Trim() -eq "") {
+            Add-Failure "$configPath declares a plugin entry with no target"
+            continue
+        }
 
         if (Test-PathPluginSpec -Spec $spec) {
             # Relative specs are resolved against the directory of the config
@@ -142,13 +154,18 @@ foreach ($configPath in $configs) {
 
         # A bare name is an npm specifier. Confirm the package actually resolves,
         # because an unresolvable one fails silently at the install stage.
+        # Scoped names (@scope/pkg) have no version before the @, so only a
+        # later @ counts as a separator.
+        $spec = "$spec"
         $pkg, $version = $spec, "latest"
         $at = $spec.LastIndexOf("@")
         if ($at -gt 0) {
             $pkg = $spec.Substring(0, $at)
             $version = $spec.Substring($at + 1)
         }
-        if ($version -eq "latest" -or $version -eq "") {
+        if ("$pkg" -like "@*") {
+            $resolved = (& npm view $spec version --silent 2>$null | Select-Object -Last 1)
+        } elseif ($version -eq "latest" -or $version -eq "") {
             $resolved = (& npm view $pkg version --silent 2>$null | Select-Object -Last 1)
         } else {
             $resolved = (& npm view "$pkg@$version" version --silent 2>$null | Select-Object -Last 1)
