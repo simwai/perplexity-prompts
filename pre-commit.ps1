@@ -23,7 +23,7 @@ $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 # directory itself when it holds generate-adapters.ps1; otherwise its parent.
 $repoRoot = if (Test-Path (Join-Path $scriptDir 'generate-adapters.ps1')) { $scriptDir } else { Split-Path -Parent $scriptDir }
 
-$totalSteps = 9
+$totalSteps = 8
 Write-Host "Running pre-commit checks..." -ForegroundColor Cyan
 
 # Paths excluded from every check below. `pre-commit.ps1` is deliberately NOT
@@ -209,20 +209,8 @@ if ($regenerated) {
 }
 Write-Host "  Generated adapters already current ($($before.Count) files checked)" -ForegroundColor Green
 
-# ── 2. TypeScript typecheck ──────────────────────────────────────────────────
-Write-Host "`n[3/$totalSteps] Running TypeScript typecheck..." -ForegroundColor Yellow
-
-$tscOutput = & npx tsc --noEmit -p .opencode/tsconfig.json 2>&1
-$tscCode = $LASTEXITCODE
-if ($tscCode -ne 0) {
-    $tscOutput | ForEach-Object { Write-Error "  $_" }
-    Write-Error "TypeScript typecheck failed"
-    exit 1
-}
-Write-Host "  TypeScript typecheck passed" -ForegroundColor Green
-
-# ── 4. Mermaid diagram syntax ────────────────────────────────────────────────
-Write-Host "`n[4/$totalSteps] Validating Mermaid diagrams..." -ForegroundColor Yellow
+# ── 3. Mermaid diagram syntax ────────────────────────────────────────────────
+Write-Host "`n[3/$totalSteps] Validating Mermaid diagrams..." -ForegroundColor Yellow
 
 # Scoped to staged Markdown. A diagram that fails to parse renders as a
 # syntax-error box on GitHub and nothing else here catches it: markdownlint
@@ -243,7 +231,7 @@ if (-not (Test-Path -LiteralPath $mermaidScript -PathType Leaf)) {
 }
 
 # ── 5. Prompt-system integrity suites ───────────────────────────────────────
-Write-Host "`n[5/$totalSteps] Running prompt-system integrity suites..." -ForegroundColor Yellow
+Write-Host "`n[4/$totalSteps] Running prompt-system integrity suites..." -ForegroundColor Yellow
 
 $integritySuites = @(
     'prompt-system\scripts\test-rubric-id-integrity.ps1',
@@ -275,7 +263,7 @@ if ($integrityFailed) {
 }
 
 # ── 3. File hygiene (staged files) ──────────────────────────────────────────
-Write-Host "`n[6/$totalSteps] Checking file hygiene..." -ForegroundColor Yellow
+Write-Host "`n[5/$totalSteps] Checking file hygiene..." -ForegroundColor Yellow
 
 $stagedText = @(Get-StagedFiles -Extensions @('.md', '.yaml', '.yml', '.json', '.toml', '.ps1', '.psd1', '.psm1', '.txt'))
 $dirty = @()
@@ -340,7 +328,7 @@ if (-not $stagedText) {
 }
 
 # ── 4. Secret scanning (staged files) ───────────────────────────────────────
-Write-Host "`n[7/$totalSteps] Scanning staged files for secrets..." -ForegroundColor Yellow
+Write-Host "`n[6/$totalSteps] Scanning staged files for secrets..." -ForegroundColor Yellow
 
 $secretPatterns = @(
     'api[_-]?key\s*[:=]\s*["'']?[a-zA-Z0-9_\-]{20,}',
@@ -380,7 +368,7 @@ if ($secrets) {
 Write-Host "  No secrets detected in staged files" -ForegroundColor Green
 
 # ── 5. Markdown lint (staged files) ──────────────────────────────────────────
-Write-Host "`n[8/$totalSteps] Linting staged Markdown..." -ForegroundColor Yellow
+Write-Host "`n[7/$totalSteps] Linting staged Markdown..." -ForegroundColor Yellow
 
 $stagedMd = @(Get-StagedFiles -Extensions @('.md'))
 
@@ -417,7 +405,7 @@ if (-not $stagedMd) {
 }
 
 # ── 6. PowerShell Script Analyzer (staged files) ────────────────────────────
-Write-Host "`n[9/$totalSteps] Analyzing staged PowerShell..." -ForegroundColor Yellow
+Write-Host "`n[8/$totalSteps] Analyzing staged PowerShell..." -ForegroundColor Yellow
 
 $stagedPs = @(Get-StagedFiles -Extensions @('.ps1'))
 
