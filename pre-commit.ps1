@@ -23,7 +23,7 @@ $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 # directory itself when it holds generate-adapters.ps1; otherwise its parent.
 $repoRoot = if (Test-Path (Join-Path $scriptDir 'generate-adapters.ps1')) { $scriptDir } else { Split-Path -Parent $scriptDir }
 
-$totalSteps = 8
+$totalSteps = 9
 Write-Host "Running pre-commit checks..." -ForegroundColor Cyan
 
 # Paths excluded from every check below. `pre-commit.ps1` is deliberately NOT
@@ -72,21 +72,47 @@ function Get-StagedFiles {
     return $result
 }
 
-# Content fingerprint that agrees with git.
+# Content fingerprint that agrees with git, without paying a process per file.
 #
 # A raw SHA256 over the file bytes disagrees with git whenever the working tree
 # carries CRLF and .gitattributes normalises to LF (`* text=auto eol=lf`). Git
 # treats those files as unchanged while a byte hash sees a difference, which
 # made the adapter-regeneration check below report spurious changes and block
-# every commit until the tree happened to be LF. `git hash-object` applies the
-# same clean filter git uses for staging, so it is the only comparison that
-# cannot contradict `git status`.
-function Get-GitBlobId {
-    param([string]$RelativePath)
+# every commit until the tree happened to be LF.
+#
+# `git hash-object --path` would apply git's own clean filter, but it spawns a
+# process per file and the generated tree has hundreds of files, which turned
+# the gate into a multi-minute hang. Replicating the normalisation in-process
+# is equivalent for text files and costs one read each.
+function Get-NormalizedContentId {
+    param([string]$Path)
 
-    $out = & git -C $repoRoot hash-object --path $RelativePath -- $RelativePath 2>$null
-    if ($LASTEXITCODE -ne 0 -or -not $out) { return $null }
-    return ($out | Select-Object -First 1).Trim()
+    $text = [System.IO.File]::ReadAllText($Path)
+    if ($text.IndexOf("`r`n") -ge 0) {
+        $text = $text.Replace("`r`n", "`n")
+    }
+    $sha = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        $hash = $sha.ComputeHash([System.Text.Encoding]::UTF8.GetBytes($text))
+        return [System.BitConverter]::ToString($hash).Replace('-', '')
+    } finally {
+        $sha.Dispose()
+    }
+}
+
+function Get-GeneratedFileMap {
+    param([string[]]$Dirs)
+
+    $map = @{}
+    foreach ($dir in $Dirs) {
+        $full = Join-Path $repoRoot $dir
+        if (-not (Test-Path -LiteralPath $full -PathType Container)) { continue }
+        foreach ($f in (Get-ChildItem -LiteralPath $full -Recurse -File)) {
+            $rel = $f.FullName.Substring($repoRoot.Length).TrimStart('\', '/') -replace '\\', '/'
+            $map[$rel] = Get-NormalizedContentId -Path $f.FullName
+        }
+    }
+    return $map
 }
 
 # ── 1. Session lock gate ────────────────────────────────────────────────────
@@ -155,15 +181,7 @@ Write-Host "`n[2/$totalSteps] Generating adapters..." -ForegroundColor Yellow
 # edit is not this hook's business, and comparing against the index would flag it.
 $generatedDirs = @('.opencode', '.claude')
 
-$before = @{}
-foreach ($dir in $generatedDirs) {
-    $full = Join-Path $repoRoot $dir
-    if (-not (Test-Path -LiteralPath $full -PathType Container)) { continue }
-    foreach ($f in (Get-ChildItem -LiteralPath $full -Recurse -File)) {
-        $rel = $f.FullName.Substring($repoRoot.Length).TrimStart('\', '/') -replace '\\', '/'
-        $before[$rel] = Get-GitBlobId -RelativePath $rel
-    }
-}
+$before = Get-GeneratedFileMap -Dirs $generatedDirs
 
 & (Join-Path $repoRoot 'generate-adapters.ps1')
 if (-not $?) {
@@ -171,17 +189,16 @@ if (-not $?) {
     exit 1
 }
 
+$after = Get-GeneratedFileMap -Dirs $generatedDirs
+
 $regenerated = @()
-foreach ($dir in $generatedDirs) {
-    $full = Join-Path $repoRoot $dir
-    if (-not (Test-Path -LiteralPath $full -PathType Container)) { continue }
-    foreach ($f in (Get-ChildItem -LiteralPath $full -Recurse -File)) {
-        $rel = $f.FullName.Substring($repoRoot.Length).TrimStart('\', '/') -replace '\\', '/'
-        $hash = Get-GitBlobId -RelativePath $rel
-        if (-not $before.ContainsKey($rel) -or $before[$rel] -ne $hash) {
-            $regenerated += $rel
-        }
+foreach ($rel in $after.Keys) {
+    if (-not $before.ContainsKey($rel) -or $before[$rel] -ne $after[$rel]) {
+        $regenerated += $rel
     }
+}
+foreach ($rel in $before.Keys) {
+    if (-not $after.ContainsKey($rel)) { $regenerated += $rel }
 }
 
 if ($regenerated) {
@@ -204,8 +221,29 @@ if ($tscCode -ne 0) {
 }
 Write-Host "  TypeScript typecheck passed" -ForegroundColor Green
 
-# ── 3. Prompt-system integrity suites ───────────────────────────────────────
-Write-Host "`n[4/$totalSteps] Running prompt-system integrity suites..." -ForegroundColor Yellow
+# ── 4. Mermaid diagram syntax ────────────────────────────────────────────────
+Write-Host "`n[4/$totalSteps] Validating Mermaid diagrams..." -ForegroundColor Yellow
+
+# Scoped to staged Markdown. A diagram that fails to parse renders as a
+# syntax-error box on GitHub and nothing else here catches it: markdownlint
+# checks Markdown, not diagram grammar, and the cross-reference suite checks
+# citations, not diagram bodies. Files with no ```mermaid fence are skipped
+# without starting a browser, so commits that touch no diagram cost nothing.
+$mermaidScript = Join-Path $repoRoot 'scripts\test-mermaid.ps1'
+if (-not (Test-Path -LiteralPath $mermaidScript -PathType Leaf)) {
+    Write-Warning '  scripts\test-mermaid.ps1 not found -- Mermaid validation SKIPPED'
+} else {
+    $mermaidOutput = & pwsh -NoProfile -File $mermaidScript -StagedOnly 2>&1
+    $mermaidCode = $LASTEXITCODE
+    $mermaidOutput | ForEach-Object { Write-Host "  $_" }
+    if ($mermaidCode -ne 0) {
+        Write-Error 'Mermaid syntax validation failed -- a diagram does not parse.'
+        exit 1
+    }
+}
+
+# ── 5. Prompt-system integrity suites ───────────────────────────────────────
+Write-Host "`n[5/$totalSteps] Running prompt-system integrity suites..." -ForegroundColor Yellow
 
 $integritySuites = @(
     'prompt-system\scripts\test-rubric-id-integrity.ps1',
@@ -237,7 +275,7 @@ if ($integrityFailed) {
 }
 
 # ── 3. File hygiene (staged files) ──────────────────────────────────────────
-Write-Host "`n[5/$totalSteps] Checking file hygiene..." -ForegroundColor Yellow
+Write-Host "`n[6/$totalSteps] Checking file hygiene..." -ForegroundColor Yellow
 
 $stagedText = @(Get-StagedFiles -Extensions @('.md', '.yaml', '.yml', '.json', '.toml', '.ps1', '.psd1', '.psm1', '.txt'))
 $dirty = @()
@@ -302,7 +340,7 @@ if (-not $stagedText) {
 }
 
 # ── 4. Secret scanning (staged files) ───────────────────────────────────────
-Write-Host "`n[6/$totalSteps] Scanning staged files for secrets..." -ForegroundColor Yellow
+Write-Host "`n[7/$totalSteps] Scanning staged files for secrets..." -ForegroundColor Yellow
 
 $secretPatterns = @(
     'api[_-]?key\s*[:=]\s*["'']?[a-zA-Z0-9_\-]{20,}',
@@ -342,7 +380,7 @@ if ($secrets) {
 Write-Host "  No secrets detected in staged files" -ForegroundColor Green
 
 # ── 5. Markdown lint (staged files) ──────────────────────────────────────────
-Write-Host "`n[7/$totalSteps] Linting staged Markdown..." -ForegroundColor Yellow
+Write-Host "`n[8/$totalSteps] Linting staged Markdown..." -ForegroundColor Yellow
 
 $stagedMd = @(Get-StagedFiles -Extensions @('.md'))
 
@@ -379,7 +417,7 @@ if (-not $stagedMd) {
 }
 
 # ── 6. PowerShell Script Analyzer (staged files) ────────────────────────────
-Write-Host "`n[8/$totalSteps] Analyzing staged PowerShell..." -ForegroundColor Yellow
+Write-Host "`n[9/$totalSteps] Analyzing staged PowerShell..." -ForegroundColor Yellow
 
 $stagedPs = @(Get-StagedFiles -Extensions @('.ps1'))
 

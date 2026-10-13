@@ -169,10 +169,21 @@ cloning:
 ```
 
 The gate runs, in order: Markdown TOC generation, Markdown lint, adapter
-regeneration check, TypeScript typecheck, prompt-system integrity suites, and a
-secret scan. Adapter regeneration must be run under `pwsh` 7.6+; running
+regeneration check, TypeScript typecheck, **Mermaid diagram validation**,
+prompt-system integrity suites, and a secret scan.
+
+Adapter regeneration must be run under `pwsh` 7.6+; running
 `generate-adapters.ps1` under Windows PowerShell 5.1 writes a UTF-8 BOM and the
 gate will report spurious changes.
+
+The Mermaid step renders every diagram in the staged Markdown through the real
+renderer, so a diagram that would render as a syntax-error box on GitHub fails
+the commit instead. Files with no diagram are skipped without starting a
+browser. Run it on its own with:
+
+```bash
+npm run lint:mermaid
+```
 
 ---
 

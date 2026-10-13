@@ -9,7 +9,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s",
-    "changelog:preview": "conventional-changelog -p angular"
+    "changelog:preview": "conventional-changelog -p angular",
+    "lint:mermaid": "pwsh -NoProfile -File ./scripts/test-mermaid.ps1"
   },
   "repository": {
     "type": "git",

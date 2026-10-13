@@ -63,6 +63,15 @@ heading stops being a signal and becomes a font.
 
 All diagrams use **GitHub-flavored Mermaid** syntax inside fenced code blocks.
 
+A diagram that fails to parse renders as a syntax-error box on GitHub, and
+nothing else in this repository notices: markdownlint checks Markdown rather
+than diagram grammar, and the cross-reference suite checks citations rather than
+diagram bodies. `scripts/test-mermaid.ps1` closes that gap by handing each
+Markdown file to mermaid-cli's Markdown mode, which extracts and renders every
+fenced mermaid block in it. It runs in the commit gate as step 4, scoped to
+staged Markdown, and skips files with no mermaid fence without starting a
+browser. Run it manually with `npm run lint:mermaid`.
+
 - Every mermaid block starts with `%%{init: {'theme': 'dark'}}%%`
 - **Primary color**: `#6B21A8` (Dark Purple)
 - **Accent color**: `#06B6D4` (Cyan)
