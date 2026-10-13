@@ -5,10 +5,14 @@
     Reads the portable prompt system (AGENTS.md + prompt-system/) and adapter
     templates (adapters/), then generates platform-specific adapter files for
     both OpenCode (.opencode/) and Claude Code (.claude/).
-    
+
     This is the single source of truth for adapter generation. Both platforms
     are generated from the same portable system to prevent drift.
-    
+
+    Persona-driven files use templates with {{PLACEHOLDER}} tokens that are
+    filled from prompt-system/personas.json. Adding a new persona = one entry
+    in personas.json, and all router/command files update automatically.
+
     Run before sync.ps1 so generated adapters are included in the sync.
 .EXAMPLE
     .\generate-adapters.ps1
@@ -29,6 +33,82 @@ function Write-Warn {
 }
 
 # ═══════════════════════════════════════════════════════════════════════════
+# 0. Load personas registry (single source of truth for persona enumeration)
+# ═══════════════════════════════════════════════════════════════════════════
+
+$personasPath = Join-Path $repoRoot 'prompt-system\personas.json'
+$personas = @()
+
+if (Test-Path -LiteralPath $personasPath -PathType Leaf) {
+    $personasJson = Get-Content -LiteralPath $personasPath -Raw -Encoding UTF8
+    try {
+        $config = $personasJson | ConvertFrom-Json
+        $personas = $config.personas
+        Write-Ok "Loaded $($personas.Count) personas from registry"
+    } catch {
+        Write-Warn "Failed to parse personas.json: $_"
+    }
+} else {
+    Write-Warn "personas.json not found at $personasPath"
+}
+
+# Build derived strings from the registry
+
+# Persona routing lines for Claude plan.md
+$personaRoutingClaude = @()
+$personas | ForEach-Object {
+    if ($_.routing.claudePlan) {
+        $personaRoutingClaude += "- $($_.routing.claudePlan)"
+    }
+}
+
+# Persona routing lines for OpenCode plan.md
+$personaRoutingOpencode = @()
+$personas | ForEach-Object {
+    if ($_.routing.opencodePlan) {
+        $personaRoutingOpencode += "- $($_.routing.opencodePlan)"
+    }
+}
+
+# Build routing block for plan.md (claude + opencode share the same lines)
+$personaRouting = $personaRoutingClaude + $personaRoutingOpencode | Select-Object -Unique
+
+# Persona routing lines for build.md
+$personaBuildRouting = @()
+$personas | ForEach-Object {
+    if ($_.routing.build) {
+        $personaBuildRouting += "- $($_.routing.build)"
+    }
+}
+
+# General comparison table rows
+$personaGeneralTable = @()
+$personaGeneralTable += '| Task type | Persona |'
+$personaGeneralTable += '|-----------|---------|'
+$personas | ForEach-Object {
+    if ($_.routing.generalTable) {
+        $parts = $_.routing.generalTable -split ' → ', 2
+        $personaGeneralTable += "| $($parts[0].Trim()) | $($parts[1].Trim()) |"
+    }
+}
+$personaGeneralTable = $personaGeneralTable -join "`n"
+
+# Baba command keywords (from each persona's babaCommand.keywords, backtick-formatted)
+$bt = [char]0x60  # backtick character
+$keywordList = ($personas | ForEach-Object { $_.babaCommand.keywords[0] })
+$babaCommandKeywords = ($keywordList | ForEach-Object { "$bt$_$bt" }) -join ', '
+
+# Baba command instructions (one per persona)
+$babaCommandInstructions = @()
+$personas | ForEach-Object {
+    $keyword = $_.babaCommand.keywords[0]
+    $display = $_.display
+    $instruction = $_.babaCommand.instruction
+    $babaCommandInstructions += "- `$1` selects the persona: $bt$keyword$bt -> $display. $instruction"
+}
+$babaCommandInstructions = ($babaCommandInstructions -join "`n")
+
+# ═══════════════════════════════════════════════════════════════════════════
 # 1. Ensure target directories exist
 # ═══════════════════════════════════════════════════════════════════════════
 
@@ -46,19 +126,57 @@ foreach ($dir in $targets.Values) {
 }
 
 # ═══════════════════════════════════════════════════════════════════════════
+# Helper: process a template file with placeholder substitution
+# ═══════════════════════════════════════════════════════════════════════════
+
+function Expand-Template {
+    param(
+        [string]$Content,
+        [hashtable]$Tokens
+    )
+    foreach ($key in $Tokens.Keys) {
+        $placeholder = "{{" + $key + "}}"
+        $Content = $Content -replace [regex]::Escape($placeholder), $Tokens[$key]
+    }
+    return $Content
+}
+
+# ═══════════════════════════════════════════════════════════════════════════
 # 2. Generate .claude/agents/ from adapters/claude/agents/ templates
+#    - .md files are copied directly (persona agent files)
+#    - .md.tmpl files are processed as templates
 # ═══════════════════════════════════════════════════════════════════════════
 
 $claudeAgentSrc = Join-Path $repoRoot 'adapters\claude\agents'
 $claudeAgentDst = Join-Path $repoRoot '.claude\agents'
 
 if (Test-Path -LiteralPath $claudeAgentSrc -PathType Container) {
+    # Process template files
+    $tmplFiles = Get-ChildItem -Path $claudeAgentSrc -Filter *.md.tmpl -File
+    foreach ($file in $tmplFiles) {
+        $content = Get-Content -LiteralPath $file.FullName -Raw -Encoding UTF8
+        $destName = $file.Name -replace '\.tmpl$', ''
+        $dest = Join-Path $claudeAgentDst $destName
+
+        $tokens = @{
+            'PERSONA_ROUTING_CLAUDE' = ($personaRouting | Out-String).TrimEnd()
+        }
+
+        $expanded = Expand-Template -Content $content -Tokens $tokens
+        $expanded | Set-Content -LiteralPath $dest -Encoding UTF8 -NoNewline
+        # Ensure trailing newline
+        Add-Content -LiteralPath $dest -Value "" -NoNewline
+        Write-Ok "Generated $destName (template)"
+    }
+
+    # Copy regular .md files
     $files = Get-ChildItem -Path $claudeAgentSrc -Filter *.md -File
     foreach ($file in $files) {
         $dest = Join-Path $claudeAgentDst $file.Name
         Copy-Item -Path $file.FullName -Destination $dest -Force
     }
-    Write-Ok "Generated $($files.Count) Claude Code agents"
+    $totalAgents = $files.Count + $tmplFiles.Count
+    Write-Ok "Generated $totalAgents Claude Code agents"
 } else {
     Write-Warn "Claude agent templates not found at $claudeAgentSrc"
 }
@@ -115,7 +233,7 @@ if (Test-Path -LiteralPath $opencodeConfigPath -PathType Leaf) {
     $cleaned = ($content -split "`n" | Where-Object { $_.TrimStart() -notmatch '^//' }) -join "`n"
     
     try {
-$config = $cleaned | ConvertFrom-Json
+        $config = $cleaned | ConvertFrom-Json
         # Ordered, not a plain hashtable: hashtable enumeration is hash-seeded per
         # process, so a plain @{} emits the servers in a different order on every
         # run and leaves .mcp.json permanently dirty after a commit.
@@ -176,12 +294,40 @@ $opencodeAgentSrc = Join-Path $repoRoot 'adapters\opencode\agents'
 $opencodeAgentDst = Join-Path $repoRoot '.opencode\agents'
 
 if (Test-Path -LiteralPath $opencodeAgentSrc -PathType Container) {
+    # Process template files
+    $tmplFiles = Get-ChildItem -Path $opencodeAgentSrc -Filter *.md.tmpl -File
+    foreach ($file in $tmplFiles) {
+        $content = Get-Content -LiteralPath $file.FullName -Raw -Encoding UTF8
+        $destName = $file.Name -replace '\.tmpl$', ''
+        $dest = Join-Path $opencodeAgentDst $destName
+
+        $tokens = @{}
+        if ($destName -eq 'plan.md') {
+            $tokens['PERSONA_ROUTING_OPENCODE'] = ($personaRouting | Out-String).TrimEnd()
+        } elseif ($destName -eq 'build.md') {
+            $tokens['PERSONA_BUILD_ROUTING'] = ($personaBuildRouting | Out-String).TrimEnd()
+        } elseif ($destName -eq 'general.md') {
+            $tokens['PERSONA_GENERAL_TABLE'] = $personaGeneralTable
+        }
+
+        if ($tokens.Count -gt 0) {
+            $expanded = Expand-Template -Content $content -Tokens $tokens
+        } else {
+            $expanded = $content
+        }
+        $expanded | Set-Content -LiteralPath $dest -Encoding UTF8 -NoNewline
+        Add-Content -LiteralPath $dest -Value "" -NoNewline
+        Write-Ok "Generated $destName (template)"
+    }
+
+    # Copy regular .md files
     $files = Get-ChildItem -Path $opencodeAgentSrc -Filter *.md -File
     foreach ($file in $files) {
         $dest = Join-Path $opencodeAgentDst $file.Name
         Copy-Item -Path $file.FullName -Destination $dest -Force
     }
-    Write-Ok "Generated $($files.Count) OpenCode agents"
+    $totalAgents = $files.Count + $tmplFiles.Count
+    Write-Ok "Generated $totalAgents OpenCode agents"
 } else {
     Write-Warn "OpenCode agent templates not found at $opencodeAgentSrc"
 }
@@ -194,12 +340,37 @@ $opencodeCmdSrc = Join-Path $repoRoot 'adapters\opencode\commands'
 $opencodeCmdDst = Join-Path $repoRoot '.opencode\commands'
 
 if (Test-Path -LiteralPath $opencodeCmdSrc -PathType Container) {
+    # Process template files
+    $tmplFiles = Get-ChildItem -Path $opencodeCmdSrc -Filter *.md.tmpl -File
+    foreach ($file in $tmplFiles) {
+        $content = Get-Content -LiteralPath $file.FullName -Raw -Encoding UTF8
+        $destName = $file.Name -replace '\.tmpl$', ''
+        $dest = Join-Path $opencodeCmdDst $destName
+
+        $tokens = @{}
+        if ($destName -eq 'baba.md') {
+            $tokens['BABA_COMMAND_KEYWORDS'] = $babaCommandKeywords
+            $tokens['BABA_COMMAND_INSTRUCTIONS'] = $babaCommandInstructions
+        }
+
+        if ($tokens.Count -gt 0) {
+            $expanded = Expand-Template -Content $content -Tokens $tokens
+        } else {
+            $expanded = $content
+        }
+        $expanded | Set-Content -LiteralPath $dest -Encoding UTF8 -NoNewline
+        Add-Content -LiteralPath $dest -Value "" -NoNewline
+        Write-Ok "Generated $destName (template)"
+    }
+
+    # Copy regular .md files
     $files = Get-ChildItem -Path $opencodeCmdSrc -Filter *.md -File
     foreach ($file in $files) {
         $dest = Join-Path $opencodeCmdDst $file.Name
         Copy-Item -Path $file.FullName -Destination $dest -Force
     }
-    Write-Ok "Generated $($files.Count) OpenCode commands"
+    $totalCommands = $files.Count + $tmplFiles.Count
+    Write-Ok "Generated $totalCommands OpenCode commands"
 } else {
     Write-Warn "OpenCode command templates not found at $opencodeCmdSrc"
 }
@@ -217,3 +388,6 @@ Write-Host "  .claude/settings.json - Project-scoped settings" -ForegroundColor 
 Write-Host "  .mcp.json          - MCP server configuration" -ForegroundColor Gray
 Write-Host "  .opencode/agents/  - OpenCode agent definitions" -ForegroundColor Gray
 Write-Host "  .opencode/commands/- OpenCode slash commands" -ForegroundColor Gray
+Write-Host ""
+Write-Host "Persona-driven files generated from: prompt-system/personas.json" -ForegroundColor Gray
+Write-Host "  Personas: $($personas.Count)" -ForegroundColor Gray
