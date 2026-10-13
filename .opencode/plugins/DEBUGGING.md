@@ -15,8 +15,8 @@ opencode
 Default behavior:
 
 - **Console (stderr)**: All `info`/`warn`/`error` logs visible immediately
-- **opencode log viewer**: All logs via `client.app.log` (integrated UI)
-- **File (JSONL)**: On by default — writes to `%TEMP%\baba-debug.jsonl`. Override the path with `BABA_DEBUG_FILE`.
+- **File (JSONL)**: On by default — writes to `%TEMP%\baba-debug.jsonl`. Override the path with `BABA_DEBUG_FILE`
+- **opencode log viewer**: removed in V2 — the plugin context has no `client.app.log` surface
 
 ---
 
@@ -67,14 +67,18 @@ Structured single-line format:
 [adaptive-temperature] INFO: feedback applied {"session":"abc123","reasoning":"too random","prevTemperature":0.7,"newTemperature":0.6}
 ```
 
-### 2. opencode Log Viewer — Always On
+### 2. opencode Log Viewer — Removed in V2
 
-Access via opencode UI: **Logs → Service: plugin-name**
+**This destination no longer exists.** V1 called `client.app.log()`, which the
+opencode UI surfaced under **Logs → Service: plugin-name**. The V2 plugin
+context has no `client.app.log` surface, so nothing is sent to it and the UI
+viewer shows nothing for these plugins. Use the console or the JSONL file
+instead.
 
-- Same data as console, filterable by service, level, session
-- Includes full structured `extra` metadata
+### 3. File (JSONL) — On by default
 
-### 3. File (JSONL) — Optional
+Writes to `%TEMP%\baba-debug.jsonl` with no configuration. Override the path
+with the `BABA_DEBUG_FILE` OS environment variable.
 
 Each line is valid JSON:
 
@@ -199,12 +203,8 @@ Every log entry includes structured `meta`:
 | Event | Level | Meta |
 |-------|-------|------|
 | Plugin init | info | patterns (goalVerb, targetHints, bugHints, questionOnly) |
-| message.part.updated | debug | messageId, sessionId, textLength |
-| message.updated (user) | debug | sessionId, messageId |
-| Goal assessment | debug | sessionId, messageId, textLength, isGoal, textPreview |
-| Goal detected → suggestion | info | sessionId |
-| Suggestion sent | info | sessionId |
-| Suggestion failed | warn | sessionId, error |
+| Goal assessment | debug | sessionId, textLength, isGoal, textPreview |
+| Goal detected, injecting suggestion | info | sessionId |
 | Session cleanup | debug | sessionId |
 
 ### baba-system-reminder-override
@@ -237,13 +237,11 @@ Every log entry includes structured `meta`:
 | Event | Level | Meta |
 |-------|-------|------|
 | Plugin init | debug | runtime, dbPath |
-| session.created | debug | — |
+| session.created | debug | n/a |
 | session.deleted | debug | sessionId |
-| message.updated | debug | sessionId, messageId, role |
-| message.part.updated | debug | sessionId, messageId, partType, textLength |
 | session.idle | debug | sessionId |
 | session.compacted | debug | sessionId |
-| chat.message | debug | sessionId, userTextLength |
+| prompt hook | debug | sessionId, userTextLength |
 | Forget command | info | sessionId |
 | detectAndCaptureMemory | debug | sessionId |
 | tool.execute.after | debug | sessionId, outputLength |
@@ -369,9 +367,18 @@ BABA_DEBUG=baba-lock-enforce opencode
 
 ### Missing session IDs?
 
-- Session ID comes from opencode event bus
-- Some early hooks (session.created) may not have it yet
-- `client.app.log` receives it automatically when available
+- Session IDs come from the session context: `event.sessionID` on hooks, and `event.data.sessionID` on bus events
+- Some early hooks may not have it yet, and the event bus shape changed between V1 and V2
+
+## V1 vs V2 event source
+
+| What | V1 | V2 |
+|---|---|---|
+| Session id on a bus event | `event.properties.sessionID` | `event.data.sessionID` |
+| Session id on a hook | `input.sessionID` | `event.sessionID` |
+| User message text | bus accumulation (empty `output.parts`) | `event.prompt` on the prompt hook |
+| `message.updated` / `message.part.updated` | existed | **removed** |
+| Subscription shape | a callback | an async iterable |
 
 ---
 

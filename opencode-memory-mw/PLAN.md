@@ -19,15 +19,15 @@ own knobs through audited tools.
 ## 2. Architecture
 
 ```text
-.opencode/plugins/memory-worth/
-  index.ts          -- plugin entry point (hooks + tool map)
+.opencode/packages/memory-worth/
+  index.ts          -- plugin entry point (V2 Plugin.define, setup)
   prompt.ts         -- prompt-fragment builder
   outcome.ts        -- outcome classification helpers
   runtime/          -- Node/Bun abstraction (detect, shell, path/env/process shims)
   core/             -- pure ES2022: types, Result, seeded PRNG, trust, governance
   db/               -- libsql connection, 3NF schema, migrations, guarded queries
   tools/            -- 12 tool builders + shared DB accessor
-  hooks/            -- chat injection, outcome recording, session lifecycle
+  hooks/            -- prompt capture, outcome recording, session lifecycle
 opencode-memory-mw/sim/
   regimes.ts, policies.ts, oracle.ts, metrics.ts + regression suite
 ```
@@ -55,14 +55,15 @@ Done. Database lives at `.opencode/memory.db` (flat file, `@libsql/client`).
 
 | Hook | Role | Status |
 |---|---|---|
-| `experimental.chat.system.transform` | capability guidance injection | Done |
-| `tool.execute.after` | outcome detection → trust updates | Done |
-| `event` (session.created/deleted) | seed params, cleanup ledger | Done |
-| `experimental.session.compacting` | clear retrieval ledger, note context | Done |
+| `ctx.session.hook("prompt")` | capture user text, run detection, handle "forget that rule" | Done |
+| `ctx.session.hook("context")` | capability guidance injection | Done |
+| `ctx.tool.hook("execute.after")` | outcome detection -> trust updates | Done |
+| `ctx.event.subscribe()` | session.created/deleted -- seed params, cleanup ledger | Done |
+| `ctx.session.hook("compaction")` | clear retrieval ledger, note context | Done |
 
 Deviation: the spec asked for `chat.message` prompt injection, but the SDK
-hook returns `void` and cannot modify prompts, so injection moved to
-`system.transform` (static guidance) while query-specific retrieval stays
+hook returns `void` and cannot modify prompts, so injection moved to the system
+transform (static guidance) while query-specific retrieval stays
 agent-driven via `memory_search`.
 
 ## 5. Database (Done)

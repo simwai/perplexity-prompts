@@ -4,11 +4,12 @@ Persistent agent memory with trust signals, invalidation, and self-tuning.
 
 ## Architecture
 
-The plugin is a multi-file TypeScript module under `.opencode/plugins/memory-worth/`:
+The plugin is a multi-file TypeScript module under `.opencode/packages/memory-worth/`:
 
 ```text
 memory-worth/
-  index.ts          -- plugin entry point
+  index.ts          -- plugin entry point (V2 Plugin.define)
+  v2-register.ts    -- adapts the 12 V1 tool definitions to V2 JSON Schema
   prompt.ts         -- prompt injection fragments
   outcome.ts        -- outcome detection heuristics
   runtime/          -- Node/Bun abstraction layer
@@ -26,7 +27,7 @@ memory-worth/
     migrate.ts      -- migration runner
     queries.ts      -- shared data-access helpers
   tools/            -- OpenCode tool registrations (12 tools)
-  hooks/            -- chat.message, tool.execute.after, event, compacting
+  hooks/            -- prompt, session lifecycle, compaction
 ```
 
 ## Database

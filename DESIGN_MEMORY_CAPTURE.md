@@ -51,7 +51,7 @@ user correction → capture grounded memory → digest retrieves it → governan
 
 ## 2. Where Observed
 
-`chat.message` hook — already reads user text for the digest. Same hook, same text, zero new plumbing.
+`ctx.session.hook("prompt")` — carries the user text directly on `event.prompt`. Same hook, same text, no accumulation layer needed.
 
 ---
 
@@ -137,7 +137,7 @@ Low-trust memories auto-archive after 30 days. Capture without pruning fills the
 
 ### F. `index.ts` — wire the hooks
 
-- Ensure `chat.message` passes user text to `buildInjectionTexts` (done)
+- Ensure the `ctx.session.hook("prompt")` handler passes user text to `buildInjectionTexts`
 - Ensure `session.idle` / `session.compacted` call governance
 
 ---
