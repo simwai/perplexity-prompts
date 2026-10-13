@@ -1,10 +1,10 @@
-# 📖 GLOSSARY
+# GLOSSARY
 
-> 💡 **Central terminology reference** for the Baba prompt system. Terms are linked to their canonical source files in `prompt-system/`.
+> **Central terminology reference** for the Baba prompt system. Terms are linked to their canonical source files in `prompt-system/`.
 
 ---
 
-## 🔤 Terms
+## Terms
 
 | Term | Definition | Source | Related |
 |---|---|---|---|
@@ -37,7 +37,7 @@
 
 ---
 
-## 🏷️ Phase Names (Canonical)
+## Phase Names (Canonical)
 
 | Phase | Purpose | Entry From | Exit To |
 |---|---|---|---|
@@ -61,7 +61,7 @@
 
 ---
 
-## 🎯 Persona Roles
+## Persona Roles
 
 | Persona | Owns | Terminal Phase | Key Behavior |
 |---|---|---|---|
@@ -74,7 +74,7 @@
 
 ---
 
-## 📁 File References
+## File References
 
 | File | Purpose |
 |---|---|
@@ -91,4 +91,4 @@
 
 ---
 
-> 📝 **Note**: This glossary is maintained manually. For the authoritative definitions, see the source files in `prompt-system/`.
+> **Note**: This glossary is maintained manually. For the authoritative definitions, see the source files in `prompt-system/`.

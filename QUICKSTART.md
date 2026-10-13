@@ -1,10 +1,10 @@
-# ⚡ QUICKSTART
+# QUICKSTART
 
-> 🎯 **5-minute onboarding** — Get from zero to first structured review session.
+> **5-minute onboarding** — Get from zero to first structured review session.
 
 ---
 
-## 📋 Prerequisites
+## Prerequisites
 
 | Requirement | Version | Check |
 |---|---|---|
@@ -14,7 +14,7 @@
 
 ---
 
-## 🚀 Deploy to a Target Project
+## Deploy to a Target Project
 
 ```powershell
 # 1. Copy the prompt-system folder
@@ -26,7 +26,7 @@ Copy-Item -Recurse prompt-system <target-project>\prompt-system
 
 ---
 
-## 🔐 Configure Secrets (One-time)
+## Configure Secrets (One-time)
 
 Credentials are loaded from environment variables — never hardcode tokens.
 See `AGENTS.md` MCP Fallback Tiers for what's required and what has fallbacks.
@@ -40,7 +40,7 @@ See `AGENTS.md` MCP Fallback Tiers for what's required and what has fallbacks.
 
 ---
 
-## 🎮 First Session
+## First Session
 
 ```bash
 cd <target-project>
@@ -74,7 +74,7 @@ Fix typo in README.md line 42.
 
 ---
 
-## 🧭 Navigation
+## Navigation
 
 | Need | Go To |
 |---|---|
@@ -96,7 +96,7 @@ Fix typo in README.md line 42.
 
 ---
 
-## ⌨️ Essential Commands (OpenCode)
+## Essential Commands (OpenCode)
 
 | Command | Purpose |
 |---|---|
@@ -116,37 +116,37 @@ Fix typo in README.md line 42.
 
 ---
 
-## 🎨 Visual Theme
+## Visual Theme
 
-This documentation uses **dark + purple** Mermaid diagrams and emoji/color hints for GitHub/VS Code dark mode.
+This documentation uses **dark + purple** Mermaid diagrams with a cyan accent, per `prompt-system/10-doc-style.md`.
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {
-  'primaryColor': '#a855f7', 'primaryTextColor': '#fafafa',
-  'primaryBorderColor': '#c084fc', 'lineColor': '#c084fc',
-  'secondaryColor': '#7e22ce', 'tertiaryColor': '#581c87',
-  'background': '#0f0f0f', 'mainBkg': '#1a1a1a',
-  'secondBkg': '#262626', 'tertiaryBkg': '#3d3d3d',
-  'textColor': '#fafafa', 'nodeBorder': '#a855f7',
-  'clusterBkg': '#2d1b4e', 'clusterBorder': '#a855f7'
-}}}%%
+%%{init: {'theme': 'dark'}}%%
 flowchart LR
-    A[Task] --> B{Mode?}
+    A[Task] --> B{"Mode?"}
     B -->|Low risk| C[DIRECT]
-    B -->|Risky/Ambiguous| D[STRUCTURED]
+    B -->|Risky or ambiguous| D[STRUCTURED]
     D --> E[CHECKLIST]
-    E --> F[DOCS?]
+    E --> F{"Docs?"}
     F -->|Yes| G[DOCS]
     F -->|No| H[REVIEW]
     G --> H
     H --> I[PLAN]
     I --> J[PATCH]
-    J --> K[DRIFT?]
+    J --> K[DRIFT]
+
+    classDef entry fill:#6B21A8,stroke:#7C3AED,color:#E2E8F0;
+    classDef mode fill:#4C1D95,stroke:#7C3AED,color:#E2E8F0;
+    classDef phase fill:#06B6D4,stroke:#22D3EE,color:#0F0A1A;
+
+    class A entry
+    class B,C,D mode
+    class E,F,G,H,I,J,K phase
 ```
 
 ---
 
-## ✅ Verify It Works
+## Verify It Works
 
 Ask your agent: **"List the available MCP tools."**
 
@@ -154,4 +154,4 @@ Expected: Context7, Playwright at minimum. Google Search via curl fallback. Trel
 
 ---
 
-> 💡 **Pro tip**: The system auto-detects `AUTO` vs `DIRECT` vs `STRUCTURED`. Override with `/direct` or `/structured` if needed.
+> **Pro tip**: The system auto-detects `AUTO` vs `DIRECT` vs `STRUCTURED`. Override with `/direct` or `/structured` if needed.

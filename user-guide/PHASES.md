@@ -1,69 +1,68 @@
-# 🔄 PHASES
+# PHASES
 
-> 💡 **Phase flow, templates, decision format** — The structured workflow engine.
+> **Phase flow, templates, decision format** — The structured workflow engine.
 
 ---
 
-## 🌊 Phase Flow Diagram
+## Phase Flow Diagram
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {
-  'primaryColor': '#a855f7', 'primaryTextColor': '#fafafa',
-  'primaryBorderColor': '#c084fc', 'lineColor': '#c084fc',
-  'secondaryColor': '#7e22ce', 'tertiaryColor': '#581c87',
-  'background': '#0f0f0f', 'mainBkg': '#1a1a1a',
-  'secondBkg': '#262626', 'tertiaryBkg': '#3d3d3d',
-  'textColor': '#fafafa', 'nodeBorder': '#a855f7',
-  'clusterBkg': '#2d1b4e', 'clusterBorder': '#a855f7'
-}}}%%
+%%{init: {'theme': 'dark'}}%%
 flowchart TD
-    START([START]) --> STARTUP[STARTUP\n🔒 Mandatory]
+    START([START]) --> STARTUP["STARTUP<br/>Mandatory"]
     STARTUP -->|Concrete target| CHECKLIST
     STARTUP -->|Goal, no target| INTAKE
     STARTUP -->|Exploratory| DISCUSS
     STARTUP -.->|STARTUP incomplete| BLOCKED
-    
+
     INTAKE --> BACKLOG
     BACKLOG --> SPRINT
     SPRINT --> TASK_PLAN
     TASK_PLAN -->|Spec needed| SPEC
     TASK_PLAN -->|No spec| CHECKLIST
     SPEC --> CHECKLIST
-    
+
     CHECKLIST -->|Docs needed| DOCS
     CHECKLIST -->|No docs| REVIEW
     DOCS --> REVIEW
-    
+
     REVIEW -->|Tester loaded| TEST_STRATEGY
     REVIEW -->|Standard| PLAN
     TEST_STRATEGY --> HANDOFF_T
     HANDOFF_T --> PLAN
-    
+
     PLAN -->|UI/UX| DESIGN_PLAN
     PLAN -->|Standard| HANDOFF_P
     DESIGN_PLAN --> HANDOFF_D
     HANDOFF_D --> PATCH
     HANDOFF_P --> PATCH
-    
+
     PATCH -->|Spec-backed| DRIFT
     PATCH -->|On demand| DRIFT
     PATCH -->|Done| CLOSE([CLOSE])
-    
+
     DRIFT -->|Writes needed| PLAN
     DRIFT -->|Clean| PRIOR
-    
-    DISCUSSION[DISCUSS] -.->|Promote| FORMAL
+
+    DISCUSSION["DISCUSS"] -.->|Promote| FORMAL
     DISCUSSION -.->|Resume| PRIOR
-    
-    style STARTUP fill:#2d1b4e,stroke:#a855f7
-    style BLOCKED fill:#581c87,stroke:#f87171
-    style DISCUSS fill:#1a1a1a,stroke:#c084fc
-    style CLOSE fill:#1a1a1a,stroke:#4ade80
+
+    classDef entry fill:#6B21A8,stroke:#7C3AED,color:#E2E8F0;
+    classDef gate fill:#7C3AED,stroke:#a855f7,color:#E2E8F0;
+    classDef stop fill:#b91c1c,stroke:#f87171,color:#E2E8F0;
+    classDef handoff fill:#06B6D4,stroke:#22D3EE,color:#0F0A1A;
+    classDef phase fill:#1E293B,stroke:#7C3AED,color:#E2E8F0;
+
+    class START,STARTUP entry
+    class BLOCKED stop
+    class HANDOFF_T,HANDOFF_P,HANDOFF_D handoff
+    class CHECKLIST,DOCS,REVIEW,PLAN,PATCH,DRIFT,SPEC,INTAKE,BACKLOG,SPRINT,TASK_PLAN,TEST_STRATEGY,DESIGN_PLAN gate
+    class DISCUSS,DISCUSSION,CLOSE,PRIOR,FORMAL phase
 ```
 
 ---
 
-## 📋 Phase Summary
+## Phase Summary
 
 | Phase | Purpose | Template | Key Output |
 |---|---|---|---|
@@ -87,7 +86,7 @@ flowchart TD
 
 ---
 
-## ⏭️ Deterministic Skips (No Confirmation)
+## Deterministic Skips (No Confirmation)
 
 | Skip | Condition | Recorded |
 |---|---|---|
@@ -100,7 +99,7 @@ flowchart TD
 
 ---
 
-## 🚫 Blocked Conditions
+## Blocked Conditions
 
 `BLOCKED` emitted when prerequisites missing. Always includes:
 
@@ -114,7 +113,7 @@ flowchart TD
 
 ---
 
-## 📝 Decision Format (Mandatory)
+## Decision Format (Mandatory)
 
 When user decision required, current phase header +:
 
@@ -145,7 +144,7 @@ Reply with: A, B, or C
 
 ---
 
-## 📄 Phase Templates (Reference)
+## Phase Templates (Reference)
 
 ### CHECKLIST
 
@@ -188,7 +187,7 @@ Reply with: A, B, or C
 
 ---
 
-## 🔗 Key Cross-References
+## Key Cross-References
 
 | Topic | Document |
 |---|---|

@@ -1,10 +1,10 @@
-# 🔧 TROUBLESHOOTING
+# TROUBLESHOOTING
 
-> 💡 **Common issues and fixes** — Quick reference for session problems.
+> **Common issues and fixes** — Quick reference for session problems.
 
 ---
 
-## 🚨 Quick Diagnosis
+## Quick Diagnosis
 
 | Symptom | Most Likely Cause | First Check |
 |---|---|---|
@@ -17,7 +17,7 @@
 
 ---
 
-## 📋 Common Issues
+## Common Issues
 
 ### MCP Servers
 
@@ -66,7 +66,7 @@
 
 ---
 
-## 🔍 Debugging Commands
+## Debugging Commands
 
 ### Check MCP Status
 
@@ -109,7 +109,7 @@ npx markdown-toc -i user-guide/GETTING_STARTED.md
 
 ---
 
-## 🆘 Escalation Path
+## Escalation Path
 
 1. **Read the error/block message** — It contains `Reason`, `Needed now`, `Next required user action`
 2. **Search the codebase** — Agent uses `rg`; you can too: `rg "error pattern" src/`
@@ -120,7 +120,7 @@ npx markdown-toc -i user-guide/GETTING_STARTED.md
 
 ---
 
-## 📞 Platform-Specific
+## Platform-Specific
 
 ### OpenCode
 
@@ -133,7 +133,7 @@ npx markdown-toc -i user-guide/GETTING_STARTED.md
 
 ---
 
-## 📚 Related
+## Related
 
 - Phase flow: `user-guide/PHASES.md`
 - Execution modes: `user-guide/EXECUTION_MODES.md`

@@ -1,10 +1,10 @@
-# 📋 SPRINTS
+# SPRINTS
 
-> 💡 **Sprint plans** — Consolidated from `project-management/sprint-*.md` and `project-management/README.md`.
+> **Sprint plans** — Consolidated from `project-management/sprint-*.md` and `project-management/README.md`.
 
 ---
 
-## 🏃 Sprint 001
+## Sprint 001
 
 | Field | Value |
 |---|---|
@@ -17,8 +17,8 @@
 | Status | Items |
 |---|---|
 | ✅ Done | Documentation restructuring, SNAKE_UPPER_CASE naming, dark+purple styling, glossary, pre-commit TOC hook |
-| 📋 In progress | — |
-| ⏳ To do | — |
+| In progress | — |
+| To do | — |
 
 ### Completion Criteria
 
@@ -31,7 +31,7 @@
 
 ---
 
-## 📚 Related
+## Related
 
 - Roadmaps: `project-management/ROADMAPS.md`
 - Trello integration: `project-management/TRELLO_INTEGRATION.md`

@@ -1,10 +1,10 @@
-# 🚀 GETTING STARTED
+# GETTING STARTED
 
-> 💡 **Deploy, prerequisites, first session** — Complete setup guide.
+> **Deploy, prerequisites, first session** — Complete setup guide.
 
 ---
 
-## 📦 Deployment
+## Deployment
 
 ### Copy-Paste Unit
 
@@ -50,7 +50,7 @@ Copy-Item targets.json.example targets.json
 
 ---
 
-## 🔧 Prerequisites
+## Prerequisites
 
 | Tool | Minimum Version | Purpose |
 |---|---|---|
@@ -60,7 +60,7 @@ Copy-Item targets.json.example targets.json
 
 ---
 
-## 🔐 Environment Setup
+## Environment Setup
 
 ### `.env` File (Never Commit)
 
@@ -85,7 +85,7 @@ EXA_API_KEY=exa-xxx
 
 ---
 
-## 🌐 MCP Fallback Tiers
+## MCP Fallback Tiers
 
 | Tier | Description | Servers |
 |---|---|---|
@@ -97,7 +97,7 @@ EXA_API_KEY=exa-xxx
 
 ---
 
-## 📁 Repository Hygiene
+## Repository Hygiene
 
 ### `.gitignore` (Add Immediately)
 
@@ -125,7 +125,7 @@ Thumbs.db
 
 ---
 
-## 🎯 First Session Walkthrough
+## First Session Walkthrough
 
 ### 1. Open Agent in Target Repo
 
@@ -173,7 +173,7 @@ Fix typo in README.md line 42.
 
 ---
 
-## 🔍 Troubleshooting Quick reference
+## Troubleshooting Quick reference
 
 | Symptom | Cause | Fix |
 |---|---|---|
@@ -186,7 +186,7 @@ Fix typo in README.md line 42.
 
 ---
 
-## 📚 Next Steps
+## Next Steps
 
 | Topic | Document |
 |---|---|

@@ -1,10 +1,10 @@
-# 🟣 Baba Prompt System
+# Baba Prompt System
 
-> 💡 **Adaptive prompt system** with lightweight direct execution and a structured AI code review workflow when the task needs it.
+> **Adaptive prompt system** with lightweight direct execution and a structured AI code review workflow when the task needs it.
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ```powershell
 # 1. Copy the prompt-system folder
@@ -17,35 +17,35 @@ Then describe a task and the agent handles the rest.
 
 ---
 
-## 📚 Documentation
+## Documentation
 
 | Need | Go To |
 |---|---|
-| ⚡ 5-minute onboarding | `QUICKSTART.md` |
-| 🎭 Which persona? | `user-guide/PERSONAS.md` |
-| 🔄 Phase flow? | `user-guide/PHASES.md` |
-| ⚙️ Execution modes? | `user-guide/EXECUTION_MODES.md` |
-| 🔧 Troubleshooting? | `user-guide/TROUBLESHOOTING.md` |
-| 🏗️ Architecture? | `ARCHITECTURE.md` |
-| 📖 System overview? | `SYSTEM_OVERVIEW.md` |
-| 📋 Rubrics? | `prompt-system/04-rubrics.md` |
-| 🔵 Rules (H13-H38)? | `prompt-system/rules.md` |
-| 🟢 Style defaults? | `prompt-system/05-impl-style.md` |
-| 🟤 Protocols? | `prompt-system/07-protocols.md` |
-| ⚫ PATCH protocol? | `prompt-system/06-misc.md` |
-| ⚪ Plan-actual gate? | `prompt-system/08-plan-actual-gate.md` |
-| 📋 Session state? | `prompt-system/03-output-and-state.md` |
-| ✅ Conformance invariants? | `CONFORMANCE.md` |
-| 📘 AGENTS.md usage? | `AGENTS_USAGE.md` |
-| 🟢 OpenCode setup? | `user-guide/OPENCODE.md` |
-| 📊 Roadmaps? | `project-management/ROADMAPS.md` |
-| 📋 Sprints? | `project-management/SPRINTS.md` |
-| 🔗 Trello? | `project-management/TRELLO_INTEGRATION.md` |
-| 📖 Glossary? | `GLOSSARY.md` |
+| 5-minute onboarding | `QUICKSTART.md` |
+| Which persona? | `user-guide/PERSONAS.md` |
+| Phase flow? | `user-guide/PHASES.md` |
+| Execution modes? | `user-guide/EXECUTION_MODES.md` |
+| Troubleshooting? | `user-guide/TROUBLESHOOTING.md` |
+| Architecture? | `ARCHITECTURE.md` |
+| System overview? | `SYSTEM_OVERVIEW.md` |
+| Rubrics? | `prompt-system/04-rubrics.md` |
+| Rules (H13-H38)? | `prompt-system/rules.md` |
+| Style defaults? | `prompt-system/05-impl-style.md` |
+| Protocols? | `prompt-system/07-protocols.md` |
+| PATCH protocol? | `prompt-system/06-misc.md` |
+| Plan-actual gate? | `prompt-system/08-plan-actual-gate.md` |
+| Session state? | `prompt-system/03-output-and-state.md` |
+| Conformance invariants? | `CONFORMANCE.md` |
+| AGENTS.md usage? | `AGENTS_USAGE.md` |
+| OpenCode setup? | `user-guide/OPENCODE.md` |
+| Roadmaps? | `project-management/ROADMAPS.md` |
+| Sprints? | `project-management/SPRINTS.md` |
+| Trello? | `project-management/TRELLO_INTEGRATION.md` |
+| Glossary? | `GLOSSARY.md` |
 
 ---
 
-## 📐 Layout
+## Layout
 
 ```txt
 AGENTS.md              The single entry file — paste at a target repo root
@@ -79,17 +79,17 @@ else above is repository documentation and stays local.
 
 ---
 
-## 🎨 Visual Theme
+## Visual Theme
 
 This documentation uses **dark + purple** styling:
 
-- Mermaid diagrams with dark theme and purple-500 accents
-- Emoji/color hints for GitHub/VS Code dark mode
+- Mermaid diagrams with the `dark` theme, `#6B21A8` primary and `#06B6D4` cyan accent, per `prompt-system/10-doc-style.md`
+- Semantic emoji only, where the glyph carries meaning the surrounding words do not
 - CSS variables for HTML export (if generating a site)
 
 ---
 
-## 🔐 Prerequisites
+## Prerequisites
 
 | Tool | Minimum Version | Purpose |
 |---|---|---|
@@ -99,7 +99,7 @@ This documentation uses **dark + purple** styling:
 
 ---
 
-## 📦 Deploy
+## Deploy
 
 Copy the system into a target project in two steps:
 
@@ -128,10 +128,10 @@ committed and pushed to its `origin` remote. Pass `-NoGitPush` (or toggle
 
 ---
 
-## 📖 Changelog
+## Changelog
 
 See `CHANGELOG.md` for the full version history.
 
 ---
 
-> 📝 **Note**: This README is the navigation hub. For the canonical system files, see `prompt-system/`.
+> **Note**: This README is the navigation hub. For the canonical system files, see `prompt-system/`.

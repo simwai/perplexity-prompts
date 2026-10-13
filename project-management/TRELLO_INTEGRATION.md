@@ -1,10 +1,10 @@
-# 🔗 TRELLO INTEGRATION
+# TRELLO INTEGRATION
 
-> 💡 **Trello backend configuration** — Consolidated from `project-management/config.md` and `project-management/README.md`.
+> **Trello backend configuration** — Consolidated from `project-management/config.md` and `project-management/README.md`.
 
 ---
 
-## 🎯 Backend Selection
+## Backend Selection
 
 The project management backend can be switched between local markdown files and Trello.
 
@@ -18,7 +18,7 @@ Edit `project-management/config.md` and change `backend: file` to `backend: trel
 
 ---
 
-## 📁 File Structure
+## File Structure
 
 | File | Purpose |
 |---|---|
@@ -28,7 +28,7 @@ Edit `project-management/config.md` and change `backend: file` to `backend: trel
 
 ---
 
-## 🔧 Trello Setup
+## Trello Setup
 
 ### Prerequisites
 
@@ -45,7 +45,7 @@ Edit `project-management/config.md` and change `backend: file` to `backend: trel
 
 ---
 
-## 📚 Related
+## Related
 
 - Roadmaps: `project-management/ROADMAPS.md`
 - Sprints: `project-management/SPRINTS.md`

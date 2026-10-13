@@ -1,10 +1,10 @@
-# 📊 ROADMAPS
+# ROADMAPS
 
-> 💡 **Project roadmaps** — Consolidated from `project-management/roadmap-*.md` and `project-management/README.md`.
+> **Project roadmaps** — Consolidated from `project-management/roadmap-*.md` and `project-management/README.md`.
 
 ---
 
-## 🗺️ Roadmap 2026-09
+## Roadmap 2026-09
 
 | Item | Status | Target | Notes |
 |---|---|---|---|
@@ -15,7 +15,7 @@
 
 ---
 
-## 📅 Future Roadmap
+## Future Roadmap
 
 | Quarter | Focus | Items |
 |---|---|---|
@@ -25,7 +25,7 @@
 
 ---
 
-## 📚 Related
+## Related
 
 - Sprint plans: `project-management/SPRINTS.md`
 - Trello integration: `project-management/TRELLO_INTEGRATION.md`

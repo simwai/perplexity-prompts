@@ -1,10 +1,10 @@
-# 🟢 OPENCODE
+# OPENCODE
 
-> 💡 **OpenCode native adapter** — Configuration, personas, and commands for the OpenCode agent.
+> **OpenCode native adapter** — Configuration, personas, and commands for the OpenCode agent.
 
 ---
 
-## 📁 Files
+## Files
 
 | Path | Purpose |
 |---|---|
@@ -21,7 +21,7 @@
 
 ---
 
-## ⌨️ Commands
+## Commands
 
 | Command | Purpose |
 |---|---|
@@ -54,7 +54,7 @@
 
 ---
 
-## 🔧 Configuration Notes
+## Configuration Notes
 
 ### Restart After Changes
 
@@ -82,7 +82,7 @@ Ignore `opencode.jsonc` and `.opencode/`. They still follow `AGENTS.md` + `promp
 
 ---
 
-## 📚 Related
+## Related
 
 - Persona details: `user-guide/PERSONAS.md`
 - Phase flow: `user-guide/PHASES.md`

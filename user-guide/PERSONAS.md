@@ -1,10 +1,10 @@
-# 🎭 PERSONAS
+# PERSONAS
 
-> 💡 **When to use each persona** — The Baba system has 6 roles with distinct responsibilities.
+> **When to use each persona** — The Baba system has 6 roles with distinct responsibilities.
 
 ---
 
-## 🎯 Quick Selection
+## Quick Selection
 
 | Situation | Use | Invoke |
 |---|---|---|
@@ -18,9 +18,9 @@
 
 ---
 
-## 📋 Persona Details
+## Persona Details
 
-### 🟣 BabaScrumMaster
+### BabaScrumMaster
 
 **Pragmatic delivery lead** — Turns fuzzy goals into ICE-prioritized, sprint-ready tasks.
 
@@ -32,7 +32,7 @@
 
 ---
 
-### 🔵 BabaSensei
+### BabaSensei
 
 **Wise, opinionated senior engineer** — Reviews as teaching moments, never patches.
 
@@ -44,7 +44,7 @@
 
 ---
 
-### 🟢 BabaDev
+### BabaDev
 
 **Senior implementation lead** — Smallest architecturally sound fix first.
 
@@ -56,7 +56,7 @@
 
 ---
 
-### 🟠 BabaTester
+### BabaTester
 
 **Adversarial QA** — Thinks in edge cases, failure modes, adversarial inputs.
 
@@ -68,7 +68,7 @@
 
 ---
 
-### 🔴 BabaReviewer
+### BabaReviewer
 
 **Quality gate** — Evaluates against H1-H38, S1-S20, blocks merges on hard-tier failures.
 
@@ -80,7 +80,7 @@
 
 ---
 
-### 🟣 BabaCEO
+### BabaCEO
 
 **Product owner and executive decision-maker** -- Turns fuzzy business goals into framed product intent.
 
@@ -92,7 +92,7 @@
 
 ---
 
-### ⚫ Process Master
+### Process Master
 
 **Embedded enforcer** — Phase ordering, checklist lifecycle, no-skip rules.
 
@@ -102,7 +102,7 @@
 
 ---
 
-## 🔄 Recommended Session Flow
+## Recommended Session Flow
 
 ```text
 BabaCEO (optional upstream, product framing)
@@ -136,7 +136,7 @@ BabaDev (implementation)
 
 ---
 
-## 🎮 OpenCode Commands
+## OpenCode Commands
 
 | Command | Effect |
 |---|---|
@@ -149,7 +149,7 @@ BabaDev (implementation)
 
 ---
 
-## 📚 Related
+## Related
 
 - Phase flow: `user-guide/PHASES.md`
 - Execution modes: `user-guide/EXECUTION_MODES.md`
