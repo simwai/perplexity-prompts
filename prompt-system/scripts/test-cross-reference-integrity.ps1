@@ -70,18 +70,31 @@ $files = @(Get-ChildItem -Path $systemRoot -Recurse -Filter '*.md' -File)
 # AGENTS.md ships alongside prompt-system\, but the suite must stay runnable from a
 # partial copy of the tree, so treat it as optional rather than a hard dependency.
 $agentsPath = Join-Path $repoRoot 'AGENTS.md'
-if (Test-Path -LiteralPath $agentsPath -PathType Leaf) {
+if (Test-Path -LiteralPath $agentsPath) {
     $files += Get-Item $agentsPath
 }
 
-# docs\ is scanned too. It carries `file.md` + `## Anchor` citations that are just as
-# load-bearing -- a dangling one in docs\ is exactly how `## Loop protection` stayed
-# referenced by four files, including two inside prompt-system\, while the section
-# itself did not exist anywhere.
-$docsRoot = Join-Path $repoRoot 'docs'
-if (Test-Path -LiteralPath $docsRoot -PathType Container) {
-    $files += @(Get-ChildItem -Path $docsRoot -Recurse -Filter '*.md' -File)
+# Repository documentation is scanned too. It carries `file.md` + `## Anchor`
+# citations that are just as load-bearing -- a reader follows the pointer, finds
+# nothing, and assumes the rule does not exist. This scope used to name a `docs\`
+# directory that no longer exists, which silently left user-guide\, project-management\
+# and every root document unchecked; that is how
+# `SYSTEM_OVERVIEW.md#handoff-contract` survived as a dangling citation in
+# user-guide\PERSONAS.md.
+$docScopes = @('user-guide', 'project-management')
+foreach ($scopeName in $docScopes) {
+    $scopeRoot = Join-Path $repoRoot $scopeName
+    if (Test-Path -LiteralPath $scopeRoot -PathType Container) {
+        $files += @(Get-ChildItem -Path $scopeRoot -Recurse -Filter '*.md' -File)
+    }
 }
+
+# Root-level documentation, excluding the generated CHANGELOG_ARCHIVE.md: it is a
+# frozen historical record whose prose names files and anchors that have since
+# moved, and rewriting history is not this suite's job.
+Get-ChildItem -Path $repoRoot -Filter '*.md' -File |
+    Where-Object { $_.Name -ne 'CHANGELOG_ARCHIVE.md' } |
+    ForEach-Object { $files += $_ }
 
 foreach ($file in $files) {
     $rel = $file.FullName.Substring($repoRoot.Length).TrimStart('\', '/')

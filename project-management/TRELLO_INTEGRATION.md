@@ -1,6 +1,6 @@
 # TRELLO INTEGRATION
 
-> **Trello backend configuration** — Consolidated from `project-management/config.md` and `project-management/README.md`.
+> **Trello backend configuration** — see [CONFIG.md](CONFIG.md) for the active backend setting.
 
 ---
 
@@ -14,7 +14,7 @@ The project management backend can be switched between local markdown files and 
 
 ### Switching to Trello
 
-Edit `project-management/config.md` and change `backend: file` to `backend: trello`. No data migration needed — files stay as archives, Trello becomes the active store.
+Edit [CONFIG.md](CONFIG.md) and change `backend: file` to `backend: trello`. No data migration needed — files stay as archives, Trello becomes the active store.
 
 ---
 
@@ -22,9 +22,9 @@ Edit `project-management/config.md` and change `backend: file` to `backend: trel
 
 | File | Purpose |
 |---|---|
-| `project-management/config.md` | Backend selection and Trello board settings |
-| `project-management/roadmap-YYYY-MM.md` | Roadmap files (one per active roadmap) |
-| `project-management/sprint-NNN.md` | Sprint plan files (one per sprint) |
+| [CONFIG.md](CONFIG.md) | Backend selection and Trello board settings |
+| [ROADMAPS.md](ROADMAPS.md) | Roadmap index (`ROADMAP_YYYY_MM.md` per active period) |
+| [SPRINTS.md](SPRINTS.md) | Sprint index (`SPRINT_NNN.md` per sprint) |
 
 ---
 
@@ -47,6 +47,10 @@ Edit `project-management/config.md` and change `backend: file` to `backend: trel
 
 ## Related
 
-- Roadmaps: `project-management/ROADMAPS.md`
-- Sprints: `project-management/SPRINTS.md`
-- Project management overview: `project-management/README.md` (archived)
+- Roadmaps: [ROADMAPS.md](ROADMAPS.md)
+
+- Sprints: [SPRINTS.md](SPRINTS.md)
+
+- Backend config: [CONFIG.md](CONFIG.md)
+
+- Overview: [README.md](README.md)

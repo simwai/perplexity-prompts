@@ -32,17 +32,25 @@ flowchart TD
 
 | Layer | File(s) | Purpose |
 |---|---|---|
-| Entry | `AGENTS.md` | Portable entry point, MCP tiers, system pointer |
-| Orchestrator | `prompt-system/00-system.md` | Phase model, routing, hard guards, load order |
-| Personas | `prompt-system/01-personas.md` | 6 personas + handoff contract + session flow |
-| Decisions | `prompt-system/02-decision-prompts.md` | Decision format, rendering rule, auto-triggers |
-| Output | `prompt-system/03-output-and-state.md` | Phase templates, dual-section output, session state schema |
-| Rubrics | `prompt-system/04-rubrics.md` | H1-H38, S1-S20, L1-L10 review rubrics |
-| Style | `prompt-system/05-impl-style.md` | Implementation style, stack variants, conventions |
-| Patch | `prompt-system/06-misc.md` | PATCH protocol, commit/push gate, leftover handling |
-| Protocols | `prompt-system/07-protocols.md` | Cross-cutting protocols (artifacts, pre-commit, drift, etc.) |
-| Gate | `prompt-system/08-plan-actual-gate.md` | Plan-vs-actual verification protocol |
-| Rules | `prompt-system/rules.md` | H13-H38 mechanical detection/enforcement |
+| Entry | [AGENTS.md](AGENTS.md) | Portable entry point, MCP tiers, system pointer |
+| Orchestrator | [prompt-system/00-system.md](prompt-system/00-system.md) | Phase model, routing, hard guards, load order |
+| Triggers | [prompt-system/11-triggers.md](prompt-system/11-triggers.md) | Canonical trigger catalog, T-01 to T-23 |
+| Personas | [prompt-system/01-personas.md](prompt-system/01-personas.md) | 7 personas + handoff contract + session flow |
+| Decisions | [prompt-system/02-decision-prompts.md](prompt-system/02-decision-prompts.md) | Decision format, rendering rule, auto-triggers |
+| Output | [prompt-system/03-output-and-state.md](prompt-system/03-output-and-state.md) | Phase templates, dual-section output, session state schema |
+| Rubrics | [prompt-system/04-rubrics.md](prompt-system/04-rubrics.md) | H1-H38, S1-S25, L1-L10 review rubrics |
+| Logical detail | [prompt-system/04b-rubrics-logical.md](prompt-system/04b-rubrics-logical.md) | L1-L10 detailed rubrics |
+| Style | [prompt-system/05-impl-style.md](prompt-system/05-impl-style.md) | Implementation style, stack variants, conventions |
+| Patch | [prompt-system/06-misc.md](prompt-system/06-misc.md) | PATCH protocol, commit/push gate, leftover handling |
+| Protocols | [prompt-system/07-protocols.md](prompt-system/07-protocols.md) | Cross-cutting protocols (artifacts, pre-commit, drift, etc.) |
+| Gate | [prompt-system/08-plan-actual-gate.md](prompt-system/08-plan-actual-gate.md) | Plan-versus-actual verification protocol |
+| Design | [prompt-system/09-design-guidelines.md](prompt-system/09-design-guidelines.md) | Design guidelines owned by BabaDesigner |
+| Doc style | [prompt-system/10-doc-style.md](prompt-system/10-doc-style.md) | Documentation style: naming, TOC, mermaid, lint |
+| Rules | [prompt-system/rules.md](prompt-system/rules.md) | H13-H38 mechanical detection/enforcement |
+
+The layer model itself -- what a layer *is*, and how a review moves through the
+system -- is in [ARCHITECTURE.md](ARCHITECTURE.md). This table is only the file
+inventory of the deployed unit.
 
 ---
 
@@ -52,14 +60,18 @@ flowchart TD
 .
 ├── AGENTS.md              # Entry point
 ├── README.md              # Navigation hub
-├── CHANGELOG.md           # Version history
+├── CHANGELOG.md           # Generated changelog (v1.0.0 forward)
+├── CHANGELOG_ARCHIVE.md   # Hand-written changelog (through v1.0.0)
 ├── STYLE_POLICY.md        # Project style policy
 ├── ARCHITECTURE.md        # Layer model, review path, portable vs adapter
 ├── SYSTEM_OVERVIEW.md     # This file
 ├── AGENTS_USAGE.md        # How to use and deploy the system
 ├── CONFORMANCE.md         # Protocol invariants
 ├── GLOSSARY.md            # Central terminology reference
+├── SPEC.md                # Living spec and registry
+├── TASKS.md               # Build tasks mapped to spec sections
 ├── QUICKSTART.md          # 5-minute onboarding
+├── LICENSE                # ISC
 ├── prompt-system/         # The deployed unit
 │   ├── 00-system.md       # Orchestrator
 │   ├── 11-triggers.md     # Canonical trigger catalog
@@ -75,15 +87,23 @@ flowchart TD
 │   ├── 09-design-guidelines.md  # Designer input
 │   ├── 10-doc-style.md    # Documentation style
 │   ├── rules.md           # H13-H38 rules
+│   ├── personas.json      # Persona registry, drives adapter generation
 │   ├── stacks/            # Per-language style sections
-│   └── scripts/           # Integrity suites, reference-pool tooling
+│   ├── scripts/           # Integrity suites, locks, reference-pool tooling
+│   └── templates/         # LaTeX template for the arxiv-paper command
 ├── user-guide/            # Getting started, personas, phases, modes, troubleshooting
-├── project-management/    # Roadmaps, sprints, Trello integration
+├── project-management/    # Roadmaps, sprints, Trello integration, config
 ├── adapters/              # Adapter templates (source of truth)
-├── opencode.jsonc
-├── .opencode/             # Generated OpenCode adapters
-├── .claude/               # Generated Claude Code adapters
-└── sync.ps1
+├── opencode-memory-mw/    # Memory middleware research workspace (paper + simulation)
+├── scripts/               # Bootstrap helpers (playwright, uvx, plugin verify)
+├── opencode.jsonc         # OpenCode-native config
+├── .opencode/             # Generated: agents, commands, plugins, packages, lib, tests
+├── .claude/               # Generated Claude Code adapters (agents + skills + settings)
+├── .mcp.json              # Generated MCP server config (both platforms)
+├── sync.ps1               # Interactive propagation to target projects
+├── generate-adapters.ps1  # Generates .opencode/ and .claude/ from adapters/
+├── pre-commit.ps1         # The commit gate
+└── targets.json.example   # Template for sync.ps1 targets
 ```
 
 ---
@@ -92,11 +112,13 @@ flowchart TD
 
 | Location | Purpose |
 |---|---|
-| `prompt-system/` | The deployed unit -- protocol, rubrics, style, templates |
-| `user-guide/` | Getting started, personas, phases, modes, troubleshooting |
-| `project-management/` | Roadmaps, sprints, Trello integration |
-| `GLOSSARY.md` | Central terminology reference |
-| `CONFORMANCE.md` | Protocol invariants verified before each phase transition |
+| [prompt-system/](prompt-system/) | The deployed unit -- protocol, rubrics, style, templates |
+| [user-guide/](user-guide/) | Getting started, personas, phases, modes, troubleshooting |
+| [project-management/](project-management/) | Roadmaps, sprints, Trello integration, backend config |
+| [GLOSSARY.md](GLOSSARY.md) | Central terminology reference |
+| [CONFORMANCE.md](CONFORMANCE.md) | Protocol invariants verified before each phase transition |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Layer model and review path |
+| [opencode-memory-mw/](opencode-memory-mw/) | Memory middleware research workspace, not part of the deployed unit |
 
 ---
 
@@ -104,16 +126,19 @@ flowchart TD
 
 | Need | Document |
 |---|---|
-| Phase flow | `user-guide/PHASES.md` |
-| Execution modes | `user-guide/EXECUTION_MODES.md` |
-| Rubrics | `prompt-system/04-rubrics.md` |
-| Rules (H13-H38) | `prompt-system/rules.md` |
-| Style defaults | `prompt-system/05-impl-style.md` |
-| Protocols | `prompt-system/07-protocols.md` |
-| PATCH protocol | `prompt-system/06-misc.md` |
-| Plan-actual gate | `prompt-system/08-plan-actual-gate.md` |
-| Session context | `prompt-system/03-output-and-state.md` |
-| OpenCode setup | `user-guide/OPENCODE.md` |
+| Phase flow | [user-guide/PHASES.md](user-guide/PHASES.md) |
+| Execution modes | [user-guide/EXECUTION_MODES.md](user-guide/EXECUTION_MODES.md) |
+| Personas | [user-guide/PERSONAS.md](user-guide/PERSONAS.md) |
+| Getting started | [user-guide/GETTING_STARTED.md](user-guide/GETTING_STARTED.md) |
+| Troubleshooting | [user-guide/TROUBLESHOOTING.md](user-guide/TROUBLESHOOTING.md) |
+| Rubrics | [prompt-system/04-rubrics.md](prompt-system/04-rubrics.md) |
+| Rules (H13-H38) | [prompt-system/rules.md](prompt-system/rules.md) |
+| Style defaults | [prompt-system/05-impl-style.md](prompt-system/05-impl-style.md) |
+| Protocols | [prompt-system/07-protocols.md](prompt-system/07-protocols.md) |
+| PATCH protocol | [prompt-system/06-misc.md](prompt-system/06-misc.md) |
+| Plan-versus-actual gate | [prompt-system/08-plan-actual-gate.md](prompt-system/08-plan-actual-gate.md) |
+| Session context | [prompt-system/03-output-and-state.md](prompt-system/03-output-and-state.md) |
+| OpenCode setup | [user-guide/OPENCODE.md](user-guide/OPENCODE.md) |
 
 ---
 

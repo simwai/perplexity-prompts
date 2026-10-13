@@ -21,45 +21,70 @@ Then describe a task and the agent handles the rest.
 
 | Need | Go To |
 |---|---|
-| 5-minute onboarding | `QUICKSTART.md` |
-| Which persona? | `user-guide/PERSONAS.md` |
-| Phase flow? | `user-guide/PHASES.md` |
-| Execution modes? | `user-guide/EXECUTION_MODES.md` |
-| Troubleshooting? | `user-guide/TROUBLESHOOTING.md` |
-| Architecture? | `ARCHITECTURE.md` |
-| System overview? | `SYSTEM_OVERVIEW.md` |
-| Rubrics? | `prompt-system/04-rubrics.md` |
-| Rules (H13-H38)? | `prompt-system/rules.md` |
-| Style defaults? | `prompt-system/05-impl-style.md` |
-| Protocols? | `prompt-system/07-protocols.md` |
-| PATCH protocol? | `prompt-system/06-misc.md` |
-| Plan-actual gate? | `prompt-system/08-plan-actual-gate.md` |
-| Session state? | `prompt-system/03-output-and-state.md` |
-| Conformance invariants? | `CONFORMANCE.md` |
-| AGENTS.md usage? | `AGENTS_USAGE.md` |
-| OpenCode setup? | `user-guide/OPENCODE.md` |
-| Roadmaps? | `project-management/ROADMAPS.md` |
-| Sprints? | `project-management/SPRINTS.md` |
-| Trello? | `project-management/TRELLO_INTEGRATION.md` |
-| Glossary? | `GLOSSARY.md` |
+| 5-minute onboarding | [QUICKSTART.md](QUICKSTART.md) |
+| Full setup guide | [user-guide/GETTING_STARTED.md](user-guide/GETTING_STARTED.md) |
+| Which persona? | [user-guide/PERSONAS.md](user-guide/PERSONAS.md) |
+| Phase flow? | [user-guide/PHASES.md](user-guide/PHASES.md) |
+| Execution modes? | [user-guide/EXECUTION_MODES.md](user-guide/EXECUTION_MODES.md) |
+| Troubleshooting? | [user-guide/TROUBLESHOOTING.md](user-guide/TROUBLESHOOTING.md) |
+| OpenCode adapter | [user-guide/OPENCODE.md](user-guide/OPENCODE.md) |
+| Architecture? | [ARCHITECTURE.md](ARCHITECTURE.md) |
+| File map | [SYSTEM_OVERVIEW.md](SYSTEM_OVERVIEW.md) |
+| AGENTS.md usage | [AGENTS_USAGE.md](AGENTS_USAGE.md) |
+| Protocol invariants | [CONFORMANCE.md](CONFORMANCE.md) |
+| Terminology | [GLOSSARY.md](GLOSSARY.md) |
+| Changelog | [CHANGELOG.md](CHANGELOG.md) |
+| Changelog before `v1.0.0` | [CHANGELOG_ARCHIVE.md](CHANGELOG_ARCHIVE.md) |
+| Spec | [SPEC.md](SPEC.md) |
+| Tasks | [TASKS.md](TASKS.md) |
+| Roadmaps and sprints | [project-management/ROADMAPS.md](project-management/ROADMAPS.md), [project-management/SPRINTS.md](project-management/SPRINTS.md) |
+| Trello backend | [project-management/TRELLO_INTEGRATION.md](project-management/TRELLO_INTEGRATION.md) |
+
+Canonical system files (read-only, deployed to targets):
+
+| Need | Go To |
+|---|---|
+| Orchestrator, phases, hard guards | [prompt-system/00-system.md](prompt-system/00-system.md) |
+| Trigger catalog | [prompt-system/11-triggers.md](prompt-system/11-triggers.md) |
+| Personas and handoff contract | [prompt-system/01-personas.md](prompt-system/01-personas.md) |
+| Decision format | [prompt-system/02-decision-prompts.md](prompt-system/02-decision-prompts.md) |
+| Phase templates and session state | [prompt-system/03-output-and-state.md](prompt-system/03-output-and-state.md) |
+| Rubrics (H1-H38, S1-S25, L1-L10) | [prompt-system/04-rubrics.md](prompt-system/04-rubrics.md) |
+| Logical rubric detail | [prompt-system/04b-rubrics-logical.md](prompt-system/04b-rubrics-logical.md) |
+| Implementation style | [prompt-system/05-impl-style.md](prompt-system/05-impl-style.md) |
+| PATCH protocol, commit/push gate | [prompt-system/06-misc.md](prompt-system/06-misc.md) |
+| Cross-cutting protocols | [prompt-system/07-protocols.md](prompt-system/07-protocols.md) |
+| Plan-versus-actual gate | [prompt-system/08-plan-actual-gate.md](prompt-system/08-plan-actual-gate.md) |
+| Design guidelines | [prompt-system/09-design-guidelines.md](prompt-system/09-design-guidelines.md) |
+| Documentation style | [prompt-system/10-doc-style.md](prompt-system/10-doc-style.md) |
+| Rule detection and enforcement | [prompt-system/rules.md](prompt-system/rules.md) |
 
 ---
 
 ## Layout
 
 ```txt
-AGENTS.md              The single entry file — paste at a target repo root
-prompt-system/         The deployed unit — 14 top-level files (00-11 + rules.md) + stacks/ + scripts/
+AGENTS.md              The single entry file -- paste at a target repo root
+prompt-system/         The deployed unit -- 14 top-level files
+                       (00-04b, 05-11, rules.md) + stacks/ + scripts/ + templates/
   stacks/              Per-language style sections (loaded on PATCH)
-  scripts/             Integrity suites and reference-pool tooling
+  scripts/             Integrity suites, session locks, reference-pool tooling
+  templates/           LaTeX template for the arxiv-paper command
+  personas.json        Persona registry; drives adapter generation
 AGENTS_USAGE.md        How to use and deploy the system
 ARCHITECTURE.md        Layer model, review path, portable vs adapter files
 SYSTEM_OVERVIEW.md     File map and cross-references
 CONFORMANCE.md         Protocol invariants verified before each phase transition
 GLOSSARY.md            Central terminology reference
+SPEC.md                Living spec and registry
+TASKS.md               Build tasks mapped to spec sections
+STYLE_POLICY.md        preserve-local or upgrade-house-style
 QUICKSTART.md          5-minute onboarding
+CHANGELOG.md           Generated changelog (from v1.0.0 forward)
+CHANGELOG_ARCHIVE.md   Hand-written changelog (through v1.0.0)
+LICENSE                ISC
 user-guide/            Getting started, personas, phases, modes, troubleshooting
-project-management/    Roadmaps, sprints, Trello integration
+project-management/    Roadmaps, sprints, Trello integration, config
 adapters/              Adapter templates (source of truth for generated files)
   claude/agents/       Claude Code subagent templates
   claude/skills/       Claude Code slash-command skill templates
@@ -67,15 +92,19 @@ adapters/              Adapter templates (source of truth for generated files)
   opencode/agents/     OpenCode agent templates
   opencode/commands/   OpenCode command templates
 opencode.jsonc         opencode-native config (optional layer, inert for other agents)
-.opencode/             Generated OpenCode adapters (agents + commands)
+.opencode/             Generated: agents, commands, plugins, packages, lib, tests
 .claude/               Generated Claude Code adapters (agents + skills + settings)
 .mcp.json              Generated MCP server config (shared by both platforms)
+opencode-memory-mw/    Memory middleware research workspace (paper + simulation)
+scripts/               Bootstrap helpers (ensure-playwright, ensure-uvx, verify-plugins)
 sync.ps1               Interactive propagation to target projects
 generate-adapters.ps1  Generates .opencode/ and .claude/ from adapters/
+pre-commit.ps1         The commit gate (see Contributing below)
+targets.json.example   Template for sync.ps1 targets (targets.json is gitignored)
 ```
 
 Only `AGENTS.md` plus `prompt-system/` is deployed to target projects. Everything
-else above is repository documentation and stays local.
+else above is repository documentation and tooling and stays local.
 
 ---
 
@@ -109,7 +138,8 @@ Copy-Item -Recurse prompt-system <target-project>\prompt-system
 
 Then paste `AGENTS.md` content as `AGENTS.md` at the target repo root.
 
-For detailed instructions, see `user-guide/GETTING_STARTED.md`.
+Full instructions, prerequisites, and environment setup are in
+[user-guide/GETTING_STARTED.md](user-guide/GETTING_STARTED.md).
 
 ### Syncing Multiple Projects
 
@@ -128,9 +158,30 @@ committed and pushed to its `origin` remote. Pass `-NoGitPush` (or toggle
 
 ---
 
+## Contributing
+
+The repository enforces documentation quality on every commit. The gate is a
+local git hook that no clone receives automatically, so install it once after
+cloning:
+
+```powershell
+.\scripts\install-hooks.ps1
+```
+
+The gate runs, in order: Markdown TOC generation, Markdown lint, adapter
+regeneration check, TypeScript typecheck, prompt-system integrity suites, and a
+secret scan. Adapter regeneration must be run under `pwsh` 7.6+; running
+`generate-adapters.ps1` under Windows PowerShell 5.1 writes a UTF-8 BOM and the
+gate will report spurious changes.
+
+---
+
 ## Changelog
 
-See `CHANGELOG.md` for the full version history.
+[CHANGELOG.md](CHANGELOG.md) is generated from Conventional Commits. Regenerate
+with `npm run changelog`, preview with `npm run changelog:preview`. History
+before `v1.0.0` is hand-written and preserved in
+[CHANGELOG_ARCHIVE.md](CHANGELOG_ARCHIVE.md).
 
 ---
 

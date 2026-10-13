@@ -2,7 +2,7 @@
 
 Source: `opencode-memory-mw/PLAN.md` Section 9 Deferred D1-D8, suggested order D1 -> D2 -> D5 -> D8 -> D4 -> D3.
 Prior ship: commit `b2d2185` v4.2, 21/21 green on Bun and Node.
-Backend: `file` per `project-management/config.md`.
+Backend: `file` per [CONFIG.md](CONFIG.md).
 
 ## Milestones
 

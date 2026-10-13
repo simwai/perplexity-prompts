@@ -1,6 +1,6 @@
 # Sprint 001 - Trust real + proven live
 
-Roadmap: `project-management/roadmap-2026-09.md`
+Roadmap: [ROADMAP_2026_09.md](ROADMAP_2026_09.md)
 Sprint goal: make trust labels real in retrieval and prove the plugin live against a temp database.
 Target date: 2026-10-05 (2 weeks from 2026-09-21).
 Selection: raw goal order D1 -> D2 -> D5 per `opencode-memory-mw/PLAN.md` Section 10, all Size S, no split required.

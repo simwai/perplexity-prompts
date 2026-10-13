@@ -78,21 +78,21 @@ Fix typo in README.md line 42.
 
 | Need | Go To |
 |---|---|
-| Deploy details | `user-guide/GETTING_STARTED.md` |
-| Which persona? | `user-guide/PERSONAS.md` |
-| Phase flow? | `user-guide/PHASES.md` |
-| Execution modes? | `user-guide/EXECUTION_MODES.md` |
-| Troubleshooting? | `user-guide/TROUBLESHOOTING.md` |
-| Architecture? | `SYSTEM_OVERVIEW.md` |
-| Rubrics? | `prompt-system/04-rubrics.md` |
-| Rules? | `prompt-system/rules.md` |
-| Style defaults? | `prompt-system/05-impl-style.md` |
-| Protocols? | `prompt-system/07-protocols.md` |
-| Patch protocol? | `prompt-system/06-misc.md` |
-| Plan-actual gate? | `prompt-system/08-plan-actual-gate.md` |
-| Session context? | `prompt-system/03-output-and-state.md` |
-| OpenCode setup? | `user-guide/OPENCODE.md` |
-| Project management? | `project-management/ROADMAPS.md` |
+| Deploy details | [user-guide/GETTING_STARTED.md](user-guide/GETTING_STARTED.md) |
+| Which persona? | [user-guide/PERSONAS.md](user-guide/PERSONAS.md) |
+| Phase flow? | [user-guide/PHASES.md](user-guide/PHASES.md) |
+| Execution modes? | [user-guide/EXECUTION_MODES.md](user-guide/EXECUTION_MODES.md) |
+| Troubleshooting? | [user-guide/TROUBLESHOOTING.md](user-guide/TROUBLESHOOTING.md) |
+| Architecture? | [SYSTEM_OVERVIEW.md](SYSTEM_OVERVIEW.md) |
+| Rubrics? | [prompt-system/04-rubrics.md](prompt-system/04-rubrics.md) |
+| Rules? | [prompt-system/rules.md](prompt-system/rules.md) |
+| Style defaults? | [prompt-system/05-impl-style.md](prompt-system/05-impl-style.md) |
+| Protocols? | [prompt-system/07-protocols.md](prompt-system/07-protocols.md) |
+| Patch protocol? | [prompt-system/06-misc.md](prompt-system/06-misc.md) |
+| Plan-versus-actual gate? | [prompt-system/08-plan-actual-gate.md](prompt-system/08-plan-actual-gate.md) |
+| Session context? | [prompt-system/03-output-and-state.md](prompt-system/03-output-and-state.md) |
+| OpenCode setup? | [user-guide/OPENCODE.md](user-guide/OPENCODE.md) |
+| Project management? | [project-management/ROADMAPS.md](project-management/ROADMAPS.md) |
 
 ---
 

@@ -152,7 +152,7 @@ Reply with: A, B, or C
 - File inventory with discovery metadata
 - System Discovery (auto-populated)
 - Pre-review docs log
-- Hard tier (H1-H38), Soft tier (S1-S20), Logical (L1-L10)
+- Hard tier (H1-H38), Soft tier (S1-S25), Logical (L1-L10)
 - Verification commands
 - Batch log, Verdict
 
@@ -191,11 +191,11 @@ Reply with: A, B, or C
 
 | Topic | Document |
 |---|---|
-| Phase templates (full) | `prompt-system/03-output-and-state.md` |
-| Decision format details | `prompt-system/02-decision-prompts.md` |
-| Hard guards | `prompt-system/00-system.md` |
-| Rubrics | `prompt-system/04-rubrics.md` |
-| Rules (H13-H38) | `prompt-system/rules.md` |
-| Patch protocol | `prompt-system/06-misc.md` |
-| Plan-actual gate | `prompt-system/08-plan-actual-gate.md` |
-| Session context (In-Session) | `prompt-system/03-output-and-state.md` |
+| Phase templates (full) | [`prompt-system/03-output-and-state.md`](../prompt-system/03-output-and-state.md) |
+| Decision format details | [`prompt-system/02-decision-prompts.md`](../prompt-system/02-decision-prompts.md) |
+| Hard guards | [`prompt-system/00-system.md`](../prompt-system/00-system.md) |
+| Rubrics | [`prompt-system/04-rubrics.md`](../prompt-system/04-rubrics.md) |
+| Rules (H13-H38) | [`prompt-system/rules.md`](../prompt-system/rules.md) |
+| Patch protocol | [`prompt-system/06-misc.md`](../prompt-system/06-misc.md) |
+| Plan-versus-actual gate | [`prompt-system/08-plan-actual-gate.md`](../prompt-system/08-plan-actual-gate.md) |
+| Session context (In-Session) | [`prompt-system/03-output-and-state.md`](../prompt-system/03-output-and-state.md) |

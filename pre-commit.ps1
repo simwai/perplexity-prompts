@@ -72,6 +72,23 @@ function Get-StagedFiles {
     return $result
 }
 
+# Content fingerprint that agrees with git.
+#
+# A raw SHA256 over the file bytes disagrees with git whenever the working tree
+# carries CRLF and .gitattributes normalises to LF (`* text=auto eol=lf`). Git
+# treats those files as unchanged while a byte hash sees a difference, which
+# made the adapter-regeneration check below report spurious changes and block
+# every commit until the tree happened to be LF. `git hash-object` applies the
+# same clean filter git uses for staging, so it is the only comparison that
+# cannot contradict `git status`.
+function Get-GitBlobId {
+    param([string]$RelativePath)
+
+    $out = & git -C $repoRoot hash-object --path $RelativePath -- $RelativePath 2>$null
+    if ($LASTEXITCODE -ne 0 -or -not $out) { return $null }
+    return ($out | Select-Object -First 1).Trim()
+}
+
 # ── 1. Session lock gate ────────────────────────────────────────────────────
 Write-Host "`n[1/$totalSteps] Checking session locks..." -ForegroundColor Yellow
 
@@ -143,8 +160,8 @@ foreach ($dir in $generatedDirs) {
     $full = Join-Path $repoRoot $dir
     if (-not (Test-Path -LiteralPath $full -PathType Container)) { continue }
     foreach ($f in (Get-ChildItem -LiteralPath $full -Recurse -File)) {
-        $rel = $f.FullName.Substring($repoRoot.Length)
-        $before[$rel] = (Get-FileHash -LiteralPath $f.FullName -Algorithm SHA256).Hash
+        $rel = $f.FullName.Substring($repoRoot.Length).TrimStart('\', '/') -replace '\\', '/'
+        $before[$rel] = Get-GitBlobId -RelativePath $rel
     }
 }
 
@@ -159,9 +176,9 @@ foreach ($dir in $generatedDirs) {
     $full = Join-Path $repoRoot $dir
     if (-not (Test-Path -LiteralPath $full -PathType Container)) { continue }
     foreach ($f in (Get-ChildItem -LiteralPath $full -Recurse -File)) {
-        $rel = $f.FullName.Substring($repoRoot.Length)
-        $hash = (Get-FileHash -LiteralPath $f.FullName -Algorithm SHA256).Hash
-        if ((-not $before.ContainsKey($rel)) -or ($before[$rel] -ne $hash)) {
+        $rel = $f.FullName.Substring($repoRoot.Length).TrimStart('\', '/') -replace '\\', '/'
+        $hash = Get-GitBlobId -RelativePath $rel
+        if (-not $before.ContainsKey($rel) -or $before[$rel] -ne $hash) {
             $regenerated += $rel
         }
     }

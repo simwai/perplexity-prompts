@@ -5,8 +5,8 @@
 `AGENTS.md` sits at the repo root. When an AI coding agent starts a session, it reads the file first and loads:
 
 1. **MCP server configs** — organized by fallback tiers (Tier 1 works without keys)
-2. A pointer to the merged system in `prompt-system/00-system.md` ... `prompt-system/07-protocols.md`
-   (8 files)
+2. A pointer to the merged system in `prompt-system/00-system.md` and the rest of
+   `prompt-system/` (14 top-level files plus `stacks/`, `scripts/`, `templates/`)
 
 This is the single entry point for AI coding agents; MCP servers are covered by the fallback tier system.
 
@@ -23,7 +23,8 @@ The copy-paste unit is `AGENTS.md` + the `prompt-system/` folder:
 Copy-Item -Recurse prompt-system <target-project>\prompt-system
 ```
 
-The `prompt-system/` folder is self-contained (21 files); all internal references stay valid after the move.
+The `prompt-system/` folder is self-contained (21 Markdown files, 36 files total
+including `stacks/` and `scripts/`); all internal references stay valid after the move.
 
 ---
 
@@ -49,7 +50,9 @@ Web search falls back to direct `curl` against Google's URL format — no API ke
 EXA_API_KEY=exa-xxx
 ```
 
-Load before starting: `source .env` — and add `.env` to `.gitignore` immediately.
+Load it before starting — see
+[user-guide/GETTING_STARTED.md](user-guide/GETTING_STARTED.md) `## Environment Setup`
+for a PowerShell 7.6+ snippet — and add `.env` to `.gitignore` immediately.
 
 **API keys:**
 
@@ -70,7 +73,7 @@ Load before starting: `source .env` — and add `.env` to `.gitignore` immediate
 {
   "mcpServers": {
     "context7": { "type": "http", "url": "https://mcp.context7.com/mcp" },
-    "playwright": { "command": "npx", "args": ["-y", "@playwright/mcp@0.0.79"] },
+    "playwright": { "command": "npx", "args": ["-y", "@playwright/mcp@0.0.80"] },
     "exa": {
       "type": "http",
       "url": "https://mcp.exa.ai/mcp",
@@ -233,7 +236,7 @@ additional native layer.
 | Path | Purpose |
 |---|---|
 | `opencode.jsonc` | opencode config: auto-loads `AGENTS.md` + the 10 system files via `instructions`, sets the safer planning agent as default, and registers version-pinned MCP servers. |
-| `.opencode/agents/baba-*.md` | The six personas as OpenCode subagents. Read-only personas deny `edit` and `bash`; BabaDev alone can edit and run commands. |
+| `.opencode/agents/baba-*.md` | The seven personas as OpenCode subagents. Read-only personas deny `edit` and `bash`; BabaDev alone can edit and run commands. |
 | `.opencode/agents/plan.md` | Overrides native OpenCode Plan with BabaSensei rules (read-only). |
 | `.opencode/agents/build.md` | Overrides native OpenCode Build with BabaDev rules (requires approved plan + rewrite contract). |
 | `.opencode/commands/baba.md` | `/baba <persona>` — activates a persona and starts the phase flow. |
@@ -267,7 +270,7 @@ additional native layer.
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| MCP server missing | Token not exported | `echo $EXA_API_KEY` — re-run `source .env` if empty |
+| MCP server missing | Token not exported | `$env:EXA_API_KEY` — reload `.env` per [user-guide/GETTING_STARTED.md](user-guide/GETTING_STARTED.md) `## Environment Setup` if empty |
 | Agent ignores phases | `AGENTS.md` not read | Confirm it's at repo root; some agents need `--context AGENTS.md` |
 | Immediate `BLOCKED` | Missing library/version info | The agent reads names/versions from manifests and lockfiles; `BLOCKED` is valid only after a filesystem search failed |
 | Trello tools absent | OAuth not completed | Run `opencode mcp auth trello` once, then restart the session |

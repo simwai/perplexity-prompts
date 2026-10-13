@@ -9,7 +9,7 @@
 | Symptom | Most Likely Cause | First Check |
 |---|---|---|
 | Agent ignores phases | `AGENTS.md` not at repo root | `ls AGENTS.md` |
-| MCP tools missing | Env var not exported | `echo $EXA_API_KEY` |
+| MCP tools missing | Env var not exported | `$env:EXA_API_KEY` |
 | Immediate `BLOCKED` | Missing lib/version info | Agent searches manifests first |
 | Trello absent | OAuth not completed | `opencode mcp auth trello` |
 | Playwright fails | Node < 20 or browser missing | `node --version`, `npx playwright install` |
@@ -26,7 +26,7 @@
 | Context7 not loading | Network / API down | Retry; fallback to direct docs |
 | Playwright won't launch | Node version < 20 | Install Node 20+ |
 | Playwright no browser | First run, browsers not installed | `npx playwright install chromium` |
-| Exa missing | `EXA_API_KEY` not set | `echo $EXA_API_KEY` → add to `.env` → `source .env` |
+| Exa missing | `EXA_API_KEY` not set | `$env:EXA_API_KEY` → add to `.env` → reload per [GETTING_STARTED.md](GETTING_STARTED.md) `## Environment Setup` |
 | Trello tools absent | OAuth not done | `opencode mcp auth trello` → restart session |
 | g-search fails | Playwright Chromium missing | `npx playwright install chromium` |
 
@@ -135,8 +135,8 @@ npx markdown-toc -i user-guide/GETTING_STARTED.md
 
 ## Related
 
-- Phase flow: `user-guide/PHASES.md`
-- Execution modes: `user-guide/EXECUTION_MODES.md`
-- Getting started: `user-guide/GETTING_STARTED.md`
-- System architecture: `SYSTEM_OVERVIEW.md`
-- MCP config: `AGENTS.md` (MCP Fallback Tiers section)
+- Phase flow: [`user-guide/PHASES.md`](PHASES.md)
+- Execution modes: [`user-guide/EXECUTION_MODES.md`](EXECUTION_MODES.md)
+- Getting started: [`user-guide/GETTING_STARTED.md`](GETTING_STARTED.md)
+- System architecture: [`SYSTEM_OVERVIEW.md`](../SYSTEM_OVERVIEW.md)
+- MCP config: [`AGENTS.md`](../AGENTS.md) `## MCP Fallback Tiers`

@@ -1,6 +1,6 @@
 # ROADMAPS
 
-> **Project roadmaps** — Consolidated from `project-management/roadmap-*.md` and `project-management/README.md`.
+> **Project roadmaps** — Index of the active and planned roadmaps.
 
 ---
 
@@ -27,6 +27,10 @@
 
 ## Related
 
-- Sprint plans: `project-management/SPRINTS.md`
-- Trello integration: `project-management/TRELLO_INTEGRATION.md`
-- Project management overview: `project-management/README.md` (archived)
+- Sprint plans: [SPRINTS.md](SPRINTS.md)
+
+- Trello integration: [TRELLO_INTEGRATION.md](TRELLO_INTEGRATION.md)
+
+- Backend config: [CONFIG.md](CONFIG.md)
+
+- Overview: [README.md](README.md)

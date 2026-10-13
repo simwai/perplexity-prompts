@@ -65,14 +65,26 @@ Copy-Item targets.json.example targets.json
 ### `.env` File (Never Commit)
 
 ```bash
-# At project root
+# At project root -- plain KEY=VALUE lines, no `export`, no quotes
 EXA_API_KEY=exa-xxx
 ```
 
 ```powershell
-# Load in PowerShell
-. .\.env
+# Load in PowerShell 7.6+ -- parse each line into this session's environment
+Get-Content .env | ForEach-Object {
+  if ($_ -match '^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)\s*$') {
+    Set-Item -Path "Env:$($matches[1])" -Value $matches[2]
+  }
+}
+
+# Verify
+$env:EXA_API_KEY
 ```
+
+PowerShell has no built-in `.env` parser. `. .\.env` is a syntax error because
+it tries to execute the file as a script, and `source .env` does not exist in
+PowerShell at all. Use the loop above, or start the agent from a shell that has
+the variable already exported.
 
 ### API Keys
 
@@ -127,6 +139,10 @@ Thumbs.db
 
 ## First Session Walkthrough
 
+Worked examples with the resulting phase flow are in
+[QUICKSTART.md](../QUICKSTART.md) `## First Session`. This section covers what
+happens after you type.
+
 ### 1. Open Agent in Target Repo
 
 ```bash
@@ -135,27 +151,9 @@ cd <target-project>
 # Describe a task:
 ```
 
-### 2. Describe Task
+### 2. Agent Behavior
 
-**Concrete target (Structured):**
-
-```text
-Review src/auth/token.ts for security issues.
-```
-
-**Goal without target (Full mode):**
-
-```text
-Add user authentication with JWT tokens.
-```
-
-**Quick fix (Direct):**
-
-```text
-Fix typo in README.md line 42.
-```
-
-### 3. Agent Behavior
+The agent classifies your input and picks a mode before it does anything else.
 
 | Input Type | Mode | Flow |
 |---|---|---|
@@ -164,8 +162,9 @@ Fix typo in README.md line 42.
 | Goal/spec no target | STRUCTURED | INTAKE → BACKLOG → SPRINT → TASK_PLAN → SPEC → CHECKLIST → ... |
 | Greenfield (empty repo) | STRUCTURED | INTAKE (Stack/Style) → PLAN-first (CHECKLIST/REVIEW skipped) |
 | Exploratory question | DISCUSS | Conversation, promote to formal if needed |
+| Clear, low-blast-radius edit | DIRECT | No phase templates, per-edit lint gate, commit/push gate |
 
-### 4. You Hold the Gates
+### 3. You Hold the Gates
 
 - **REVIEW** — Confirm findings, mitigations, preservation constraints
 - **PLAN** — Explicit approval + complete rewrite contract
@@ -177,7 +176,7 @@ Fix typo in README.md line 42.
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| MCP server missing | Token not exported | `echo $EXA_API_KEY` → re-run `source .env` |
+| MCP server missing | Token not exported | `$env:EXA_API_KEY` → reload `.env` using the snippet above |
 | Agent ignores phases | `AGENTS.md` not at root | Confirm at repo root; some need `--context AGENTS.md` |
 | Immediate `BLOCKED` | Missing lib/version info | Agent reads from manifests/lockfiles; `BLOCKED` only after search fails |
 | Trello tools absent | OAuth not done | `opencode mcp auth trello` → restart |

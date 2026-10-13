@@ -1,6 +1,6 @@
 # PERSONAS
 
-> **When to use each persona** — The Baba system has 6 roles with distinct responsibilities.
+> **When to use each persona** — The Baba system has 7 personas plus an embedded Process Master.
 
 ---
 
@@ -70,7 +70,7 @@
 
 ### BabaReviewer
 
-**Quality gate** — Evaluates against H1-H38, S1-S20, blocks merges on hard-tier failures.
+**Quality gate** — Evaluates against H1-H38, S1-S25, blocks merges on hard-tier failures.
 
 | Owns | Terminal | Key Behavior |
 |---|---|---|
@@ -151,7 +151,7 @@ BabaDev (implementation)
 
 ## Related
 
-- Phase flow: `user-guide/PHASES.md`
-- Execution modes: `user-guide/EXECUTION_MODES.md`
-- Handoff contract: `SYSTEM_OVERVIEW.md#handoff-contract`
-- Persona definitions: `prompt-system/01-personas.md`
+- Phase flow: [`user-guide/PHASES.md`](PHASES.md)
+- Execution modes: [`user-guide/EXECUTION_MODES.md`](EXECUTION_MODES.md)
+- Handoff contract: [`prompt-system/01-personas.md`](../prompt-system/01-personas.md) `## Handoff contract`
+- Persona definitions: [`prompt-system/01-personas.md`](../prompt-system/01-personas.md)

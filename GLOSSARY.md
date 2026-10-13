@@ -8,7 +8,7 @@
 
 | Term | Definition | Source | Related |
 |---|---|---|---|
-| **Baba** | The persona system comprising 6 roles: ScrumMaster, Sensei, Dev, Tester, Reviewer, Process Master | `01-personas.md` | Persona, Handoff |
+| **Baba** | The persona system comprising 7 personas (ScrumMaster, Sensei, Tester, Dev, Reviewer, Designer, CEO) plus an embedded Process Master | `01-personas.md` | Persona, Handoff |
 | **CHECKLIST** | Phase that inventories target files, selects review criteria (H/S/L tiers), and logs docs needs | `00-system.md`, `03-output-and-state.md` | Review, Docs |
 | **DIRECT** | Execution mode for clear low-risk work without phase templates; uses `[MODE: DIRECT]` | `00-system.md`, `03-output-and-state.md` | Structured, Auto |
 | **DRIFT** | Read-only diagnostic phase comparing `SPEC.md` against implemented code | `07-protocols.md`, `08-plan-actual-gate.md` | Spec, Plan-Actual |
@@ -70,6 +70,8 @@
 | **BabaTester** | REVIEW → TEST_STRATEGY | `TEST_STRATEGY` → `HANDOFF` | Adversarial QA, edge cases, regression gaps |
 | **BabaDev** | PATCH | `PATCH` | Smallest sound fix, classifies tester guidance |
 | **BabaReviewer** | REVIEW (merge audit) | `REVIEW` | Hard/soft tier gate, merge verdicts |
+| **BabaDesigner** | DESIGN_PLAN | `DESIGN_PLAN` → `HANDOFF` | Frontend design decisions, constraints |
+| **BabaCEO** | INTAKE (product framing) | `INTAKE` → `HANDOFF` | Goal framing, success criteria, scope calls |
 | **Process Master** | Phase ordering, no-skip enforcement | embedded | Always present |
 
 ---
@@ -78,16 +80,20 @@
 
 | File | Purpose |
 |---|---|
-| `prompt-system/00-system.md` | Orchestrator, phase model, routing, hard guards, load order |
-| `prompt-system/01-personas.md` | Persona definitions, handoff contract, session flow |
-| `prompt-system/02-decision-prompts.md` | Decision format, rendering rule, examples, auto-triggers |
-| `prompt-system/03-output-and-state.md` | Phase templates, dual-section output, session state schema |
-| `prompt-system/04-rubrics.md` | H1-H38, S1-S25, L1-L10 rubrics |
-| `prompt-system/05-impl-style.md` | Implementation style, stack variants, conventions |
-| `prompt-system/06-misc.md` | PATCH protocol, commit/push gate, leftover handling |
-| `prompt-system/07-protocols.md` | Cross-cutting: artifacts, pre-commit, cross-team, lifecycle, drift, discuss, scrum |
-| `prompt-system/08-plan-actual-gate.md` | Plan-vs-actual verification protocol |
-| `prompt-system/rules.md` | H13-H38 mechanical detection/enforcement rules |
+| [prompt-system/00-system.md](prompt-system/00-system.md) | Orchestrator, phase model, routing, hard guards, load order |
+| [prompt-system/11-triggers.md](prompt-system/11-triggers.md) | Canonical trigger catalog (T-01 to T-23) |
+| [prompt-system/01-personas.md](prompt-system/01-personas.md) | Persona definitions, handoff contract, session flow |
+| [prompt-system/02-decision-prompts.md](prompt-system/02-decision-prompts.md) | Decision format, rendering rule, examples, auto-triggers |
+| [prompt-system/03-output-and-state.md](prompt-system/03-output-and-state.md) | Phase templates, dual-section output, session state schema |
+| [prompt-system/04-rubrics.md](prompt-system/04-rubrics.md) | H1-H38, S1-S25, L1-L10 rubrics |
+| [prompt-system/04b-rubrics-logical.md](prompt-system/04b-rubrics-logical.md) | L1-L10 detailed rubrics |
+| [prompt-system/05-impl-style.md](prompt-system/05-impl-style.md) | Implementation style, stack variants, conventions |
+| [prompt-system/06-misc.md](prompt-system/06-misc.md) | PATCH protocol, commit/push gate, leftover handling |
+| [prompt-system/07-protocols.md](prompt-system/07-protocols.md) | Cross-cutting: artifacts, pre-commit, cross-team, lifecycle, drift, discuss, scrum |
+| [prompt-system/08-plan-actual-gate.md](prompt-system/08-plan-actual-gate.md) | Plan-versus-actual verification protocol |
+| [prompt-system/09-design-guidelines.md](prompt-system/09-design-guidelines.md) | Design guidelines owned by BabaDesigner |
+| [prompt-system/10-doc-style.md](prompt-system/10-doc-style.md) | Documentation style: naming, TOC, mermaid, lint |
+| [prompt-system/rules.md](prompt-system/rules.md) | H13-H38 mechanical detection/enforcement rules |
 
 ---
 

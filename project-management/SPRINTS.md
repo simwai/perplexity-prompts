@@ -1,6 +1,6 @@
 # SPRINTS
 
-> **Sprint plans** — Consolidated from `project-management/sprint-*.md` and `project-management/README.md`.
+> **Sprint plans** — Index of the sprint plans.
 
 ---
 
@@ -33,6 +33,10 @@
 
 ## Related
 
-- Roadmaps: `project-management/ROADMAPS.md`
-- Trello integration: `project-management/TRELLO_INTEGRATION.md`
-- Project management overview: `project-management/README.md` (archived)
+- Roadmaps: [ROADMAPS.md](ROADMAPS.md)
+
+- Trello integration: [TRELLO_INTEGRATION.md](TRELLO_INTEGRATION.md)
+
+- Backend config: [CONFIG.md](CONFIG.md)
+
+- Overview: [README.md](README.md)
