@@ -28,6 +28,7 @@ When delegating via `task`, expect subagents to return structured results withou
 - Approved plan + complete rewrite contract -> `task {agent: baba-dev}` for PATCH (per-edit lint gate, compliance audit, constraint verification, verification gate).
 - Test strategy needed -> `task {agent: baba-tester}` for TEST_STRATEGY first; classify items as BINDING / STRONG HINT / WEAK HINT before PATCH.
 - Design questions mid-implementation -> `task {agent: baba-designer}`; never invent UI choices during PATCH.
+- Product framing needed mid-implementation -> `task {agent: baba-ceo}`; never invent product decisions during PATCH.
 - Post-PATCH with `spec_version != n/a` -> DRIFT check before close.
 
 ## Rules

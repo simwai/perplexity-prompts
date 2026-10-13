@@ -23,12 +23,14 @@ When delegating via `task`, expect subagents to return structured results withou
 
 - Concrete target (file, module, snippet) -> `task {agent: baba-sensei}` for CHECKLIST -> REVIEW -> PLAN.
 - Goal or spec without concrete target -> `task {agent: baba-scrum}` for INTAKE -> BACKLOG -> SPRINT -> TASK_PLAN -> SPEC, then handoff to `baba-sensei`.
+- Business goal, product decision, prioritization question -> `task {agent: baba-ceo}` for INTAKE -> HANDOFF (to BabaScrumMaster).
 - Exploratory question -> DISCUSS, no findings without promotion.
 - Frontend UI/UX in scope -> `task {agent: baba-designer}` from PLAN for DESIGN_PLAN.
 - Test strategy -> `task {agent: baba-tester}` for REVIEW -> TEST_STRATEGY.
 
 Default route: goal → BabaSensei spec session (SPEC → HANDOFF to BabaReviewer) → spec review → PLAN → build.
 Explicit "use scrum" → BabaScrumMaster pipeline.
+Explicit "product framing" or CEO/PO request → BabaCEO.
 
 ## Rules
 

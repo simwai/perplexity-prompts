@@ -118,11 +118,12 @@ Add rate limiting to the Express API using express-rate-limit.
 
 | Persona | Use when | Invoke with |
 |---|---|---|
-| **BabaScrumMaster** | You have a fuzzy goal and want it decomposed into sized, prioritized tasks — also owns the optional SPEC phase (spec-authoring) | "Use BabaScrumMaster to plan X" |
+| **BabaScrumMaster** | You have a fuzzy goal and want it decomposed into sized, prioritized tasks -- also owns the optional SPEC phase (spec-authoring) | "Use BabaScrumMaster to plan X" |
 | **BabaSensei** | You want mentorship feedback, not code | "Use BabaSensei to review X" |
 | **BabaDev** | You want implementation with a plan gate | "Use BabaDev to implement X" |
 | **BabaTester** | You want adversarial QA + test strategy | "Use BabaTester to test X" |
 | **BabaReviewer** | You want a hard/soft tier quality verdict | "Use BabaReviewer to review X" |
+| **BabaCEO** | You have a business goal, product decision, or prioritization question and need product framing | "Use BabaCEO to frame X" |
 | *(default)* | Agent picks based on the task | Just describe the task |
 
 BabaSensei stops at **HANDOFF** — never writes code. BabaTester stops at **TEST_STRATEGY** — never plans fixes. BabaScrumMaster stops at **TASK_PLAN** — plans and sizes tasks, never patches. Scope creep is structurally impossible.
@@ -232,7 +233,7 @@ additional native layer.
 | Path | Purpose |
 |---|---|
 | `opencode.jsonc` | opencode config: auto-loads `AGENTS.md` + the 10 system files via `instructions`, sets the safer planning agent as default, and registers version-pinned MCP servers. |
-| `.opencode/agents/baba-*.md` | The five personas as OpenCode subagents. Read-only personas deny `edit` and `bash`; BabaDev alone can edit and run commands. |
+| `.opencode/agents/baba-*.md` | The six personas as OpenCode subagents. Read-only personas deny `edit` and `bash`; BabaDev alone can edit and run commands. |
 | `.opencode/agents/plan.md` | Overrides native OpenCode Plan with BabaSensei rules (read-only). |
 | `.opencode/agents/build.md` | Overrides native OpenCode Build with BabaDev rules (requires approved plan + rewrite contract). |
 | `.opencode/commands/baba.md` | `/baba <persona>` — activates a persona and starts the phase flow. |
@@ -241,6 +242,7 @@ additional native layer.
 | `.opencode/commands/handoff.md` | `/handoff` — emits the persona handoff contract. |
 | `.opencode/commands/resume.md` | `/resume` — restores prior phase from the session context (conversation carrier). |
 | `.opencode/commands/verify.md` | `/verify` — inspects diff and runs relevant project checks. |
+| `.opencode/commands/smoke.md` | `/smoke` — creates a Playwright MCP smoke-test plan for all features and executes it immediately. |
 
 ### Notes
 

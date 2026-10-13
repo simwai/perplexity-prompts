@@ -25,15 +25,16 @@
 
 | Command | Purpose |
 |---|---|
-| `/baba <persona>` | Activate a Baba persona (`scrummaster`, `sensei`, `dev`, `tester`, `reviewer`) and start the phase flow |
+| `/baba <persona>` | Activate a Baba persona (`scrummaster`, `sensei`, `dev`, `tester`, `reviewer`, `ceo`) and start the phase flow |
 | `/phase <NAME>` | Declare the active structured phase |
 | `/approve-plan` | Record plan approval + rewrite contract in session context |
 | `/handoff` | Emit the persona handoff contract |
 | `/resume` | Restore the prior phase from frozen SPEC.md + TASKS.md |
 | `/verify` | Inspect the diff and run relevant project checks; apply the commit/push gate when edits were made |
-| `/auto` | Switch execution mode to AUTO — agent chooses direct or structured by task risk |
-| `/direct` | Switch execution mode to DIRECT — clear low-risk work without phase templates |
-| `/structured` | Switch execution mode to STRUCTURED — full phase-gated workflow |
+| `/smoke` | Create a Playwright MCP smoke-test plan for all features and execute it immediately |
+| `/auto` | Switch execution mode to AUTO -- agent chooses direct or structured by task risk |
+| `/direct` | Switch execution mode to DIRECT -- clear low-risk work without phase templates |
+| `/structured` | Switch execution mode to STRUCTURED -- full phase-gated workflow |
 | `/review-consolidated` | Set `review_mode = consolidated` and enter REVIEW phase |
 | `/review-interactive` | Set `review_mode = interactive` and enter REVIEW phase |
 | `/close` | Close the session |

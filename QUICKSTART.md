@@ -102,9 +102,11 @@ Fix typo in README.md line 42.
 |---|---|
 | `/baba sensei` | Activate BabaSensei for review |
 | `/baba dev` | Activate BabaDev for implementation |
+| `/baba ceo` | Activate BabaCEO for product framing |
 | `/phase REVIEW` | Declare REVIEW phase |
 | `/approve-plan` | Record plan approval + rewrite contract |
 | `/verify` | Inspect diff, run checks, commit/push gate |
+| `/smoke` | Create a Playwright MCP smoke-test plan for all features and execute it immediately |
 | `/auto` / `/direct` / `/structured` | Switch execution mode |
 | `/review-consolidated` | Aggregate review mode |
 | `/review-interactive` | Batch-by-batch review mode |

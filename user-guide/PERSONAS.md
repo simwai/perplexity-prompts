@@ -13,6 +13,7 @@
 | Implementation with plan gate | **BabaDev** | `"Use BabaDev to implement X"` |
 | Adversarial QA + test strategy | **BabaTester** | `"Use BabaTester to test X"` |
 | Hard/soft tier quality verdict | **BabaReviewer** | `"Use BabaReviewer to review X"` |
+| Business goal, product framing | **BabaCEO** | `"Use BabaCEO to frame X"` |
 | Let agent decide | *(default)* | Just describe the task |
 
 ---
@@ -79,6 +80,18 @@
 
 ---
 
+### 🟣 BabaCEO
+
+**Product owner and executive decision-maker** -- Turns fuzzy business goals into framed product intent.
+
+| Owns | Terminal | Key Behavior |
+|---|---|---|
+| INTAKE, goal framing, success criteria | `INTAKE` -> `HANDOFF` (to BabaScrumMaster) | Direct tone, opinions on scope/priority encouraged, never touches implementation |
+
+**Use when:** You have a business goal, product decision, or prioritization question and need product framing before planning.
+
+---
+
 ### ⚫ Process Master
 
 **Embedded enforcer** — Phase ordering, checklist lifecycle, no-skip rules.
@@ -92,16 +105,18 @@
 ## 🔄 Recommended Session Flow
 
 ```text
+BabaCEO (optional upstream, product framing)
+    -> INTAKE -> HANDOFF (to BabaScrumMaster)
 BabaScrumMaster (optional upstream)
-    → INTAKE → BACKLOG → SPRINT → TASK_PLAN → [SPEC] → HANDOFF
+    -> INTAKE -> BACKLOG -> SPRINT -> TASK_PLAN -> [SPEC] -> HANDOFF
 BabaSensei (core review)
-    → CHECKLIST → DOCS → REVIEW → PLAN → HANDOFF
+    -> CHECKLIST -> DOCS -> REVIEW -> PLAN -> HANDOFF
 BabaTester (adversarial)
-    → CHECKLIST → DOCS → REVIEW → TEST_STRATEGY → HANDOFF
+    -> CHECKLIST -> DOCS -> REVIEW -> TEST_STRATEGY -> HANDOFF
 BabaDesigner (if UI/UX)
-    → PLAN → DESIGN_PLAN → HANDOFF
+    -> PLAN -> DESIGN_PLAN -> HANDOFF
 BabaDev (implementation)
-    → PLAN (from HANDOFF) → PATCH
+    -> PLAN (from HANDOFF) -> PATCH
 ```
 
 **Multi-persona note:** BabaSensei partitions file inventory by layer; spawns N reviewers (N = min(ceil(files/50), 4)) + BabaTester. Merge protocol combines findings.
@@ -116,6 +131,7 @@ BabaDev (implementation)
 | BabaSensei | Write code, enter PATCH |
 | BabaTester | Plan fixes, author implementation |
 | BabaDev | Skip plan approval, ignore tester guidance silently |
+| BabaCEO | Write code, review implementation, author specs |
 | BabaReviewer | Author patches, make scope decisions |
 
 ---
@@ -129,6 +145,7 @@ BabaDev (implementation)
 | `/baba dev` | Activate BabaDev, start phase flow |
 | `/baba tester` | Activate BabaTester, start phase flow |
 | `/baba reviewer` | Activate BabaReviewer, start phase flow |
+| `/baba ceo` | Activate BabaCEO for product framing, start INTAKE flow |
 
 ---
 

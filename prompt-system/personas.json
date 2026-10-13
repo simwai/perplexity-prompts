@@ -1,0 +1,229 @@
+{
+  "personas": [
+    {
+      "id": "baba-sensei",
+      "display": "BabaSensei",
+      "description": "Wise senior engineer for review and plan approval - teaching moments, no patches",
+      "entryPhase": "PLAN",
+      "mode": "DIRECT",
+      "tools": ["Read", "Grep", "Glob", "Bash", "Task"],
+      "disallowedTools": ["Edit", "Write"],
+      "permissionMode": "plan",
+      "opencode": {
+        "mode": "subagent",
+        "temperature": 0.1,
+        "permission": {
+          "edit": "deny",
+          "bash": "deny",
+          "webfetch": "allow",
+          "skill": "allow",
+          "task": "allow"
+        }
+      },
+      "routing": {
+        "claudePlan": "Concrete target (file, module, snippet) -> `task {agent: baba-sensei}` for CHECKLIST -> REVIEW -> PLAN.",
+        "opencodePlan": "Concrete target (file, module, snippet) -> `task {agent: baba-sensei}` for CHECKLIST -> REVIEW -> PLAN.",
+        "build": null,
+        "generalTable": "Code review → baba-sensei"
+      },
+      "babaCommand": {
+        "keywords": ["sensei"],
+        "instruction": "Find your persona in `prompt-system/01-personas.md` (BabaSensei) and read its section."
+      }
+    },
+    {
+      "id": "baba-dev",
+      "display": "BabaDev",
+      "description": "Senior implementation lead - smallest architecturally sound fix first",
+      "entryPhase": "PATCH",
+      "mode": "DIRECT",
+      "tools": ["Read", "Grep", "Glob", "Edit", "Write", "Bash", "Task"],
+      "permissionMode": "default",
+      "opencode": {
+        "mode": "primary",
+        "temperature": 0.2,
+        "permission": {
+          "edit": "allow",
+          "bash": "allow",
+          "webfetch": "allow",
+          "skill": "allow",
+          "task": "allow"
+        }
+      },
+      "routing": {
+        "claudePlan": null,
+        "opencodePlan": null,
+        "build": "Approved plan + complete rewrite contract -> `task {agent: baba-dev}` for PATCH (per-edit lint gate, compliance audit, constraint verification, verification gate).",
+        "generalTable": "Implementation → baba-dev"
+      },
+      "babaCommand": {
+        "keywords": ["dev"],
+        "instruction": "Find your persona in `prompt-system/01-personas.md` (BabaDev) and read its section."
+      }
+    },
+    {
+      "id": "baba-tester",
+      "display": "BabaTester",
+      "description": "Adversarial QA - edge cases, failure modes, test strategy",
+      "entryPhase": "TEST_STRATEGY",
+      "mode": "DIRECT",
+      "tools": ["Read", "Grep", "Glob", "Bash", "Task"],
+      "disallowedTools": ["Edit", "Write"],
+      "permissionMode": "plan",
+      "opencode": {
+        "mode": "subagent",
+        "temperature": 0.1,
+        "permission": {
+          "edit": "deny",
+          "bash": "deny",
+          "webfetch": "allow",
+          "skill": "allow",
+          "task": "allow"
+        }
+      },
+      "routing": {
+        "claudePlan": "Test strategy -> `task {agent: baba-tester}` for REVIEW -> TEST_STRATEGY.",
+        "opencodePlan": "Test strategy -> `task {agent: baba-tester}` for REVIEW -> TEST_STRATEGY.",
+        "build": "Test strategy needed -> `task {agent: baba-tester}` for TEST_STRATEGY first; classify items as BINDING / STRONG HINT / WEAK HINT before PATCH.",
+        "generalTable": "Test strategy → baba-tester"
+      },
+      "babaCommand": {
+        "keywords": ["tester"],
+        "instruction": "Find your persona in `prompt-system/01-personas.md` (BabaTester) and read its section."
+      }
+    },
+    {
+      "id": "baba-reviewer",
+      "display": "BabaReviewer",
+      "description": "Quality gate - hard/soft tier evaluation, merge verdicts",
+      "entryPhase": "REVIEW",
+      "mode": "DIRECT",
+      "tools": ["Read", "Grep", "Glob", "Bash", "Task"],
+      "disallowedTools": ["Edit", "Write"],
+      "permissionMode": "plan",
+      "opencode": {
+        "mode": "subagent",
+        "temperature": 0.1,
+        "permission": {
+          "edit": "deny",
+          "bash": "deny",
+          "webfetch": "allow",
+          "skill": "allow",
+          "task": "allow"
+        }
+      },
+      "routing": {
+        "claudePlan": null,
+        "opencodePlan": null,
+        "build": null,
+        "generalTable": "Quality verdict → baba-reviewer"
+      },
+      "babaCommand": {
+        "keywords": ["reviewer"],
+        "instruction": "Find your persona in `prompt-system/01-personas.md` (BabaReviewer) and read its section."
+      }
+    },
+    {
+      "id": "baba-scrum",
+      "display": "BabaScrumMaster",
+      "description": "Pragmatic delivery lead - goal intake, ICE backlog, sprints, task cards",
+      "entryPhase": "INTAKE",
+      "mode": "DIRECT",
+      "tools": ["Read", "Grep", "Glob", "Bash", "Task"],
+      "disallowedTools": ["Edit", "Write"],
+      "permissionMode": "plan",
+      "opencode": {
+        "mode": "subagent",
+        "temperature": 0.1,
+        "permission": {
+          "edit": "deny",
+          "bash": "deny",
+          "webfetch": "allow",
+          "skill": "allow",
+          "task": "allow"
+        }
+      },
+      "routing": {
+        "claudePlan": "Goal or spec without concrete target -> `task {agent: baba-scrum}` for INTAKE -> BACKLOG -> SPRINT -> TASK_PLAN -> SPEC, then handoff to `baba-sensei`.",
+        "opencodePlan": "Goal or spec without concrete target -> `task {agent: baba-scrum}` for INTAKE -> BACKLOG -> SPRINT -> TASK_PLAN -> SPEC, then handoff to `baba-sensei`.",
+        "build": null,
+        "generalTable": "Sprint planning → baba-scrum"
+      },
+      "babaCommand": {
+        "keywords": ["scrummaster"],
+        "instruction": "Find your persona in `prompt-system/01-personas.md` (BabaScrumMaster) and read its section."
+      }
+    },
+    {
+      "id": "baba-designer",
+      "display": "BabaDesigner",
+      "description": "Frontend design planning - palette, typography, iconography, a11y, SEO",
+      "entryPhase": "DESIGN_PLAN",
+      "mode": "DIRECT",
+      "tools": ["Read", "Grep", "Glob", "Bash", "Task"],
+      "disallowedTools": ["Edit", "Write"],
+      "permissionMode": "plan",
+      "opencode": {
+        "mode": "subagent",
+        "temperature": 0.1,
+        "permission": {
+          "edit": "deny",
+          "bash": "deny",
+          "webfetch": "allow",
+          "skill": "allow",
+          "task": "allow"
+        }
+      },
+      "routing": {
+        "claudePlan": "Frontend UI/UX in scope -> `task {agent: baba-designer}` from PLAN for DESIGN_PLAN.",
+        "opencodePlan": "Frontend UI/UX in scope -> `task {agent: baba-designer}` from PLAN for DESIGN_PLAN.",
+        "build": "Design questions mid-implementation -> `task {agent: baba-designer}`; never invent UI choices during PATCH.",
+        "generalTable": "Design decisions → baba-designer"
+      },
+      "babaCommand": {
+        "keywords": ["designer"],
+        "instruction": "Find your persona in `prompt-system/01-personas.md` (BabaDesigner) and read its section."
+      }
+    },
+    {
+      "id": "baba-ceo",
+      "display": "BabaCEO",
+      "description": "CEO / Product Owner for product vision, goal framing, success criteria, and prioritization input",
+      "entryPhase": "INTAKE",
+      "mode": "DIRECT",
+      "tools": ["Read", "Grep", "Glob", "Bash", "Task"],
+      "disallowedTools": ["Edit", "Write"],
+      "permissionMode": "plan",
+      "opencode": {
+        "mode": "subagent",
+        "temperature": 0.1,
+        "permission": {
+          "edit": "deny",
+          "bash": "deny",
+          "webfetch": "allow",
+          "skill": "allow",
+          "task": "allow"
+        }
+      },
+      "routing": {
+        "claudePlan": "Business goal, product decision, prioritization question -> `task {agent: baba-ceo}` for INTAKE -> HANDOFF (to BabaScrumMaster).",
+        "opencodePlan": "Business goal, product decision, prioritization question -> `task {agent: baba-ceo}` for INTAKE -> HANDOFF (to BabaScrumMaster).",
+        "build": "Product framing needed mid-implementation -> `task {agent: baba-ceo}`; never invent product decisions during PATCH.",
+        "generalTable": "Product framing → baba-ceo"
+      },
+      "babaCommand": {
+        "keywords": ["ceo"],
+        "instruction": "Find your persona in `prompt-system/01-personas.md` (BabaCEO) and read its section."
+      }
+    }
+  ],
+  "babaCommandKeywords": [
+    "scrummaster",
+    "sensei",
+    "dev",
+    "tester",
+    "reviewer",
+    "designer",
+    "ceo"
+  ]
+}

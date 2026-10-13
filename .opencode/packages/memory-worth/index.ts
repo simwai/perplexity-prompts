@@ -7,20 +7,20 @@
  *   - `export default Plugin.define({ id, setup })` replaces the V1 function
  *     export, and the 12 tool definitions are converted from Zod args to JSON
  *     Schema by tools/v2-register.ts.
- *   - `chat.message` became `ctx.session.hook("prompt")`.
+ *   - `chat.message` became `ctx.session.hook("prompt")`, and the user text is
+ *     read straight off `event.prompt`. That retires the whole bus-accumulation
+ *     subsystem (hooks/message-events.ts): V1 needed it because the runtime
+ *     always handed the chat.message hook an empty parts array, and V2 has no
+ *     message.updated / message.part.updated to feed it anyway.
  *   - `tool.execute.after` became `ctx.tool.hook("execute.after")`, with the
  *     tool output now at `event.result`.
  *   - `experimental.session.compacting` became `ctx.session.hook("compaction")`.
- *   - The V2 event bus has no `message.updated` or `message.part.updated`, which
- *     are what fed the in-memory text accumulation. The prompt hook now records
- *     the user text directly, so `getSessionUserText` keeps working.
  *   - `client.app.log()` does not exist on the V2 context, so the startup log
  *     line is dropped and the debug logger is built without a client.
  */
 
 import { createConnection, getDbPath } from "./db/connection.js";
 import { detectAndCaptureMemory, forgetInjectionState } from "./hooks/chat-message.js";
-import { getSessionUserText, pruneSession, recordMessageInfo, recordPart } from "./hooks/message-events.js";
 import { buildCompactionContext } from "./hooks/compacting.js";
 import { handleSessionCreated, handleSessionIdle, handleForgetCommand } from "./hooks/session-events.js";
 import { resolveSessionOutcome } from "./hooks/tool-execute-after.js";
@@ -109,7 +109,6 @@ export default Plugin.define({
         if (sessionId) {
           await log.debug("session.deleted event, cleaning up", { sessionId });
           forgetInjectionState(sessionId);
-          pruneSession(sessionId);
         }
         return;
       }
@@ -159,28 +158,15 @@ export default Plugin.define({
       });
     });
 
-    // Replaces the V1 chat.message hook. The V2 bus no longer delivers
-    // message.updated / message.part.updated, so the user text those events fed
-    // into getSessionUserText is recorded here instead.
+    // Replaces the V1 chat.message hook. V2 hands the prompt hook the real user
+    // text on `event.prompt`, so capture no longer needs the bus accumulation
+    // that hooks/message-events.ts provided.
     void ctx.session.hook("prompt", async (event) => {
       const sessionId = event.sessionID;
       if (typeof sessionId !== "string" || sessionId.length === 0) return;
 
       const userText = readPromptText(event.prompt);
       await log.debug("prompt hook", { sessionId, userTextLength: userText.length });
-
-      if (userText && !getSessionUserText(sessionId)) {
-        recordMessageInfo({ id: `msg_${sessionId}`, sessionID: sessionId, role: "user" });
-        recordPart({
-          id: `part_${sessionId}`,
-          sessionID: sessionId,
-          messageID: `msg_${sessionId}`,
-          type: "text",
-          text: userText,
-          synthetic: false,
-          ignored: false,
-        });
-      }
 
       const forgot = await handleForgetCommand(db, sessionId, userText);
       if (forgot) {

@@ -7,6 +7,12 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- **BabaCEO persona** (CEO / Product Owner combined): product vision, goal framing, success criteria, prioritization and roadmap input, acceptance-signal ownership; entry phase INTAKE, terminal phase HANDOFF to BabaScrumMaster. New adapter files: `adapters/claude/agents/baba-ceo.md`, `adapters/opencode/agents/baba-ceo.md`. Router updates in `adapters/claude/agents/plan.md`, `adapters/opencode/agents/plan.md`, `adapters/opencode/agents/build.md`, `adapters/opencode/agents/general.md`, `adapters/opencode/commands/baba.md`. Doc updates in `user-guide/PERSONAS.md`, `AGENTS_USAGE.md`.
+
+- **`/smoke` command** (T-24): on-demand full-feature Playwright MCP smoke test. Creates a plan (feature inventory from SPEC.md stories/FRs, route directories, package.json scripts/docs), emits `## Smoke Plan`, then executes immediately with safe tools only (`navigate`, `click`, `fill`, `snapshot`, `screenshot`). SKIPPED branches: no web-app entry point, READ_ONLY host, MCP server not preflighted. Independent of T-14's edit-scoped commit-gate smoke. New files: `adapters/opencode/commands/smoke.md`, `adapters/claude/skills/smoke/SKILL.md`. Protocol in `prompt-system/07-protocols.md` `## Smoke Test Protocol`. Doc updates in `user-guide/OPENCODE.md`, `AGENTS_USAGE.md`, `QUICKSTART.md`.
+
 ### Changed
 
 - **Consistency pass: canonical 8-file list, S1-S20 alignment, path normalization.** `prompt-system/02-decision-prompts.md` was merged into `prompt-system/00-system.md` and removed from the file set; `prompt-system/08-plan-actual-gate.md` was added as the eighth system file. All load-order references, adapter source lists, docs, and README counts updated from 7 to 8 files. Soft-tier rubric range corrected from S1-S17 to S1-S20 in all system files, adapter sources, and generated outputs. All `system/` path prefixes normalized to `prompt-system/` across docs, adapters, and conformance checklists. `07-protocols.md` now owns spec-lifecycle and drift-detection references previously misattributed to `06-misc.md`.
@@ -45,8 +51,6 @@ Versioning follows [Semantic Versioning](https://semver.org/).
   `.opencode/agents/*.md` and `.opencode/commands/*.md` references, and
   regenerated `.claude/**` via `generate-adapters.ps1`. `docs/architecture.md`
   and `README.md` updated to the new layout.
-
-### Added
 
 - Output language rule: every response is written in English regardless of the
   user's input language, in any mode, phase, or persona. Added as the first

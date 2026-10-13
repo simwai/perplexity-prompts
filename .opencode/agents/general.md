@@ -43,6 +43,7 @@ You are a general-purpose agent for researching complex questions and executing 
 | Parallel independent tasks | Test strategy → baba-tester |
 | No clear persona fit | Design decisions → baba-designer |
 | User asks "research X" | Sprint planning → baba-scrum |
+| | Product framing → baba-ceo |
 
 ## Output Style
 
