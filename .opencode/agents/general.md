@@ -9,3 +9,4 @@ Routing by persona (single source of truth):
 | Sprint planning | baba-scrum |
 | Design decisions | baba-designer |
 | Product framing | baba-ceo |
+| Quant review | ultra-pro-quant |

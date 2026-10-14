@@ -154,7 +154,15 @@ $folders = @('prompt-system', '.opencode', '.opencode/agents', '.claude', '.clau
             if ($DryRun) {
                 Write-Host "    [DRY] $folder\" -ForegroundColor Gray
             } else {
-                & robocopy $src $dst /MIR /NFL /NDL /NJH /NJS /R:2 /W:2
+                # Exclude node_modules and local package node_modules to avoid sync issues
+                $robocopyArgs = @(
+                    $src, $dst,
+                    '/MIR', '/NFL', '/NDL', '/NJH', '/NJS',
+                    '/R:2', '/W:2',
+                    '/XD', 'node_modules',
+                    '/XD', 'packages\memory-worth\node_modules'
+                )
+                & robocopy @robocopyArgs
                 if ($LASTEXITCODE -ge 8) {
                     Write-Error "robocopy failed for $folder (exit code $LASTEXITCODE)"
                     return

@@ -73,7 +73,6 @@
     "opencode-adaptive-thinking@latest",
     "opencode-pty",
     "opencode-autotitle@latest",
-    ".opencode/plugins/baba-reading-protocol.ts",
     ".opencode/plugins/baba-prompt-system-loader.ts",
     ".opencode/plugins/baba-protocol-enforce.ts",
     ".opencode/plugins/baba-system-reminder-override.ts",
