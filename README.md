@@ -27,7 +27,7 @@ Then describe a task and the agent handles the rest.
 | Phase flow? | [user-guide/PHASES.md](user-guide/PHASES.md) |
 | Execution modes? | [user-guide/EXECUTION_MODES.md](user-guide/EXECUTION_MODES.md) |
 | Troubleshooting? | [user-guide/TROUBLESHOOTING.md](user-guide/TROUBLESHOOTING.md) |
-| OpenCode adapter | [user-guide/OPENCODE.md](user-guide/OPENCODE.md) |
+| OpenCode adapter | [AGENTS_USAGE.md](AGENTS_USAGE.md) |
 | Architecture? | [ARCHITECTURE.md](ARCHITECTURE.md) |
 | File map | [SYSTEM_OVERVIEW.md](SYSTEM_OVERVIEW.md) |
 | AGENTS.md usage | [AGENTS_USAGE.md](AGENTS_USAGE.md) |
@@ -35,8 +35,8 @@ Then describe a task and the agent handles the rest.
 | Terminology | [GLOSSARY.md](GLOSSARY.md) |
 | Changelog | [CHANGELOG.md](CHANGELOG.md) |
 | Changelog before `v1.0.0` | [CHANGELOG_ARCHIVE.md](CHANGELOG_ARCHIVE.md) |
-| Spec | [SPEC.md](SPEC.md) |
-| Tasks | [TASKS.md](TASKS.md) |
+| Spec | [project-management/specs/SPEC.md](project-management/specs/SPEC.md) |
+| Tasks | [project-management/specs/TASKS.md](project-management/specs/TASKS.md) |
 | Roadmaps and sprints | [project-management/ROADMAPS.md](project-management/ROADMAPS.md), [project-management/SPRINTS.md](project-management/SPRINTS.md) |
 | Trello backend | [project-management/TRELLO_INTEGRATION.md](project-management/TRELLO_INTEGRATION.md) |
 
@@ -86,14 +86,10 @@ LICENSE                ISC
 user-guide/            Getting started, personas, phases, modes, troubleshooting
 project-management/    Roadmaps, sprints, Trello integration, config
 adapters/              Adapter templates (source of truth for generated files)
-  claude/agents/       Claude Code subagent templates
-  claude/skills/       Claude Code slash-command skill templates
-  claude/settings.json Claude Code project settings template
   opencode/agents/     OpenCode agent templates
   opencode/commands/   OpenCode command templates
 opencode.jsonc         opencode-native config (optional layer, inert for other agents)
 .opencode/             Generated: agents, commands, plugins, packages, lib, tests
-.claude/               Generated Claude Code adapters (agents + skills + settings)
 .mcp.json              Generated MCP server config (shared by both platforms)
 opencode-memory-mw/    Memory middleware research workspace (paper + simulation)
 scripts/               Bootstrap helpers (ensure-playwright, ensure-uvx, verify-plugins)

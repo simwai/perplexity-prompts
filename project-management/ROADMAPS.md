@@ -4,6 +4,16 @@
 
 ---
 
+## Roadmap 2026-10
+
+| Item | Status | Target | Notes |
+|---|---|---|---|
+| Prompt-system rewrite (spec-first) | ✅ Complete | 2026-10-13 | SPEC.md v1.0.0, session locks restored, stack split, docs drift fixed |
+| Spec artifacts moved to project-management/specs/ | ✅ Complete | 2026-10-13 | SPEC.md, TASKS.md relocated |
+| Documentation drift fixes | ✅ Complete | 2026-10-13 | README, SYSTEM_OVERVIEW, AGENTS_USAGE, QUICKSTART, 01-personas, 03-output-and-state, 07-protocols |
+
+---
+
 ## Roadmap 2026-09
 
 | Item | Status | Target | Notes |

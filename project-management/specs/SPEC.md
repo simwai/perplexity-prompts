@@ -1,7 +1,7 @@
 ---
 status: frozen
-version: 0.1.0
-frozen_at: 2026-09-30T14:30:00Z
+version: 1.0.0
+frozen_at: 2026-10-13T14:30:00Z
 ---
 
 ## Overview
@@ -47,8 +47,8 @@ See "Do not" section in the brief - all items there are explicitly out of scope.
 
 ## Interfaces
 
-- `SPEC.md` at repo root (frontmatter: status, version, frozen_at)
-- `TASKS.md` at repo root (markdown table with task id, spec ref, LOC bound, acceptance, done checkbox)
+- `project-management/specs/SPEC.md` (frontmatter: status, version, frozen_at)
+- `project-management/specs/TASKS.md` (markdown table with task id, spec ref, LOC bound, acceptance, done checkbox)
 - `docs/EVALUATIONS.md` at repo root (append-only session log)
 - Prompt-system files: `00-system.md`, `01-personas.md`, `02-decision-prompts.md`, `03-output-and-state.md`, `04-rubrics.md`, `04b-rubrics-logical.md`, `05-impl-style.md`, `06-misc.md`, `07-protocols.md`, `08-plan-actual-gate.md`, `09-design-guidelines.md`, `10-doc-style.md`, `prompt-system/stacks/STACK-typescript.md`, `prompt-system/stacks/STACK-python.md`, `prompt-system/stacks/STACK-java.md`, `prompt-system/stacks/STACK-frontend.md`, `prompt-system/stacks/STACK-powershell.md`, `prompt-system/stacks/STACK-pinescript.md`, `prompt-system/stacks/STACK-database.md`
 - Load order in `00-system.md` annotated with scope: `[core]`, `[review]`, `[on-demand]`, `[stack]`, `[designer]`, `[doc]`
@@ -62,6 +62,7 @@ See "Do not" section in the brief - all items there are explicitly out of scope.
   | Stack: TypeScript/JavaScript | `prompt-system/stacks/STACK-typescript.md` |
   | Stack: Python | `prompt-system/stacks/STACK-python.md` |
   | Stack: Java | `prompt-system/stacks/STACK-java.md` |
+  | Stack: C# | `prompt-system/stacks/STACK-csharp.md` |
   | Stack: Frontend | `prompt-system/stacks/STACK-frontend.md` |
   | Stack: PowerShell | `prompt-system/stacks/STACK-powershell.md` |
   | Stack: Pine Script | `prompt-system/stacks/STACK-pinescript.md` |

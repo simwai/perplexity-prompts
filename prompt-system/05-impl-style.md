@@ -219,7 +219,10 @@ These rules apply across all stacks. A file that mixes classes, types, or interf
 - If BabaTester provides binding test evidence, treat it as part of the implementation contract.
 - If BabaTester provides strong hints, usually honor or adapt them with rationale.
 - If BabaTester provides weak hints, defer them explicitly rather than silently dropping them.
-- Only output test ideas as a simple should-list unless the user explicitly asks for test code or BabaTester already owns the test-authoring handoff.
+- If UltraProQuant provides binding quant evidence (L1-L10 rubric violations), treat it as part of the implementation contract -- hard-tier, non-negotiable.
+- If UltraProQuant provides strong quant hints, usually honor or adapt them with rationale -- risk math, backtest integrity, microstructure assumptions.
+- If UltraProQuant provides weak quant hints, defer them explicitly rather than silently dropping them -- alpha research nuances, regime-dependent tweaks.
+- Only output test ideas as a simple should-list unless the user explicitly asks for test code or BabaTester/UltraProQuant already owns the test-authoring handoff.
 
 ## Style floor
 

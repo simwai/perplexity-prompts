@@ -194,5 +194,5 @@ The agent classifies your input and picks a mode before it does anything else.
 | Execution modes | `user-guide/EXECUTION_MODES.md` |
 | Common issues | `user-guide/TROUBLESHOOTING.md` |
 | Architecture | `SYSTEM_OVERVIEW.md` |
-| OpenCode adapter | `user-guide/OPENCODE.md` |
+| OpenCode adapter | `AGENTS_USAGE.md` |
 | Project management | `project-management/` |

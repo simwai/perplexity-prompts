@@ -177,7 +177,7 @@ Dedup/record: last valid phase and failed phase recorded in session state.
 
 Detection: a session is spawned via `task`.
 Fires at: subagent session start.
-Effect: fresh in-memory state carrier per receiving persona's entry phase (baba-sensei -> PLAN DIRECT; baba-dev -> PATCH DIRECT; baba-tester -> TEST_STRATEGY DIRECT; baba-reviewer -> REVIEW DIRECT; baba-scrum -> INTAKE DIRECT; baba-designer -> DESIGN_PLAN DIRECT; explore/general -> DIRECT). Parent phase not inherited; parent's read-only constraints not forwarded. Carrier is the single source of truth for the subagent's phase and mode.
+Effect: fresh in-memory state carrier per receiving persona's entry phase (baba-sensei -> PLAN DIRECT; baba-dev -> PATCH DIRECT; baba-tester -> TEST_STRATEGY DIRECT; ultra-pro-quant -> TEST_STRATEGY_QUANT DIRECT; baba-reviewer -> REVIEW DIRECT; baba-scrum -> INTAKE DIRECT; baba-designer -> DESIGN_PLAN DIRECT; explore/general -> DIRECT). Parent phase not inherited; parent's read-only constraints not forwarded. Carrier is the single source of truth for the subagent's phase and mode.
 Invokes: Entry-phase mapping and carrier contents -- `00-system.md` `## Subagent bootstrap`; handoff contract fields -- `01-personas.md` `## Handoff contract`.
 Dedup/record: carrier fields initialized at spawn (`current_phase`, `mode`, `startup_verified` inherited only if parent's startup verified, `handoff_payload`, `style_policy`).
 
@@ -196,3 +196,11 @@ Fires at: phase-transition decision points.
 Effect: skipped phase recorded with one-line reason in the phase artifact and session context; automatic transition, no user confirmation (hard guard).
 Invokes: Phase order and conditional rules -- `00-system.md` `## Phase model`; prompt-level BLOCKED rules -- `00-system.md` `### Prompt-level BLOCKED rules`.
 Dedup/record: every skip recorded; a skip decided by model judgment transitions automatically per `00-system.md` `## Hard guards`.
+
+## T-24 -- UltraProQuant activation
+
+Detection: CHECKLIST init -- file inventory contains any of: strategy/, backtest/, risk/, signal/, portfolio/, alpha/, execution/, microstructure/, orderbook/, crypto/, defi/, options/, futures/ OR L1-L10 logical rubrics marked in-scope at checklist time.
+Fires at: REVIEW entry (consolidated mode) or REVIEW -> TEST_STRATEGY (interactive mode).
+Effect: Spawns UltraProQuant subagent alongside BabaTester. Produces quant-specific TEST_STRATEGY_QUANT output. Findings merged via consolidated review protocol (Sensei authority on hard-tier/L-tier blocking; union on soft/advisory).
+Invokes: TEST_STRATEGY_QUANT template -- `03-output-and-state.md` `## TEST_STRATEGY_QUANT template`; consolidated merge protocol -- `01-personas.md` `## Handoff contract` `### Multi-persona session order`.
+Dedup/record: `quant_review_spawned: true` in session state; findings travel via handoff `binding_items_quant`, `strong_hints_quant`.

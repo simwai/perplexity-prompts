@@ -34,6 +34,10 @@
   // and Plan overrides in .opencode/agents/ orchestrate the role subagents below.
   "default_agent": "plan",
 
+  // Small model for background tasks (metadata generation, auto-titling, etc.)
+  // Uses Kilo's free step-5-preview (kilo3/kilo4 provider) - step-3.7-flash is dead
+  "small_model": "step-5-preview-free",
+
   // Loop protection: hard-stop repeated identical tool calls (doom loops).
   // opencode fires doom_loop detection on 3+ consecutive identical calls and
   // would default to "ask"; denying it halts the loop at the process level
@@ -68,6 +72,7 @@
     "opencode-vibeguard@latest",
     "opencode-adaptive-thinking@latest",
     "opencode-pty",
+    "opencode-autotitle@latest",
     ".opencode/plugins/baba-reading-protocol.ts",
     ".opencode/plugins/baba-prompt-system-loader.ts",
     ".opencode/plugins/baba-protocol-enforce.ts",
@@ -79,7 +84,6 @@
     // memory-worth is a local package in .opencode/packages/memory-worth
     // (referenced in .opencode/package.json). Load it as a package directory.
     ".opencode/packages/memory-worth",
-    ".opencode/plugins/baba-drift.ts",
     ".opencode/plugins/adaptive-temperature.ts",
     ".opencode/plugins/multi-model-consensus.ts"
   ],

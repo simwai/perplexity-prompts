@@ -35,6 +35,8 @@ See `AGENTS.md` MCP Fallback Tiers for what's required and what has fallbacks.
 |---|---|---|
 | Context7 | None | Tier 1 (always) |
 | Playwright | None (Node 20+) | Tier 1 (always) |
+| g-search | None (Playwright Chromium) | Tier 1 (always) |
+| arXiv | None (uvx) | Tier 1 (always) |
 | Trello | OAuth (browser) | OAuth (optional) |
 | Google Search | None (curl fallback) | Tier 1 (always) |
 
@@ -91,7 +93,7 @@ Fix typo in README.md line 42.
 | Patch protocol? | [prompt-system/06-misc.md](prompt-system/06-misc.md) |
 | Plan-versus-actual gate? | [prompt-system/08-plan-actual-gate.md](prompt-system/08-plan-actual-gate.md) |
 | Session context? | [prompt-system/03-output-and-state.md](prompt-system/03-output-and-state.md) |
-| OpenCode setup? | [user-guide/OPENCODE.md](user-guide/OPENCODE.md) |
+| OpenCode setup? | [AGENTS_USAGE.md](AGENTS_USAGE.md) |
 | Project management? | [project-management/ROADMAPS.md](project-management/ROADMAPS.md) |
 
 ---
@@ -150,7 +152,7 @@ flowchart LR
 
 Ask your agent: **"List the available MCP tools."**
 
-Expected: Context7, Playwright at minimum. Google Search via curl fallback. Trello after OAuth.
+Expected: Context7, Playwright, g-search, arXiv at minimum. Google Search via curl fallback. Trello after OAuth.
 
 ---
 

@@ -38,6 +38,7 @@ This is the only loadable system file at startup. If the runtime pins files expl
 - `prompt-system/stacks/STACK-typescript.md`
 - `prompt-system/stacks/STACK-python.md`
 - `prompt-system/stacks/STACK-java.md`
+- `prompt-system/stacks/STACK-csharp.md`
 - `prompt-system/stacks/STACK-frontend.md`
 - `prompt-system/stacks/STACK-powershell.md`
 - `prompt-system/stacks/STACK-pinescript.md`
@@ -224,6 +225,7 @@ Phase set:
 - `DOCS`
 - `REVIEW`
 - `TEST_STRATEGY` (BabaTester only)
+- `TEST_STRATEGY_QUANT` (UltraProQuant only)
 - `PLAN`
 - `HANDOFF` (transition artifact, not a working phase)
 - `PATCH`
@@ -329,8 +331,10 @@ Skip: CHECKLIST, DOCS, BLOCKED, FAILURE, INTAKE, BACKLOG, SPRINT, TASK_PLAN, SPE
 - `REVIEW -> PLAN (partial)`: confirmed items exist, user approves partial handoff.
 - `PLAN (partial) -> PATCH (partial)`: plan approval for scoped items.
 - `REVIEW -> TEST_STRATEGY`: active persona is BabaTester and user confirmed.
+- `REVIEW -> TEST_STRATEGY_QUANT`: active persona is UltraProQuant (auto-spawned via T-24) and user confirmed.
 - `REVIEW -> DRIFT`: spec exists on disk (or user explicitly requested drift analysis) and the phase can run read-only.
 - `TEST_STRATEGY -> HANDOFF`: TEST_STRATEGY output complete, receiving persona identified.
+- `TEST_STRATEGY_QUANT -> HANDOFF`: TEST_STRATEGY_QUANT output complete, receiving persona identified.
 - `PLAN -> PATCH`: user approval explicit, rewrite contract complete.
 - `PLAN -> HANDOFF`: active persona is BabaSensei, plan approval explicit.
 - `PLAN -> DESIGN_PLAN`: target includes frontend UI/UX work or user explicitly requested design review.
@@ -440,6 +444,7 @@ Entry phase mapping:
 | `baba-sensei` | `PLAN` | `DIRECT` |
 | `baba-dev` | `PATCH` | `DIRECT` |
 | `baba-tester` | `TEST_STRATEGY` | `DIRECT` |
+| `ultra-pro-quant` | `TEST_STRATEGY_QUANT` | `DIRECT` |
 | `baba-reviewer` | `REVIEW` | `DIRECT` |
 | `baba-scrum` | `INTAKE` | `DIRECT` |
 | `baba-designer` | `DESIGN_PLAN` | `DIRECT` |
@@ -746,6 +751,7 @@ Phase pairing:
 - `DOCS`: `context7` primary; `exa`/`g-search` for discovery. Output is evidence input only.
 - `REVIEW`: `playwright` for web app UI checks; `trello` for tracked work.
 - `TEST_STRATEGY`: `playwright` for e2e/UI exploration.
+- `TEST_STRATEGY_QUANT`: `playwright` for e2e/UI exploration; `context7` for quant library docs (NumPy, pandas, vectorbt, backtrader, zipline, ccxt, freqtrade); `arxiv` for quant finance paper lookup.
 - `PLAN` / `PATCH`: `trello` for tracked-task status; `playwright` for verification.
 - `DOCS` / research: `arxiv` for academic paper search and local literature management.
 

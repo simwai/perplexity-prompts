@@ -239,13 +239,7 @@ additional native layer.
 | `.opencode/agents/baba-*.md` | The seven personas as OpenCode subagents. Read-only personas deny `edit` and `bash`; BabaDev alone can edit and run commands. |
 | `.opencode/agents/plan.md` | Overrides native OpenCode Plan with BabaSensei rules (read-only). |
 | `.opencode/agents/build.md` | Overrides native OpenCode Build with BabaDev rules (requires approved plan + rewrite contract). |
-| `.opencode/commands/baba.md` | `/baba <persona>` — activates a persona and starts the phase flow. |
-| `.opencode/commands/phase.md` | `/phase <NAME>` — declares the active phase and enforces its template. |
-| `.opencode/commands/approve-plan.md` | `/approve-plan` — persists plan approval + rewrite contract into the session context (conversation carrier). |
-| `.opencode/commands/handoff.md` | `/handoff` — emits the persona handoff contract. |
-| `.opencode/commands/resume.md` | `/resume` — restores prior phase from the session context (conversation carrier). |
-| `.opencode/commands/verify.md` | `/verify` — inspects diff and runs relevant project checks. |
-| `.opencode/commands/smoke.md` | `/smoke` — creates a Playwright MCP smoke-test plan for all features and executes it immediately. |
+| `.opencode/plugins/*.ts` | Protocol enforcement plugins (reading protocol, prompt system loader, lock enforce, drift, etc.). |
 
 ### Notes
 

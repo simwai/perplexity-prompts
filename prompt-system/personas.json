@@ -215,6 +215,37 @@
         "keywords": ["ceo"],
         "instruction": "Find your persona in `prompt-system/01-personas.md` (BabaCEO) and read its section."
       }
+    },
+    {
+      "id": "ultra-pro-quant",
+      "display": "UltraProQuant",
+      "description": "Master quant/algo trader - alpha logic, risk math, backtest integrity, microstructure, asymmetric structures",
+      "entryPhase": "TEST_STRATEGY_QUANT",
+      "mode": "DIRECT",
+      "tools": ["Read", "Grep", "Glob", "Bash", "Task"],
+      "disallowedTools": ["Edit", "Write"],
+      "permissionMode": "plan",
+      "opencode": {
+        "mode": "subagent",
+        "temperature": 0.1,
+        "permission": {
+          "edit": "deny",
+          "bash": "deny",
+          "webfetch": "allow",
+          "skill": "allow",
+          "task": "allow"
+        }
+      },
+      "routing": {
+        "claudePlan": "Quant/trading code review -> `task {agent: ultra-pro-quant}` for REVIEW -> TEST_STRATEGY_QUANT.",
+        "opencodePlan": "Quant/trading code review -> `task {agent: ultra-pro-quant}` for REVIEW -> TEST_STRATEGY_QUANT.",
+        "build": "Quant review needed -> `task {agent: ultra-pro-quant}` for TEST_STRATEGY_QUANT first; classify items as BINDING / STRONG HINT / WEAK HINT before PATCH.",
+        "generalTable": "Quant review → ultra-pro-quant"
+      },
+      "babaCommand": {
+        "keywords": ["quant"],
+        "instruction": "Find your persona in `prompt-system/01-personas.md` (UltraProQuant) and read its section."
+      }
     }
   ],
   "babaCommandKeywords": [
@@ -224,6 +255,7 @@
     "tester",
     "reviewer",
     "designer",
-    "ceo"
+    "ceo",
+    "quant"
   ]
 }

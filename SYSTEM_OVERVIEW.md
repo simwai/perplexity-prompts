@@ -68,8 +68,8 @@ inventory of the deployed unit.
 ├── AGENTS_USAGE.md        # How to use and deploy the system
 ├── CONFORMANCE.md         # Protocol invariants
 ├── GLOSSARY.md            # Central terminology reference
-├── SPEC.md                # Living spec and registry
-├── TASKS.md               # Build tasks mapped to spec sections
+├── SPEC.md                # Living spec and registry (moved to project-management/specs/)
+├── TASKS.md               # Build tasks mapped to spec sections (moved to project-management/specs/)
 ├── QUICKSTART.md          # 5-minute onboarding
 ├── LICENSE                # ISC
 ├── prompt-system/         # The deployed unit
@@ -98,10 +98,9 @@ inventory of the deployed unit.
 ├── scripts/               # Bootstrap helpers (playwright, uvx, plugin verify)
 ├── opencode.jsonc         # OpenCode-native config
 ├── .opencode/             # Generated: agents, commands, plugins, packages, lib, tests
-├── .claude/               # Generated Claude Code adapters (agents + skills + settings)
 ├── .mcp.json              # Generated MCP server config (both platforms)
 ├── sync.ps1               # Interactive propagation to target projects
-├── generate-adapters.ps1  # Generates .opencode/ and .claude/ from adapters/
+├── generate-adapters.ps1  # Generates .opencode/ from adapters/
 ├── pre-commit.ps1         # The commit gate
 └── targets.json.example   # Template for sync.ps1 targets
 ```
@@ -138,7 +137,7 @@ inventory of the deployed unit.
 | PATCH protocol | [prompt-system/06-misc.md](prompt-system/06-misc.md) |
 | Plan-versus-actual gate | [prompt-system/08-plan-actual-gate.md](prompt-system/08-plan-actual-gate.md) |
 | Session context | [prompt-system/03-output-and-state.md](prompt-system/03-output-and-state.md) |
-| OpenCode setup | [user-guide/OPENCODE.md](user-guide/OPENCODE.md) |
+| OpenCode setup | [AGENTS_USAGE.md](AGENTS_USAGE.md) |
 
 ---
 

@@ -298,158 +298,43 @@ For greenfield targets (no existing source files):
 
 ## Pre-commit behavior
 
-Pre-commit hooks (`.pre-commit-config.yaml`, `lefthook.yml`, `husky`) run the order below, and the PATCH per-edit lint gate must mirror it. This section is for PATCH and REVIEW when the touched code includes scripts, package config, CI/CD config, or tooling setup.
+The repository uses a self-contained `pre-commit.ps1` script (not Husky, lint-staged, or `.pre-commit-config.yaml`). The hook runs the following gates in order, scoped to staged files:
 
-### What pre-commit hooks must cover
+### Gate Order
 
-A well-configured pre-commit setup must run at minimum:
-
-| Check | Purpose | Priority |
-|---|---|---|
-| Formatter | Auto-fix style before commit | First; always runs before lint |
-| Linter | Catch code-quality issues after formatting | Second |
-| `tsc --noEmit` | Catch TypeScript type errors before they reach CI | Third (TS projects only) |
-| Test runner | Run fast unit tests only; no integration tests | Fourth |
-| Secret scanner | Block credentials from entering the repo | Always present |
-| File hygiene | Trailing whitespace, end-of-file newline, LF line endings, merge-conflict markers | Always present |
-| Unused dependency/exporter detector (knip) | Detect unused npm packages, exports, and files in TS/JS projects | Recommended (TS/JS) |
-| Circular import detector (pycycle) | Detect circular import chains in Python projects | Recommended (Python) |
-
-Not every project needs all of these. A project with no test suite should not have a failing test hook. Use judgment; flag absence only when the missing check has real risk.
-
-### Formatter vs linter distinction
-
-- The formatter must run first and must auto-fix (not just report). If the formatter exits non-zero, the linter must not run.
-- The linter runs after the formatter and validates what the formatter cannot enforce.
-- Never replace the formatter with the linter.
-- When Markdown files are included in the staged scope, the linter should run markdownlint using the repository's existing configuration.
-- Preferred formatter per stack: TypeScript/JS `prettier --write`, Python `ruff format` (preferred) or `black`, Go `gofmt -w` or `goimports`, Rust `cargo fmt`.
-
-### Type checking (`tsc --noEmit`)
-
-For TypeScript projects, always use `tsc --noEmit` explicitly. Do not use a generic `typecheck` script unless it is verified to call `tsc --noEmit` internally. Run with the project's existing `tsconfig.json`. Do not invent flags. If the project uses multiple `tsconfig` files (e.g. `tsconfig.build.json`), run against the strictest one that covers all source files. `tsc --noEmit` runs on the whole project, not just staged files. It belongs in a `pre-push` hook if it is slow (>15 seconds).
-
-### How to detect the project's package manager and scripts
-
-Before recommending a pre-commit setup, identify:
-
-1. **Package manager** - look for `pnpm-lock.yaml` (pnpm), `yarn.lock` (yarn), `package.json` alone (npm), `pyproject.toml`/`setup.py` (Python), `go.mod` (Go), `Cargo.toml` (Rust).
-2. **Existing scripts** - read `package.json` `scripts` section. Look for: `format`, `lint`, `typecheck`, `test`, `build`. For Python: look for `[tool.ruff]`, `[tool.pyrefly]`, `[tool.pytest.ini_options]` in `pyproject.toml`.
-3. **Existing hook config** - check for `.pre-commit-config.yaml`, `.husky/`, `lint-staged` config in `package.json`.
-
-If any of these exist, the recommendation must align with them. Do not suggest replacing an existing working setup.
-
-### Hook tool preference
-
-- **Node.js projects**: MUST use Husky + lint-staged. `.pre-commit-config.yaml` is not the preferred path for Node.js; use Husky unless the project already has a working pre-commit setup that must be preserved.
-- **Python projects**: MUST use `.pre-commit-config.yaml` with local hooks. Husky is not the preferred path for Python.
-- **CI pipelines**: `.github/workflows/*` and `.gitlab-ci.yml` are forbidden in managed repos. PLAN must not recommend CI pipelines; REVIEW flags their presence as a soft-tier `S-precommit` finding.
+1. **Session lock gate** — Checks for peer session locks on staged files (requires `SESSION_ID` for blocking mode; advisory without it). See `prompt-system/scripts/session-locks.ps1`.
+2. **Adapter generation** — Runs `generate-adapters.ps1` to regenerate `.opencode/` and `.mcp.json`; fails if generated files differ from staged.
+3. **Mermaid diagram validation** — Runs `scripts/test-mermaid.ps1 -StagedOnly` on staged Markdown; fails on syntax errors.
+4. **Prompt-system integrity suites** — Runs `test-rubric-id-integrity.ps1`, `test-session-locks.ps1`, `test-cross-reference-integrity.ps1`, `test-self-review-protocol.ps1`.
+5. **File hygiene** — Removes trailing whitespace, ensures EOF newline, rejects merge conflict markers.
+6. **Secret scanning** — Scans staged files for API keys, tokens, passwords, private keys.
+7. **Markdown lint** — Runs `npx markdownlint-cli --config .markdownlint.jsonc` on staged `.md` files (batched).
+8. **PowerShell Script Analyzer** — Runs `Invoke-ScriptAnalyzer` on staged `.ps1` files (excludes `PSAvoidUsingWriteHost`, `PSAvoidGlobalVars`).
 
 ### REVIEW rule (pre-commit)
 
 During REVIEW, flag the following:
 
-- **No pre-commit hooks at all** - soft-tier finding (S-precommit). State: "No pre-commit hooks detected. Format and type errors will reach CI."
-- **Hooks exist but skip formatter** - soft-tier. State which formatter the project uses and that it is not hooked.
-- **Hooks exist but run linter before formatter** - soft-tier. Formatter must always precede linter.
-- **TypeScript project with no `tsc --noEmit` hook** - soft-tier. Type errors reaching CI is a real cost. Flag it.
-- **Hooks exist but skip secret scanner** - hard-tier H1 adjacent. Secret scanning on commit is the last line of defence before push. Flag it clearly.
-- **Hook runs slow integration tests** - soft-tier. Pre-commit must stay fast (under ~30 seconds). Slow tests belong in CI or `pre-push` only.
-- **Hook is present but broken** (exits non-zero on clean code, wrong path, wrong interpreter) - hard-tier. A broken hook is worse than no hook: developers bypass it.
-- **TS/JS project with no knip hook** — soft-tier (S-precommit). State: "No unused dependency detection. Dead code and unused packages may accumulate."
-- **Python project with no pycycle hook** — soft-tier (S-precommit). State: "No circular import detection. Circular imports may go unnoticed."
+- **No pre-commit script** — soft-tier finding (S-precommit). State: "No pre-commit.ps1 detected. Format, type errors, and secrets may reach CI."
+- **Hook skips adapter generation** — soft-tier. Generated adapters drift from source.
+- **Hook skips Mermaid validation** — soft-tier. Diagrams may render as syntax-error boxes on GitHub.
+- **Hook skips integrity suites** — soft-tier. Rubric ID drift, lock protocol regressions, cross-reference rot, self-review violations go undetected.
+- **Hook skips secret scanning** — hard-tier H1 adjacent. Secret scanning on commit is the last line of defence before push.
+- **Hook is present but broken** (exits non-zero on clean code) — hard-tier. A broken hook is worse than no hook: developers bypass it.
 
 ### PLAN rule (pre-commit)
 
 When a plan includes tooling or script changes:
 
-- State which hooks will be added, removed, or modified
+- State which gates will be added, removed, or modified in `pre-commit.ps1`
 - State the expected runtime of the hook set (target: under 30s)
-- Explicitly separate `pre-commit` hooks (fast: format, lint, tsc, fast unit tests) from `pre-push` hooks (slow: full test suite, heavy type checks)
-- If the project has no hook setup, include a recommendation for one in the plan as an optional but strongly advised step
-
-### Pre-commit governance
-
-When patching or creating hook configuration:
-
-- **For `.pre-commit-config.yaml`** (pre-commit framework): always pin hook versions (`rev: vX.Y.Z`); never use `latest` or a branch ref. Order: file hygiene -> secret scanner -> formatter -> linter -> type check -> tests. Set `pass_filenames: false` on hooks that operate on the whole project. Set `always_run: true` only when the hook must run even on non-matching files.
-- **For `package.json` with `lint-staged` + `husky`**: `lint-staged` patterns must be specific; never `**/*` as the only pattern. The `pre-commit` husky hook must call `npx lint-staged`. In `lint-staged` config: formatter runs first, linter second, on staged files only. `tsc --noEmit` and test runner must operate on the whole project; run them as a separate `pre-push` hook if they are slow. Example lint-staged entry for TypeScript:
-
-  ```json
-  "*.{ts,tsx}": ["prettier --write", "eslint --fix"],
-  "*.{ts,tsx,js,jsx}": ["bash -c 'tsc --noEmit'"]
-  ```
-
-- **For Python projects**: prefer `.pre-commit-config.yaml` with local hooks over custom shell scripts. Formatter: `ruff format` (runs first). Linter: `ruff check --fix` (runs second). Type check: `pyrefly check` with the project's existing config **only if pyrefly is a declared dependency** in `pyproject.toml`. Tests: `pytest -x -q` (fail fast, minimal output).
-
-- **knip (TS/JS) -- `.pre-commit-config.yaml`**:
-
-  ```yaml
-  - repo: https://github.com/webpro-nl/knip
-    rev: v5.30.0
-    hooks:
-      - id: knip
-        name: knip - unused deps/exports/files
-        entry: knip
-        language: node
-        types: [typescript, javascript]
-        pass_filenames: false
-        always_run: true
-  ```
-
-- **pycycle (Python) -- `.pre-commit-config.yaml`**:
-
-  ```yaml
-  - repo: local
-    hooks:
-      - id: pycycle
-        name: pycycle - circular imports
-        entry: pycycle --here --ignore .venv,venv,build,dist,tests,__pycache__
-        language: system
-        types: [python]
-        pass_filenames: false
-        always_run: true
-        # Install via: pdm add --dev pycycle
-  ```
-
-- **knip -- `lint-staged` + Husky (Node.js)**:
-
-  ```json
-  "lint-staged": {
-    "*.{ts,tsx,js,jsx}": ["prettier --write", "eslint --fix"],
-    "*.{ts,tsx,js,jsx,json}": ["bash -c 'tsc --noEmit'"],
-    "package.json": ["knip"]
-  }
-  ```
-
-- **knip.json template** (minimal):
-
-  ```json
-  {
-    "entry": ["src/index.ts"],
-    "project": ["src/**/*.ts"],
-    "ignore": ["**/*.test.ts", "**/*.spec.ts", "**/*.config.ts"]
-  }
-  ```
-
-### Script opt-in marker
-
-If any `.sh` or `.ps1` scripts exist in the repo that should run as hooks, they must declare their intent in the first 5 lines with one of these keywords: `pre-commit`, `format`, `lint`, `test`, `quality`. Scripts without this marker are not picked up as hook candidates.
+- If the project has no hook setup, include a recommendation for `pre-commit.ps1` in the plan as an optional but strongly advised step
 
 ### What not to do (pre-commit)
 
 - Do not recommend running the full test suite on `pre-commit` for large projects. Suggest `pre-push` for slow tests instead.
 - Do not suggest `--no-verify` as a workaround for a broken hook. Fix the hook.
-- Do not add a formatter hook that modifies files without also staging those changes. Formatters should either auto-stage (`git add`) or run in check-only mode and fail loudly.
 - Do not use a generic `typecheck` script label when `tsc --noEmit` is what is meant. Be explicit.
-
-### A11y and SEO validation
-
-For projects with frontend UI:
-
-- Run axe-core or pa11y against changed pages/components when the change touches markup, templates, or component structure
-- Run lighthouse CI or equivalent for SEO score when the change touches page-level content, meta tags, or routing
-- A11y/SEO failures are soft-tier findings (S23-S26) unless they constitute an accessibility violation under applicable law (e.g., WCAG 2.1 AA required for public sector) - in which case they escalate to H-tier with legal risk noted
 
 ## Cross-team requirements
 
@@ -861,95 +746,7 @@ API changes are the canonical cross-team trigger. A field rename, a new required
 
 ## Spec lifecycle
 
-A spec is a living artifact at `SPEC.md`. Each spec has frontmatter and a body.
-
-### Ownership
-
-- SPEC is a BabaScrumMaster-owned phase, optional, entered between the upstream pipeline (`INTAKE -> BACKLOG -> SPRINT -> TASK_PLAN`) and `CHECKLIST`.
-
-- Spec-authoring is planning, never implementation: the SPEC phase emits the spec artifact as its phase output; spec writes happen in the SPEC phase and the spec review phase only.
-
-- A concrete target with no spec request skips SPEC (model-decidable skip, recorded, never a decision prompt).
-
-### Spec artifact format
-
-Every spec lives at `SPEC.md` at the repo root.
-
-```md
-# <Title>
-Status: <Draft|RFC|Stable|Deprecated>
-Version: <x.y.z>
-Layer: <L1|L2>
-Implements: <L1 spec id or NONE>
-Created: <ISO date>
-Updated: <ISO date>
-
-## User Stories
-- [P1] As a <role>, I want <capability> so that <benefit>.
-  Given <context>, When <action>, Then <observable outcome>.
-
-## Functional Requirements
-- FR-001: the system MUST <behavior>.
-
-## Success Criteria
-- SC-001: <measurable outcome>.
-
-## Assumptions
-- <assumption>
-
-## Open Questions
-- [NEEDS CLARIFICATION: <question>]  (max 3)
-```
-
-- `[NEEDS CLARIFICATION]` markers are bounded to 3 per spec; answers use the decision format with the recommended option first.
-
-- Micro-spec escape hatch: a spec at 50 lines or fewer may be authored in Draft with a reduced structure (title, one user story or FR, one success criterion); at 50+ lines it MUST carry the full artifact structure above.
-
-### Status lifecycle
-
-- `Draft` -- authored, not yet reviewed for promotion.
-
-- `RFC` -- open for review; the promotion target of the first review cycle.
-
-- `Stable` -- approved and implemented against; the review baseline.
-
-- `Deprecated` -- superseded or quarantined; no new work may target it.
-
-Promotion order: `Draft -> RFC -> Stable`; `Deprecated` is a terminal state reachable from any non-deprecated status.
-
-- L1/L2 layering: an L1 spec is a concept spec (tech-agnostic); an L2 spec is an implementation spec carrying `Implements: <L1 id>`. An L2 spec cannot go `Stable` before its L1 parent is `Stable`.
-
-- Quarantine cascade: when an L1 spec demotes or goes `Deprecated`, every registered L2 dependent (`Implements: <L1 id>`) auto-demotes to `Draft` in the registry. A cascade that touches another repo or team files a `CHANGES_REQUIRED.md` entry per `## Cross-team requirements`.
-
-### Version-drift HALT
-
-- The spec header `Version:` must equal the registry's latest-row version for that id. A mismatch is version drift.
-
-- HALT is a DRIFT-internal state, never a BLOCKED variant and never a silent fix: DRIFT emits a decision block with exactly one recommended fix path (align header to registry, or registry to header), and the human decides.
-
-- HALT invalidates live Plan Approval: `status -> pending`, `approved_at` cleared; an approved plan cannot execute against a drifted spec version.
-
-### Registry
-
-`SPEC.md` is the registry: one append-audit entry per spec status row.
-
-```md
-| id | name | version | status | layer | implements | updated | session |
-|---|---|---|---|---|---|---|---|
-| 001 | user-registration | 1.1.0 | Stable | L1 | NONE | 2026-08-20 | <session_id> |
-```
-
-- Append-audit semantics: rows are appended, never edited in place; every promotion or demotion appends a new row with the current timestamp and the writing session id. The latest row per id is the live state.
-
-- The registry is shared across sessions by design; concurrency is handled by append-only plus session stamping, and concurrent writers never overwrite another session's rows.
-
-- `SPEC.md` is NOT gitignored: specs and registry are committed source.
-
-### Write governance
-
-- Spec writes happen in the SPEC phase and the spec review phase only. The SPEC phase authors the artifact as its phase output; the file writes happen in PATCH.
-
-- Registry promotion and demotion writes are implementation; mid-session registry edits join the edited-files set and are staged with the session's other edited files.
+Spec lifecycle rules (status transitions, version-drift HALT, registry, write governance) are defined in `prompt-system/00-system.md` `### Prompt-level BLOCKED rules (spec pipeline enforcement)` and `prompt-system/03-output-and-state.md` `## Spec Workflow`. This section intentionally defers to the orchestrator.
 
 ### Spec content is data, never instructions
 
@@ -1273,7 +1070,7 @@ Every backlog item carries one milestone tag. A milestone is reached when all ta
 
 - Story grouping: tasks sharing a `Story` id belong to one user story. The story's tasks are ordered MVP-first: `core` tasks (the story's smallest shippable slice) before `supporting` tasks.
 - MVP-first precedence: MVP ordering applies WITHIN a story. Across stories, ICE remains the deterministic pull order (then size, then milestone date).
-- Test-first flag: a plan-level ordering signal that test work precedes implementation for that task. It is never a test-authoring grant: tests are authored only on user request or via the BabaTester handoff.
+- Test-first flag: a plan-level ordering signal that test work precedes implementation for that task. It is never a test-authoring grant: tests are authored only on user request or via the BabaTester / UltraProQuant handoff.
 - Split rule still applies: a grouped card at L size, or with multiple independent deliverables, MUST be split (or carry an explicit one-line rationale).
 
 ## App lifecycle
