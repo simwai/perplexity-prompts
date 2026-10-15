@@ -78,9 +78,15 @@ Servers are grouped by what works when env keys are missing. Configure the ones 
   "arxiv": {
     "command": "uvx",
     "args": ["arxiv-mcp-server"]
+  },
+  "memory-worth": {
+    "command": "npx",
+    "args": ["-y", "tsx", ".opencode/packages/memory-worth/mcp-server.ts"]
   }
 }
 ```
+
+**memory-worth** - the memory-worth package's 12 trust-scored memory tools (search, get, write, update, delete, etc.) exposed over MCP via stdio. Set `MEMORY_WORTH_DIR` to select the `.opencode/memory.db` and `MEMORY_WORTH_SESSION` to tag writes.
 
 **Context7** - library docs (stdio: `npx -y @upstash/context7-mcp`)
 **Playwright** - browser automation for live UI verification and e2e walk-throughs (Node 20+; headed for testing)

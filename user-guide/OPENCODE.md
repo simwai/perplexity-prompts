@@ -64,6 +64,14 @@ opencode loads config once at startup. After editing `opencode.jsonc`, `.opencod
 
 opencode uses `{env:VAR}`, not `${VAR}`. The `exa` server header is `{env:EXA_API_KEY}`; remove the `exa` entry if the key is absent.
 
+### memory-worth MCP server
+
+The memory-worth package exposes its 12 memory tools over MCP (plus a
+`memory_list_tools` meta-tool). Registered in both `opencode.jsonc` and
+`.mcp.json` (the shared config Kilo reads). Stdio transport via `npx tsx`;
+`MEMORY_WORTH_DIR` selects the `.opencode/memory.db` to use, and
+`MEMORY_WORTH_SESSION` tags writes with a session id.
+
 ### Trello OAuth
 
 Run `opencode mcp auth trello` once, then restart the session.

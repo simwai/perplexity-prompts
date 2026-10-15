@@ -29,6 +29,7 @@
 | Exa missing | `EXA_API_KEY` not set | `$env:EXA_API_KEY` → add to `.env` → reload per [GETTING_STARTED.md](GETTING_STARTED.md) `## Environment Setup` |
 | Trello tools absent | OAuth not done | `opencode mcp auth trello` → restart session |
 | g-search fails | Playwright Chromium missing | `npx playwright install chromium` |
+| memory-worth tools absent | MEMORY_WORTH_DIR not pointing at the `.opencode` folder | Set `MEMORY_WORTH_DIR` to the repo root and restart the session; no key or OAuth required |
 
 ### Phase & Execution
 

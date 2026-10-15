@@ -83,6 +83,10 @@ for a PowerShell 7.6+ snippet — and add `.env` to `.gitignore` immediately.
       "type": "remote",
       "url": "https://mcp.trello.com/v1",
       "oauth": {}
+    },
+    "memory-worth": {
+      "command": "npx",
+      "args": ["-y", "tsx", ".opencode/packages/memory-worth/mcp-server.ts"]
     }
   }
 }
@@ -90,7 +94,7 @@ for a PowerShell 7.6+ snippet — and add `.env` to `.gitignore` immediately.
 
 ### Verify it works
 
-Ask the agent: *"List the available MCP tools."* You should see tools from Context7 and Playwright at minimum. If Exa is missing, the env var isn't exported. Trello appears after one-time OAuth consent.
+Ask the agent: *"List the available MCP tools."* You should see tools from Context7 and Playwright at minimum, plus the 12 memory-worth memory tools (`memory_search`, `memory_write`, `memory_stats`, etc.). If Exa is missing, the env var isn't exported. Trello appears after one-time OAuth consent.
 
 ---
 

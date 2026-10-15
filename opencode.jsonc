@@ -77,11 +77,9 @@
     ".opencode/plugins/baba-protocol-enforce.ts",
     ".opencode/plugins/baba-system-reminder-override.ts",
     ".opencode/plugins/baba-bootstrap.ts",
-    ".opencode/plugins/baba-convention-review.ts",
-    ".opencode/plugins/baba-goal-detect.ts",
     ".opencode/plugins/baba-lock-enforce.ts",
-    // memory-worth is a local package in .opencode/packages/memory-worth
-    // (referenced in .opencode/package.json). Load it as a package directory.
+    // memory-worth local package in project's .opencode/packages/memory-worth/
+    // (created Oct 11 commit bbdaad8 - moved from plugins/ to packages/)
     ".opencode/packages/memory-worth",
     ".opencode/plugins/adaptive-temperature.ts",
     ".opencode/plugins/multi-model-consensus.ts"
@@ -112,6 +110,14 @@
     "arxiv": {
       "type": "local",
       "command": ["uvx", "arxiv-mcp-server"]
+    },
+    // memory-worth: the same 12 memory tools exposed over MCP so any MCP
+    // client can call them. Stdio transport; MEMORY_WORTH_DIR selects the
+    // .opencode/memory.db to use.
+    "memory-worth": {
+      "type": "local",
+      "command": ["npx", "tsx", ".opencode/packages/memory-worth/mcp-server.ts"],
+      "timeout": 30000
     },
     // Tier 2 — requires env key; omit if key is not set
     "exa": {

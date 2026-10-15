@@ -37,6 +37,15 @@
         "arxiv-mcp-server"
       ]
     },
+    "memory-worth": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "tsx",
+        ".opencode/packages/memory-worth/mcp-server.ts"
+      ],
+      "timeout": 30000
+    },
     "exa": {
       "type": "http",
       "url": "https://mcp.exa.ai/mcp",
