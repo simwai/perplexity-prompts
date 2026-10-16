@@ -45,7 +45,7 @@ Default behavior:
 BABA_DEBUG=* BABA_DEBUG_LEVEL=debug BABA_DEBUG_FILE=/tmp/baba.jsonl opencode
 
 # Specific plugins only
-BABA_DEBUG=baba-lock-enforce,baba-drift,baba-prompt-system-loader opencode
+BABA_DEBUG=baba-lock-enforce,baba-prompt-system-loader opencode
 
 # Disable entirely
 BABA_DEBUG="" opencode
@@ -108,9 +108,6 @@ Every plugin exposes a `baba_<plugin>_debug` tool callable from the model:
 # Dump lock state
 baba_lock_enforce_debug { "action": "liveLocks" }
 
-# Dump all plugin state
-baba_drift_debug { "action": "state" }
-
 # Dump session titles
 opencode_autotitle_debug { "action": "sessions" }
 
@@ -123,12 +120,8 @@ baba_convention_review_debug { "action": "sessions" }
 | Plugin | Actions |
 |--------|---------|
 | `baba-lock-enforce` | `state`, `liveLocks`, `config` |
-| `baba-drift` | `state` |
-| `baba-convention-review` | `state`, `sessions` |
 | `baba-prompt-system-loader` | `state`, `sessions` |
 | `baba-protocol-enforce` | `state`, `sessions`, `protocols` |
-| `baba-reading-protocol` | `state`, `sessions`, `plans` |
-| `baba-goal-detect` | `state`, `assessed`, `messages` |
 | `baba-bootstrap` | `state`, `delivered` |
 | `baba-system-reminder-override` | `state`, `markers`, `override` |
 | `multi-model-consensus` | `state`, `enabled`, `lastTool` |
@@ -198,15 +191,6 @@ Every log entry includes structured `meta`:
 | Fallback disabled (FK constraint) | debug | session |
 | Session cleanup | debug | session |
 
-### baba-goal-detect
-
-| Event | Level | Meta |
-|-------|-------|------|
-| Plugin init | info | patterns (goalVerb, targetHints, bugHints, questionOnly) |
-| Goal assessment | debug | sessionId, textLength, isGoal, textPreview |
-| Goal detected, injecting suggestion | info | sessionId |
-| Session cleanup | debug | sessionId |
-
 ### baba-system-reminder-override
 
 | Event | Level | Meta |
@@ -247,27 +231,6 @@ Every log entry includes structured `meta`:
 | tool.execute.after | debug | sessionId, outputLength |
 | session.compacting | debug | sessionId, linesCount |
 
-### baba-convention-review
-
-| Event | Level | Meta |
-|-------|-------|------|
-| Plugin init | info | — |
-| PLAN phase detected | debug | session, editedFilesCount, hasArchitectureFlags, promptsEmitted |
-| Prompts emitted | info | session, promptCount, editedFiles |
-
-### baba-drift
-
-| Event | Level | Meta |
-|-------|-------|------|
-| Plugin init | info | directory |
-| drift tool invoked | info | session, spec, freshEyes |
-| Spec files found | debug | session, specFiles |
-| Spec file read | debug | session, specFile, contentLength |
-| Claims parsed | debug | session, specFile, claimCount |
-| Claim mapping | debug | session, claimId, pattern |
-| Version drift detected | warn | session, specFile, specVersion, registryVersion |
-| Drift report complete | info | session, verified, diverged, orphaned, exceeds, totalClaims, hasVersionDrift |
-
 ### baba-prompt-system-loader
 
 | Event | Level | Meta |
@@ -291,16 +254,6 @@ Every log entry includes structured `meta`:
 | Phase transition | info | session, from, to |
 | REVIEW→PLAN transition | info | session |
 | Protocol checks failed | warn | session, phase, failed[] |
-
-### baba-reading-protocol
-
-| Event | Level | Meta |
-|-------|-------|------|
-| Plugin init | info | directory, maxDepth, maxCalls |
-| Session created | info | session |
-| Reading plan created | info | session, target, fileCount |
-| File marked complete | debug | session, file, completedCount, totalCount |
-| Reading plan complete | info | session, scope |
 
 ### baba-lock-enforce
 
