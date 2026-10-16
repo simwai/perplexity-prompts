@@ -82,6 +82,7 @@ WIP.md
 .opencode/memory.db-journal
 .opencode/memory.db-wal
 .opencode/memory.db-shm
+.opencode/.opencode/
 
 # Kilo Code local runtime state (machine-local)
 .kilo/memory/
