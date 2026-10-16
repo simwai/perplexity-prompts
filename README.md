@@ -28,6 +28,7 @@ Then describe a task and the agent handles the rest.
 | Execution modes? | [user-guide/EXECUTION_MODES.md](user-guide/EXECUTION_MODES.md) |
 | Troubleshooting? | [user-guide/TROUBLESHOOTING.md](user-guide/TROUBLESHOOTING.md) |
 | OpenCode adapter | [AGENTS_USAGE.md](AGENTS_USAGE.md) |
+| Kilo Code adapter | [KILO_USAGE.md](KILO_USAGE.md) |
 | Architecture? | [ARCHITECTURE.md](ARCHITECTURE.md) |
 | File map | [SYSTEM_OVERVIEW.md](SYSTEM_OVERVIEW.md) |
 | AGENTS.md usage | [AGENTS_USAGE.md](AGENTS_USAGE.md) |
@@ -88,9 +89,12 @@ project-management/    Roadmaps, sprints, Trello integration, config
 adapters/              Adapter templates (source of truth for generated files)
   opencode/agents/     OpenCode agent templates
   opencode/commands/   OpenCode command templates
+  kilo/agent/          Kilo Code agent templates
+  kilo/command/        Kilo Code command templates
 opencode.jsonc         opencode-native config (optional layer, inert for other agents)
 .opencode/             Generated: agents, commands, plugins, packages, lib, tests
 .mcp.json              Generated MCP server config (shared by both platforms)
+.kilo/                 Generated: agents, commands, kilo.json
 opencode-memory-mw/    Memory middleware research workspace (paper + simulation)
 scripts/               Bootstrap helpers (ensure-playwright, ensure-uvx, verify-plugins)
 sync.ps1               Interactive propagation to target projects

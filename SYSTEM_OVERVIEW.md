@@ -16,10 +16,12 @@ flowchart TD
 
     subgraph ADAPTERS["Adapter Layers"]
         OPENCODE[".opencode/ + opencode.jsonc<br/>OpenCode"]
+        KILO[".kilo/ + kilo.json<br/>Kilo Code"]
     end
 
     AGENTS --> PS
     PS --> OPENCODE
+    PS --> KILO
 
     classDef entry fill:#6B21A8,stroke:#7C3AED,color:#E2E8F0;
     classDef core fill:#4C1D95,stroke:#7C3AED,color:#E2E8F0;
@@ -27,7 +29,7 @@ flowchart TD
 
     class AGENTS entry
     class PS core
-    class OPENCODE adapter
+    class OPENCODE,KILO adapter
 ```
 
 | Layer | File(s) | Purpose |
@@ -94,10 +96,15 @@ inventory of the deployed unit.
 ├── user-guide/            # Getting started, personas, phases, modes, troubleshooting
 ├── project-management/    # Roadmaps, sprints, Trello integration, config
 ├── adapters/              # Adapter templates (source of truth)
+│   ├── opencode/agents/     # OpenCode agent templates
+│   ├── opencode/commands/   # OpenCode command templates
+│   ├── kilo/agent/          # Kilo Code agent templates
+│   └── kilo/command/        # Kilo Code command templates
 ├── opencode-memory-mw/    # Memory middleware research workspace (paper + simulation)
 ├── scripts/               # Bootstrap helpers (playwright, uvx, plugin verify)
 ├── opencode.jsonc         # OpenCode-native config
 ├── .opencode/             # Generated: agents, commands, plugins, packages, lib, tests
+├── .kilo/                 # Generated: agents, commands, kilo.json
 ├── .mcp.json              # Generated MCP server config (both platforms)
 ├── sync.ps1               # Interactive propagation to target projects
 ├── generate-adapters.ps1  # Generates .opencode/ from adapters/
@@ -138,6 +145,7 @@ inventory of the deployed unit.
 | Plan-versus-actual gate | [prompt-system/08-plan-actual-gate.md](prompt-system/08-plan-actual-gate.md) |
 | Session context | [prompt-system/03-output-and-state.md](prompt-system/03-output-and-state.md) |
 | OpenCode setup | [AGENTS_USAGE.md](AGENTS_USAGE.md) |
+| Kilo Code setup | [KILO_USAGE.md](KILO_USAGE.md) |
 
 ---
 

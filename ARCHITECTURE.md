@@ -11,9 +11,10 @@ The Baba system has four layers:
    `prompt-system/07-protocols.md`. Phase templates, rubrics, implementation style, and
    PATCH protocol are merged in; there is no separate module per concern.
 4. Adapter layers bind the portable system to agent platforms: `opencode.jsonc` and
-   `adapters/opencode/**` (OpenCode), `adapters/claude/**` (Claude Code). `adapters/`
-   is the source of truth; `.opencode/`, `.claude/`, and `.mcp.json` are generated
-   output produced by `generate-adapters.ps1` and must never be hand-edited.
+   `adapters/opencode/**` (OpenCode), `adapters/claude/**` (Claude Code), and
+   `adapters/kilo/**` with `kilo.json` (Kilo Code). `adapters/` is the source of truth;
+   `.opencode/`, `.claude/`, `.kilo/`, and `.mcp.json` are generated output produced by
+   `generate-adapters.ps1` and must never be hand-edited.
 
 ## One review path
 
@@ -36,6 +37,6 @@ rewrite contract. `PATCH` is the only implementation phase.
 ## Portable versus adapter files
 
 The portable deployment unit is `AGENTS.md` plus `prompt-system/`. Adapter files
-(`opencode.jsonc`, `.opencode/`) are platform-specific layers owned by one agent
-each; other agents ignore them entirely. `sync.ps1` propagates the portable unit
+(`opencode.jsonc`, `.opencode/`, `kilo.json`, `.kilo/`) are platform-specific layers owned by one
+agent each; other agents ignore them entirely. `sync.ps1` propagates the portable unit
 together with the adapter surfaces to configured targets.
