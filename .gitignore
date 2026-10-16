@@ -83,5 +83,10 @@ WIP.md
 .opencode/memory.db-wal
 .opencode/memory.db-shm
 
+# Kilo Code local runtime state (machine-local)
+.kilo/memory/
+.kilo/logs/
+.kilo/cache/
+
 # Local sync targets (machine-specific paths)
 targets.json

@@ -111,8 +111,8 @@ function Sync-Targets {
     )
 
 $source  = $scriptDir
-$files   = @('AGENTS.md', 'opencode.jsonc', '.mcp.json')
-$folders = @('prompt-system', '.opencode', '.opencode/agents', '.claude', '.claude/agents', '.claude/skills')
+$files   = @('AGENTS.md', 'opencode.jsonc', '.mcp.json', 'kilo.json')
+$folders = @('prompt-system', '.opencode', '.opencode/agents', '.claude', '.claude/agents', '.claude/skills', '.kilo', '.kilo/agent', '.kilo/command', '.kilo/skills')
     $synced     = 0
     $skipped    = 0
     $pushFailed = 0
@@ -461,7 +461,7 @@ function Update-GitTarget {
     }
 
 if ($DryRun) {
-        Write-Host '    [DRY] git add AGENTS.md opencode.jsonc prompt-system/ .opencode/' -ForegroundColor Gray
+        Write-Host '    [DRY] git add AGENTS.md opencode.jsonc kilo.json prompt-system/ .opencode/ .kilo/' -ForegroundColor Gray
         Write-Host '    [DRY] git commit + git push origin <branch>' -ForegroundColor Gray
         return
     }
@@ -477,7 +477,7 @@ if ($DryRun) {
         return
     }
 
-$paths = @('AGENTS.md', 'opencode.jsonc', 'prompt-system', '.opencode') |
+$paths = @('AGENTS.md', 'opencode.jsonc', 'kilo.json', 'prompt-system', '.opencode', '.kilo') |
         Where-Object { Test-Path (Join-Path $repoRoot $_) }
     if (-not $paths) { return }
 

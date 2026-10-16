@@ -20,9 +20,20 @@
           "task": "allow"
         }
       },
+      "kilo": {
+        "mode": "subagent",
+        "temperature": 0.1,
+        "permission": {
+          "edit": "deny",
+          "bash": "deny",
+          "webfetch": "allow"
+        },
+        "color": "#f38ba8"
+      },
       "routing": {
         "claudePlan": "Concrete target (file, module, snippet) -> `task {agent: baba-sensei}` for CHECKLIST -> REVIEW -> PLAN.",
         "opencodePlan": "Concrete target (file, module, snippet) -> `task {agent: baba-sensei}` for CHECKLIST -> REVIEW -> PLAN.",
+        "kiloPlan": "Concrete target (file, module, snippet) -> `task baba-sensei` for CHECKLIST -> REVIEW -> PLAN.",
         "build": null,
         "generalTable": "Code review → baba-sensei"
       },
@@ -50,9 +61,20 @@
           "task": "allow"
         }
       },
+      "kilo": {
+        "mode": "primary",
+        "temperature": 0.2,
+        "permission": {
+          "edit": "allow",
+          "bash": "allow",
+          "webfetch": "allow"
+        },
+        "color": "#74c7ec"
+      },
       "routing": {
         "claudePlan": null,
         "opencodePlan": null,
+        "kiloPlan": null,
         "build": "Approved plan + complete rewrite contract -> `task {agent: baba-dev}` for PATCH (per-edit lint gate, compliance audit, constraint verification, verification gate).",
         "generalTable": "Implementation → baba-dev"
       },
@@ -81,9 +103,20 @@
           "task": "allow"
         }
       },
+      "kilo": {
+        "mode": "subagent",
+        "temperature": 0.1,
+        "permission": {
+          "edit": "deny",
+          "bash": "deny",
+          "webfetch": "allow"
+        },
+        "color": "#fab387"
+      },
       "routing": {
         "claudePlan": "Test strategy -> `task {agent: baba-tester}` for REVIEW -> TEST_STRATEGY.",
         "opencodePlan": "Test strategy -> `task {agent: baba-tester}` for REVIEW -> TEST_STRATEGY.",
+        "kiloPlan": "Test strategy -> `task baba-tester` for REVIEW -> TEST_STRATEGY.",
         "build": "Test strategy needed -> `task {agent: baba-tester}` for TEST_STRATEGY first; classify items as BINDING / STRONG HINT / WEAK HINT before PATCH.",
         "generalTable": "Test strategy → baba-tester"
       },
@@ -112,9 +145,20 @@
           "task": "allow"
         }
       },
+      "kilo": {
+        "mode": "subagent",
+        "temperature": 0.1,
+        "permission": {
+          "edit": "deny",
+          "bash": "deny",
+          "webfetch": "allow"
+        },
+        "color": "#f38ba8"
+      },
       "routing": {
         "claudePlan": null,
         "opencodePlan": null,
+        "kiloPlan": null,
         "build": null,
         "generalTable": "Quality verdict → baba-reviewer"
       },
@@ -143,9 +187,20 @@
           "task": "allow"
         }
       },
+      "kilo": {
+        "mode": "subagent",
+        "temperature": 0.1,
+        "permission": {
+          "edit": "deny",
+          "bash": "deny",
+          "webfetch": "allow"
+        },
+        "color": "#a6e3a1"
+      },
       "routing": {
         "claudePlan": "Goal or spec without concrete target -> `task {agent: baba-scrum}` for INTAKE -> BACKLOG -> SPRINT -> TASK_PLAN -> SPEC, then handoff to `baba-sensei`.",
         "opencodePlan": "Goal or spec without concrete target -> `task {agent: baba-scrum}` for INTAKE -> BACKLOG -> SPRINT -> TASK_PLAN -> SPEC, then handoff to `baba-sensei`.",
+        "kiloPlan": "Goal or spec without concrete target -> `task baba-scrum` for INTAKE -> BACKLOG -> SPRINT -> TASK_PLAN -> SPEC, then handoff to `baba-sensei`.",
         "build": null,
         "generalTable": "Sprint planning → baba-scrum"
       },
@@ -174,9 +229,20 @@
           "task": "allow"
         }
       },
+      "kilo": {
+        "mode": "subagent",
+        "temperature": 0.1,
+        "permission": {
+          "edit": "deny",
+          "bash": "deny",
+          "webfetch": "allow"
+        },
+        "color": "#f5c2e7"
+      },
       "routing": {
         "claudePlan": "Frontend UI/UX in scope -> `task {agent: baba-designer}` from PLAN for DESIGN_PLAN.",
         "opencodePlan": "Frontend UI/UX in scope -> `task {agent: baba-designer}` from PLAN for DESIGN_PLAN.",
+        "kiloPlan": "Frontend UI/UX in scope -> `task baba-designer` from PLAN for DESIGN_PLAN.",
         "build": "Design questions mid-implementation -> `task {agent: baba-designer}`; never invent UI choices during PATCH.",
         "generalTable": "Design decisions → baba-designer"
       },
@@ -205,9 +271,20 @@
           "task": "allow"
         }
       },
+      "kilo": {
+        "mode": "subagent",
+        "temperature": 0.1,
+        "permission": {
+          "edit": "deny",
+          "bash": "deny",
+          "webfetch": "allow"
+        },
+        "color": "#b4befe"
+      },
       "routing": {
         "claudePlan": "Business goal, product decision, prioritization question -> `task {agent: baba-ceo}` for INTAKE -> HANDOFF (to BabaScrumMaster).",
         "opencodePlan": "Business goal, product decision, prioritization question -> `task {agent: baba-ceo}` for INTAKE -> HANDOFF (to BabaScrumMaster).",
+        "kiloPlan": "Business goal, product decision, prioritization question -> `task baba-ceo` for INTAKE -> HANDOFF (to BabaScrumMaster).",
         "build": "Product framing needed mid-implementation -> `task {agent: baba-ceo}`; never invent product decisions during PATCH.",
         "generalTable": "Product framing → baba-ceo"
       },
@@ -236,9 +313,20 @@
           "task": "allow"
         }
       },
+      "kilo": {
+        "mode": "subagent",
+        "temperature": 0.1,
+        "permission": {
+          "edit": "deny",
+          "bash": "deny",
+          "webfetch": "allow"
+        },
+        "color": "#f9e2af"
+      },
       "routing": {
         "claudePlan": "Quant/trading code review -> `task {agent: ultra-pro-quant}` for REVIEW -> TEST_STRATEGY_QUANT.",
         "opencodePlan": "Quant/trading code review -> `task {agent: ultra-pro-quant}` for REVIEW -> TEST_STRATEGY_QUANT.",
+        "kiloPlan": "Quant/trading code review -> `task ultra-pro-quant` for REVIEW -> TEST_STRATEGY_QUANT.",
         "build": "Quant review needed -> `task {agent: ultra-pro-quant}` for TEST_STRATEGY_QUANT first; classify items as BINDING / STRONG HINT / WEAK HINT before PATCH.",
         "generalTable": "Quant review → ultra-pro-quant"
       },
