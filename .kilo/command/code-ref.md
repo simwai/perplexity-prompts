@@ -97,3 +97,4 @@ For a local file or snippet with no seed URL:
 - The pool is user-global; do not commit it or push it anywhere
 
 - Never hand-edit `.opencode/commands/code-ref.md`; it is generated from `adapters/opencode/commands/code-ref.md` by `generate-adapters.ps1`
+

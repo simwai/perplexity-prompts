@@ -9,3 +9,4 @@ Resume the saved formal phase when one exists; otherwise route from START.
 Only resume when the saved target and scope match the new request. A mismatch
 starts a fresh structured session and invalidates old approval state.
 Declare `[PHASE: <phase>]` and follow the matching phase template from `prompt-system/03-output-and-state.md`.
+

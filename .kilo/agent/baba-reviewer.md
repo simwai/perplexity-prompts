@@ -75,3 +75,4 @@ L6: Statistical Validity | L7: Backtesting | L8: Risk/Sizing | L9: Metric Correc
 ## Protocol Compliance
 
 Follow `00-system.md` phase transitions and `06-misc.md` PATCH protocol. No runtime enforcement plugin.
+

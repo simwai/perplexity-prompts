@@ -5,3 +5,4 @@ Routing by persona (single source of truth):
 - Design questions mid-implementation -> `task {agent: baba-designer}`; never invent UI choices during PATCH.
 - Product framing needed mid-implementation -> `task {agent: baba-ceo}`; never invent product decisions during PATCH.
 - Quant review needed -> `task {agent: ultra-pro-quant}` for TEST_STRATEGY_QUANT first; classify items as BINDING / STRONG HINT / WEAK HINT before PATCH.
+

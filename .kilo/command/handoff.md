@@ -17,3 +17,4 @@ Then:
 - Emit the exact HANDOFF template from `prompt-system/01-personas.md` `## Handoff contract`.
 - If any required field for the receiver is missing, emit `[PHASE: BLOCKED]` with the missing fields only.
 - On success, record the handoff payload in the session context (conversation carrier) and stop. Do not begin the receiver's work in the same response unless the user also asked to switch persona.
+

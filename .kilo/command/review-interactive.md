@@ -14,3 +14,4 @@ To switch to aggregated findings with a single confirmation at the end, use
 
 After setting the flag, enter REVIEW by declaring `[PHASE: REVIEW]` and
 emitting the REVIEW template from `prompt-system/03-output-and-state.md`.
+

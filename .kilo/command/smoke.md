@@ -19,3 +19,4 @@ Then:
 2. Record per-feature PASS/FAIL/SKIPPED with evidence in session context `## Smoke Test`, plus an aggregate line. Continue past failures.
 
 Arguments: `$ARGUMENTS` -- optional feature filter (substring or route path) to narrow the inventory.
+

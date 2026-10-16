@@ -6,3 +6,4 @@ Routing by persona (single source of truth):
 - Frontend UI/UX in scope -> `task {agent: baba-designer}` from PLAN for DESIGN_PLAN.
 - Business goal, product decision, prioritization question -> `task {agent: baba-ceo}` for INTAKE -> HANDOFF (to BabaScrumMaster).
 - Quant/trading code review -> `task {agent: ultra-pro-quant}` for REVIEW -> TEST_STRATEGY_QUANT.
+

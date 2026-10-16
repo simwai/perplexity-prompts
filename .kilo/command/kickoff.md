@@ -83,3 +83,4 @@ Option B reply lists the item id and the new score/mapping. Option C reply carri
 - No CHECKLIST until the user answers A. A `B` reply returns to this kickoff after the edit; `C` discards the in-flight artifacts and re-enters Stage 1 with the revised goal.
 - After A, record the task card in the session context (conversation carrier) `## Project Management` and enter `CHECKLIST` with the approved task as target.
 - Apply the decision-format rules from `prompt-system/02-decision-prompts.md`: recommended option A, fat bold, one reply line.
+

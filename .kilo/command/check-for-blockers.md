@@ -70,3 +70,4 @@ Blocker Report
 - If `$ARGUMENTS` includes a specific sprint name/ID, limit the check to that sprint only.
 - Record the blocker check results in the session context (conversation carrier) under `## Project Management`.
 - If any blocking blockers are found, note them as `[cross-team]` if they affect another team/service, per `prompt-system/07-protocols.md` `## Cross-team requirements`.
+

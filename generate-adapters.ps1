@@ -37,7 +37,14 @@ function Write-Warn {
     Write-Warning $Message
 }
 
-# ═══════════════════════════════════════════════════════════════════════════
+function Write-Utf8NoBom {
+    param([string]$Path, [string]$Content)
+    # UTF-8 without BOM so generated files are stable across PowerShell versions
+    # (PowerShell 5.1's Set-Content -Encoding UTF8 always emits a BOM).
+    [System.IO.File]::WriteAllText($Path, ($Content + "`n"), (New-Object System.Text.UTF8Encoding $false))
+}
+
+# ════════════════════════════════════════════════════════════════════════════
 # 0. Load personas registry (single source of truth for persona enumeration)
 # ═══════════════════════════════════════════════════════════════════════════
 
@@ -171,9 +178,7 @@ if (Test-Path -LiteralPath $claudeAgentSrc -PathType Container) {
         }
 
         $expanded = Expand-Template -Content $content -Tokens $tokens
-        $expanded | Set-Content -LiteralPath $dest -Encoding UTF8 -NoNewline
-        # Ensure trailing newline
-        Add-Content -LiteralPath $dest -Value "" -NoNewline
+        Write-Utf8NoBom -Path $dest -Content $expanded
         Write-Ok "Generated $destName (template)"
     }
 
@@ -285,7 +290,7 @@ if (Test-Path -LiteralPath $opencodeConfigPath -PathType Leaf) {
         }
         
         $mcpOutput = [ordered]@{ mcpServers = $mcpServers } | ConvertTo-Json -Depth 10
-        $mcpOutput | Set-Content -LiteralPath $mcpJsonPath -Encoding UTF8 -Force
+        Write-Utf8NoBom -Path $mcpJsonPath -Content $mcpOutput
         Write-Ok "Generated .mcp.json ($($mcpServers.Count) servers)"
     } catch {
         Write-Warn "Failed to parse opencode.jsonc MCP block: $_"
@@ -323,8 +328,7 @@ if (Test-Path -LiteralPath $opencodeAgentSrc -PathType Container) {
         } else {
             $expanded = $content
         }
-        $expanded | Set-Content -LiteralPath $dest -Encoding UTF8 -NoNewline
-        Add-Content -LiteralPath $dest -Value "" -NoNewline
+        Write-Utf8NoBom -Path $dest -Content $expanded
         Write-Ok "Generated $destName (template)"
     }
 
@@ -366,8 +370,7 @@ if (Test-Path -LiteralPath $opencodeCmdSrc -PathType Container) {
         } else {
             $expanded = $content
         }
-        $expanded | Set-Content -LiteralPath $dest -Encoding UTF8 -NoNewline
-        Add-Content -LiteralPath $dest -Value "" -NoNewline
+        Write-Utf8NoBom -Path $dest -Content $expanded
         Write-Ok "Generated $destName (template)"
     }
 
@@ -462,8 +465,7 @@ if (Test-Path -LiteralPath $opencodeAgentSrc -PathType Container) {
             $expanded = $expanded -replace [regex]::Escape($placeholder), $tokens[$key]
         }
 
-        $expanded | Set-Content -LiteralPath $dest -Encoding UTF8 -NoNewline
-        Add-Content -LiteralPath $dest -Value "" -NoNewline
+        Write-Utf8NoBom -Path $dest -Content $expanded
         Write-Ok "Generated $destName (from OpenCode)"
     }
     Write-Ok "Generated $($allFiles.Count) Kilo Code agents"
@@ -548,8 +550,7 @@ if (Test-Path -LiteralPath $opencodeCmdSrc -PathType Container) {
             $expanded = $expanded -replace [regex]::Escape($placeholder), $tokens[$key]
         }
 
-        $expanded | Set-Content -LiteralPath $dest -Encoding UTF8 -NoNewline
-        Add-Content -LiteralPath $dest -Value "" -NoNewline
+        Write-Utf8NoBom -Path $dest -Content $expanded
         Write-Ok "Generated $destName (from OpenCode)"
     }
     Write-Ok "Generated $($allFiles.Count) Kilo Code commands"
@@ -647,7 +648,7 @@ if (Test-Path -LiteralPath $opencodeConfigPath -PathType Leaf) {
         }
         
         $kiloOutput = $kiloConfig | ConvertTo-Json -Depth 10
-        $kiloOutput | Set-Content -LiteralPath $kiloJsonPath -Encoding UTF8 -Force
+        Write-Utf8NoBom -Path $kiloJsonPath -Content $kiloOutput
         Write-Ok "Generated kilo.json ($($kiloConfig.Count) top-level keys, $($mcpServers.Count) MCP servers)"
     } catch {
         Write-Warn "Failed to parse opencode.jsonc for kilo.json generation: $_"

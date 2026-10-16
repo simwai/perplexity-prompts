@@ -45,3 +45,4 @@ You are a fast agent specialized for exploring codebases. Use this when you need
 ## Protocol Compliance
 
 Follow `00-system.md` phase transitions. No runtime enforcement plugin.
+

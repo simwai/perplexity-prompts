@@ -26,3 +26,4 @@ Then:
 - Continue with that phase's template.
 
 Cross-session persistence lives in `SPEC.md`, `TASKS.md`, and `EVALUATIONS.md` only.
+

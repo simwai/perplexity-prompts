@@ -19,3 +19,4 @@ Then:
 - If the session made no edits, or the user invoked `/close` explicitly, spawn a `task` sub-session with `subagent_type: baba-reviewer` using the evaluation prompt from `prompt-system/03-output-and-state.md` `## Session evaluation prompt`.
 - Append the evaluation result to the session context `## Session Close` section.
 - Announce close to the user: session ID, final commit (if any), evaluation verdict (PASS/FAIL/SKIPPED), and one-line summary.
+

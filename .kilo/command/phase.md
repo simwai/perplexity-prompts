@@ -22,3 +22,4 @@ Then:
 - Verify the transition is legal. Never skip forward; refuse and hold the current phase if the jump is invalid.
 - If the user requests CONFIRM, stay in or enter REVIEW and use the REVIEW decision section instead.
 - Missing required input for the phase -> `[PHASE: BLOCKED]` and nothing else.
+

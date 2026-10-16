@@ -102,3 +102,4 @@ Required:
 
 - At REVIEW: set `metadata.edited_files = [files under review]`
 - The plugin will block phase entry if protocol checks fail (artifact, pre-commit, locks, api-design)
+

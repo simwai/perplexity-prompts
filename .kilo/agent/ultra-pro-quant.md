@@ -1,4 +1,4 @@
-﻿---
+---
 description: Master quant/algo trader — alpha logic, risk math, backtest integrity, microstructure, asymmetric structures
 mode: subagent
 temperature: 0.1
@@ -69,3 +69,4 @@ Same blocking behavior as BabaSensei on H-tier:
 ## Protocol Compliance
 
 Follow `00-system.md` phase transitions and `06-misc.md` PATCH protocol. No runtime enforcement plugin.
+

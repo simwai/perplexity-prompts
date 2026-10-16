@@ -23,3 +23,4 @@ Then:
 - When the session made file edits, apply the commit/push gate (`prompt-system/06-misc.md` `## Commit/push gate`) before finishing.
 - Update the session context (conversation carrier) Verification fields.
 - Emit results under the current phase header (usually PATCH) using the Verification section from `prompt-system/03-output-and-state.md`.
+

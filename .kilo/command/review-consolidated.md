@@ -16,3 +16,4 @@ To switch back to per-batch confirmation, use `/review-interactive`.
 
 After setting the flag, enter REVIEW by declaring `[PHASE: REVIEW]` and
 emitting the REVIEW template from `prompt-system/03-output-and-state.md`.
+

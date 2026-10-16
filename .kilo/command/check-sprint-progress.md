@@ -55,3 +55,4 @@ Sprint Progress Report
 - If no sprints match the query, emit `[PHASE: BLOCKED]` with: "sprint not found."
 - Include blocker details in the output if any are found -- flag them prominently.
 - Record the check in the session context (conversation carrier) under `## Project Management`.
+

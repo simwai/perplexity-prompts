@@ -112,3 +112,4 @@ Required fields:
 ## Protocol Compliance
 
 Follow `00-system.md` phase transitions and `06-misc.md` PATCH protocol. No runtime enforcement plugin.
+

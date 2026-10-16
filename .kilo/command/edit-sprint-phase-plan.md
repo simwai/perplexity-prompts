@@ -50,3 +50,4 @@ Then:
 - Ties broken by size (smaller first), then by milestone target date.
 - Recalculate ICE after any edit that changes impact, confidence, or size.
 - Record the updated sprint ID in the session context (conversation carrier).
+

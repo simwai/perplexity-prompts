@@ -105,3 +105,4 @@ Each story in the sprint file must include these fields:
 - Apply task-card enrichment: stories sharing a `Story` id belong to one user story; tasks ordered MVP-first (core before supporting); test-first flag as a plan-level ordering signal.
 - Record the sprint ID in the session context (conversation carrier) under `## Project Management`.
 - Populate stories from the roadmap's phases/items, then score each story's ICE before finalizing.
+

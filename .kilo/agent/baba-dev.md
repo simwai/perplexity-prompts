@@ -112,3 +112,4 @@ Every claim in PATCH `## Self-Review` verified — any FALSE → return to PLAN
 ## Protocol Compliance
 
 Follow `00-system.md` phase transitions and `06-misc.md` PATCH protocol. No runtime enforcement plugin.
+
