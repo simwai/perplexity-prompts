@@ -89,8 +89,11 @@ project-management/    Roadmaps, sprints, Trello integration, config
 adapters/              Adapter templates (source of truth for generated files)
   opencode/agents/     OpenCode agent templates
   opencode/commands/   OpenCode command templates
+  claude/agents/       Claude Code agent templates
+  claude/skills/       Claude Code skill templates
   kilo/agent/          Kilo Code agent templates
   kilo/command/        Kilo Code command templates
+  kilo/skills/         Kilo Code skill templates
 opencode.jsonc         opencode-native config (optional layer, inert for other agents)
 .opencode/             Generated: agents, commands, plugins, packages, lib, tests
 .mcp.json              Generated MCP server config (shared by both platforms)
@@ -98,13 +101,16 @@ opencode.jsonc         opencode-native config (optional layer, inert for other a
 opencode-memory-mw/    Memory middleware research workspace (paper + simulation)
 scripts/               Bootstrap helpers (ensure-playwright, ensure-uvx, verify-plugins)
 sync.ps1               Interactive propagation to target projects
-generate-adapters.ps1  Generates .opencode/ and .claude/ from adapters/
+generate-adapters.ps1  Generates .opencode/, .claude/, and .kilo/ from adapters/
 pre-commit.ps1         The commit gate (see Contributing below)
 targets.json.example   Template for sync.ps1 targets (targets.json is gitignored)
 ```
 
-Only `AGENTS.md` plus `prompt-system/` is deployed to target projects. Everything
-else above is repository documentation and tooling and stays local.
+Only `AGENTS.md` plus `prompt-system/` is deployed to target projects by the
+manual two-step copy. `sync.ps1` additionally propagates the adapter surfaces
+(`.opencode/`, `.claude/`, `.kilo/`, `.mcp.json`, `kilo.json`) to configured
+targets; everything else above is repository documentation and tooling and
+stays local.
 
 ---
 
@@ -168,9 +174,11 @@ cloning:
 .\scripts\install-hooks.ps1
 ```
 
-The gate runs, in order: Markdown TOC generation, Markdown lint, adapter
-regeneration check, TypeScript typecheck, **Mermaid diagram validation**,
-prompt-system integrity suites, and a secret scan.
+The gate runs, in order: session lock check, adapter regeneration check,
+Mermaid diagram validation, prompt-system integrity suites, file hygiene,
+secret scan, Markdown lint, and PowerShell Script Analyzer. The TypeScript
+typecheck (`tsc --noEmit`) is deliberately not on the commit gate -- it runs at
+`pre-push.ps1` because it is slow (~150s).
 
 Adapter regeneration must be run under `pwsh` 7.6+; running
 `generate-adapters.ps1` under Windows PowerShell 5.1 writes a UTF-8 BOM and the

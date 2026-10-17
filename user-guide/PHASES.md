@@ -27,9 +27,12 @@ flowchart TD
     DOCS --> REVIEW
 
     REVIEW -->|Tester loaded| TEST_STRATEGY
+    REVIEW -->|Quant in scope| TEST_STRATEGY_QUANT
     REVIEW -->|Standard| PLAN
     TEST_STRATEGY --> HANDOFF_T
+    TEST_STRATEGY_QUANT --> HANDOFF_Q
     HANDOFF_T --> PLAN
+    HANDOFF_Q --> PLAN
 
     PLAN -->|UI/UX| DESIGN_PLAN
     PLAN -->|Standard| HANDOFF_P
@@ -55,8 +58,8 @@ flowchart TD
 
     class START,STARTUP entry
     class BLOCKED stop
-    class HANDOFF_T,HANDOFF_P,HANDOFF_D handoff
-    class CHECKLIST,DOCS,REVIEW,PLAN,PATCH,DRIFT,SPEC,INTAKE,BACKLOG,SPRINT,TASK_PLAN,TEST_STRATEGY,DESIGN_PLAN gate
+    class HANDOFF_T,HANDOFF_Q,HANDOFF_P,HANDOFF_D handoff
+    class CHECKLIST,DOCS,REVIEW,PLAN,PATCH,DRIFT,SPEC,INTAKE,BACKLOG,SPRINT,TASK_PLAN,TEST_STRATEGY,TEST_STRATEGY_QUANT,DESIGN_PLAN gate
     class DISCUSS,DISCUSSION,CLOSE,PRIOR,FORMAL phase
 ```
 
@@ -76,6 +79,7 @@ flowchart TD
 | `DOCS` | Version/evidence for judgments | `DOCS` | Verified evidence → REVIEW |
 | `REVIEW` | Score findings, mitigations, decision | `REVIEW` | Confirmed items → PLAN |
 | `TEST_STRATEGY` | Binding/strong/weak hints | `TEST_STRATEGY` | Test strategy → HANDOFF |
+| `TEST_STRATEGY_QUANT` | Quant findings vs L1-L10 rubrics (auto-spawned with TEST_STRATEGY when quant files in scope, T-24) | `TEST_STRATEGY_QUANT` | Quant test strategy → HANDOFF |
 | `PLAN` | Fix plan, conventions, rewrite contract | `PLAN` | Approved plan → PATCH |
 | `DESIGN_PLAN` | UI/UX decisions, constraints | `DESIGN_PLAN` | Design plan → HANDOFF |
 | `HANDOFF` | Persona-to-persona contract | `HANDOFF` | Validated payload → next phase |
@@ -150,7 +154,6 @@ Reply with: A, B, or C
 
 - Target scope, focus, scope type
 - File inventory with discovery metadata
-- System Discovery (auto-populated)
 - Pre-review docs log
 - Hard tier (H1-H38), Soft tier (S1-S25), Logical (L1-L10)
 - Verification commands
@@ -158,7 +161,7 @@ Reply with: A, B, or C
 
 ### REVIEW
 
-- Multi-file progress, Reading Verification
+- Multi-file progress, Reading: complete (inline reporting)
 - Findings with Mitigations (A/B/C + pros/cons)
 - Logical Findings (blocking/advisory)
 - Validation loop (confidence ≤70%)
@@ -168,7 +171,7 @@ Reply with: A, B, or C
 ### PLAN
 
 - Target, scope, pending review items
-- System Constraints (from Discovery)
+- `## from code reading` section (discovery-derived constraints)
 - Will change / Will preserve (with verify commands)
 - Conventions (per-file idiom evidence)
 - Risks, Logical constraints

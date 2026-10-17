@@ -8,7 +8,7 @@
 
 | Term | Definition | Source | Related |
 |---|---|---|---|
-| **Baba** | The persona system comprising 7 personas (ScrumMaster, Sensei, Tester, Dev, Reviewer, Designer, CEO) plus an embedded Process Master | `01-personas.md` | Persona, Handoff |
+| **Baba** | The persona system comprising 8 personas (ScrumMaster, Sensei, Tester, Dev, Reviewer, Designer, CEO, UltraProQuant) plus an embedded Process Master | `01-personas.md` | Persona, Handoff |
 | **CHECKLIST** | Phase that inventories target files, selects review criteria (H/S/L tiers), and logs docs needs | `00-system.md`, `03-output-and-state.md` | Review, Docs |
 | **DIRECT** | Execution mode for clear low-risk work without phase templates; uses `[MODE: DIRECT]` | `00-system.md`, `03-output-and-state.md` | Structured, Auto |
 | **DRIFT** | Read-only diagnostic phase comparing `SPEC.md` against implemented code | `07-protocols.md`, `08-plan-actual-gate.md` | Spec, Plan-Actual |
@@ -81,7 +81,7 @@
 | File | Purpose |
 |---|---|
 | [prompt-system/00-system.md](prompt-system/00-system.md) | Orchestrator, phase model, routing, hard guards, load order |
-| [prompt-system/11-triggers.md](prompt-system/11-triggers.md) | Canonical trigger catalog (T-01 to T-23) |
+| [prompt-system/11-triggers.md](prompt-system/11-triggers.md) | Canonical trigger catalog (T-01 to T-24) |
 | [prompt-system/01-personas.md](prompt-system/01-personas.md) | Persona definitions, handoff contract, session flow |
 | [prompt-system/02-decision-prompts.md](prompt-system/02-decision-prompts.md) | Decision format, rendering rule, examples, auto-triggers |
 | [prompt-system/03-output-and-state.md](prompt-system/03-output-and-state.md) | Phase templates, dual-section output, session state schema |

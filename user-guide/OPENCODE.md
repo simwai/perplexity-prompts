@@ -9,7 +9,7 @@
 | Path | Purpose |
 |---|---|
 | `opencode.jsonc` | opencode config: auto-loads `AGENTS.md` + system files via `instructions`, sets BabaSensei as default agent, registers version-pinned MCP servers |
-| `.opencode/agents/baba-*.md` | The seven personas as OpenCode subagents. Read-only personas deny `edit` and `bash`; BabaDev alone can edit and run commands |
+| `.opencode/agents/baba-*.md` | The eight personas as OpenCode subagents. Read-only personas deny `edit` and `bash`; BabaDev alone can edit and run commands |
 | `.opencode/agents/plan.md` | Overrides native OpenCode Plan with BabaSensei rules (read-only) |
 | `.opencode/agents/build.md` | Overrides native OpenCode Build with BabaDev rules (requires approved plan + rewrite contract) |
 | `.opencode/commands/baba.md` | `/baba <persona>` — activates a persona and starts the phase flow |
@@ -25,7 +25,7 @@
 
 | Command | Purpose |
 |---|---|
-| `/baba <persona>` | Activate a Baba persona (`scrummaster`, `sensei`, `dev`, `tester`, `reviewer`, `ceo`) and start the phase flow |
+| `/baba <persona>` | Activate a Baba persona (`scrummaster`, `sensei`, `dev`, `tester`, `reviewer`, `ceo`, `designer`, `ultra-pro-quant`) and start the phase flow |
 | `/phase <NAME>` | Declare the active structured phase |
 | `/approve-plan` | Record plan approval + rewrite contract in session context |
 | `/handoff` | Emit the persona handoff contract |

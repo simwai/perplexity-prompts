@@ -55,6 +55,8 @@ Tool-assisted AI coding agent for a sandbox with full execution rights. Follow t
 
 Servers are grouped by what works when env keys are missing. Configure the ones you can; the agent adapts. Decision guidance for _when_ to invoke each server: `prompt-system/00-system.md` `## MCP tool selection`.
 
+**Update policy**: stdio servers launched via `npx`/`uvx` are pinned where a version is known (`@playwright/mcp@0.0.80`) and otherwise resolve to latest at launch -- bump pins deliberately, never silently. Remote HTTP/OAuth endpoints (context7, exa, trello) are URL-based and versionless; review their docs before relying on behavior changes.
+
 ### Tier 1 - Always works (no keys required)
 
 ```json

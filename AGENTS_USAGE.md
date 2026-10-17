@@ -23,7 +23,7 @@ The copy-paste unit is `AGENTS.md` + the `prompt-system/` folder:
 Copy-Item -Recurse prompt-system <target-project>\prompt-system
 ```
 
-The `prompt-system/` folder is self-contained (21 Markdown files, 36 files total
+The `prompt-system/` folder is self-contained (22 Markdown files, 37 files total
 including `stacks/` and `scripts/`); all internal references stay valid after the move.
 
 ---
@@ -143,7 +143,8 @@ Structured sessions print the phase at the top of every response. Direct
 sessions print `[MODE: DIRECT]` instead.
 
 ```txt
-[INTAKE -> BACKLOG -> SPRINT -> TASK_PLAN -> SPEC ->] CHECKLIST -> DOCS -> REVIEW -> PLAN -> PATCH -> [DRIFT]
+[INTAKE -> BACKLOG -> SPRINT -> TASK_PLAN -> SPEC ->] CHECKLIST -> DOCS -> REVIEW
+-> [TEST_STRATEGY / TEST_STRATEGY_QUANT] -> PLAN -> PATCH -> [DRIFT]
 ```
 
 **Greenfield projects (from scratch):** when the target repo is empty (or
@@ -177,8 +178,8 @@ Deterministic skips (`DOCS` out of scope, upstream pipeline not applicable) adva
 automatically and never pause for confirmation. Missing input -> `BLOCKED`. Second
 failure -> `FAILURE` and clean stop.
 
-The DOCS phase follows the deep-read protocol (`prompt-system/07-protocols.md` cross-team
-section): enumerate the docs structure first (TOC/sitemap), map each in-scope
+The DOCS phase follows the deep-read protocol (`prompt-system/00-system.md` `## MCP tool selection`
+fallback ladder): enumerate the docs structure first (TOC/sitemap), map each in-scope
 criterion to the section that answers it (H8 -> advisories, H6/H7 -> API
 reference, S-tier -> upgrade guides), fetch section pages rather than the
 landing page, and cite the exact URL anchor behind each claim. Lookups are
@@ -207,8 +208,9 @@ session returns to fix, committing only after a pass or your explicit
 acceptance. Repos without a web app record SKIPPED with a reason instead of
 inventing a smoke.
 
-Staging is limited to the session's edited files, tracked in the session state
-file's `Edited Files` section; `git add -A` is never used. Remote URLs are
+Staging is limited to the session's edited files, tracked in the session
+context's `Edited Files` section (conversation carrier); `git add -A` is never
+used. Remote URLs are
 never printed unsanitized — `.git/config` remote URLs may embed credentials, so
 the agent reports remote names only. Per-remote push failures are reported and
 never become protocol failures.
@@ -240,10 +242,10 @@ additional native layer.
 | Path | Purpose |
 |---|---|
 | `opencode.jsonc` | opencode config: auto-loads `AGENTS.md` + the 10 system files via `instructions`, sets the safer planning agent as default, and registers version-pinned MCP servers. |
-| `.opencode/agents/baba-*.md` | The seven personas as OpenCode subagents. Read-only personas deny `edit` and `bash`; BabaDev alone can edit and run commands. |
+| `.opencode/agents/baba-*.md` | The eight personas as OpenCode subagents. Read-only personas deny `edit` and `bash`; BabaDev alone can edit and run commands. |
 | `.opencode/agents/plan.md` | Overrides native OpenCode Plan with BabaSensei rules (read-only). |
 | `.opencode/agents/build.md` | Overrides native OpenCode Build with BabaDev rules (requires approved plan + rewrite contract). |
-| `.opencode/plugins/*.ts` | Protocol enforcement plugins (reading protocol, prompt system loader, lock enforce, drift, etc.). |
+| `.opencode/plugins/*.ts` | Protocol enforcement plugins (bootstrap, prompt-system loader, protocol enforce, lock enforce, system-reminder override, adaptive temperature, multi-model consensus). |
 
 ### Notes
 

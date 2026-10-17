@@ -930,6 +930,8 @@ User types `/close`, agent appends entry to `EVALUATIONS.md` (creates with heade
 
 All session state persists in the conversation context during a session; no session state file is written to disk. State includes: phase, persona, target, scope, findings, mitigations, plan approval, rewrite contract, gate results, and struggle indicators. Recorded phase state carries across sessions via the conversation carrier; module loads do not (see the fresh-session load mandate in `prompt-system/00-system.md`).
 
+Approval restore matching: recorded approval (plan approval, REVIEW decision, mitigation choices) may only be restored when the carried state's target, scope, session_id, and spec_version all match the current task. Any mismatch -- including a legacy carrier with no session_id field -- makes the approval stale: discard it and require a fresh confirmation. A version-drift HALT invalidates live Plan Approval outright.
+
 **Gate outputs**: Plan-Actual, Commit/Push, Compliance Audit, and Leftover Audit results are emitted directly in the PATCH response — not persisted to a file.
 
 ## Struggle Indicators

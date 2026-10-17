@@ -36,8 +36,8 @@ flowchart TD
 |---|---|---|
 | Entry | [AGENTS.md](AGENTS.md) | Portable entry point, MCP tiers, system pointer |
 | Orchestrator | [prompt-system/00-system.md](prompt-system/00-system.md) | Phase model, routing, hard guards, load order |
-| Triggers | [prompt-system/11-triggers.md](prompt-system/11-triggers.md) | Canonical trigger catalog, T-01 to T-23 |
-| Personas | [prompt-system/01-personas.md](prompt-system/01-personas.md) | 7 personas + handoff contract + session flow |
+| Triggers | [prompt-system/11-triggers.md](prompt-system/11-triggers.md) | Canonical trigger catalog, T-01 to T-24 |
+| Personas | [prompt-system/01-personas.md](prompt-system/01-personas.md) | 8 personas + handoff contract + session flow |
 | Decisions | [prompt-system/02-decision-prompts.md](prompt-system/02-decision-prompts.md) | Decision format, rendering rule, auto-triggers |
 | Output | [prompt-system/03-output-and-state.md](prompt-system/03-output-and-state.md) | Phase templates, dual-section output, session state schema |
 | Rubrics | [prompt-system/04-rubrics.md](prompt-system/04-rubrics.md) | H1-H38, S1-S25, L1-L10 review rubrics |
@@ -98,6 +98,8 @@ inventory of the deployed unit.
 ├── adapters/              # Adapter templates (source of truth)
 │   ├── opencode/agents/     # OpenCode agent templates
 │   ├── opencode/commands/   # OpenCode command templates
+│   ├── claude/agents/       # Claude Code agent templates
+│   ├── claude/skills/       # Claude Code skill templates
 │   ├── kilo/agent/          # Kilo Code agent templates
 │   └── kilo/command/        # Kilo Code command templates
 ├── opencode-memory-mw/    # Memory middleware research workspace (paper + simulation)
@@ -107,7 +109,7 @@ inventory of the deployed unit.
 ├── .kilo/                 # Generated: agents, commands, kilo.json
 ├── .mcp.json              # Generated MCP server config (both platforms)
 ├── sync.ps1               # Interactive propagation to target projects
-├── generate-adapters.ps1  # Generates .opencode/ from adapters/
+├── generate-adapters.ps1  # Generates .opencode/, .claude/, and .kilo/ from adapters/
 ├── pre-commit.ps1         # The commit gate
 └── targets.json.example   # Template for sync.ps1 targets
 ```

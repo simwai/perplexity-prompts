@@ -92,9 +92,10 @@ CHECKLIST → DOCS (if needed) → REVIEW → PLAN → PATCH → [DRIFT]
 ### Persona Flow
 
 ```text
-BabaSensei (CHECKLIST→PLAN) → HANDOFF
-BabaTester (REVIEW→TEST_STRATEGY) → HANDOFF
-BabaDev (PLAN→PATCH)
+BabaSensei (SPEC -> HANDOFF) -> HANDOFF
+BabaTester (REVIEW->TEST_STRATEGY) -> HANDOFF
+UltraProQuant (REVIEW->TEST_STRATEGY_QUANT, quant files in scope) -> HANDOFF
+BabaDev (PLAN->PATCH)
 ```
 
 ---

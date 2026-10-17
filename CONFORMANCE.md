@@ -11,7 +11,8 @@ tool-independent because the core system is a specification, not an application.
 - [x] Consolidated review records every file and batch before aggregate output.
 - [x] Aggregate findings remain provisional until explicit confirmation.
 - [x] A session context carried over from a different session cannot restore old
-      approval; approval requires target + scope + session_id match.
+      approval; approval requires target + scope + session_id + spec_version match
+      (`prompt-system/03-output-and-state.md` `## Session State (In-Session Only)`).
 - [x] Session context is per-session: a session reads and writes only its own
       context and never deletes another session's; a lock owned by a different
       session_id is refused rather than released.
@@ -71,10 +72,10 @@ tool-independent because the core system is a specification, not an application.
 - [x] HALT semantics: version drift surfaces as a DRIFT-internal decision block
       with exactly one recommended fix path; never a silent fix, never a
       BLOCKED variant (`prompt-system/07-protocols.md` `## Drift detection`).
-- [x] Registry-write governance: every `SPEC.md` write (new spec, registry row,
-      spec-body edit) flows through PATCH and joins the commit/push gate
-      edited-files set (`prompt-system/07-protocols.md` `## Spec lifecycle`,
-      `## Commit/push gate`).
+- [x] Registry-write governance: no `SPEC.md` write happens outside PATCH; a spec
+      written during PATCH is an ordinary edited file handled by the commit/push
+      gate (`prompt-system/00-system.md`
+      prompt-level BLOCKED rules, `prompt-system/06-misc.md` `## Commit/push gate`).
 - [x] Spec-version freshness: approval restore requires target + scope +
       session_id + spec_version match, and a version-drift HALT invalidates
       live Plan Approval (`prompt-system/03-output-and-state.md` `## Session State (In-Session Only)`,
