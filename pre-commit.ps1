@@ -175,13 +175,21 @@ if (-not (Test-Path -LiteralPath $locksScript -PathType Leaf)) {
 # ── 2. Generate platform adapters ───────────────────────────────────────────
 Write-Host "`n[2/$totalSteps] Generating adapters..." -ForegroundColor Yellow
 
-# Snapshot the generated tree before regenerating. The invariant to enforce is
-# "generation changed something", not "the tree differs from the index": a
-# generated file that was already dirty from an unrelated in-progress adapter
-# edit is not this hook's business, and comparing against the index would flag it.
-$generatedDirs = @('.opencode', '.claude')
-
-$before = Get-GeneratedFileMap -Dirs $generatedDirs
+# All outputs produced by generate-adapters.ps1. These are derived from
+# opencode.jsonc + adapters/ templates, so the commit must contain the
+# generator's output, not stale hand-edited content.
+$generatedOutputs = @(
+    '.mcp.json',
+    'kilo.json',
+    '.claude/settings.json',
+    '.claude/agents',
+    '.claude/skills',
+    '.opencode/agents',
+    '.opencode/commands',
+    '.kilo/agent',
+    '.kilo/command',
+    '.kilo/skills'
+)
 
 & (Join-Path $repoRoot 'generate-adapters.ps1')
 if (-not $?) {
@@ -189,25 +197,22 @@ if (-not $?) {
     exit 1
 }
 
-$after = Get-GeneratedFileMap -Dirs $generatedDirs
-
-$regenerated = @()
-foreach ($rel in $after.Keys) {
-    if (-not $before.ContainsKey($rel) -or $before[$rel] -ne $after[$rel]) {
-        $regenerated += $rel
+# Re-stage generated outputs so they are part of the commit.
+$toAdd = @()
+foreach ($out in $generatedOutputs) {
+    $abs = Join-Path $repoRoot $out
+    if (Test-Path -LiteralPath $abs) {
+        $toAdd += $out
     }
 }
-foreach ($rel in $before.Keys) {
-    if (-not $after.ContainsKey($rel)) { $regenerated += $rel }
+if ($toAdd.Count -gt 0) {
+    & git -C $repoRoot add -- $toAdd 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Failed to stage generated adapter outputs: $($toAdd -join ', ')"
+        exit 1
+    }
 }
-
-if ($regenerated) {
-    Write-Error "Adapter generation changed the following file(s) -- re-stage and commit:"
-    $regenerated | Sort-Object | ForEach-Object { Write-Error "  $_" }
-    Write-Error "Run .\generate-adapters.ps1, then 'git add' the paths above."
-    exit 1
-}
-Write-Host "  Generated adapters already current ($($before.Count) files checked)" -ForegroundColor Green
+Write-Host "  Generated adapters staged" -ForegroundColor Green
 
 # ── 3. Mermaid diagram syntax ────────────────────────────────────────────────
 Write-Host "`n[3/$totalSteps] Validating Mermaid diagrams..." -ForegroundColor Yellow
