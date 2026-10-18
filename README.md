@@ -28,6 +28,7 @@ Then describe a task and the agent handles the rest.
 | Execution modes? | [user-guide/EXECUTION_MODES.md](user-guide/EXECUTION_MODES.md) |
 | Troubleshooting? | [user-guide/TROUBLESHOOTING.md](user-guide/TROUBLESHOOTING.md) |
 | OpenCode adapter | [AGENTS_USAGE.md](AGENTS_USAGE.md) |
+| OpenCode setup details | [user-guide/OPENCODE.md](user-guide/OPENCODE.md) |
 | Kilo Code adapter | [KILO_USAGE.md](KILO_USAGE.md) |
 | Architecture? | [ARCHITECTURE.md](ARCHITECTURE.md) |
 | File map | [SYSTEM_OVERVIEW.md](SYSTEM_OVERVIEW.md) |
