@@ -1,88 +1,86 @@
 {
-    "$schema":  "https://app.kilo.ai/config.json",
-    "instructions":  [
-                         "AGENTS.md",
-                         "prompt-system/00-system.md",
-                         "prompt-system/11-triggers.md",
-                         "prompt-system/01-personas.md",
-                         "prompt-system/02-decision-prompts.md",
-                         "prompt-system/03-output-and-state.md",
-                         "prompt-system/04-rubrics.md",
-                         "prompt-system/05-impl-style.md",
-                         "prompt-system/06-misc.md",
-                         "prompt-system/07-protocols.md",
-                         "prompt-system/08-plan-actual-gate.md"
-                     ],
-    "default_agent":  "plan",
-    "small_model":  "step-5-preview-free",
-    "permission":  {
-                       "doom_loop":  "deny",
-                       "git_remote":  "deny",
-                       "git_push_force":  "deny",
-                       "env_files":  "deny",
-                       "pem_files":  "deny",
-                       "key_files":  "deny"
-                   },
-    "mcp":  {
-                "context7":  {
-                                 "type":  "remote",
-                                 "url":  "https://mcp.context7.com/mcp"
-                             },
-                "playwright":  {
-                                   "type":  "local",
-                                   "command":  [
-                                                   "npx",
-                                                   "-y",
-                                                   "@playwright/mcp@0.0.80"
-                                               ],
-                                   "timeout":  30000
-                               },
-                "playwright-headless":  {
-                                            "type":  "local",
-                                            "command":  [
-                                                            "npx",
-                                                            "-y",
-                                                            "@playwright/mcp@0.0.80",
-                                                            "--headless"
-                                                        ]
-                                        },
-                "g-search":  {
-                                 "type":  "local",
-                                 "command":  [
-                                                 "npx",
-                                                 "-y",
-                                                 "g-search-mcp"
-                                             ]
-                             },
-                "arxiv":  {
-                              "type":  "local",
-                              "command":  [
-                                              "uvx",
-                                              "arxiv-mcp-server"
-                                          ]
-                          },
-                "memory-worth":  {
-                                     "type":  "local",
-                                     "command":  [
-                                                     "npx",
-                                                     "tsx",
-                                                     ".opencode/packages/memory-worth/mcp-server.ts"
-                                                 ],
-                                     "timeout":  30000
-                                 },
-                "exa":  {
-                            "type":  "remote",
-                            "url":  "https://mcp.exa.ai/mcp",
-                            "headers":  {
-                                            "x-api-key":  "{env:EXA_API_KEY}"
-                                        }
-                        },
-                "trello":  {
-                               "type":  "remote",
-                               "url":  "https://mcp.trello.com/v1",
-                               "oauth":  {
-
-                                         }
-                           }
-            }
+  "$schema": "https://app.kilo.ai/config.json",
+  "instructions": [
+    "AGENTS.md",
+    "prompt-system/00-system.md",
+    "prompt-system/11-triggers.md",
+    "prompt-system/01-personas.md",
+    "prompt-system/02-decision-prompts.md",
+    "prompt-system/03-output-and-state.md",
+    "prompt-system/04-rubrics.md",
+    "prompt-system/05-impl-style.md",
+    "prompt-system/06-misc.md",
+    "prompt-system/07-protocols.md",
+    "prompt-system/08-plan-actual-gate.md"
+  ],
+  "default_agent": "plan",
+  "small_model": "step-5-preview-free",
+  "permission": {
+    "doom_loop": "deny",
+    "git_remote": "deny",
+    "git_push_force": "deny",
+    "env_files": "deny",
+    "pem_files": "deny",
+    "key_files": "deny"
+  },
+  "mcp": {
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp"
+    },
+    "playwright": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@playwright/mcp@0.0.80"
+      ],
+      "timeout": 30000
+    },
+    "playwright-headless": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@playwright/mcp@0.0.80",
+        "--headless"
+      ]
+    },
+    "g-search": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "g-search-mcp"
+      ]
+    },
+    "arxiv": {
+      "type": "local",
+      "command": [
+        "uvx",
+        "arxiv-mcp-server"
+      ]
+    },
+    "memory-worth": {
+      "type": "local",
+      "command": [
+        "npx",
+        "tsx",
+        ".opencode/packages/memory-worth/mcp-server.ts"
+      ],
+      "timeout": 30000
+    },
+    "exa": {
+      "type": "remote",
+      "url": "https://mcp.exa.ai/mcp",
+      "headers": {
+        "x-api-key": "{env:EXA_API_KEY}"
+      }
+    },
+    "trello": {
+      "type": "remote",
+      "url": "https://mcp.trello.com/v1",
+      "oauth": {}
+    }
+  }
 }
