@@ -160,7 +160,8 @@ $folders = @('prompt-system', '.opencode', '.opencode/agents', '.claude', '.clau
                     '/MIR', '/NFL', '/NDL', '/NJH', '/NJS',
                     '/R:2', '/W:2',
                     '/XD', 'node_modules',
-                    '/XD', 'packages\memory-worth\node_modules'
+                    '/XD', 'packages\memory-worth\node_modules',
+                    '/XF', '*.test.ts', '*.spec.ts'
                 )
                 & robocopy @robocopyArgs
                 if ($LASTEXITCODE -ge 8) {

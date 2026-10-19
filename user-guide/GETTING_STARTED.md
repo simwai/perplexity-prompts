@@ -35,7 +35,7 @@ Copy-Item targets.json.example targets.json
 - Configured paths appear in sync menu even before they contain `AGENTS.md`/`prompt-system/`
 - Each git repo gets synced files committed + pushed to `origin`
 - Use `-NoGitPush` or toggle `[G]` to skip commit/push
-- Use `-DeleteLegacy` to remove old `.claude/`, `.cursor/`, `.codex/`, `BOOTSTRAP.md` files and other legacy artifacts (`system/`, `synced-scripts/`, `agent-resources/`, `CLAUDE.md`) plus **memory-worth plugin test files** (from `.opencode` source, not project tests)
+- Use `-DeleteLegacy` to remove old `.claude/`, `.cursor/`, `.codex/`, `BOOTSTRAP.md` files and other legacy artifacts (`system/`, `synced-scripts/`, `agent-resources/`, `CLAUDE.md`)
 
 **Sync options:**
 
@@ -44,9 +44,9 @@ Copy-Item targets.json.example targets.json
 | `-All` | Sync all configured targets non-interactively |
 | `-DryRun` | Preview what would be copied without making changes |
 | `-NoGitPush` | Commit locally but skip push to remotes |
-| `-DeleteLegacy` | Remove legacy folders (`.claude/`, `.cursor/`, `.codex/`, `system/`, `synced-scripts/`, `agent-resources/`, `CLAUDE.md`, `BOOTSTRAP.md`) + memory-worth test files |
+| `-DeleteLegacy` | Remove legacy folders (`.claude/`, `.cursor/`, `.codex/`, `system/`, `synced-scripts/`, `agent-resources/`, `CLAUDE.md`, `BOOTSTRAP.md`) |
 
-> **Note:** The `.opencode/` folder is synced from source. **BOOTSTRAP.md is removed** as it's superseded by the `prompt-system/` deployment. **Memory-worth plugin test files** (e.g., `.opencode/plugins/memory-worth/db/*.test.ts`, `.opencode/plugins/memory-worth/hooks/*.test.ts`, etc.) are also removed — these are test artifacts from the `.opencode` source, NOT your project's legitimate test folders. The sync copies: `prompt-system/`, `.opencode/`, `.opencode/agents/`, and core files (`AGENTS.md`, `opencode.jsonc` — BOOTSTRAP.md is NOT synced).
+> **Note:** The `.opencode/` folder is synced from source. **BOOTSTRAP.md is removed** as it's superseded by the `prompt-system/` deployment. **Test files** (`*.test.ts`, `*.spec.ts`) are **excluded during sync** via robocopy `/XF` — they never reach target projects. The sync copies: `prompt-system/`, `.opencode/`, `.opencode/agents/`, and core files (`AGENTS.md`, `opencode.jsonc` — BOOTSTRAP.md is NOT synced).
 
 ---
 
