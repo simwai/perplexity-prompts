@@ -454,7 +454,7 @@ if (Test-Path -LiteralPath $opencodeAgentSrc -PathType Container) {
         # Template token substitution (plan/build/general router agents)
         $tokens = @{}
         if ($destName -eq 'plan.md') {
-            $tokens['PERSONA_ROUTING'] = ($personaRouting | Out-String).TrimEnd()
+            $tokens['PERSONA_ROUTING_OPENCODE'] = ($personaRouting | Out-String).TrimEnd()
         } elseif ($destName -eq 'build.md') {
             $tokens['PERSONA_BUILD_ROUTING'] = ($personaBuildRouting | Out-String).TrimEnd()
         } elseif ($destName -eq 'general.md') {

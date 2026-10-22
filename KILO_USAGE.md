@@ -292,6 +292,17 @@ Check that `.kilo/command/` exists and contains `.md` files. Kilo Code auto-disc
 
 Verify `.kilo/agent/*.md` files have valid YAML frontmatter. Check Kilo Code logs for parsing errors.
 
+### Task tool reports "Unknown agent type" for `baba-*` personas
+
+The `task` tool rejects a `subagent_type` when Kilo has not registered the project's custom agents. Check, in order:
+
+1. **Stale Kilo process** -- Kilo scans `.kilo/agent/` at session start. If the adapter files were synced after the session (or the Kilo process) started, restart the session so the agents are re-registered.
+2. **Wrong working directory** -- project config directories are discovered walking up from the session's CWD to the worktree root. A session started in an unrelated directory (or a worktree without `.kilo/` committed) sees no custom agents.
+3. **Frontmatter validity** -- every spawnable agent needs `mode: subagent` (or `all`) in its frontmatter. `mode: primary` agents are not reachable via the `task` tool.
+4. **Unsubstituted template placeholders** -- search the generated agents for `{{` (for example `rg "{{" .kilo/agent/`). A literal placeholder means `generate-adapters.ps1` token substitution missed that file; regenerate and re-sync.
+
+When the spawn fails, the prompt system's inline fallback executes the reviewer inline and records the degradation -- the session still closes, but the evaluation is the session's own gate record, not an independent audit. Fix the registration cause and re-run the evaluation if an independent verdict matters.
+
 ### MCP servers not connecting
 
 Check `kilo.json` `mcp` block matches `opencode.jsonc`. Kilo Code uses the same MCP format as OpenCode.
