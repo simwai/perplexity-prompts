@@ -21,7 +21,8 @@
     "git_push_force": "deny",
     "env_files": "deny",
     "pem_files": "deny",
-    "key_files": "deny"
+    "key_files": "deny",
+    "memory-worth_*": "allow"
   },
   "mcp": {
     "context7": {

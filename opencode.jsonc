@@ -49,7 +49,10 @@
     "git_push_force": "deny",
     "env_files": "deny",
     "pem_files": "deny",
-    "key_files": "deny"
+    "key_files": "deny",
+    // memory-worth writes to a local sqlite DB and touches no shell or network;
+    // per-call approval prompts for a 13-tool memory server are pure noise.
+    "memory-worth_*": "allow"
   },
 
   // Plugin debug output needs no config here. The config schema sets
