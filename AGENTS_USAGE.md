@@ -94,7 +94,7 @@ for a PowerShell 7.6+ snippet — and add `.env` to `.gitignore` immediately.
 
 ### Verify it works
 
-Ask the agent: *"List the available MCP tools."* You should see tools from Context7 and Playwright at minimum, plus the 12 memory-worth memory tools (`memory_search`, `memory_write`, `memory_stats`, etc.). If Exa is missing, the env var isn't exported. Trello appears after one-time OAuth consent.
+Ask the agent: *"List the available MCP tools."* You should see tools from Context7 and Playwright at minimum, plus the memory-worth memory tools (`memory-worth_memory_search`, `memory-worth_memory_write`, `memory-worth_memory_stats`, etc. -- the `memory-worth_` prefix is the server name; both opencode and Kilo namespace MCP tools that way). If Exa is missing, the env var isn't exported. Trello appears after one-time OAuth consent.
 
 ---
 

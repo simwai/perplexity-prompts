@@ -1,4 +1,4 @@
-﻿{
+{
 // opencode-native config for the Baba prompt system.
 // Inert for other agents — AGENTS.md + prompt-system/
 // remain the portable copy-paste unit. This file only affects opencode.
@@ -78,9 +78,14 @@
     ".opencode/plugins/baba-system-reminder-override.ts",
     ".opencode/plugins/baba-bootstrap.ts",
     ".opencode/plugins/baba-lock-enforce.ts",
-    // memory-worth local package in project's .opencode/packages/memory-worth/
-    // (created Oct 11 commit bbdaad8 - moved from plugins/ to packages/)
-    ".opencode/packages/memory-worth",
+    // memory-worth plugin disabled (2026-10-23): its 12 tools returned the V1
+    // `{ output }` shape, which the V2 tool runtime rejects when the tool
+    // declares no output schema ("Tool result declared output without an output
+    // schema", packages/core/src/tool/runtime.ts). Its tools now come from the
+    // memory-worth MCP server below, namespaced `memory-worth_*`, which
+    // behaves identically in opencode and Kilo. Re-enable this entry only
+    // together with a declared output schema in tools/v2-register.ts.
+    // ".opencode/packages/memory-worth",
     ".opencode/plugins/adaptive-temperature.ts",
     ".opencode/plugins/multi-model-consensus.ts"
   ],

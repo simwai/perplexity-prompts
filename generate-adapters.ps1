@@ -44,6 +44,63 @@ function Write-Utf8NoBom {
     [System.IO.File]::WriteAllText($Path, ($Content + "`n"), (New-Object System.Text.UTF8Encoding $false))
 }
 
+function ConvertTo-IndentedJson {
+    param([string]$Json)
+    # PowerShell 5.1's ConvertTo-Json aligns keys into runs of spaces, which
+    # makes the generated configs look mangled and keeps re-dirtying them after
+    # every commit. The ConvertTo-Json output is valid JSON, so re-render it
+    # with a string-aware formatter (braces/colons inside string literals --
+    # `{env:VAR}` headers among them -- are literal data, not structure).
+    $sb = New-Object System.Text.StringBuilder
+    $indent = 0
+    $inString = $false
+    $escape = $false
+    $pendingOpen = -1
+    foreach ($ch in $Json.ToCharArray()) {
+        if ($escape) { [void]$sb.Append($ch); $escape = $false; continue }
+        if ($inString) {
+            [void]$sb.Append($ch)
+            if ($ch -eq '\') { $escape = $true }
+            elseif ($ch -eq '"') { $inString = $false }
+            continue
+        }
+        if ($ch -eq '"') { $pendingOpen = -1; [void]$sb.Append($ch); $inString = $true; continue }
+        if ($ch -eq '{' -or $ch -eq '[') {
+            [void]$sb.Append($ch)
+            $pendingOpen = $sb.Length
+            [void]$sb.Append("`n")
+            [void]$sb.Append(('  ' * ($indent + 1)))
+            $indent++
+            continue
+        }
+        if ($ch -eq '}' -or $ch -eq ']') {
+            $indent = [Math]::Max(0, $indent - 1)
+            if ($pendingOpen -ge 0) { $sb.Length = $pendingOpen }
+            else { [void]$sb.Append("`n"); [void]$sb.Append(('  ' * $indent)) }
+            [void]$sb.Append($ch)
+            $pendingOpen = -1
+            continue
+        }
+        if ($ch -eq ',') {
+            [void]$sb.Append($ch)
+            [void]$sb.Append("`n")
+            [void]$sb.Append(('  ' * $indent))
+            $pendingOpen = -1
+            continue
+        }
+        if ($ch -eq ':') { [void]$sb.Append($ch); [void]$sb.Append(' '); continue }
+        if ($ch -eq ' ' -or $ch -eq "`n" -or $ch -eq "`r" -or $ch -eq "`t") { continue }
+        $pendingOpen = -1
+        [void]$sb.Append($ch)
+    }
+    return $sb.ToString()
+}
+
+function ConvertTo-StableJson {
+    param($Value)
+    return (ConvertTo-IndentedJson -Json ($Value | ConvertTo-Json -Depth 10))
+}
+
 # ════════════════════════════════════════════════════════════════════════════
 # 0. Load personas registry (single source of truth for persona enumeration)
 # ═══════════════════════════════════════════════════════════════════════════
@@ -289,7 +346,7 @@ if (Test-Path -LiteralPath $opencodeConfigPath -PathType Leaf) {
             }
         }
         
-        $mcpOutput = [ordered]@{ mcpServers = $mcpServers } | ConvertTo-Json -Depth 10
+        $mcpOutput = ConvertTo-StableJson -Value ([ordered]@{ mcpServers = $mcpServers })
         Write-Utf8NoBom -Path $mcpJsonPath -Content $mcpOutput
         Write-Ok "Generated .mcp.json ($($mcpServers.Count) servers)"
     } catch {
@@ -613,25 +670,30 @@ if (Test-Path -LiteralPath $opencodeConfigPath -PathType Leaf) {
         if ($config.model) { $kiloConfig.model = $config.model }
         
         # MCP block - Kilo Code uses the same format as OpenCode (local/remote)
+        # Kilo spawns local servers with its own launcher; on Windows a bare
+        # `npx` command needs the cmd shell wrapper (Kilo docs,
+        # "Platform-Specific Local Server Commands"). Detect the generation
+        # platform so Unix deploys keep the bare command array.
+        $isWindowsGeneration = $env:OS -eq 'Windows_NT'
         if ($config.mcp) {
             $mcpServers = [ordered]@{}
             foreach ($server in $config.mcp.PSObject.Properties) {
                 $name = $server.Name
                 $val = $server.Value
-                
+
                 $mcpEntry = [ordered]@{}
-                
+
                 # Keep OpenCode format (local/remote) for Kilo Code
                 $mcpEntry.type = $val.type
-                
+
                 if ($mcpEntry.type -eq 'remote') {
                     $mcpEntry.url = $val.url
                 } elseif ($mcpEntry.type -eq 'local') {
-                    if ($val.command -is [array]) {
-                        $mcpEntry.command = $val.command
-                    } else {
-                        $mcpEntry.command = $val.command
+                    $command = if ($val.command -is [array]) { @($val.command) } else { @($val.command) }
+                    if ($isWindowsGeneration -and $command.Count -gt 0 -and $command[0] -in @('npx', 'npm', 'bunx')) {
+                        $command = @('cmd', '/c') + $command
                     }
+                    $mcpEntry.command = $command
                     if ($val.timeout) {
                         $mcpEntry.timeout = [int]$val.timeout
                     }
@@ -647,7 +709,7 @@ if (Test-Path -LiteralPath $opencodeConfigPath -PathType Leaf) {
             $kiloConfig.mcp = $mcpServers
         }
         
-        $kiloOutput = $kiloConfig | ConvertTo-Json -Depth 10
+        $kiloOutput = ConvertTo-StableJson -Value $kiloConfig
         Write-Utf8NoBom -Path $kiloJsonPath -Content $kiloOutput
         Write-Ok "Generated kilo.json ($($kiloConfig.Count) top-level keys, $($mcpServers.Count) MCP servers)"
     } catch {

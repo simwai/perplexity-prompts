@@ -67,9 +67,13 @@ opencode uses `{env:VAR}`, not `${VAR}`. The `exa` server header is `{env:EXA_AP
 ### memory-worth MCP server
 
 The memory-worth package exposes its 12 memory tools over MCP (plus a
-`memory_list_tools` meta-tool). Registered in both `opencode.jsonc` and
-`.mcp.json` (the shared config Kilo reads). Stdio transport via `npx tsx`;
-`MEMORY_WORTH_DIR` selects the `.opencode/memory.db` to use, and
+`memory_list_tools` meta-tool). Registered in `opencode.jsonc`, where the
+tools arrive server-namespaced (`memory-worth_memory_search`,
+`memory-worth_memory_write`, ...), and generated into `kilo.json` by
+`generate-adapters.ps1` for Kilo -- which also wraps the `npx` spawn in
+`cmd /c` on Windows, since Kilo's local-server launcher needs the shell
+wrapper there. Kilo reads `kilo.json`, not `.mcp.json`. Stdio transport via
+`npx tsx`; `MEMORY_WORTH_DIR` selects the `.opencode/memory.db` to use, and
 `MEMORY_WORTH_SESSION` tags writes with a session id.
 
 ### Trello OAuth

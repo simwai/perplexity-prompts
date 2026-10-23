@@ -31,6 +31,8 @@
     "playwright": {
       "type": "local",
       "command": [
+        "cmd",
+        "/c",
         "npx",
         "-y",
         "@playwright/mcp@0.0.80"
@@ -40,6 +42,8 @@
     "playwright-headless": {
       "type": "local",
       "command": [
+        "cmd",
+        "/c",
         "npx",
         "-y",
         "@playwright/mcp@0.0.80",
@@ -49,6 +53,8 @@
     "g-search": {
       "type": "local",
       "command": [
+        "cmd",
+        "/c",
         "npx",
         "-y",
         "g-search-mcp"
@@ -64,6 +70,8 @@
     "memory-worth": {
       "type": "local",
       "command": [
+        "cmd",
+        "/c",
         "npx",
         "tsx",
         ".opencode/packages/memory-worth/mcp-server.ts"
