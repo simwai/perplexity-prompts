@@ -143,9 +143,9 @@ Combine all Tier 1 + Tier 2 + Trello blocks above. Omit any Tier 2 servers whose
 
 ## Environment Variables
 
-| Variable | Server | Required |
-|---|---|---|
-| `EXA_API_KEY` | Exa | No (OAuth used instead) |
+| Variable      | Server | Required                |
+|---------------|--------|-------------------------|
+| `EXA_API_KEY` | Exa    | No (OAuth used instead) |
 
 ---
 
@@ -165,7 +165,5 @@ AGENTS.md is the sole entry point. The system lives in `prompt-system/`.
 5. **Record completion** in session state `## Startup Verification` (or conversation carrier on READ_ONLY).
 
 **All files must be read in full before ANY other action.** This is not optional, not conditional. Skipping any file is a protocol breach. If loading is incomplete, the agent must not proceed — output `BLOCKED` with reason "STARTUP incomplete".
-
-
 
 </HIGH_PRIO>
