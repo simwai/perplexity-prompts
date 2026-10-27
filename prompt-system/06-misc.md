@@ -197,6 +197,17 @@ Before the ask, when the gate triggers, run a Playwright MCP functional smoke of
 
 See `08-plan-actual-gate.md` for the complete Plan-Versus-Actual Gate protocol. This gate runs after staging and before the commit/push ask, confirming each `Will change` item landed in the staged working tree.
 
+### Pre-commit review delegation (BabaSensei + BabaTester)
+
+Before staging, delegate the session's work for a final quality check. This is an additional quality gate inside the commit/push gate, not a replacement for the REVIEW phase.
+
+- **Code review -> baba-sensei**: spawn a   ask sub-session with subagent_type: baba-sensei over the session's ## Edited Files (code files only). The reviewer returns a verdict (MERGE BLOCKED / APPROVED WITH FIXES / LGTM) plus any hard/soft-tier findings.
+- **Test review -> baba-tester**: spawn a   ask sub-session with subagent_type: baba-tester over the session's test files (and the code files they cover). The tester returns regression-risk, edge-case, and coverage findings, classified BINDING / STRONG HINT / WEAK HINT.
+- **Gate rule**: any MERGE BLOCKED verdict or any BINDING tester item blocks the commit. The session returns to PLAN with the findings before staging. APPROVED WITH FIXES / STRONG HINT items are recorded and may be deferred explicitly with rationale; LGTM / WEAK HINT items proceed.
+- **READ_ONLY host**: record SKIPPED: review-delegation -- gate trigger is false on a read-only host and skip.
+- **No code/test files edited** (e.g., docs-only session): skip delegation and record SKIPPED: review-delegation -- no code or test files in the edited set.
+- Record the outcome (sensei_verdict,   ester_binding_items, deferred_items) in the session context ## Commit/Push Gate section and in the PATCH template's # Commit/Push Gate block.
+
 ### Lock contention check (before staging)
 
 Before staging, run `Get-BlockingPeersForPaths` on each path in the session's `## Edited Files`:

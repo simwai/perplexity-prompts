@@ -171,7 +171,6 @@ variant: optional
 | `/baba <persona>` | Activate a Baba persona | `code` | `true` |
 | `/kickoff <goal>` | Full PM pipeline bootstrap | `code` | `true` |
 | `/phase <name>` | Enter structured phase | `code` | `false` |
-| `/resume` | Resume from SPEC.md/TASKS.md | `code` | `false` |
 | `/handoff` | Emit persona handoff contract | `code` | `false` |
 | `/approve-plan` | Record plan approval | `code` | `false` |
 | `/verify` | Run verification gate | `build` | `true` |
@@ -179,12 +178,17 @@ variant: optional
 | `/code-ref` | Lookup/caching reference pool | `code` | `true` |
 | `/review-consolidated` | Switch to consolidated REVIEW | `code` | `false` |
 | `/review-interactive` | Switch to interactive REVIEW | `code` | `false` |
+| `/drift` | Enter DRIFT phase (spec-vs-code comparison) | `code` | `false` |
+| `/checklist` | Enter CHECKLIST phase (inventory + rubrics) | `code` | `false` |
+| `/docs` | Enter DOCS phase (dependency evidence) | `code` | `false` |
+| `/spec` | Enter SPEC phase (spec artifact authoring) | `code` | `false` |
+| `/discuss` | Enter DISCUSS mode (exploratory conversation) | `code` | `false` |
 
 ---
 
 ## Skills (`.kilo/skills/<name>/SKILL.md`)
 
-Kilo Code supports skills — markdown files discovered inside `.kilo/` at `skills/<name>/SKILL.md` (or `skill/<name>/SKILL.md`). The Baba system ports the six Claude Code skills as explicit templates in `adapters/kilo/skills/`.
+Kilo Code supports skills — markdown files discovered inside `.kilo/` at `skills/<name>/SKILL.md` (or `skill/<name>/SKILL.md`). The Baba system ports ten Claude Code skills as explicit templates in `adapters/kilo/skills/`.
 
 | Skill | Purpose | Model invocation |
 |-------|---------|------------------|
@@ -192,8 +196,12 @@ Kilo Code supports skills — markdown files discovered inside `.kilo/` at `skil
 | `phase` | Enter a structured Baba phase by name | Disabled |
 | `smoke` | Playwright MCP smoke-test plan + immediate execution | Enabled |
 | `handoff` | Emit a complete persona handoff contract | Disabled |
-| `resume` | Resume the Baba session from SPEC.md / TASKS.md / conversation state | Disabled |
 | `approve-plan` | Record plan approval + rewrite contract | Disabled |
+| `drift` | Enter DRIFT phase (spec-vs-code comparison) | Disabled |
+| `checklist` | Enter CHECKLIST phase (inventory + rubrics) | Disabled |
+| `docs` | Enter DOCS phase (dependency evidence) | Disabled |
+| `spec` | Enter SPEC phase (spec artifact authoring) | Disabled |
+| `discuss` | Enter DISCUSS mode (exploratory conversation) | Disabled |
 
 Skills can also be extended from extra directories or remote URLs via `kilo.json`:
 

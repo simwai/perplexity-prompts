@@ -783,6 +783,7 @@ Gate result: ALL PASS required. Any FAIL -> return to PLAN.
 - Commit: [sha] or SKIPPED -- [subject]
 - Push: [remote] -- [pushed|skipped-duplicate|skipped-detached|failed] or NONE
 - Plan-Actual: GREEN|RED|SKIPPED -- [reason] (commit/push gate)
+- Review delegation: sensei=[MERGE BLOCKED|APPROVED WITH FIXES|LGTM|SKIPPED] -- tester=[N BINDING items|SKIPPED] -- deferred=[list or none]
 ```
 
 **Fileless PATCH variant (READ_ONLY hosts).** On a confirmed `READ_ONLY` host, the PATCH template is replaced by the Delivery contract: complete file contents in labeled fenced blocks, `SKIPPED: <category> -- <reason>` lines for lint, diff, and git steps, and a `# Commit/Push Gate` block that reports `SKIPPED: git -- <reason>` (no commit/push ask is emitted). The rewrite contract and compliance audit remain mandatory. On `FILE_CAPABLE` hosts this variant does not apply.
