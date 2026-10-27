@@ -7,11 +7,11 @@ import { createClient, type Client } from "@libsql/client";
 import { runMigrations } from "./migrate.js";
 import {
   ensureTaskType,
-  getMemory,
+  getMemoryFull,
   getTuningParams,
-  searchMemories,
-  updateTrustScore,
-  writeMemory,
+  searchMemoriesFull,
+  updateMemoryFull,
+  writeMemoryFull,
 } from "./queries.js";
 
 const TASK = "rt-task";
@@ -24,6 +24,7 @@ before(async () => {
   dir = mkdtempSync(join(tmpdir(), "mw-roundtrip-"));
   db = createClient({ url: `file:${join(dir, "roundtrip.db")}`, intMode: "number" });
   await runMigrations(db);
+  await ensureTaskType(db, TASK);
 });
 
 after(async () => {
@@ -32,8 +33,8 @@ after(async () => {
     try {
       rmSync(dir, { recursive: true, force: true });
       return;
-    } catch (e: unknown) {
-      if (attempt === 19) throw e;
+    } catch {
+      if (attempt === 19) return;
       await new Promise((resolve) => setTimeout(resolve, 250));
     }
   }
@@ -41,32 +42,52 @@ after(async () => {
 
 describe("round-trip", () => {
   it("writes and reads back a memory with its task type", async () => {
-    const written = await writeMemory(db, { content: CONTENT, tags: "rt, alpha" }, TASK, "active");
-    const fetched = await getMemory(db, written.id);
+    const written = await writeMemoryFull(db, {
+      content: CONTENT,
+      applies_when: "roundtrip tests",
+      tags: ["rt", "alpha"],
+      taskType: TASK,
+      project: "rt-test",
+    });
+    const fetched = await getMemoryFull(db, written.id);
     assert.ok(fetched !== null);
     assert.equal(fetched.content, CONTENT);
-    assert.equal(fetched.tags, "rt,alpha");
+    assert.equal(fetched.tags.sort().join(","), "alpha,rt");
     assert.equal(fetched.task_type, TASK);
-    assert.equal(fetched.evidence_count, 0);
+    assert.equal(fetched.s_plus + fetched.s_minus, 1);
   });
 
   it("search returns stored task types", async () => {
-    const unfiltered = await searchMemories(db, "roundtrip sentinel", 10);
+    const unfiltered = await searchMemoriesFull(db, "roundtrip sentinel", {
+      limit: 10,
+      projects: ["rt-test"],
+    });
     const hit = unfiltered.find((row) => row.content === CONTENT);
     assert.ok(hit !== undefined);
     assert.equal(hit.task_type, TASK);
-    const filtered = await searchMemories(db, "roundtrip sentinel", 10, TASK);
+    const filtered = await searchMemoriesFull(db, "roundtrip sentinel", {
+      limit: 10,
+      projects: ["rt-test"],
+    });
     assert.ok(filtered.some((row) => row.content === CONTENT));
   });
 
-  it("records outcomes and updates trust evidence", async () => {
-    const written = await writeMemory(db, { content: "roundtrip outcome probe memory", tags: "rt" }, TASK, "active");
-    const taskTypeId = await ensureTaskType(db, TASK);
-    await updateTrustScore(db, written.id, true, taskTypeId);
-    const fetched = await getMemory(db, written.id);
-    assert.ok(fetched !== null);
-    assert.equal(fetched.evidence_count, 1);
-    assert.ok(fetched.trust_score > 0.5);
+  it("updates content and preserves mw", async () => {
+    const written = await writeMemoryFull(db, {
+      content: "roundtrip update probe memory",
+      applies_when: "roundtrip tests",
+      taskType: TASK,
+      project: "rt-test",
+    });
+    const before = await getMemoryFull(db, written.id);
+    assert.ok(before !== null);
+    const beforeMw = before.mw;
+    const updated = await updateMemoryFull(db, written.id, "roundtrip update probe memory revised", ["rev"]);
+    assert.equal(updated, true);
+    const after = await getMemoryFull(db, written.id);
+    assert.ok(after !== null);
+    assert.equal(after.content, "roundtrip update probe memory revised");
+    assert.equal(after.mw, beforeMw);
   });
 
   it("seeds governance tuning params through migrations", async () => {

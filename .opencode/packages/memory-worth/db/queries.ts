@@ -1,9 +1,10 @@
 import type { Client } from "@libsql/client";
-import type { MemoryInput, SearchResult, TrustLabel, TuningParams } from "../core/types.js";
-import { computeTrustScore, mwOf, quantileLabel, updateEma } from "../core/trust.js";
+import type { TrustLabel, TuningParams } from "../core/types.js";
+import { mwOf, quantileLabel } from "../core/trust.js";
 import { DEFAULT_TUNING_PARAMS } from "../core/governance.js";
 import { asNumber, asText } from "./decode.js";
-import { epochInt, epochNow } from "./epoch.js";
+import { epochInt } from "./epoch.js";
+import { join } from "node:path";
 
 type PreviewResult = { ok: true; previous: string } | { ok: false; error: string };
 
@@ -27,7 +28,11 @@ export async function getStatusId(db: Client, name: string): Promise<number> {
 function parseTuningParams(rows: Array<{ key: string; value: string }>): TuningParams {
   const parsed: Record<string, string> = {};
   for (const row of rows) {
-    parsed[row.key] = row.value;
+    const key =
+      row.key === "trust_q" ? "trust_quantile" :
+      row.key === "doubt_q" ? "doubt_quantile" :
+      row.key;
+    parsed[key] = row.value;
   }
   const decay = Number(parsed["decay_rate"] ?? DEFAULT_TUNING_PARAMS.decay_rate);
   const trustQ = Number(parsed["trust_quantile"] ?? DEFAULT_TUNING_PARAMS.trust_quantile);
@@ -43,252 +48,18 @@ function parseTuningParams(rows: Array<{ key: string; value: string }>): TuningP
 }
 
 export async function getTuningParams(db: Client): Promise<TuningParams> {
-  const result = await db.execute({ sql: `SELECT key, value FROM tuning_param_legacy_v1`, args: [] });
+  const result = await db.execute({ sql: `SELECT key, value FROM parameter`, args: [] });
   const rows: Array<{ key: string; value: string }> = [];
   for (const row of result.rows) {
     rows.push({ key: asText(row["key"]), value: asText(row["value"]) });
   }
+  if (rows.length === 0) {
+    const legacy = await db.execute({ sql: `SELECT key, value FROM tuning_param_legacy_v1`, args: [] });
+    for (const row of legacy.rows) {
+      rows.push({ key: asText(row["key"]), value: asText(row["value"]) });
+    }
+  }
   return parseTuningParams(rows);
-}
-
-export async function writeMemory(
-  db: Client,
-  input: MemoryInput,
-  taskTypeName: string,
-  statusName: string,
-): Promise<{ id: number; content: string; tags: string[]; task_type: string }> {
-  const taskTypeId = await ensureTaskType(db, taskTypeName);
-  const statusId = await getStatusId(db, statusName);
-  const now = epochNow();
-
-  const inserted = await db.execute({
-    sql: `INSERT INTO memory_legacy_v1 (content, memory_status_id, created_at, updated_at) VALUES (?, ?, ?, ?)`,
-    args: [input.content, statusId, now, now],
-  });
-  const memoryId = asRowId(inserted.lastInsertRowid);
-
-  const tagNames: string[] = [];
-  if (input.tags && input.tags.trim()) {
-    for (const part of input.tags.split(",")) {
-      const name = part.trim();
-      if (name) tagNames.push(name);
-    }
-  }
-
-  const writes: Array<{ sql: string; args: Array<string | number | null> }> = [];
-  for (const tagName of tagNames) {
-    writes.push({ sql: `INSERT OR IGNORE INTO tag (name) VALUES (?)`, args: [tagName] });
-  }
-  if (writes.length > 0) {
-    await db.batch(writes, "write");
-  }
-
-  if (tagNames.length > 0) {
-    const placeholders = tagNames.map(() => "?").join(", ");
-    const tagRows = await db.execute({
-      sql: `SELECT id, name FROM tag WHERE name IN (${placeholders})`,
-      args: tagNames,
-    });
-    const links: Array<{ sql: string; args: Array<string | number | null> }> = [];
-    for (const row of tagRows.rows) {
-      links.push({
-        sql: `INSERT OR IGNORE INTO memory_tag_link_legacy_v1 (memory_id, tag_id) VALUES (?, ?)`,
-        args: [memoryId, asNumber(row["id"])],
-      });
-    }
-    links.push({
-      sql: `INSERT OR IGNORE INTO memory_partition_legacy_v1 (memory_id, task_type_id) VALUES (?, ?)`,
-      args: [memoryId, taskTypeId],
-    });
-    await db.batch(links, "write");
-  } else {
-    await db.execute({
-      sql: `INSERT OR IGNORE INTO memory_partition_legacy_v1 (memory_id, task_type_id) VALUES (?, ?)`,
-      args: [memoryId, taskTypeId],
-    });
-  }
-
-  return { id: memoryId, content: input.content, tags: tagNames, task_type: taskTypeName };
-}
-
-async function loadTags(db: Client, memoryIds: number[]): Promise<Map<number, string>> {
-  const tagsByMemory = new Map<number, string[]>();
-  if (memoryIds.length === 0) return new Map();
-  const placeholders = memoryIds.map(() => "?").join(", ");
-  const tagRows = await db.execute({
-    sql: `SELECT mtl.memory_id AS memory_id, t.name AS name FROM tag t JOIN memory_tag_link_legacy_v1 mtl ON t.id = mtl.tag_id WHERE mtl.memory_id IN (${placeholders})`,
-    args: memoryIds,
-  });
-  for (const row of tagRows.rows) {
-    const memoryId = asNumber(row["memory_id"]);
-    const name = asText(row["name"]);
-    const existing = tagsByMemory.get(memoryId) ?? [];
-    existing.push(name);
-    tagsByMemory.set(memoryId, existing);
-  }
-  const joined = new Map<number, string>();
-  for (const [memoryId, names] of tagsByMemory) {
-    joined.set(memoryId, names.join(","));
-  }
-  return joined;
-}
-
-async function loadTaskTypes(db: Client, memoryIds: number[]): Promise<Map<number, string>> {
-  const typesByMemory = new Map<number, string>();
-  if (memoryIds.length === 0) return typesByMemory;
-  const placeholders = memoryIds.map(() => "?").join(", ");
-  const typeRows = await db.execute({
-    sql: `SELECT mp.memory_id AS memory_id, tt.name AS name FROM task_type tt JOIN memory_partition_legacy_v1 mp ON tt.id = mp.task_type_id WHERE mp.memory_id IN (${placeholders}) ORDER BY mp.id`,
-    args: memoryIds,
-  });
-  for (const row of typeRows.rows) {
-    const memoryId = asNumber(row["memory_id"]);
-    if (!typesByMemory.has(memoryId)) {
-      typesByMemory.set(memoryId, asText(row["name"]));
-    }
-  }
-  return typesByMemory;
-}
-
-export async function getMemory(db: Client, id: number): Promise<SearchResult | null> {
-  const result = await db.execute({
-    sql: `SELECT m.id AS id, m.content AS content, m.evidence_count AS evidence_count, m.ema_success AS ema_success, m.ema_failure AS ema_failure, m.created_at AS created_at FROM memory_legacy_v1 m WHERE m.id = ? AND m.deleted_at IS NULL`,
-    args: [id],
-  });
-  if (result.rows.length === 0) return null;
-  const row = result.rows[0];
-  if (!row) return null;
-
-  const tags = await loadTags(db, [id]);
-  const taskTypes = await loadTaskTypes(db, [id]);
-  const trust = computeTrustScore(asNumber(row["ema_success"]), asNumber(row["ema_failure"]));
-  return {
-    id: asNumber(row["id"]),
-    content: asText(row["content"]),
-    tags: tags.get(id) ?? "",
-    task_type: taskTypes.get(id) ?? "general",
-    trust_label: trust.label,
-    trust_score: Math.round(trust.score * 100) / 100,
-    evidence_count: asNumber(row["evidence_count"]),
-    created_at: asText(row["created_at"]),
-    rank: 0,
-  };
-}
-
-export async function searchMemories(
-  db: Client,
-  query: string,
-  limit: number,
-  taskTypeName?: string,
-  sessionId?: string,
-): Promise<SearchResult[]> {
-  const bounded = Math.max(1, Math.min(limit, 50));
-  let taskTypeId: number | undefined;
-  if (taskTypeName) {
-    taskTypeId = await ensureTaskType(db, taskTypeName);
-  }
-
-  const rows = await db.execute({
-    sql: `SELECT m.id AS id, m.content AS content, m.evidence_count AS evidence_count, m.ema_success AS ema_success, m.ema_failure AS ema_failure, m.created_at AS created_at, bm25(memory_fts) AS rank FROM memory_fts JOIN memory_legacy_v1 m ON m.id = memory_fts.rowid JOIN memory_status ms ON m.memory_status_id = ms.id WHERE memory_fts MATCH ? AND m.deleted_at IS NULL AND ms.name NOT IN ('invalidated', 'merged') ${taskTypeId !== undefined ? `AND m.id IN (SELECT memory_id FROM memory_partition_legacy_v1 WHERE task_type_id = ?)` : ``} ORDER BY rank LIMIT ?`,
-    args: taskTypeId !== undefined ? [query, taskTypeId, bounded * 3] : [query, bounded * 3],
-  });
-
-  type RawMemory = { id: number; content: string; evidence_count: number; ema_success: number; ema_failure: number; created_at: string; rank: number };
-  const found: RawMemory[] = [];
-  for (const row of rows.rows) {
-    found.push({
-      id: asNumber(row["id"]),
-      content: asText(row["content"]),
-      evidence_count: asNumber(row["evidence_count"]),
-      ema_success: asNumber(row["ema_success"]),
-      ema_failure: asNumber(row["ema_failure"]),
-      created_at: asText(row["created_at"]),
-      rank: asNumber(row["rank"]),
-    });
-  }
-
-  const sliced = found.slice(0, bounded);
-  const ids: number[] = [];
-  for (const item of sliced) {
-    ids.push(item.id);
-  }
-  const tags = await loadTags(db, ids);
-  const taskTypes = await loadTaskTypes(db, ids);
-
-  if (sessionId && ids.length > 0) {
-    const now = epochNow();
-    const retrievals: Array<{ sql: string; args: Array<string | number | null> }> = [];
-    for (const id of ids) {
-      retrievals.push({
-        sql: `INSERT INTO session_memory_legacy_v1 (session_id, memory_id, retrieved_at) VALUES (?, ?, ?)`,
-        args: [sessionId, id, now],
-      });
-    }
-    await db.batch(retrievals, "write");
-  }
-
-  const results: SearchResult[] = [];
-  for (const item of sliced) {
-    const trust = computeTrustScore(item.ema_success, item.ema_failure);
-    results.push({
-      id: item.id,
-      content: item.content,
-      tags: tags.get(item.id) ?? "",
-      task_type: taskTypes.get(item.id) ?? "general",
-      trust_label: trust.label,
-      trust_score: Math.round(trust.score * 100) / 100,
-      evidence_count: item.evidence_count,
-      created_at: item.created_at,
-      rank: item.rank,
-    });
-  }
-  return results;
-}
-
-export async function updateTrustScore(
-  db: Client,
-  memoryId: number,
-  outcome: boolean,
-  taskTypeId: number,
-): Promise<void> {
-  const params = await getTuningParams(db);
-  const memResult = await db.execute({
-    sql: `SELECT ema_success, ema_failure, evidence_count FROM memory_legacy_v1 WHERE id = ?`,
-    args: [memoryId],
-  });
-  if (memResult.rows.length === 0) return;
-  const mem = memResult.rows[0];
-  if (!mem) return;
-  const next = updateEma(asNumber(mem["ema_success"]), asNumber(mem["ema_failure"]), outcome, params.decay_rate);
-  const nextCount = asNumber(mem["evidence_count"]) + 1;
-  const now = epochNow();
-
-  const partResult = await db.execute({
-    sql: `SELECT id, ema_success, ema_failure, evidence_count FROM memory_partition_legacy_v1 WHERE memory_id = ? AND task_type_id = ?`,
-    args: [memoryId, taskTypeId],
-  });
-
-  if (partResult.rows.length > 0) {
-    const part = partResult.rows[0];
-    if (!part) return;
-    const nextPart = updateEma(asNumber(part["ema_success"]), asNumber(part["ema_failure"]), outcome, params.decay_rate);
-    await db.batch(
-      [
-        { sql: `UPDATE memory_legacy_v1 SET ema_success = ?, ema_failure = ?, evidence_count = ?, updated_at = ? WHERE id = ?`, args: [next.ema_success, next.ema_failure, nextCount, now, memoryId] },
-        { sql: `UPDATE memory_partition_legacy_v1 SET ema_success = ?, ema_failure = ?, evidence_count = ? WHERE id = ?`, args: [nextPart.ema_success, nextPart.ema_failure, asNumber(part["evidence_count"]) + 1, asNumber(part["id"])] },
-      ],
-      "write",
-    );
-    return;
-  }
-
-  await db.batch(
-    [
-      { sql: `UPDATE memory_legacy_v1 SET ema_success = ?, ema_failure = ?, evidence_count = ?, updated_at = ? WHERE id = ?`, args: [next.ema_success, next.ema_failure, nextCount, now, memoryId] },
-      { sql: `INSERT INTO memory_partition_legacy_v1 (memory_id, task_type_id, ema_success, ema_failure, evidence_count) VALUES (?, ?, ?, ?, ?)`, args: [memoryId, taskTypeId, next.ema_success, next.ema_failure, 1] },
-    ],
-    "write",
-  );
 }
 
 // ---------------------------------------------------------------------------
@@ -348,11 +119,13 @@ export interface SpecMemory {
 
 export interface SpecSearchOptions {
   project?: string;
+  projects?: string[];
   topic?: string;
   tier?: string;
   limit?: number;
   sessionId?: string;
   taskType?: string;
+  project_boost?: number;
 }
 
 export interface SpecSearchHit {
@@ -534,7 +307,11 @@ export async function searchMemoriesFull(db: Client, query: string, opts: SpecSe
   const limit = Math.max(1, Math.min(opts.limit ?? 10, 50));
   const conditions = [`ms.name = 'active'`, `(m.content LIKE ? ESCAPE '\\' OR m.applies_when LIKE ? ESCAPE '\\')`];
   const args: Array<string | number> = [`%${escapeLike(trimmed)}%`, `%${escapeLike(trimmed)}%`];
-  if (opts.project !== undefined) {
+  if (opts.projects !== undefined && opts.projects.length > 0) {
+    const placeholders = opts.projects.map(() => "?").join(", ");
+    conditions.push(`m.project IN (${placeholders})`);
+    args.push(...opts.projects);
+  } else if (opts.project !== undefined) {
     conditions.push(`m.project = ?`);
     args.push(opts.project);
   }
@@ -546,9 +323,17 @@ export async function searchMemoriesFull(db: Client, query: string, opts: SpecSe
     conditions.push(`m.tier_id = (SELECT id FROM memory_tier WHERE name = ?)`);
     args.push(opts.tier);
   }
+  const boost = opts.project_boost ?? 0.15;
+  const currentProject = opts.projects?.[0] ?? opts.project ?? null;
+  const orderBy = currentProject
+    ? `(CASE WHEN m.project = ? THEN ? ELSE 0 END) DESC, m.mw DESC, m.usage_count DESC`
+    : "m.mw DESC, m.usage_count DESC";
+  if (currentProject) {
+    args.push(currentProject, boost);
+  }
   args.push(limit);
   const rows = await db.execute({
-    sql: `SELECT m.id AS id, m.content AS content, m.mw AS mw, m.usage_count AS usage_count, tt.name AS task_type FROM memory m JOIN memory_status ms ON m.status_id = ms.id JOIN task_type tt ON m.task_type_id = tt.id WHERE ${conditions.join(" AND ")} ORDER BY m.mw DESC, m.usage_count DESC LIMIT ?`,
+    sql: `SELECT m.id AS id, m.content AS content, m.mw AS mw, m.usage_count AS usage_count, tt.name AS task_type FROM memory m JOIN memory_status ms ON m.status_id = ms.id JOIN task_type tt ON m.task_type_id = tt.id WHERE ${conditions.join(" AND ")} ORDER BY ${orderBy} LIMIT ?`,
     args,
   });
   const hits: SpecSearchHit[] = [];
@@ -882,4 +667,106 @@ export async function updateMemoryFull(db: Client, id: number, content: string, 
   }
   const check = await db.execute({ sql: `SELECT id FROM memory WHERE id = ?`, args: [id] });
   return check.rows.length > 0;
+}
+
+export async function runOneTimeImport(db: Client, cwd: string): Promise<{ imported: number; project: string }> {
+  // Skip if import already ran for this machine DB
+  const existing = await db.execute({
+    sql: `SELECT COUNT(*) AS cnt FROM import_log`,
+    args: [],
+  });
+  if (asNumber(existing.rows[0]?.["cnt"]) > 0) {
+    return { imported: 0, project: "" };
+  }
+
+  const legacyDbPath = join(cwd, ".opencode", "memory.db");
+  const fs = await import("node:fs");
+  if (!fs.existsSync(legacyDbPath)) {
+    return { imported: 0, project: "" };
+  }
+
+  const { resolveProjectId } = await import("./identity.js");
+  const projectId = await resolveProjectId(cwd);
+
+  // Attach legacy database
+  await db.execute({ sql: `ATTACH DATABASE ? AS legacy`, args: [legacyDbPath] });
+
+  let imported = 0;
+  try {
+    // Seed lookup tables from legacy names that may not exist in target
+    await db.execute({
+      sql: `INSERT OR IGNORE INTO memory_status (name) SELECT DISTINCT name FROM legacy.memory_status`,
+      args: [],
+    });
+    await db.execute({
+      sql: `INSERT OR IGNORE INTO task_type (name) SELECT DISTINCT name FROM legacy.task_type`,
+      args: [],
+    });
+    await db.execute({
+      sql: `INSERT OR IGNORE INTO memory_tier (name) SELECT DISTINCT name FROM legacy.memory_tier`,
+      args: [],
+    });
+    await db.execute({
+      sql: `INSERT OR IGNORE INTO memory_source (name) SELECT DISTINCT name FROM legacy.memory_source`,
+      args: [],
+    });
+    await db.execute({
+      sql: `INSERT OR IGNORE INTO memory_type (name) SELECT DISTINCT name FROM legacy.memory_type`,
+      args: [],
+    });
+    await db.execute({
+      sql: `INSERT OR IGNORE INTO tag (name) SELECT DISTINCT name FROM legacy.tag`,
+      args: [],
+    });
+    await db.execute({
+      sql: `INSERT OR IGNORE INTO ground_kind (name) SELECT DISTINCT name FROM legacy.ground_kind`,
+      args: [],
+    });
+
+    // Copy memories under the resolved project id
+    const result = await db.execute({
+      sql: `
+        INSERT INTO memory (content, applies_when, confidence, project, topic, task_type_id, memory_type_id, status_id, tier_id, source_id, created_at, updated_at)
+        SELECT
+          lm.content,
+          lm.applies_when,
+          lm.confidence,
+          ?,
+          lm.topic,
+          (SELECT id FROM task_type WHERE name = (SELECT name FROM legacy.task_type WHERE id = lm.task_type_id)),
+          (SELECT id FROM memory_type WHERE name = (SELECT name FROM legacy.memory_type WHERE id = lm.memory_type_id)),
+          (SELECT id FROM memory_status WHERE name = (SELECT name FROM legacy.memory_status WHERE id = lm.status_id)),
+          (SELECT id FROM memory_tier WHERE name = (SELECT name FROM legacy.memory_tier WHERE id = lm.tier_id)),
+          (SELECT id FROM memory_source WHERE name = (SELECT name FROM legacy.memory_source WHERE id = lm.source_id)),
+          lm.created_at,
+          lm.updated_at
+        FROM legacy.memory lm
+      `,
+      args: [projectId],
+    });
+    imported = Number(result.rowsAffected ?? 0);
+
+    // Copy memory_tag links (content-matched since ground has no content column)
+    await db.execute({
+      sql: `
+        INSERT OR IGNORE INTO memory_tag (memory_id, tag_id)
+        SELECT
+          (SELECT id FROM memory WHERE content = lm.content AND project = ? ORDER BY id DESC LIMIT 1),
+          (SELECT id FROM tag WHERE name = (SELECT name FROM legacy.tag WHERE id = lmt.tag_id))
+        FROM legacy.memory_tag lmt
+        JOIN legacy.memory lm ON lm.id = lmt.memory_id
+      `,
+      args: [projectId],
+    });
+
+    // Record the import
+    await db.execute({
+      sql: `INSERT INTO import_log (source_path, target_project, memories_imported, imported_at) VALUES (?, ?, ?, ?)`,
+      args: [legacyDbPath, projectId, imported, epochInt()],
+    });
+  } finally {
+    await db.execute({ sql: `DETACH DATABASE legacy`, args: [] });
+  }
+
+  return { imported, project: projectId };
 }

@@ -26,7 +26,7 @@ import {
   memoryWakeupTool,
   memoryWriteTool,
 } from "./tools/index.js";
-import type { LegacyToolDefinition } from "./tools/v2-register.js";
+import type { LegacyToolDefinition } from "./tools/types.js";
 
 export interface McpTool {
   name: string;
@@ -55,9 +55,8 @@ function toMcpTool(name: string, legacy: LegacyToolDefinition): McpTool {
         throw new Error(`Invalid arguments: ${detail}`);
       }
 
-      const directory = process.env.MEMORY_WORTH_DIR || process.cwd();
       const context = {
-        directory,
+        directory: "", // not used for DB path; connection is machine-level
         sessionID: process.env.MEMORY_WORTH_SESSION || undefined,
       };
 

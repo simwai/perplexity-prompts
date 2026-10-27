@@ -42,14 +42,14 @@ describe("tuning", () => {
   });
 
   it("accepts valid knobs with previous value", async () => {
-    const preview = previewParameterChange("min_evidence", "10", { min_evidence: "3" });
+    const preview = previewParameterChange("min_evidence", "10", { min_evidence: "5" });
     assert.equal(preview.ok, true);
-    assert.equal(preview.previous, "3");
+    assert.equal(preview.previous, "5");
   });
 
   it("writes staged changes via setParameter with audit", async () => {
     const staged = await setParameter(db, "min_evidence", "10", "stage tuning test");
-    assert.equal(staged.previous, "3");
+    assert.equal(staged.previous, "5");
     const audit = await db.execute({
       sql: `SELECT knob, old_value, new_value FROM parameter_change WHERE knob = 'min_evidence' ORDER BY id DESC LIMIT 1`,
       args: [],

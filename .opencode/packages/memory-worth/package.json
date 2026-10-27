@@ -2,7 +2,6 @@
   "name": "memory-worth",
   "version": "0.1.0",
   "description": "Memory plugin for opencode with trust scoring and governance, now also available as an MCP server",
-  "main": "index.ts",
   "type": "module",
   "bin": {
     "memory-worth-mcp": "mcp-server.ts"

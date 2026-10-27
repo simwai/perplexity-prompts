@@ -88,13 +88,15 @@ Servers are grouped by what works when env keys are missing. Configure the ones 
 }
 ```
 
-**memory-worth** - the memory-worth package's 12 trust-scored memory tools (search, get, write, update, delete, etc.) plus the `memory_list_tools` meta-tool, exposed over MCP via stdio. Set `MEMORY_WORTH_DIR` to select the `.opencode/memory.db` and `MEMORY_WORTH_SESSION` to tag writes. Every runtime namespaces MCP tools with the server name, so call them as `memory-worth_memory_search`, `memory-worth_memory_write`, `memory-worth_memory_stats` (opencode registers MCP tools with the server name as prefix; Kilo exposes `{server}_{tool}` and reuses those strings as permission keys). Memory persistence is agent-driven, not automatic -- there is no capture hook doing it for you:
+**memory-worth** - the memory-worth package's 13 trust-scored memory tools (search, get, write, update, delete, synthesize, wakeup, stats, tune, invalidate, merge, set_status, list_tools), exposed over MCP via stdio. The DB lives at `%LOCALAPPDATA%\memory-worth\memory.db` by default; override with `MEMORY_WORTH_DB` (full path) or `MEMORY_WORTH_HOME` (directory). `MEMORY_WORTH_DIR` is kept as a deprecated alias. Every runtime namespaces MCP tools with the server name, so call them as `memory-worth_memory_search`, `memory-worth_memory_write`, `memory-worth_memory_stats`.
 
-- Search memory before answering whenever prior session context could help.
-- Write durable insights explicitly with `memory_write`. The `applies_when` field is required; prefer updating an existing memory over duplicating it.
+**memory-worth** - persistent agent memory with project-scoped routing:
+
+- Search memory before answering whenever prior session context could help. `scope: auto` (default) searches current project + global, ranked current-first.
+- Write durable insights explicitly with `memory_write`. The `applies_when` field is required; prefer updating an existing memory over duplicating it. `scope: auto` routes grounded content to the current repo; ungrounded convention/reference memories go to the shared `global` scope.
 - Trust labels are population quantiles: high = co-occurred with success, low = co-occurred with failure, unproven = too little evidence. Treat low-trust memories as hypotheses, not facts.
 - Ground every write to a file, symbol, or git ref -- a post-hoc filter cannot repair an ungrounded entry.
-- On Windows, `generate-adapters.ps1` wraps the npx spawn in `cmd /c` inside `kilo.json`, because Kilo's local-server launcher needs the shell wrapper there (bare npx works for opencode and Claude Code).
+- `memory_wakeup` returns the resolved session id and protocol reminder at session start; session identity is synthetic (MCP has no hooks).
 
 **Context7** - library docs (stdio: `npx -y @upstash/context7-mcp`)
 **Playwright** - browser automation for live UI verification and e2e walk-throughs (Node 20+; headed for testing)

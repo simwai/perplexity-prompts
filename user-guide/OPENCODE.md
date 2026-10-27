@@ -66,15 +66,26 @@ opencode uses `{env:VAR}`, not `${VAR}`. The `exa` server header is `{env:EXA_AP
 
 ### memory-worth MCP server
 
-The memory-worth package exposes its 12 memory tools over MCP (plus a
+The memory-worth package exposes its memory tools over MCP (plus a
 `memory_list_tools` meta-tool). Registered in `opencode.jsonc`, where the
 tools arrive server-namespaced (`memory-worth_memory_search`,
 `memory-worth_memory_write`, ...), and generated into `kilo.json` by
 `generate-adapters.ps1` for Kilo -- which also wraps the `npx` spawn in
 `cmd /c` on Windows, since Kilo's local-server launcher needs the shell
 wrapper there. Kilo reads `kilo.json`, not `.mcp.json`. Stdio transport via
-`npx tsx`; `MEMORY_WORTH_DIR` selects the `.opencode/memory.db` to use, and
-`MEMORY_WORTH_SESSION` tags writes with a session id.
+`npx tsx`; `MEMORY_WORTH_DB` (full path) or `MEMORY_WORTH_HOME` (directory)
+selects the database; `MEMORY_WORTH_DIR` is kept as a deprecated alias.
+`MEMORY_WORTH_SESSION` is not used by opencode/MCP (synthetic session ids
+instead).
+
+Defaults: `%LOCALAPPDATA%\memory-worth\memory.db` on Windows or
+`$XDG_DATA_HOME/memory-worth/memory.db` (or `~/.local/share/memory-worth/memory.db`).
+
+Memory persistence is agent-driven: search before answering when prior
+context could help; write durable insights with `memory_write`
+(`applies_when` required); prefer updating over duplicating. `scope: auto`
+routes grounded content to the current repo; ungrounded convention/reference
+memories go to the shared `global` scope.
 
 ### Trello OAuth
 

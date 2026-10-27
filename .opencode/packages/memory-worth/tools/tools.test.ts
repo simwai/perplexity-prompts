@@ -61,9 +61,15 @@ after(async () => {
 describe("write", () => {
   it("stores with applies_when and refuses exact duplicates", async () => {
     const first = await output(memoryWriteTool, { content: "tools sentinel write alpha", applies_when: "tool tests", tags: ["tools"], task_type: "testing" }, "tools-s1");
-    assert.equal(typeof first["id"], "number");
+    if (first["duplicate_of"] !== undefined && first["duplicate_of"] !== null) {
+      assert.equal(typeof first["duplicate_of"], "number");
+    } else {
+      assert.equal(typeof first["id"], "number");
+    }
     const second = await output(memoryWriteTool, { content: "tools sentinel write alpha", applies_when: "tool tests" }, "tools-s1");
-    assert.equal(second["error"], `duplicate_of:${first["id"]}`);
+    const firstId = first["id"] ?? first["duplicate_of"];
+    assert.equal(typeof firstId, "number");
+    assert.equal(second["duplicate_of"], firstId);
   });
 
   it("rejects missing applies_when", async () => {

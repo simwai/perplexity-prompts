@@ -1,4 +1,4 @@
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
 
 export type MigrationSeed = {
   sql: string;
@@ -276,7 +276,7 @@ export const MIGRATIONS: Migration[] = [
       { sql: `INSERT OR IGNORE INTO memory_source (name) VALUES ('session'), ('file'), ('tool'), ('user'), ('agent')`, args: [] },
       { sql: `INSERT OR IGNORE INTO ground_kind (name) VALUES ('file'), ('symbol'), ('git_ref')`, args: [] },
       { sql: `INSERT OR IGNORE INTO edge_kind (name) VALUES ('references'), ('supersedes'), ('contradicts')`, args: [] },
-      { sql: `INSERT OR IGNORE INTO parameter (key, value) VALUES ('trust_q', '0.70'), ('doubt_q', '0.30'), ('min_evidence', '3'), ('active_partition', 'auto'), ('tune_interval', '50'), ('window_size', '50')`, args: [] },
+      { sql: `INSERT OR IGNORE INTO parameter (key, value) VALUES ('decay_rate', '0.3'), ('trust_quantile', '0.3'), ('doubt_quantile', '0.3'), ('min_evidence', '5'), ('active_partition', 'general'), ('tune_interval', '50'), ('window_size', '50')`, args: [] },
     ],
   },
   {
@@ -311,6 +311,24 @@ export const MIGRATIONS: Migration[] = [
       `INSERT INTO memory_fts_v2(rowid, content)
          SELECT m.id, m.content FROM memory m
         WHERE m.id NOT IN (SELECT rowid FROM memory_fts_v2)`,
+    ],
+  },
+  {
+    // Migration 4 adds project scoping to episodes, last_activity tracking for
+    // session wakeup, and an import log for one-time legacy DB imports.
+    version: 4,
+    statements: [
+      `ALTER TABLE episode ADD COLUMN project TEXT`,
+      `ALTER TABLE episode ADD COLUMN last_activity_at INTEGER`,
+      `CREATE TABLE IF NOT EXISTS import_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        source_path TEXT NOT NULL,
+        target_project TEXT NOT NULL,
+        memories_imported INTEGER NOT NULL DEFAULT 0,
+        imported_at INTEGER NOT NULL
+      )`,
+      `CREATE INDEX IF NOT EXISTS idx_episode_project ON episode(project)`,
+      `CREATE INDEX IF NOT EXISTS idx_episode_last_activity ON episode(last_activity_at)`,
     ],
   },
 ];

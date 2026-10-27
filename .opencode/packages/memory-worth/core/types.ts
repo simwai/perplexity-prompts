@@ -86,6 +86,8 @@ export interface Episode {
   started_at: string;
   resolved_at: string | undefined;
   outcome: Outcome;
+  project?: string;
+  last_activity_at?: number;
 }
 
 export interface CalibrationEntry {

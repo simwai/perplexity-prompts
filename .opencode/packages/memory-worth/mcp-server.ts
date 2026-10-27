@@ -18,21 +18,37 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 
 import { createConnection } from "./db/connection.js";
+import { runOneTimeImport } from "./db/queries.js";
 import { MCP_TOOLS } from "./mcp-tools.js";
-
-const DIRECTORY = process.env.MEMORY_WORTH_DIR || process.cwd();
-
-let db: Awaited<ReturnType<typeof createConnection>> | null = null;
-
-async function ensureDb() {
-  if (!db) db = await createConnection(DIRECTORY);
-  return db;
-}
 
 const server = new McpServer({
   name: "memory-worth",
   version: "0.1.0",
+  instructions: `memory-worth MCP server. Persistent agent memory with trust scoring and project-scoped routing.
+
+Usage:
+- memory_search: call before answering when prior context could help. scope: auto (default) searches current project + global memories, ranked current-first.
+- memory_write: store durable insights. applies_when is required. scope: auto routes to project unless the content is ungrounded and a convention/reference type.
+- memory_wakeup: session-start digest. Returns the resolved session id and policy reminder.
+- scope values: auto | project | global | all (search only). Use "global" for cross-project conventions; omit scope for project-local memories.
+
+Configuration:
+- MEMORY_WORTH_DB: explicit path to the SQLite file.
+- MEMORY_WORTH_HOME: directory; DB is <home>/memory.db.
+- Default: %LOCALAPPDATA%/memory-worth/memory.db (Windows) or XDG_DATA_HOME/memory-worth/memory.db.
+
+All writes go to a single machine-level database. Projects are partitioned by the project column.`,
 });
+
+let db: Awaited<ReturnType<typeof createConnection>> | null = null;
+
+async function ensureDb() {
+  if (!db) {
+    db = await createConnection();
+    await runOneTimeImport(db, process.cwd());
+  }
+  return db;
+}
 
 server.registerTool(
   "memory_list_tools",
