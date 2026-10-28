@@ -8,8 +8,10 @@
  * Run with: node mcp-server.js
  *
  * Configuration:
- *   MEMORY_WORTH_DIR   -- directory whose .opencode/memory.db is used. Defaults
- *                         to the current working directory.
+ *   MEMORY_WORTH_DB    -- explicit path to the SQLite file.
+ *   MEMORY_WORTH_HOME  -- directory; DB is <home>/memory.db.
+ *   Default: %LOCALAPPDATA%/memory-worth/memory.db (Windows) or
+ *   XDG_DATA_HOME/memory-worth/memory.db.
  *   MEMORY_WORTH_SESSION -- optional session id passed to tools that need one
  *                         (search, outcome resolution). Defaults to unset.
  */
@@ -17,14 +19,17 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 
-import { createConnection } from "./db/connection.js";
+import { createConnection, getDbPath } from "./db/connection.js";
 import { runOneTimeImport } from "./db/queries.js";
 import { MCP_TOOLS } from "./mcp-tools.js";
 
-const server = new McpServer({
-  name: "memory-worth",
-  version: "0.1.0",
-  instructions: `memory-worth MCP server. Persistent agent memory with trust scoring and project-scoped routing.
+const server = new McpServer(
+  {
+    name: "memory-worth",
+    version: "0.1.0",
+  },
+  {
+    instructions: `memory-worth MCP server. Persistent agent memory with trust scoring and project-scoped routing.
 
 Usage:
 - memory_search: call before answering when prior context could help. scope: auto (default) searches current project + global memories, ranked current-first.
@@ -38,7 +43,8 @@ Configuration:
 - Default: %LOCALAPPDATA%/memory-worth/memory.db (Windows) or XDG_DATA_HOME/memory-worth/memory.db.
 
 All writes go to a single machine-level database. Projects are partitioned by the project column.`,
-});
+  },
+);
 
 let db: Awaited<ReturnType<typeof createConnection>> | null = null;
 
@@ -100,4 +106,4 @@ for (const tool of MCP_TOOLS) {
 const transport = new StdioServerTransport();
 await server.connect(transport);
 
-process.stderr.write(`memory-worth MCP server started (dir: ${DIRECTORY})\n`);
+process.stderr.write(`memory-worth MCP server started (db: ${getDbPath()})\n`);

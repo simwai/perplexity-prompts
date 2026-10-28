@@ -18,7 +18,7 @@ export const memoryStatsTool = tool({
     const stats = await getStatsFull(db);
     const windowSize = args.window === undefined ? 50 : Math.max(1, Math.floor(args.window));
 
-    let memories = stats.total;
+    let memories = 0;
     let distribution: Record<string, number> = {};
     let projects: string[] | undefined;
 

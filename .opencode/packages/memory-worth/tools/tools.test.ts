@@ -152,7 +152,10 @@ describe("meta", () => {
   it("reports stats with trust distribution", async () => {
     await output(memoryWriteTool, { content: "tools sentinel stats iota", applies_when: "tool tests" }, "tools-s9");
     const stats = await output(memoryStatsTool, {}, "tools-s9");
-    assert.ok((stats["memories"] as number) >= 1);
+    // stats.memories must equal the sum of trust_distribution counts -- no double-counting.
+    // Pre-fix bug: memories = stats.total + active_rows, inflating the count.
+    const distSum = Object.values(stats["trust_distribution"] as Record<string, number>).reduce((a: number, b: number) => a + b, 0);
+    assert.equal((stats["memories"] as number), distSum);
     assert.ok((stats["trust_distribution"] as Record<string, number>)["unproven"] !== undefined);
   });
 

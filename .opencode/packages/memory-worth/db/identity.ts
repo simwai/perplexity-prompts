@@ -87,6 +87,20 @@ async function readOriginUrl(toplevel: string): Promise<string | null> {
 }
 
 function normalizeGitUrl(url: string): string | null {
+  // Handle scp-form SSH remotes: git@host:owner/repo(.git)
+  // No scheme:// prefix, so the scheme-strip below is a no-op for these.
+  const scpMatch = url.match(/^[^@]+@([^:]+):(.+)$/);
+  if (scpMatch) {
+    const host = scpMatch[1];
+    const path = scpMatch[2].replace(/\.git$/, "").replace(/\/+$/, "");
+    const parts = path.split("/");
+    if (parts.length < 1) return null;
+    const owner = parts[0];
+    const repo = parts.slice(1).join("/") || owner;
+    const id = `${host}/${owner}/${repo}`.toLowerCase();
+    return id === "global" ? null : id;
+  }
+
   // Strip scheme and userinfo (tokens, oauth2, etc.) — never leak credentials
   let cleaned = url
     .replace(/^.*:\/\/(?:[^@]+@)?/, "") // strip scheme://userinfo@

@@ -56,7 +56,7 @@ function toMcpTool(name: string, legacy: LegacyToolDefinition): McpTool {
       }
 
       const context = {
-        directory: "", // not used for DB path; connection is machine-level
+        directory: process.cwd(), // project identity; must match mcp-server.ts ensureDb so imports and routing resolve the same project id
         sessionID: process.env.MEMORY_WORTH_SESSION || undefined,
       };
 
