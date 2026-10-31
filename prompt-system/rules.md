@@ -84,7 +84,7 @@ Each rule has:
 - System cross-references `available_libraries` from Discovery Protocol
 - Match: hand-rolled code addresses a concern that an available library solves
 
-**Enforcement:** Block if fix hand-rolls logic that a maintained library solves. Verification gate checks for library usage; if absent, gate FAIL.
+**Enforcement:** Block if fix hand-rolls logic that a maintained library solves (feature/refactor: gate FAIL; bugfix: advisory flag only). Verification gate checks for library usage; if absent, gate FAIL in feature/refactor scope.
 
 **Auto-exception:**
 
@@ -173,7 +173,7 @@ Each rule has:
 - Count callers outside the defining file
 - If callers ≤ 1: flag
 
-**Enforcement:** Block if fix creates a new abstraction with ≤1 caller. Verification gate counts callers; if ≤1, gate FAIL.
+**Enforcement:** Block if fix creates a new abstraction with ≤1 caller (feature/refactor: gate FAIL; bugfix: advisory flag only). Verification gate counts callers; if ≤1, gate FAIL in feature/refactor scope.
 
 **Auto-exception:**
 
@@ -250,7 +250,7 @@ Sub-check H20d (unrequested genericity):
 
 - System checks for interfaces with one implementation, factories with one product, config entries for values that never change, new dependencies when existing one covers the need
 
-**Enforcement:** Block if fix creates unnecessary abstraction layers. Verification gate checks abstraction depth and caller count; if layers > 1 and callers < 3, gate FAIL. For H20b, verification gate counts callers; if callers <= 1, gate FAIL. For H20c, verification gate checks for TODOs without owner, unused parameters, and unreachable branches; if found, gate FAIL. For H20d, verification gate checks for single-implementation interfaces, single-product factories, static config entries, and redundant new dependencies; if found, gate FAIL.
+**Enforcement:** Block if fix creates unnecessary abstraction layers (feature/refactor: gate FAIL; bugfix: advisory flag only). Verification gate checks abstraction depth and caller count; if layers > 1 and callers < 3, gate FAIL in feature/refactor scope. For H20b, verification gate counts callers; if callers <= 1, gate FAIL. For H20c, verification gate checks for TODOs without owner, unused parameters, and unreachable branches; if found, gate FAIL. For H20d, verification gate checks for single-implementation interfaces, single-product factories, static config entries, and redundant new dependencies; if found, gate FAIL.
 
 **Auto-exception:**
 
@@ -283,7 +283,7 @@ Sub-check H20d (unrequested genericity):
 - If composition is dominant (>60% of similar patterns) AND fix uses `extends`: flag
 - Stack-specific: TypeScript/JS (`extends`), Python (`class Child(Parent)`), Java (`extends`)
 
-**Enforcement:** Block if fix uses inheritance when composition is dominant in the layer. Verification gate checks for `extends` in new code; if composition is dominant, gate FAIL.
+**Enforcement:** Block if fix uses inheritance when composition is dominant in the layer (feature/refactor: gate FAIL; bugfix: advisory flag only). Verification gate checks for `extends` in new code; if composition is dominant, gate FAIL in feature/refactor scope.
 
 **Auto-exception:**
 
@@ -400,7 +400,7 @@ Sub-check H20d (unrequested genericity):
 - System checks if entries match actual discovered items (static list vs. dynamic discovery)
 - Detection method: `rg` for registry pattern; compare entries against actual files/modules
 
-**Enforcement:** Block if fix creates a registry/mapping that requires manual sync. Verification gate checks if registry entries match discovered items; if mismatch, gate FAIL.
+**Enforcement:** Block if fix creates a registry/mapping that requires manual sync (feature/refactor: gate FAIL; bugfix: advisory flag only). Verification gate checks if registry entries match discovered items; if mismatch, gate FAIL in feature/refactor scope.
 
 **Auto-exception:**
 
