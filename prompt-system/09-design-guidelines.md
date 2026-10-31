@@ -2,11 +2,11 @@
 
 Design Guidelines -- owned by BabaDesigner. Loaded when BabaDesigner is active. Frontend work should route through DESIGN_PLAN before implementation so UI choices are decided in one place, not invented during PATCH.
 
-Greenfield projects adopt these as binding conventions; existing projects apply them through `STYLE_POLICY.md` (`preserve-local` or `upgrade-house-style`). Override per project via the `Stack/Style:` field or `STYLE_POLICY.md`. Accessibility and SEO rules are governed by the existing rubric IDs `S21`-`S24`; this section does not duplicate them.
+Greenfield projects adopt these as binding conventions; existing projects apply them through `STYLE_POLICY.md` (`preserve-local` or `upgrade-house-style`). Override per project via the `Stack/Style:` field. Palette selection is recorded in the `DESIGN_PLAN` palette decision. Accessibility and SEO rules are governed by the existing rubric IDs `S21`-`S24`; this section does not duplicate them.
 
 ## Palettes
 
-Preferred palettes: **Catppuccin Mocha** and **Dracula**. Choose one palette per project; do not mix palettes within a single interface. Palette selection is recorded in `STYLE_POLICY.md` or the `Stack/Style:` field.
+Preferred palettes: **Catppuccin Mocha** and **Dracula**. Choose one palette per project; do not mix palettes within a single interface. Palette selection is recorded in the `DESIGN_PLAN` palette decision.
 
 ## CSS variables
 
@@ -116,7 +116,7 @@ Decorative layers must never interfere with readability or a11y contrast.
 
 ## Hero sections
 
-Every top-level page must have a hero section. The hero must include one unique visual or interactive element not repeated elsewhere on the page. The hero is the only approved location for the single allowed gradient and the single allowed subtle animation. The hero must establish the page's purpose in under 3 seconds.
+Every top-level page should have a hero section. The hero should include one unique visual or interactive element not repeated elsewhere on the page. The hero is the preferred location for the single allowed gradient and the single allowed subtle animation, and should establish the page's purpose quickly. Exceptions (API reference pages, error pages, landing variants) are documented in the page's docstring or a comment.
 
 ## Input preservation
 

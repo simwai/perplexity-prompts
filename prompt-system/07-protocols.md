@@ -232,16 +232,16 @@ pattern_owner_location: <file:line>
 owner_confidence: high|medium|low
 
 must_use:
-  - <module.method> (<file:line>) [rule: H15]
+  - <module.method> (<file:line>) [rule: H16]
 
 must_not_duplicate:
   - <file:lines> -- <pattern> [rule: H14]
 
 must_use_library:
-  - <name> (<version>) [rule: H14]
+  - <name> (<version>) [rule: H15]
 
 must_route_through:
-  - <layer> [rule: H16]
+  - <layer> [rule: H17]
 
 dominant_idiom:
   type: <error|validation|di|logging>
@@ -251,11 +251,6 @@ dominant_idiom:
 
 rule_triggers:
   - rule: H14
-    active: true|false
-    auto_excepted: true|false
-    reason: <if auto-excepted>
-
-available_libraries:
   - <name> (<version>) from <manifest>
 
 existing_utilities:
@@ -436,10 +431,6 @@ When the receiving team has completed their change, the entry should be updated:
 
 - Add `**Resolved**: <date> - <brief note>` below the `**Priority**` line
 - Do not delete the entry; keep the history for audit purposes
-
-### Quarantine cascade notification (spec lifecycle)
-
-When a spec L1 demotion or deprecation cascades (`## Spec lifecycle` quarantine cascade: every `Implements:` L2 dependent auto-demotes) and the cascade touches code, contracts, or services owned by another repo or team within the same project scope, file a `CHANGES_REQUIRED.md` entry per the template above. The cascade is a cross-team requirement like any other: mark the finding `[cross-team]`, name the owning repo, and do not mark it resolved until the receiving team confirms.
 
 ## Library selection
 
