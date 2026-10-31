@@ -10,7 +10,7 @@
 - Errors: typed exceptions; checked exceptions for recoverable conditions, unchecked for programming errors; never swallow.
 - Streams: `stream()` for transformations, but a `for` loop is fine for side effects; no nested streams (S3).
 - Tests: JUnit 5; `@DisplayName` for human-readable test names; one assertion focus per test.
-- Build: Maven or Gradle; wrapper committed; lockfile equivalent (`maven.lock` or `gradle.lockfile`) for reproducible builds.
+- Build: Maven or Gradle; wrapper committed; reproducible builds via locked dependency versions (parent POM with `<dependencyManagement>`/BOM for Maven; `gradle.lockfile` for Gradle).
 - Linting: Spotless or Checkstyle; pre-commit hook runs it on save.
 - Greenfield project:
   - Structure: `src/main/java`, `src/test/java`

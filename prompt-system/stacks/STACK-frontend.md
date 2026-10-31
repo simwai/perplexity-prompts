@@ -8,6 +8,6 @@
 - Vue 3 composition API with `<script setup lang="ts">`; props typed via `defineProps<{ ... }>()`; emits typed via `defineEmits<{ ... }>()`.
 - CSS: scoped styles; CSS custom properties for theming; no inline styles except for dynamic values.
 - State: Pinia (Vue); never component-to-component mutation through props drilling more than one level.
-- HTTP client: **got** (typed, modern).
+- HTTP client: `fetch` in browser contexts, `got` or `axios` in Node runtimes.
 - Accessibility: ARIA only when semantic HTML cannot express the relationship; keyboard navigation for every interactive element; `prefers-reduced-motion` respected.
 - SEO: See `09-design-guidelines.md` and rubrics S21-S24.

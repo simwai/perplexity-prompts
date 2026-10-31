@@ -7,7 +7,7 @@
 - New data classes default to `@dataclass(slots=True)` from `dataclasses`. Use `slots=False` only when inheritance conflicts (document why).
 - Naming: snake_case for functions/variables/modules, PascalCase for classes, UPPER_SNAKE_CASE for constants.
 - Imports: `from x import y` style; `__init__.py` re-exports; no wildcard imports.
-- Errors: raise specific exceptions; chain with `raise NewError(...) from original`; never bare `except:` or `except Exception:` without re-raise. Result pattern (**Result4j**) is the default for recoverable errors; exceptions for truly exceptional/unrecoverable conditions only.
+- Errors: raise specific exceptions; chain with `raise NewError(...) from original`; never bare `except:` or `except Exception:` without re-raise. Result pattern (**result**) is the default for recoverable errors; exceptions for truly exceptional/unrecoverable conditions only.
 - Tests: pytest with `arrange-act-assert`; fixtures for setup; parametrize for input variation; no test interdependence.
 - Async: `asyncio` over thread pools; `async def` only when I/O-bound and the codebase is async; never mix sync and async in the same call chain.
 - Package management: tooling detection first in an existing project. In an existing Python project, detect the active toolchain from marker files before running any install/add/lint/test command and route every Python command through it:
@@ -32,7 +32,7 @@
   - **Recommended `.vscode/extensions.json`** `recommendations`: `ms-python.vscode-pylance`, `meta.pyrefly`, `charliermarsh.ruff`.
 - Pyrefly is the type checker (not Pyright or mypy). Configured in `[tool.pyrefly]` in `pyproject.toml` with `strict = true`. Override noisy strict rules only with rationale. Per-file opt-out via `# pyrefly: ignore[rule]` with a one-line why comment. **Type-check gate only executes when pyrefly is a declared dependency.**
 - DI container: **dependency-injector**. Favor constructor injection; wire the composition root at the application entry point. Default to transient lifetime unless a clear singleton or scoped rationale exists.
-- Result pattern library: **Result4j** (`Result<T, E>`):
+- Result pattern library: **result** (`Result[T, E]`):
   - A project-level helper wraps a throwing expression into a `Result`:
   
     ```python
@@ -52,7 +52,7 @@
   - Caller narrows with `if result.is_ok()` / `elif result.is_err()` or `match/case`.
   - **No `.map()`, `.and_then()`, `.or_else()`, `.inspect()`, `.match()` method chaining allowed.**
   - `.unwrap()` / `.unwrap_or()` only at boundary points where exiting the Result pattern into exception land.
-  - Do not mix `Result4j` with another result library in the same project.
+  - Do not mix **result** with another result library in the same project.
 - Preferred typed library stack (fully typed, reduce manual code):
   - Validation/models: **Pydantic v2** for API boundaries; `@dataclass(slots=True)` for internal data.
   - HTTP: **httpx** (fully typed, async).

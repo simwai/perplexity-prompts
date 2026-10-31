@@ -44,10 +44,13 @@ Rules always in force:
 - `prompt-system/stacks/STACK-pinescript.md`
 - `prompt-system/stacks/STACK-database.md`
 
+**Load on CHECKLIST [review]**
+
+- `prompt-system/rules.md` (H13-H38 detection, enforcement, auto-exception, and scope matrix; `04-rubrics.md` remains the sole authority for which `H`-number belongs to which rule)
+
 **Load on PATCH [review]**
 
 - `prompt-system/06-misc.md` (operational protocol: PATCH behavior, commit/push gate)
-- `prompt-system/rules.md` (H13-H38 detection, enforcement, auto-exception, and scope matrix; `04-rubrics.md` remains the sole authority for which `H`-number belongs to which rule)
 - `prompt-system/07-protocols.md` (artifact handling, prompt-system protection, pre-commit, reading protocol, discovery protocol, cross-team requirements, scrum planning)
 - `prompt-system/08-plan-actual-gate.md` (Plan-Versus-Actual Gate)
 

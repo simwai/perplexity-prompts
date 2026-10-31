@@ -246,7 +246,11 @@ Sub-check H20c (speculative code):
 - System checks for parameters that are never read in the function body
 - System checks for branches that are always false/true (constant conditions)
 
-**Enforcement:** Block if fix creates unnecessary abstraction layers. Verification gate checks abstraction depth and caller count; if layers > 1 and callers < 3, gate FAIL. For H20b, verification gate counts callers; if callers <= 1, gate FAIL. For H20c, verification gate checks for TODOs without owner, unused parameters, and unreachable branches; if found, gate FAIL.
+Sub-check H20d (unrequested genericity):
+
+- System checks for interfaces with one implementation, factories with one product, config entries for values that never change, new dependencies when existing one covers the need
+
+**Enforcement:** Block if fix creates unnecessary abstraction layers. Verification gate checks abstraction depth and caller count; if layers > 1 and callers < 3, gate FAIL. For H20b, verification gate counts callers; if callers <= 1, gate FAIL. For H20c, verification gate checks for TODOs without owner, unused parameters, and unreachable branches; if found, gate FAIL. For H20d, verification gate checks for single-implementation interfaces, single-product factories, static config entries, and redundant new dependencies; if found, gate FAIL.
 
 **Auto-exception:**
 
@@ -548,6 +552,7 @@ Sub-check H20c (speculative code):
 
 - Flag is a framework-mandated parameter (e.g., React `useEffect` deps array)
 - Flag is a configuration option with semantic meaning (e.g., `recursive: boolean`)
+- Flag is part of a stack-mandated TryXxx pattern with an output parameter (stack-specific Try idiom)
 - Mutation is a fluent builder return value
 - Mutation is a standard library pattern (e.g., `Array.sort()` in-place)
 

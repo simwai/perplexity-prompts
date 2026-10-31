@@ -56,34 +56,25 @@ function relativePromptSystemPath(absPath: string, directory: string): string {
  * top-level prompt-system/*.md file (the pre-tier behavior), so a broken
  * manifest degrades to superset enforcement rather than no enforcement.
  */
-const REVIEW_PATCH_PHASES = new Set([
-  "CHECKLIST",
-  "DOCS",
-  "REVIEW",
-  "TEST_STRATEGY",
-  "TEST_STRATEGY_QUANT",
-  "PLAN",
-  "DESIGN_PLAN",
-  "HANDOFF",
-  "PATCH",
-  "DRIFT"
-]);
+const CHECKLIST_PHASES = new Set(["CHECKLIST"]);
+const PATCH_PHASES = new Set(["PATCH"]);
 
 function isPromptSystemFile(rel: string): boolean {
   return rel.startsWith("prompt-system/") && rel.endsWith(".md");
 }
 
-function loadManifestTiers(directory: string): { always: string[]; reviewPatch: string[] } {
+function loadManifestTiers(directory: string): { always: string[]; checklist: string[]; patch: string[] } {
   try {
     const raw = readFileSync(join(directory, "prompt-system", "system-manifest.json"), "utf8");
-    const manifest = JSON.parse(raw) as { loadOrder?: { always?: string[]; reviewPatch?: string[] } };
+    const manifest = JSON.parse(raw) as { loadOrder?: { always?: string[]; checklist?: string[]; patch?: string[] } };
     return {
       always: manifest.loadOrder?.always ?? [],
-      reviewPatch: manifest.loadOrder?.reviewPatch ?? []
+      checklist: manifest.loadOrder?.checklist ?? [],
+      patch: manifest.loadOrder?.patch ?? []
     };
   } catch {
     // Manifest unavailable or unparseable.
-    return { always: [], reviewPatch: [] };
+    return { always: [], checklist: [], patch: [] };
   }
 }
 
@@ -112,15 +103,20 @@ async function discoverRequiredFiles(directory: string): Promise<Set<string>> {
   return files;
 }
 
-/** The required set for a phase: [core] always, [review] for core-work phases. */
+/** The required set for a phase: [core] always; [review] rules at CHECKLIST init; [review] gate files at PATCH. */
 function requiredForPhase(directory: string, phase: string): Set<string> {
   const files = new Set<string>();
   const tiers = loadManifestTiers(directory);
   for (const rel of tiers.always) {
     if (isPromptSystemFile(rel)) files.add(rel);
   }
-  if (REVIEW_PATCH_PHASES.has(phase)) {
-    for (const rel of tiers.reviewPatch) {
+  if (CHECKLIST_PHASES.has(phase)) {
+    for (const rel of tiers.checklist) {
+      if (isPromptSystemFile(rel)) files.add(rel);
+    }
+  }
+  if (PATCH_PHASES.has(phase)) {
+    for (const rel of tiers.patch) {
       if (isPromptSystemFile(rel)) files.add(rel);
     }
   }

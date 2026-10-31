@@ -1,9 +1,8 @@
 # Stack: Pine Script
 
 - Pine Script v5+ (`//@version=5` or newer); keep the version directive on line 1.
-- Target Pine Script v5+ (`//@version=5` or newer); keep the version directive on line 1.
-- Keep statements on one line; break only inside indented blocks (`if`/`else`/`for`/`while`/function bodies) or at Pine continuation points (after `,`, `(`).
-- Never break a line inside a ternary chain (`a ? b : c`) or inside a function call's argument list (`plot(`, `request.security(`, `label.new(`, ...) - Pine's continuation rules are fragile at those break points and produce `end of line without line continuation` compile errors.
+- Keep statements on one line; break only inside indented blocks (`if`/`else`/`for`/`while`/user-defined function bodies).
+- Never break a line inside a ternary chain (`a ? b : c`) or inside a function call's argument list (`plot(`, `request.security(`, `label.new(`, ...).
 - Break lines only where Pine requires them: indented block bodies for `if`, `else`, `for`, `while`, and user-defined functions (Pine is indentation-scoped like Python; use 4 spaces consistently, never mix tabs and spaces).
 - When a single line grows unwieldy, refactor instead of wrapping: extract intermediate variables, or replace a long ternary with an `if`/`else` block.
 - Put comments on their own line above the statement; never end a line that continues onto the next line with a `//` comment (the compiler rejects it).
