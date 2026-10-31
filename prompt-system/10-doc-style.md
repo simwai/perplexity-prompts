@@ -62,7 +62,7 @@ nothing else in this repository notices: markdownlint checks Markdown rather
 than diagram grammar, and the cross-reference suite checks citations rather than
 diagram bodies. `scripts/test-mermaid.ps1` closes that gap by handing each
 Markdown file to mermaid-cli's Markdown mode, which extracts and renders every
-fenced mermaid block in it. It runs in the commit gate as step 4, scoped to
+fenced mermaid block in it. It runs in the commit gate as step 3, scoped to
 staged Markdown, and skips files with no mermaid fence without starting a
 browser. Run it manually with `npm run lint:mermaid`.
 
