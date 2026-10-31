@@ -66,6 +66,14 @@ Quality gate. Runs the spec-review session that freezes `SPEC.md`. Blocks merges
 
 In `REVIEW`, BabaReviewer does not partition files and does not author per-batch findings. The orchestrating session partitions the file inventory by architectural layer and spawns N BabaSensei reviewers (N = min(ceil(files/50), 4)) plus BabaTester. BabaReviewer then receives the merged findings, verifies the merge protocol was applied correctly (Sensei authority on hard-tier, Sensei authority on blocking L-tier findings, union on soft-tier and advisory L-tier findings), and produces the single final merge verdict that closes the phase. This keeps the per-batch review voice separate from the merge/audit voice.
 
+### BabaCEO
+
+CEO / Product Owner for product vision, goal framing, success criteria, and prioritization input.
+
+Turns fuzzy business goals into vision, target user, success criteria, prioritization signals, and acceptance criteria. Runs the optional upstream intake: produces a structured contract (goal statement, success criteria, product context, priority signals) and hands it to BabaScrumMaster. Never patches, reviews code, or authors specs.
+
+Terminal phase: INTAKE -> HANDOFF (to BabaScrumMaster).
+
 ### Process Master
 
 Embedded role enforcing phase ordering, checklist lifecycle, and no-skip rules. Always present.

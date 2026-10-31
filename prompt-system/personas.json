@@ -5,31 +5,6 @@
       "display": "BabaSensei",
       "description": "Wise senior engineer for review and plan approval - teaching moments, no patches",
       "entryPhase": "PLAN",
-      "mode": "DIRECT",
-      "tools": ["Read", "Grep", "Glob", "Bash", "Task"],
-      "disallowedTools": ["Edit", "Write"],
-      "permissionMode": "plan",
-      "opencode": {
-        "mode": "subagent",
-        "temperature": 0.1,
-        "permission": {
-          "edit": "deny",
-          "bash": "deny",
-          "webfetch": "allow",
-          "skill": "allow",
-          "task": "allow"
-        }
-      },
-      "kilo": {
-        "mode": "subagent",
-        "temperature": 0.1,
-        "permission": {
-          "edit": "deny",
-          "bash": "deny",
-          "webfetch": "allow"
-        },
-        "color": "#f38ba8"
-      },
       "routing": {
         "claudePlan": "Concrete target (file, module, snippet) -> `task {agent: baba-sensei}` for CHECKLIST -> REVIEW -> PLAN.",
         "opencodePlan": "Concrete target (file, module, snippet) -> `task {agent: baba-sensei}` for CHECKLIST -> REVIEW -> PLAN.",
@@ -40,6 +15,9 @@
       "babaCommand": {
         "keywords": ["sensei"],
         "instruction": "Find your persona in `prompt-system/01-personas.md` (BabaSensei) and read its section."
+      },
+      "kilo": {
+        "color": "#f38ba8"
       }
     },
     {
@@ -47,30 +25,6 @@
       "display": "BabaDev",
       "description": "Senior implementation lead - smallest architecturally sound fix first",
       "entryPhase": "PATCH",
-      "mode": "DIRECT",
-      "tools": ["Read", "Grep", "Glob", "Edit", "Write", "Bash", "Task"],
-      "permissionMode": "default",
-      "opencode": {
-        "mode": "primary",
-        "temperature": 0.2,
-        "permission": {
-          "edit": "allow",
-          "bash": "allow",
-          "webfetch": "allow",
-          "skill": "allow",
-          "task": "allow"
-        }
-      },
-      "kilo": {
-        "mode": "primary",
-        "temperature": 0.2,
-        "permission": {
-          "edit": "allow",
-          "bash": "allow",
-          "webfetch": "allow"
-        },
-        "color": "#74c7ec"
-      },
       "routing": {
         "claudePlan": null,
         "opencodePlan": null,
@@ -81,6 +35,9 @@
       "babaCommand": {
         "keywords": ["dev"],
         "instruction": "Find your persona in `prompt-system/01-personas.md` (BabaDev) and read its section."
+      },
+      "kilo": {
+        "color": "#74c7ec"
       }
     },
     {
@@ -88,31 +45,6 @@
       "display": "BabaTester",
       "description": "Adversarial QA - edge cases, failure modes, test strategy",
       "entryPhase": "TEST_STRATEGY",
-      "mode": "DIRECT",
-      "tools": ["Read", "Grep", "Glob", "Bash", "Task"],
-      "disallowedTools": ["Edit", "Write"],
-      "permissionMode": "plan",
-      "opencode": {
-        "mode": "subagent",
-        "temperature": 0.1,
-        "permission": {
-          "edit": "deny",
-          "bash": "deny",
-          "webfetch": "allow",
-          "skill": "allow",
-          "task": "allow"
-        }
-      },
-      "kilo": {
-        "mode": "subagent",
-        "temperature": 0.1,
-        "permission": {
-          "edit": "deny",
-          "bash": "deny",
-          "webfetch": "allow"
-        },
-        "color": "#fab387"
-      },
       "routing": {
         "claudePlan": "Test strategy -> `task {agent: baba-tester}` for REVIEW -> TEST_STRATEGY.",
         "opencodePlan": "Test strategy -> `task {agent: baba-tester}` for REVIEW -> TEST_STRATEGY.",
@@ -123,6 +55,9 @@
       "babaCommand": {
         "keywords": ["tester"],
         "instruction": "Find your persona in `prompt-system/01-personas.md` (BabaTester) and read its section."
+      },
+      "kilo": {
+        "color": "#fab387"
       }
     },
     {
@@ -130,31 +65,6 @@
       "display": "BabaReviewer",
       "description": "Quality gate - hard/soft tier evaluation, merge verdicts",
       "entryPhase": "REVIEW",
-      "mode": "DIRECT",
-      "tools": ["Read", "Grep", "Glob", "Bash", "Task"],
-      "disallowedTools": ["Edit", "Write"],
-      "permissionMode": "plan",
-      "opencode": {
-        "mode": "subagent",
-        "temperature": 0.1,
-        "permission": {
-          "edit": "deny",
-          "bash": "deny",
-          "webfetch": "allow",
-          "skill": "allow",
-          "task": "allow"
-        }
-      },
-      "kilo": {
-        "mode": "subagent",
-        "temperature": 0.1,
-        "permission": {
-          "edit": "deny",
-          "bash": "deny",
-          "webfetch": "allow"
-        },
-        "color": "#f38ba8"
-      },
       "routing": {
         "claudePlan": null,
         "opencodePlan": null,
@@ -165,6 +75,9 @@
       "babaCommand": {
         "keywords": ["reviewer"],
         "instruction": "Find your persona in `prompt-system/01-personas.md` (BabaReviewer) and read its section."
+      },
+      "kilo": {
+        "color": "#f38ba8"
       }
     },
     {
@@ -172,31 +85,6 @@
       "display": "BabaScrumMaster",
       "description": "Pragmatic delivery lead - goal intake, ICE backlog, sprints, task cards",
       "entryPhase": "INTAKE",
-      "mode": "DIRECT",
-      "tools": ["Read", "Grep", "Glob", "Bash", "Task"],
-      "disallowedTools": ["Edit", "Write"],
-      "permissionMode": "plan",
-      "opencode": {
-        "mode": "subagent",
-        "temperature": 0.1,
-        "permission": {
-          "edit": "deny",
-          "bash": "deny",
-          "webfetch": "allow",
-          "skill": "allow",
-          "task": "allow"
-        }
-      },
-      "kilo": {
-        "mode": "subagent",
-        "temperature": 0.1,
-        "permission": {
-          "edit": "deny",
-          "bash": "deny",
-          "webfetch": "allow"
-        },
-        "color": "#a6e3a1"
-      },
       "routing": {
         "claudePlan": "Goal or spec without concrete target -> `task {agent: baba-scrum}` for INTAKE -> BACKLOG -> SPRINT -> TASK_PLAN -> SPEC, then handoff to `baba-sensei`.",
         "opencodePlan": "Goal or spec without concrete target -> `task {agent: baba-scrum}` for INTAKE -> BACKLOG -> SPRINT -> TASK_PLAN -> SPEC, then handoff to `baba-sensei`.",
@@ -207,6 +95,9 @@
       "babaCommand": {
         "keywords": ["scrummaster"],
         "instruction": "Find your persona in `prompt-system/01-personas.md` (BabaScrumMaster) and read its section."
+      },
+      "kilo": {
+        "color": "#a6e3a1"
       }
     },
     {
@@ -214,31 +105,6 @@
       "display": "BabaDesigner",
       "description": "Frontend design planning - palette, typography, iconography, a11y, SEO",
       "entryPhase": "DESIGN_PLAN",
-      "mode": "DIRECT",
-      "tools": ["Read", "Grep", "Glob", "Bash", "Task"],
-      "disallowedTools": ["Edit", "Write"],
-      "permissionMode": "plan",
-      "opencode": {
-        "mode": "subagent",
-        "temperature": 0.1,
-        "permission": {
-          "edit": "deny",
-          "bash": "deny",
-          "webfetch": "allow",
-          "skill": "allow",
-          "task": "allow"
-        }
-      },
-      "kilo": {
-        "mode": "subagent",
-        "temperature": 0.1,
-        "permission": {
-          "edit": "deny",
-          "bash": "deny",
-          "webfetch": "allow"
-        },
-        "color": "#f5c2e7"
-      },
       "routing": {
         "claudePlan": "Frontend UI/UX in scope -> `task {agent: baba-designer}` from PLAN for DESIGN_PLAN.",
         "opencodePlan": "Frontend UI/UX in scope -> `task {agent: baba-designer}` from PLAN for DESIGN_PLAN.",
@@ -249,6 +115,9 @@
       "babaCommand": {
         "keywords": ["designer"],
         "instruction": "Find your persona in `prompt-system/01-personas.md` (BabaDesigner) and read its section."
+      },
+      "kilo": {
+        "color": "#f5c2e7"
       }
     },
     {
@@ -256,31 +125,6 @@
       "display": "BabaCEO",
       "description": "CEO / Product Owner for product vision, goal framing, success criteria, and prioritization input",
       "entryPhase": "INTAKE",
-      "mode": "DIRECT",
-      "tools": ["Read", "Grep", "Glob", "Bash", "Task"],
-      "disallowedTools": ["Edit", "Write"],
-      "permissionMode": "plan",
-      "opencode": {
-        "mode": "subagent",
-        "temperature": 0.1,
-        "permission": {
-          "edit": "deny",
-          "bash": "deny",
-          "webfetch": "allow",
-          "skill": "allow",
-          "task": "allow"
-        }
-      },
-      "kilo": {
-        "mode": "subagent",
-        "temperature": 0.1,
-        "permission": {
-          "edit": "deny",
-          "bash": "deny",
-          "webfetch": "allow"
-        },
-        "color": "#b4befe"
-      },
       "routing": {
         "claudePlan": "Business goal, product decision, prioritization question -> `task {agent: baba-ceo}` for INTAKE -> HANDOFF (to BabaScrumMaster).",
         "opencodePlan": "Business goal, product decision, prioritization question -> `task {agent: baba-ceo}` for INTAKE -> HANDOFF (to BabaScrumMaster).",
@@ -291,6 +135,9 @@
       "babaCommand": {
         "keywords": ["ceo"],
         "instruction": "Find your persona in `prompt-system/01-personas.md` (BabaCEO) and read its section."
+      },
+      "kilo": {
+        "color": "#b4befe"
       }
     },
     {
@@ -298,31 +145,6 @@
       "display": "UltraProQuant",
       "description": "Master quant/algo trader - alpha logic, risk math, backtest integrity, microstructure, asymmetric structures",
       "entryPhase": "TEST_STRATEGY_QUANT",
-      "mode": "DIRECT",
-      "tools": ["Read", "Grep", "Glob", "Bash", "Task"],
-      "disallowedTools": ["Edit", "Write"],
-      "permissionMode": "plan",
-      "opencode": {
-        "mode": "subagent",
-        "temperature": 0.1,
-        "permission": {
-          "edit": "deny",
-          "bash": "deny",
-          "webfetch": "allow",
-          "skill": "allow",
-          "task": "allow"
-        }
-      },
-      "kilo": {
-        "mode": "subagent",
-        "temperature": 0.1,
-        "permission": {
-          "edit": "deny",
-          "bash": "deny",
-          "webfetch": "allow"
-        },
-        "color": "#f9e2af"
-      },
       "routing": {
         "claudePlan": "Quant/trading code review -> `task {agent: ultra-pro-quant}` for REVIEW -> TEST_STRATEGY_QUANT.",
         "opencodePlan": "Quant/trading code review -> `task {agent: ultra-pro-quant}` for REVIEW -> TEST_STRATEGY_QUANT.",
@@ -333,17 +155,10 @@
       "babaCommand": {
         "keywords": ["quant"],
         "instruction": "Find your persona in `prompt-system/01-personas.md` (UltraProQuant) and read its section."
+      },
+      "kilo": {
+        "color": "#f9e2af"
       }
     }
-  ],
-  "babaCommandKeywords": [
-    "scrummaster",
-    "sensei",
-    "dev",
-    "tester",
-    "reviewer",
-    "designer",
-    "ceo",
-    "quant"
   ]
 }

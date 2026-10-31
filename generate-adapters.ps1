@@ -9,9 +9,12 @@
     This is the single source of truth for adapter generation. All platforms
     are generated from the same portable system to prevent drift.
 
-    Persona-driven files use templates with {{PLACEHOLDER}} tokens that are
-    filled from prompt-system/personas.json. Adding a new persona = one entry
-    in personas.json, and all router/command files update automatically.
+Persona-driven files use templates with {{PLACEHOLDER}} tokens that are
+filled from prompt-system/personas.json. Adding a new persona = one entry
+in personas.json, which updates all persona routing tables (plan/build/general
+and command keywords) plus the kilo agent color. Agent and command files are
+copied from static templates under adapters/, so a new persona also needs its
+own adapter template files.
 
     Kilo Code agents and commands are GENERATED from their OpenCode
     counterparts (identical body content, transformed frontmatter), so only

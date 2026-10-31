@@ -15,7 +15,8 @@ param(
 
     [string]$OutputDir,
 
-    [switch]$UseLatexmk
+    [switch]$UseLatexmk,
+    [switch]$Install
 )
 
 $ErrorActionPreference = 'Stop'
@@ -73,24 +74,29 @@ if ($UseLatexmk -and $latexmk) {
 } elseif ($pdflatex) {
     $compiler = 'pdflatex'
     $compilerPath = $pdflatex.Path
-} else {
-    Install-LaTeX
-
-    # Re-check after installation
-    $pdflatex = Get-Command pdflatex -ErrorAction SilentlyContinue
-    $latexmk = Get-Command latexmk -ErrorAction SilentlyContinue
-
-    if ($UseLatexmk -and $latexmk) {
-        $compiler = 'latexmk'
-        $compilerPath = $latexmk.Path
-    } elseif ($pdflatex) {
-        $compiler = 'pdflatex'
-        $compilerPath = $pdflatex.Path
     } else {
-        Write-Error "LaTeX installation completed, but pdflatex/latexmk is still not available. Please restart your terminal and try again."
-        exit 1
+        if ($Install) {
+            Install-LaTeX
+
+            # Re-check after installation
+            $pdflatex = Get-Command pdflatex -ErrorAction SilentlyContinue
+            $latexmk = Get-Command latexmk -ErrorAction SilentlyContinue
+
+            if ($UseLatexmk -and $latexmk) {
+                $compiler = 'latexmk'
+                $compilerPath = $latexmk.Path
+            } elseif ($pdflatex) {
+                $compiler = 'pdflatex'
+                $compilerPath = $pdflatex.Path
+            } else {
+                Write-Error "LaTeX installation completed, but pdflatex/latexmk is still not available. Please restart your terminal and try again."
+                exit 1
+            }
+        } else {
+            Write-Error "LaTeX is not installed. Install MiKTeX or TeX Live, or rerun with -Install to attempt automatic installation via winget."
+            exit 1
+        }
     }
-}
 
 Write-Host "Using compiler: $compiler" -ForegroundColor Cyan
 

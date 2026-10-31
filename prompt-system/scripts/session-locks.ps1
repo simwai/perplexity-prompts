@@ -54,9 +54,24 @@ function Resolve-RepoRoot {
 }
 
 function Get-SessionId {
+    param([string]$RepoRoot)
     if ($script:CachedSessionId) { return $script:CachedSessionId }
     if ($env:SESSION_ID) { $script:CachedSessionId = $env:SESSION_ID; return $script:CachedSessionId }
+    if ($RepoRoot) {
+        $idPath = Join-Path $RepoRoot '.session-locks\session-id'
+        if (Test-Path -LiteralPath $idPath -PathType Leaf) {
+            $stored = ([System.IO.File]::ReadAllText($idPath)).Trim()
+            if ($stored) { $script:CachedSessionId = $stored; return $script:CachedSessionId }
+        }
+    }
     $script:CachedSessionId = "session-$(Get-Date -Format 'yyyyMMddTHHmmss')-$PID-$((Get-Random -Minimum 1000 -Maximum 9999))"
+    if ($RepoRoot) {
+        try {
+            $lockRoot = Join-Path $RepoRoot '.session-locks'
+            if (-not (Test-Path -LiteralPath $lockRoot)) { New-Item -ItemType Directory -Path $lockRoot -Force | Out-Null }
+            [System.IO.File]::WriteAllText($idPath, $script:CachedSessionId, (New-Object System.Text.UTF8Encoding($false)))
+        } catch {}
+    }
     return $script:CachedSessionId
 }
 
@@ -286,20 +301,21 @@ function Get-DependencySet {
 $script:ContentionDecision = @('Wait for the peer to release', 'Skip this path', 'Ask the peer to release')
 
 function Enter-FileLock {
-    param(
-        [string]$RepoRelativePath,
-        [string]$SessionId = (Get-SessionId),
-        [int]$TtlMinutes = $script:LockTtlMinutes,
-        [string]$RepoRoot
-    )
+param(
+    [string]$RepoRelativePath,
+    [string]$SessionId = $null,
+    [int]$TtlMinutes = $script:LockTtlMinutes,
+    [string]$RepoRoot
+)
 
     if (Test-ReadOnlyHost) { return @{ Success = $true; Skipped = $true; Reason = 'READ_ONLY host' } }
 
     $repoRoot = Resolve-RepoRoot $RepoRoot
+    if (-not $SessionId) { $sessionId = Get-SessionId -RepoRoot $repoRoot } else { $sessionId = $SessionId }
     $flat = ConvertTo-FlatName $RepoRelativePath
     $lockPath = Get-LockPath -RepoRoot $repoRoot -FlatName $flat
 
-    $covering = @(Get-BlockingPeers -RepoRoot $repoRoot -RepoRelativePath $RepoRelativePath -SessionId $SessionId -TtlMinutes $TtlMinutes)
+    $covering = @(Get-BlockingPeers -RepoRoot $repoRoot -RepoRelativePath $RepoRelativePath -SessionId $sessionId -TtlMinutes $TtlMinutes)
     if ($covering.Count -gt 0) {
         return @{
             Success = $false
@@ -352,16 +368,17 @@ function Enter-FileLock {
 }
 
 function Enter-DependencyLock {
-    param(
-        [string]$RepoRelativePath,
-        [string]$SessionId = (Get-SessionId),
-        [int]$TtlMinutes = $script:LockTtlMinutes,
-        [string]$RepoRoot
-    )
+param(
+    [string]$RepoRelativePath,
+    [string]$SessionId = $null,
+    [int]$TtlMinutes = $script:LockTtlMinutes,
+    [string]$RepoRoot
+)
 
     if (Test-ReadOnlyHost) { return @{ Success = $true; Skipped = $true; Reason = 'READ_ONLY host' } }
 
     $repoRoot = Resolve-RepoRoot $RepoRoot
+    if (-not $SessionId) { $sessionId = Get-SessionId -RepoRoot $repoRoot } else { $sessionId = $SessionId }
     $depSet = Get-DependencySet -RepoRoot $repoRoot -TargetFileRelative $RepoRelativePath
     $members = @(@($depSet.Root) + @($depSet.Importers) + @($depSet.Imports)) | Where-Object { $_ }
 
@@ -415,15 +432,16 @@ function Enter-DependencyLock {
 # ═══════════════════════════════════════════════════════════════════════════
 
 function Exit-FileLock {
-    param(
-        [string]$RepoRelativePath,
-        [string]$SessionId = (Get-SessionId),
-        [string]$RepoRoot
-    )
+param(
+    [string]$RepoRelativePath,
+    [string]$SessionId = $null,
+    [string]$RepoRoot
+)
 
     if (Test-ReadOnlyHost) { return @{ Success = $true; Skipped = $true; Reason = 'READ_ONLY host' } }
 
     $repoRoot = Resolve-RepoRoot $RepoRoot
+    if (-not $SessionId) { $sessionId = Get-SessionId -RepoRoot $repoRoot } else { $sessionId = $SessionId }
     $lockPath = Get-LockPath -RepoRoot $repoRoot -FlatName (ConvertTo-FlatName $RepoRelativePath)
 
     if (-not (Test-Path -LiteralPath $lockPath)) {
@@ -431,7 +449,7 @@ function Exit-FileLock {
     }
 
     $info = Read-LockInfo $lockPath
-    if ($info.Owner -ne $SessionId) {
+    if ($info.Owner -ne $sessionId) {
         # Releasing a peer's lock would erase its ownership record while it is
         # still writing. Refused rather than repaired.
         return @{

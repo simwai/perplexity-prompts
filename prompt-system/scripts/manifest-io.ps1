@@ -238,5 +238,6 @@ function Write-Manifest {
         }
     }
 
-    $sb.ToString() | Set-Content -LiteralPath $Path -Encoding UTF8 -NoNewline
+    $utf8NoBom = [System.Text.UTF8Encoding]::new($false)
+    [System.IO.File]::WriteAllText($Path, $sb.ToString(), $utf8NoBom)
 }

@@ -206,6 +206,9 @@ function Save-FileToPool {
     
     # Sanitize file path: remove leading slashes, normalize separators
     $sanitized = $FilePath -replace '^[\\/]+', '' -replace '/', '\'
+    if ($sanitized -match '\.\.') {
+        throw "Unsafe file path (path traversal): $FilePath"
+    }
     $targetPath = Join-Path $targetDir $sanitized
     
     $targetFileDir = Split-Path -Parent $targetPath
@@ -250,6 +253,13 @@ function New-EntryId {
 Test-PoolInitialized
 
 $parsedUrl = Parse-GitHubUrl -Url $Url
+
+# Path traversal guard: never write outside the pool root.
+$safePath = $parsedUrl.Path -replace '^[\\/]+', ''
+if ($safePath -match '\.\.') {
+    throw "Unsafe file path in URL (path traversal detected): $($parsedUrl.Path)"
+}
+$parsedUrl.Path = $safePath
 
 # Determine commit
 $commit = $Commit
@@ -360,19 +370,20 @@ $entry = New-Entry `
 
 $manifest.entries += $entry
 
-# Save cached file
-$poolPath = Save-FileToPool -Language $Language -AuthorRepo $authorRepo -FilePath $parsedUrl.Path -Content $fileContent
+    if ($DryRun) {
+        $dryRunPoolPath = Join-Path $Language $authorRepo ($parsedUrl.Path -replace '^[\\/]+','' -replace '/','\')
+        Write-Host "[DRY] Would add entry $entryId" -ForegroundColor Yellow
+        Write-Host "  Pool: $poolId" -ForegroundColor Gray
+        Write-Host "  File: $dryRunPoolPath" -ForegroundColor Gray
+        Write-Host "  Commit: $commit" -ForegroundColor Gray
+        return
+    }
 
-if ($DryRun) {
-    Write-Host "[DRY] Would add entry $entryId" -ForegroundColor Yellow
-    Write-Host "  Pool: $poolId" -ForegroundColor Gray
-    Write-Host "  File: $poolPath" -ForegroundColor Gray
-    Write-Host "  Commit: $commit" -ForegroundColor Gray
-    return
-}
+    # Save cached file
+    $poolPath = Save-FileToPool -Language $Language -AuthorRepo $authorRepo -FilePath $parsedUrl.Path -Content $fileContent
 
-Write-Manifest -Path $script:MANIFEST_PATH -Manifest $manifest
-Write-Host "reference-pool: added $entryId" -ForegroundColor Green
+    Write-Manifest -Path $script:MANIFEST_PATH -Manifest $manifest
+    Write-Host "reference-pool: added $entryId" -ForegroundColor Green
 Write-Host "  Pool: $poolId $(if ($poolMemberCreated) {'(new)'} else {'(existing)'})" -ForegroundColor Gray
 Write-Host "  File: $poolPath" -ForegroundColor Gray
 Write-Host "  Commit: $commit" -ForegroundColor Gray

@@ -475,6 +475,7 @@ Entry phase mapping:
 | `baba-tester` | `TEST_STRATEGY` | `DIRECT` |
 | `ultra-pro-quant` | `TEST_STRATEGY_QUANT` | `DIRECT` |
 | `baba-reviewer` | `REVIEW` | `DIRECT` |
+| `baba-ceo` | `INTAKE` | `DIRECT` |
 | `baba-scrum` | `INTAKE` | `DIRECT` |
 | `baba-designer` | `DESIGN_PLAN` | `DIRECT` |
 | `explore` | `DIRECT` | `DIRECT` |

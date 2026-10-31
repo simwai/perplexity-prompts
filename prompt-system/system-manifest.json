@@ -7,11 +7,11 @@
                                     "prompt-system/08-plan-actual-gate.md"
                                 ],
                       "reviewPatch":  [
-                                    "prompt-system/06-misc.md",
-                                    "prompt-system/rules.md",
-                                    "prompt-system/07-protocols.md",
-                                    "prompt-system/08-plan-actual-gate.md"
-                                ],
+                                          "prompt-system/06-misc.md",
+                                          "prompt-system/rules.md",
+                                          "prompt-system/07-protocols.md",
+                                          "prompt-system/08-plan-actual-gate.md"
+                                      ],
                       "checklist":  [
                                         "prompt-system/rules.md"
                                     ],
@@ -119,10 +119,10 @@
                      "sectionsFile":  "prompt-system/01-personas.md",
                      "bootstrapTableFile":  "prompt-system/00-system.md",
                      "missingSectionAllowlist":  [
-                                                     "BabaCEO"
+
                                                  ],
                      "missingBootstrapRowAllowlist":  [
-                                                          "baba-ceo"
+
                                                       ]
                  },
     "decisionFormat":  {
