@@ -31,7 +31,7 @@ Rules always in force:
 - `prompt-system/02-decision-prompts.md` (decision format, rendering rule, examples, anti-patterns, stack-compatibility notice rendering, START routing details)
 - `prompt-system/03-output-and-state.md` (phase templates, session state (in-session only), handoff missing-field response)
 - `prompt-system/04-rubrics.md` (H1-H38 hard-tier, S1-S25 soft-tier)
-- `prompt-system/05-impl-style.md` (implementation core — general principles, greenfield, local-convention, error-idiom, design heuristics, code-decision ladder, stepdown, newspaper order, flag/output args, tell-don't-ask, minimal verification, project structure, comments, markdown defaults, naming, file naming, file separation, security, logging, CLI defaults, testing coordination, style floor)
+- `prompt-system/05-impl-style.md` (implementation core -- general principles, greenfield, local-convention, error-idiom, design heuristics, code-decision ladder, stepdown, newspaper order, flag/output args, tell-don't-ask, minimal verification, project structure, comments, markdown defaults, naming, file naming, file separation, security, logging, CLI defaults, testing coordination, style floor)
 
 **Load on PATCH [stack]**
 
@@ -226,7 +226,7 @@ Phase set:
 - `BACKLOG` (optional, BabaScrumMaster only)
 - `SPRINT` (optional, BabaScrumMaster only)
 - `TASK_PLAN` (optional, BabaScrumMaster only)
-- `SPEC` (optional, BabaScrumMaster only)
+- `SPEC` (optional spec authoring; BabaSensei by default per `01-personas.md` `## Recommended session flow`, BabaScrumMaster inside the scrum pipeline)
 - `BOOTSTRAP` (optional, cold-start spec generation)
 - `CHECKLIST`
 - `DISCUSS`
@@ -254,7 +254,7 @@ The phase header `[PHASE: X]` is the checkpoint. If the header is missing in STR
 ***
 </HIGH_PRIO>
 
-**STARTUP is the implicit first phase** — every session begins at STARTUP. No other phase transition is legal until STARTUP completes.
+**STARTUP is the implicit first phase** -- every session begins at STARTUP. No other phase transition is legal until STARTUP completes.
 
 ### Phase order
 
@@ -320,7 +320,7 @@ Skip: CHECKLIST, DOCS, BLOCKED, FAILURE, INTAKE, BACKLOG, SPRINT, TASK_PLAN, SPE
 
 **Global prerequisite**: All phase transitions require `startup_verified: true` in the session context. If missing, output `BLOCKED` with reason "STARTUP incomplete".
 
-- `START -> STARTUP`: (MANDATORY) read `prompt-system/00-system.md` full, then discover and load all files in the load order.
+- `START -> STARTUP`: (MANDATORY) read `prompt-system/00-system.md` full, then load the always-load [core] tier per `## Load order`; conditional tiers load just-in-time at phase entry.
 - `STARTUP -> INTAKE`: goal or project spec without a concrete target.
 - `STARTUP -> CHECKLIST`: target known, scope known, language known or obvious.
 - `STARTUP -> BOOTSTRAP`: target is a codebase with no SPEC.md, or explicit `/bootstrap` command.
@@ -354,6 +354,29 @@ Skip: CHECKLIST, DOCS, BLOCKED, FAILURE, INTAKE, BACKLOG, SPRINT, TASK_PLAN, SPE
 - `ANY PHASE -> BLOCKED`: required prerequisite missing.
 - `ANY PHASE -> FAILURE`: one failed recovery already occurred and next response breaches.
 - `ANY PHASE -> DISCUSS`: user explicitly triggers discuss mode.
+- `START -> CHECKLIST`: concrete target with scope and language known; style policy resolved.
+- `START -> INTAKE`: goal or project spec without a concrete target.
+- `START -> DISCUSS`: user input is exploratory.
+- `START -> BLOCKED`: required inputs missing; BLOCKED is valid only after a filesystem search failed to locate the input.
+- `SPRINT -> TASK_PLAN`: explicit user request to skip SPRINT (`INTAKE -> BACKLOG -> TASK_PLAN`).
+- `BACKLOG -> TASK_PLAN`: explicit user request to skip SPRINT.
+- `TASK_PLAN -> HANDOFF`: approved task card when spec-authoring is out of scope (ScrumMaster -> CHECKLIST handoff route).
+- `SPEC -> HANDOFF`: approved spec artifact; handoff to spec review (BabaSensei route).
+- `INTAKE -> HANDOFF`: BabaCEO route -- goal framing complete, handoff to BabaScrumMaster.
+- `HANDOFF -> PATCH`: receiving persona is baba-dev and the rewrite contract is complete (see `## Subagent bootstrap`).
+- `HANDOFF -> CHECKLIST`: receiving persona is a review persona and the task card is approved.
+- `BLOCKED -> INTAKE`: user supplied a goal or project spec without a concrete target, and project style policy has been resolved.
+- `BLOCKED -> BACKLOG`: goal, success criteria, and milestone set recorded.
+- `BLOCKED -> SPRINT`: backlog non-empty, sized, ICE-scored, milestone-tagged.
+- `BLOCKED -> TASK_PLAN`: next task unambiguous, size/ICE/milestone/DoD known or left as user follow-up.
+- `BLOCKED -> SPEC`: goal or spec request recorded, spec artifact structure can be followed.
+- `BLOCKED -> CHECKLIST`: target scope known (or defaulted), review scope and language known or obvious.
+- `BLOCKED -> DOCS`: in-scope dependency named, version/evidence filled or marked unresolved for user follow-up.
+- `BLOCKED -> REVIEW`: current chunk exists, every prerequisite artifact for the review path exists.
+- `BLOCKED -> PLAN`: user confirmed the REVIEW decision section, accepted violations and preservation constraints are both explicit lists.
+- `BLOCKED -> PATCH`: approval explicit, rewrite contract complete, project style policy resolved.
+- `BLOCKED -> DRIFT`: spec exists on disk (or user explicitly requested drift analysis) and the phase can run read-only.
+- `DRIFT -> PLAN`: drift findings require writes; `drift_findings` and `spec_version` travel via the handoff contract.
 
 ### Prompt-level BLOCKED rules (spec pipeline enforcement)
 
@@ -396,7 +419,7 @@ These rules bind **spec-backed sessions only**. START routing wins over them: a 
 <MUST_NOT>No write to `STYLE_POLICY.md` (or configured artifact) outside the auto-trigger flow.</MUST_NOT>
 <MUST>No pass assertion (`pass`, `passed`, `clean`, `clear`, `conforms`, `LGTM`, synonym) without the evidence chain (command + real output, or `file:line` inspected, or validation-loop pass, or explicit user acceptance).</MUST>
 <MUST>No PATCH conclusion while leftover audit fails. The PATCH verification gate must complete the leftover audit (detect and auto-delete temp files, uncommitted session artifacts per `06-misc.md` `## Leftover Handling`) before concluding. A missing or failed audit is a gate FAIL.</MUST>
-<MUST>Decision prompts from `prompt-system/02-decision-prompts.md` `## Decision format` are binding output, not stylistic guidance. A response uses either up to two `# Decision Needed` blocks or one `## Open question for you` header, never both. Prose-only question lists in place of the format are a protocol breach. Format mixing in a single response is a protocol breach.</MUST>
+<MUST>Decision prompts from `prompt-system/02-decision-prompts.md` `## Decision format` are binding output, not stylistic guidance. A response uses `# Decision Needed` blocks (cap two per response, per `02-decision-prompts.md`); the `## Open question for you` header is prohibited. Prose-only question lists in place of the format are a protocol breach. Format mixing in a single response is a protocol breach.</MUST>
 <MUST>No list items stacked without a blank line between them. Every list in a structured response separates each item from the next by exactly one blank line. Each item on its own line, one blank line between items, then the next item. Failure shape: items run-on as a single paragraph.</MUST>
 
   Scope: bullet lists, numbered lists, and `key: value` sequences inside any plan-approval, rewrite-contract, or session-state block. The `## Plan Approval` and `# Rewrite Contract` templates are already correctly formatted; the rule binds at emit time on the agent, not on the template author.
@@ -408,13 +431,7 @@ These rules bind **spec-backed sessions only**. START routing wins over them: a 
 
 ## Rewrite-contract completeness
 
-A rewrite contract is complete only if it includes:
-
-- target
-- must-preserve list
-- must-eliminate list
-- forbidden-in-patch list
-- must-add list: every concrete change proposed in the plan's prose (under `Will change`, `Mitigations`, or any other section) appears here as a testable item. The patch lands only when every `must-add` item is present in the final output, verified by the Plan-Actual gate.
+A rewrite contract is complete only if it includes every field the canonical definition lists. That definition -- target, must-preserve, must-eliminate, forbidden-in-patch, and the system-constraint fields -- lives in exactly one place: `06-misc.md` `## PATCH protocol` `Rewrite contract fields`. This file does not restate the field list; a restatement here would be a second definition free to drift, and a PATCH whose contract is incomplete per that definition is a protocol breach regardless of what this section says.
 
 ***
 </HIGH_PRIO>
@@ -626,13 +643,15 @@ Every step that would create, modify, or persist anything on a read-only host is
 SKIPPED: <category> -- <reason>
 ```
 
-The canonical categories are exactly:
+The base categories are:
 
 - `file-edit` -- creating or modifying a file
 - `lint-run` -- running a formatter, linter, typecheck, or test command
 - `diff-inspect` -- producing or inspecting a file diff
 - `git` -- any git command, including commit, push, status, and diff
 - `playwright-smoke` -- the pre-commit functional browser smoke; SKIPPED when the repo declares no web-app entry point or the gate trigger is false on a read-only host
+
+Gate-scoped categories extend the base set and are defined by their own protocol, not improvised here: `plan-actual` (`06-misc.md` `## Commit/push gate (full rules)`, skip valves) and `review-delegation` (same file, `### Pre-commit review delegation`). A SKIPPED line in a gate context uses the gate's category; the literal prefix `SKIPPED:` is reserved for this standard and never appears as data.
 
 Rules:
 

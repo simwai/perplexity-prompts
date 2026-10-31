@@ -36,8 +36,8 @@ A pass assertion that breaks this rule is a protocol breach.
 
 This section defines which fields in each phase template are required and which are optional. Required fields must appear in the output; optional fields may be omitted when their trigger condition is unmet. Empty optional fields are omitted, not filled with placeholders.
 
-- `[required]` — the field must be present in the output for the phase to be valid.
-- `[optional]` — the field may be omitted when its trigger condition is unmet.
+- `[required]` -- the field must be present in the output for the phase to be valid.
+- `[optional]` -- the field may be omitted when its trigger condition is unmet.
 
 Template field requirements:
 
@@ -351,7 +351,7 @@ Batch: [lines X-Y or FULL or AGGREGATE -- all files complete] ([N] of [M] for th
 Confirmed-looking violations (provisional until the decision section is confirmed):
 - [criterion id] -- [line/range] -- [one-sentence failure] ([confidence]%)
   - Mitigations:
-    - **A.** [short action] (Recommended)
+    - **A. [short action] (Recommended)**
       - Pros: [one line]
       - Cons: [one line]
     - B. [short action]
@@ -371,7 +371,7 @@ Validation loop (run when any finding is at confidence <= 70%):
 - [criterion id] -- [line/range] -- [one-sentence logical issue] ([severity: blocking|advisory])
   - Severity: [blocking|advisory] -- [one-line rationale]
   - Mitigations:
-    - **A.** [short action] (Recommended)
+    - **A. [short action] (Recommended)**
       - Pros: [one line]
       - Cons: [one line]
     - B. [short action]
@@ -408,7 +408,7 @@ Do not offer partial handoff when only one item remains pending.
 
 ## Decision Items (if any)
 - Each decision uses `# Decision Needed` format per `prompt-system/02-decision-prompts.md`
-- Recommended option is **fat bolded** as `**A. option**`
+- Recommended option is **fat bolded** as `**A. option text**`
 - No open-ended questions permitted
 
 Cross-team requirements (if any):
@@ -933,7 +933,7 @@ All session state persists in the conversation context during a session; no sess
 
 Approval restore matching: recorded approval (plan approval, REVIEW decision, mitigation choices) may only be restored when the carried state's target, scope, session_id, and spec_version all match the current task. Any mismatch -- including a legacy carrier with no session_id field -- makes the approval stale: discard it and require a fresh confirmation. A version-drift HALT invalidates live Plan Approval outright.
 
-**Gate outputs**: Plan-Actual, Commit/Push, Compliance Audit, and Leftover Audit results are emitted directly in the PATCH response — not persisted to a file.
+**Gate outputs**: Plan-Actual, Commit/Push, Compliance Audit, and Leftover Audit results are emitted directly in the PATCH response -- not persisted to a file.
 
 ## Struggle Indicators
 
@@ -956,7 +956,7 @@ When indicators are present, the next structured phase output MAY include a `Str
 
 ## Session evaluation prompt
 
-`06-misc.md` `### Auto-close after commit/push` and `07-protocols.md` `### Close-session protocol` both require spawning a `task` sub-session with `subagent_type: baba-reviewer` using the prompt below. It is the canonical text for that spawn; copy it verbatim rather than improvising an evaluation.
+`06-misc.md` `### Auto-close after commit/push` and `14-app-lifecycle.md` `### Close-session protocol` both require spawning a `task` sub-session with `subagent_type: baba-reviewer` using the prompt below. It is the canonical text for that spawn; copy it verbatim rather than improvising an evaluation.
 
 Skip the evaluation, and record `evaluation_skipped_reason` instead, when the session produced no phase artifacts (a trivial exploratory session with no CHECKLIST, REVIEW, PLAN, or PATCH output).
 

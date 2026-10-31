@@ -7,47 +7,25 @@
 This file is the copy-paste unit. Deploying the system into a target project takes two steps:
 
 1. **Paste this file** as `AGENTS.md` at the target repo root.
-2. **Copy the `prompt-system/` folder** next to it (contains the merged system files).
+2. **Copy the `prompt-system/` folder** next to it (contains the system files and `prompt-system/scripts/`).
 
 ```powershell
 Copy-Item -Recurse prompt-system <target-project>\prompt-system
 ```
 
+Repo-root tooling (`generate-adapters.ps1`, `sync.ps1`, `pre-commit.ps1`, root `scripts/*.ps1`) is host-side operational tooling, not part of the deployed runtime; a target references it only when it adopts the full repo.
+
 ## Identity & Rules
 
-Tool-assisted AI coding agent for a sandbox with full execution rights. Follow these always:
+Tool-assisted AI coding agent for a sandbox with full execution rights. The authoritative rule set lives in `prompt-system/00-system.md` `## Identity`; these are the host-critical rules:
 
-- Always answer in English. Every response - in any mode, phase, or persona - is written in English
-  regardless of the language the user writes in. Never reply in another language.
-- Answer concisely in `DIRECT` mode and non-phase responses (4 lines unless asked for detail). In
-  `STRUCTURED` mode, output exactly what the active phase template requires and stop - continue under
-  the same phase header next turn if it exceeds one response (continuation rule, prompt-system/00-system.md).
-  No emoji, no preamble.
-- Use the ASCII double hyphen `--` for parenthetical breaks. Never Unicode dash characters.
-- Never ask the user to provide files the agent can find in the current project
-  folder or local filesystem - search with `rg`. The agent does not specify
-  fallbacks.
-- Search locates, full read comprehends: a search hit is a slice, not
-  understanding. Before editing or judging a file, read it in full (largest
-  window, offset-chunked when large) - never act on snippets alone. After any
-  read, verify EOF was reached; continue with offset reads until the whole file
-  is loaded - a partial read is a slice, not comprehension.
-- Module loading is mandatory, not discretionary: load every file
-  `prompt-system/00-system.md` marks as always-loaded and every file it lists for the
-  active phase and persona. Skipping a listed file is a protocol breach, not a
-  choice.
-- Never add comments to code unless explaining _why_ (not _what_). The full
-  comment taxonomy lives in `prompt-system/05-impl-style.md` `## Comments`.
-- AGENTS.md is the sole entry point; `prompt-system/00-system.md` is the orchestrator and
-  routing file - load it at startup, then follow its load order.
-- Adaptive execution: default to `AUTO`, use `DIRECT` for clear low-risk work,
-  and use `STRUCTURED` for risky, broad, or ambiguous work. The structured
-  flow is CHECKLIST -> DOCS -> REVIEW -> PLAN -> PATCH; REVIEW owns
-  confirmation. Direct responses use `[MODE: DIRECT]`; structured responses
-  declare the phase.
-- Canonical rules live in `prompt-system/` (orchestrator + routing + decision format, output
-  contracts, rubrics, implementation style, operational protocol + commit/push gate,
-  cross-cutting protocol, Plan-Versus-Actual Gate).
+- Always answer in English. Every response, in any mode, phase, or persona, is in English regardless of the user's language.
+- No emoji, no preamble. Use the ASCII double hyphen `--` for parenthetical breaks; never Unicode dash characters.
+- Never ask the user to provide files, paths, versions, or snippets that a filesystem search (`rg` + file tools) can find.
+- Search locates, full read comprehends: read files in full (largest window, offset-chunked until EOF) before editing or judging them; never act on snippets alone.
+- Module loading is tiered, not discretionary: load the always-load [core] tier at STARTUP and every file `prompt-system/00-system.md` lists for the active phase before that phase's output. Skipping a listed file is a protocol breach, not a choice.
+- AGENTS.md is the sole entry point; `prompt-system/00-system.md` is the orchestrator and routing file -- load it at startup, then follow its load order. Canonical rules live in `prompt-system/` (orchestrator + routing, decision format, output contracts, rubrics, implementation style, operational protocol + commit/push gate, cross-cutting protocols, Plan-Versus-Actual Gate).
+- Adaptive execution: default `AUTO`, use `DIRECT` for clear low-risk work, and use `STRUCTURED` for risky, broad, or ambiguous work. The structured flow is CHECKLIST -> DOCS -> REVIEW -> PLAN -> PATCH; REVIEW owns confirmation. Direct responses use `[MODE: DIRECT]`; structured responses declare the phase.
 
 ---
 
@@ -88,7 +66,7 @@ Servers are grouped by what works when env keys are missing. Configure the ones 
 }
 ```
 
-**memory-worth** - the memory-worth package's 13 trust-scored memory tools (search, get, write, update, delete, synthesize, wakeup, stats, tune, invalidate, merge, set_status, list_tools), exposed over MCP via stdio. The DB lives at `%LOCALAPPDATA%\memory-worth\memory.db` by default; override with `MEMORY_WORTH_DB` (full path) or `MEMORY_WORTH_HOME` (directory). `MEMORY_WORTH_DIR` is kept as a deprecated alias. Every runtime namespaces MCP tools with the server name, so call them as `memory-worth_memory_search`, `memory-worth_memory_write`, `memory-worth_memory_stats`.
+**memory-worth** - the memory-worth package's 13 trust-scored memory tools (search, get, write, update, delete, synthesize, wakeup, stats, tune, invalidate, merge, set_status, list_tools), exposed over MCP via stdio. The DB lives at `%LOCALAPPDATA%\memory-worth\memory.db` by default; override with `MEMORY_WORTH_DB` (full path) or `MEMORY_WORTH_HOME` (directory). `MEMORY_WORTH_DIR` is kept as a deprecated alias. Every runtime namespaces MCP tools with the server name, so call them as `memory-worth_memory_search`, `memory-worth_memory_write`, `memory-worth_memory_stats`. (The sample command's `.opencode/packages/memory-worth/mcp-server.ts` path is this repo's bundled copy -- on other hosts point the command at your own checkout or an installed package.)
 
 **memory-worth** - persistent agent memory with project-scoped routing:
 
@@ -98,28 +76,28 @@ Servers are grouped by what works when env keys are missing. Configure the ones 
 - Ground every write to a file, symbol, or git ref -- a post-hoc filter cannot repair an ungrounded entry.
 - `memory_wakeup` returns the resolved session id and protocol reminder at session start; session identity is synthetic (MCP has no hooks).
 
-**Context7** - library docs (stdio: `npx -y @upstash/context7-mcp`)
+**Context7** - library docs (remote HTTP, no key)
 **Playwright** - browser automation for live UI verification and e2e walk-throughs (Node 20+; headed for testing)
 **Playwright-headless** - headless browser for web search and scraping (Node 20+; `--headless` flag)
-**Playwright bootstrap** — run `scripts/ensure-playwright.ps1` before first use or after fresh clones; checks Node ≥ 20, resolves `@playwright/mcp`, installs missing browser binaries.
+**Playwright bootstrap** -- run `scripts/ensure-playwright.ps1` before first use or after fresh clones; checks Node ≥ 20, resolves `@playwright/mcp`, installs missing browser binaries.
 **g-search** - Google web search via MCP (no key required; requires Playwright Chromium: `npx playwright install chromium`)
 **arXiv** - academic paper search and local literature management via MCP (no key required; requires `uvx`; bootstrap: `scripts/ensure-uvx.ps1`)
 
-**OpenCode PTY** — interactive terminal plugin: background processes, multiple sessions, stdin, output regex filter. Auto-installed by OpenCode on next run.
+**OpenCode PTY** -- interactive terminal plugin: background processes, multiple sessions, stdin, output regex filter. Auto-installed by OpenCode on next run.
 
-### Tier 2 - OAuth (no env keys required)
+### Tier 2 - Requires env key
 
 ```json
 {
   "exa": {
     "type": "remote",
     "url": "https://mcp.exa.ai/mcp",
-    "oauth": {}
+    "headers": { "x-api-key": "{env:EXA_API_KEY}" }
   }
 }
 ```
 
-> **Note**: Omit this entire block if `EXA_API_KEY` is not set. The agent will use `g-search` as the no-key fallback per `00-system.md`.
+> **Note**: Omit this entire block if `EXA_API_KEY` is not set. The agent will use `g-search` as the no-key fallback per `prompt-system/00-system.md` `## MCP tool selection`. Hosts that do not interpolate `{env:VAR}` in headers need the literal key configured at setup time -- never committed.
 
 ### Trello - Remote OAuth (no env keys)
 
@@ -153,25 +131,29 @@ Combine all Tier 1 + Tier 2 + Trello blocks above. Omit any Tier 2 servers whose
 
 | Variable      | Server | Required                |
 |---------------|--------|-------------------------|
-| `EXA_API_KEY` | Exa    | No (OAuth used instead) |
+| `EXA_API_KEY` | Exa    | No (g-search fallback when unset) |
+| `SESSION_ID`  | session locks / commit gate | No (per-process fallback; required for two-session mode) |
+| `BABA_READ_ONLY` | read-only host detection | No (set `1`/`true`/`yes` on read-only hosts) |
+| `MEMORY_WORTH_DB` / `MEMORY_WORTH_HOME` | memory-worth | No (defaults to `%LOCALAPPDATA%\memory-worth\memory.db`) |
+| `BABA_DEBUG` / `BABA_DEBUG_FILE` / `BABA_DEBUG_LEVEL` | opencode plugin debug output | No |
 
 ---
 
 <HIGH_PRIO>
 !!!
 
-## Loading the Full Spec (MANDATORY — immediate, before any other action)
+## Loading the System (MANDATORY - immediate, before any other action)
 
 AGENTS.md is the sole entry point. The system lives in `prompt-system/`.
 
 **Immediately after reading this file (no exceptions):**
 
-1. Read `AGENTS.md` in full with NO chunking — single read, largest window.
-2. Discover all system files: `ls prompt-system/*.md`.
-3. Read `prompt-system/00-system.md` — it contains the authoritative `## Load order`.
-4. Load every file in that load order in full with NO chunking.
-5. **Record completion** in session state `## Startup Verification` (or conversation carrier on READ_ONLY).
+1. Read `AGENTS.md` in full (largest window; continue with offset reads until EOF).
+2. Read `prompt-system/00-system.md` in full the same way -- it contains the authoritative `## Load order`.
+3. Load the always-load [core] tier from that load order in full across offset chunks.
+4. **Record completion** in session state `## Startup Verification` (or conversation carrier on READ_ONLY).
+5. Conditional tiers ([review], [stack], [designer], [doc], [logical], [domain]) load just-in-time at phase entry per the load order -- never pre-loaded wholesale.
 
-**All files must be read in full before ANY other action.** This is not optional, not conditional. Skipping any file is a protocol breach. If loading is incomplete, the agent must not proceed — output `BLOCKED` with reason "STARTUP incomplete".
+All always-load files must be fully read (EOF reached) before ANY other action. This is not optional, not conditional. If loading is incomplete, the agent must not proceed -- output `BLOCKED` with reason "STARTUP incomplete".
 
 </HIGH_PRIO>

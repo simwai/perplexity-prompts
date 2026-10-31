@@ -19,7 +19,7 @@ Detection: filesystem search. Target repo resolved from working directory, the u
 Fires at: START, inside INTAKE, and before PATCH, depending on entry point. In DIRECT mode: before any file edit in a project that has `AGENTS.md` but no artifact; once per session.
 Effect: decision block (`# Decision Needed`) under the current phase header; a PATCH that fires it enters a brief BLOCKED-like state until the user answers. Pre-emptive: it is the FIRST decision block the session emits; no other decision block or phase output may appear while unanswered (except the block itself). Answer A writes `policy: preserve-local`; B writes `policy: upgrade-house-style`; both write frontmatter-only to `STYLE_POLICY.md`. On READ_ONLY hosts the write is recorded as `SKIPPED: file-edit -- no write access; policy recorded in conversation carrier`.
 Invokes: Local-convention policy -- `05-impl-style.md` `## Local-convention policy`; decision format -- `02-decision-prompts.md` `## Decision format`; artifact authoring rules -- `00-system.md` `## Breach conditions` (no STYLE_POLICY.md write outside the auto-trigger flow).
-Dedup/record: asked once per project. Skip conditions: greenfield repo; artifact already exists; policy already set this session. Answer persisted in `STYLE_POLICY.md` frontmatter only: `policy: preserve-local | upgrade-house-style`; no other content. Subsequent sessions read the artifact; the ask never fires again while it exists.
+Dedup/record: asked once per project. Skip conditions: greenfield repo; artifact already exists; policy already set this session. Answer persisted in `STYLE_POLICY.md` frontmatter only: `policy: preserve-local | upgrade-house-style`; no other content. Optional user-authored `rule_exceptions` frontmatter (e.g. `rule_exceptions.H14: disabled|advisory|mandatory`, read by the agent but never written by it) is permitted. Subsequent sessions read the artifact; the ask never fires again while it exists.
 
 ## T-02 -- Stack compatibility check
 
@@ -63,7 +63,7 @@ Dedup/record: resolved capability and its evidence recorded in the session state
 
 ## T-07 -- Bootstrap trigger
 
-Detection: user command `/bootstrap`, or target is a codebase with no SPEC.md.
+Detection: explicit `/bootstrap` command, or START routing produced a goal/full-mode request in a codebase with no SPEC.md (a concrete target is never bootstrapped).
 Fires at: START (STARTUP -> BOOTSTRAP transition).
 Effect: enter BOOTSTRAP; generate Draft spec artifacts for human review and promotion; BOOTSTRAP -> SPEC when Draft artifacts ready.
 Invokes: Spec workflow, four-session model -- `03-output-and-state.md` `## Spec Workflow`.
@@ -129,7 +129,7 @@ Dedup/record: outcome recorded in session `## Commit/Push Gate` (`playwright_smo
 
 Detection: session context `## Edited Files` is non-empty at completion of PATCH or DIRECT work. On a confirmed READ_ONLY host the trigger is always false.
 Fires at: final step of PATCH / before DIRECT completion report.
-Effect: order inside gate: Playwright smoke (T-14) -> stage (explicit paths from Edited Files only; never `git add -A/-u/.`/-f; `git status --short` must show exactly the edited set) -> Plan-Versus-Actual Gate (T-16) -> the ask (A: commit+push origin and `*-mirror` remotes / B: commit only / C: skip). Hard rules: no commit/push without the ask; names-only remote discovery; no force-push; no destructive git; one retry per failed remote.
+Effect: the gate order is canonical in `06-misc.md` `## Commit/push gate (full rules)` `### Canonical pipeline (single source for gate order)` -- trigger, skip-valve classification, Playwright smoke (T-14), review delegation, lock check, stage (explicit paths from Edited Files only; never `git add -A/-u/.`/-f; `git status --short` must show exactly the edited set), Plan-Versus-Actual Gate (T-16), the ask (A: commit+push origin and `*-mirror` remotes / B: commit only / C: skip). Hard rules: no commit/push without the ask; names-only remote discovery; no force-push; no destructive git; one retry per failed remote.
 Invokes: Staging scope, ask, push policy, hard rules -- `06-misc.md` `## Commit/push gate (full rules)`; ask rendering -- `02-decision-prompts.md` `## Decision format`.
 Dedup/record: outcome recorded in session `## Commit/Push Gate` (decision, sha, subject, per-remote results, timestamp).
 
@@ -154,7 +154,7 @@ Dedup/record: audit result reported in the PATCH gate output.
 Detection: commit/push gate completed with a user decision (A/B/C) AND the session made file edits.
 Fires at: immediately after the gate decision.
 Effect: record `closed_at`, `closed_by: automatic`, `mode_at_close`, `final_commit`, `working_tree`, `note` in session `## Session Close`; spawn evaluation via `task` with `subagent_type: baba-reviewer` (see T-21); append verdict; announce close (session ID, final commit, one-line summary). No edits -> no auto-close; user closes explicitly via `/close`.
-Invokes: Session evaluation prompt -- `03-output-and-state.md` `## Session State (In-Session Only)`; auto-close procedure -- `06-misc.md` `### Auto-close after commit/push`.
+Invokes: Session evaluation prompt -- `03-output-and-state.md` `## Session evaluation prompt`; auto-close procedure -- `06-misc.md` `### Auto-close after commit/push`.
 Dedup/record: close record + evaluation verdict appended to session `## Session Close`.
 
 ## T-19 -- Reinforcement triggers
@@ -204,3 +204,27 @@ Fires at: REVIEW entry (consolidated mode) or REVIEW -> TEST_STRATEGY (interacti
 Effect: Spawns UltraProQuant subagent alongside BabaTester. Produces quant-specific TEST_STRATEGY_QUANT output. Findings merged via consolidated review protocol (Sensei authority on hard-tier/L-tier blocking; union on soft/advisory).
 Invokes: TEST_STRATEGY_QUANT template -- `03-output-and-state.md` `## TEST_STRATEGY_QUANT template`; consolidated merge protocol -- `01-personas.md` `## Handoff contract` `### Multi-persona session order`.
 Dedup/record: `quant_review_spawned: true` in session state; findings travel via handoff `binding_items_quant`, `strong_hints_quant`.
+
+## T-25 -- API architecture activation
+
+Detection: filesystem search. The session touches a service boundary: a new or changed endpoint, an OpenAPI/GraphQL/Swagger document, a rate-limit or versioning decision, a request/response contract type, or a file under an `api/`, `routes/`, `handlers/`, or `controllers/` directory that serves HTTP.
+Fires at: DOCS entry, REVIEW entry, PLAN, or PATCH -- at the first phase that analyzes or changes the contract, before the docs-dependent judgment is emitted.
+Effect: load `prompt-system/12-api-architecture.md` (REST/HTTP API design protocol) in full before analysis; skipped for libraries, CLIs, and non-HTTP surfaces. A contract change additionally invokes the cross-team protocol (`07-protocols.md` `## Cross-team requirements`) when consumers live in another repo.
+Invokes: API design protocol -- `prompt-system/12-api-architecture.md`; cross-team requirements -- `07-protocols.md` `## Cross-team requirements`.
+Dedup/record: recorded once in session state (`api_protocol_loaded: true`); no re-fire within a session after the module is loaded.
+
+## T-26 -- Library adoption protocol activation
+
+Detection: session state or manifest scan. A new dependency is introduced (name absent from the manifest/lockfiles before the change), an existing dependency is upgraded across a major version, or the change substantially expands usage of a dependency (new subsystem). Read dependency names and versions from the repo: manifests, lockfiles, and imports -- never ask the user for them.
+Fires at: before DOCS evidence is accepted for that dependency, and before PATCH that adds it.
+Effect: run the library adoption protocol in `prompt-system/13-library-selection.md` (selection signals, license/distribution check, selection blockers, decision record); a selection blocker without a recorded exception blocks adoption. H8 remains the hard-tier audit for known CVEs.
+Invokes: Library adoption protocol -- `prompt-system/13-library-selection.md`; dependency risk rubric -- `04-rubrics.md` `## Hard tier (H1-H12 and H13-H38)` (H8).
+Dedup/record: the decision record (chosen library, exact version, alternatives, rationale) travels in the DOCS evidence block; no re-run per already-vetted dependency.
+
+## T-27 -- App lifecycle protocol activation
+
+Detection: session state or command. The session starts, stops, or smoke-tests a long-running process (dev server, worker, daemon): a documented dev/start script exists, a `background_process` start is planned, or a smoke/health check is requested.
+Fires at: PATCH verification gate, REVIEW (H11), or on demand from any phase.
+Effect: load `prompt-system/14-app-lifecycle.md` and run the start/wait_ready/smoke/stop lifecycle with recorded evidence; on a READ_ONLY host every step reports `SKIPPED -- <reason>` instead.
+Invokes: App lifecycle protocol -- `prompt-system/14-app-lifecycle.md`; verification gate -- `06-misc.md` `## Verification gate`.
+Dedup/record: smoke outcome recorded once per commit gate (PATCH template Verification section); a re-run requires a state change.

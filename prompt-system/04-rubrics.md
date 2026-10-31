@@ -121,7 +121,7 @@ Hard-tier (H1-H12 and H13-H38) and soft-tier (S1-S25) review rubrics. Hard-tier 
 
 **S17 -- Tell, don't ask (Law of Demeter): a method reaches through another object to access its parts (`a.b.c.d`); the behavior belongs on the inner object.** A chain of more than one dot is a Demeter violation unless the chain is a fluent-builder return value (Martin, *Clean Code* ch. 6 / ch. 12 "Objects and Data Structures" -- The Law of Demeter).
 
-**S18 -- Full Comprehension Read violation: using sliced/partial file reads instead of reading files in full (largest window, offset-chunked when large) before editing, judging, or reviewing.** This includes all related files: callers, importers, dependencies, and transitive dependents. Partial reads reduce accuracy and are prohibited per `00-system.md` `## Identity` `### Rules always in force` (Full Comprehension Read rule). **Exception**: the initial load of all files in the load order at STARTUP MUST read each file in a single read with NO chunking.
+**S18 -- Full Comprehension Read violation: using sliced/partial file reads instead of reading files in full (largest window, offset-chunked when large) before editing, judging, or reviewing.** This includes all related files: callers, importers, dependencies, and transitive dependents. Partial reads reduce accuracy and are prohibited per `00-system.md` `## Identity` (Full Comprehension Read rule). **Exception**: the initial load of all files in the load order at STARTUP MUST read each file in a single read with NO chunking.
 
 **S19 -- Log Output Calls in agent-generated code: debug prints (`console.log`, `print`, `Write-Host`, `printf`, etc.) left in generated or edited code.** These reduce accuracy and pollute the transcript. Evidence must come from `file:line` inspected, command output, validation-loop pass, or explicit user acceptance per `00-system.md` Loop protection / Log output prohibition.
 
@@ -182,11 +182,11 @@ When artifact, gitattributes, or pre-commit review is in scope, those extensions
 
 ---
 
-## Logical Correctness Tier (L1-L10) — Detailed Rubrics
+## Logical Correctness Tier (L1-L10) -- Detailed Rubrics
 
 See `04b-rubrics-logical.md` for the full L1-L10 detailed rubrics. Loaded when CHECKLIST file inventory contains trading/strategy/backtest/risk/signal modules. Mark L1-L10 as in-scope (`[ ]`) or out-of-scope (`[x] skip`) at checklist time.
 
-### L2 — Boundary Condition Handling
+### L2 -- Boundary Condition Handling
 
 **Violation:** Missing or incorrect handling of zero, negative, NaN, inf, or empty inputs at domain boundaries.
 
@@ -200,7 +200,7 @@ See `04b-rubrics-logical.md` for the full L1-L10 detailed rubrics. Loaded when C
 
 ---
 
-### L3 — State Machine / Protocol Validity
+### L3 -- State Machine / Protocol Validity
 
 **Violation:** Invalid state transitions in order lifecycle, position management, or strategy states.
 
@@ -212,7 +212,7 @@ See `04b-rubrics-logical.md` for the full L1-L10 detailed rubrics. Loaded when C
 
 ---
 
-### L4 — Time-Series Integrity
+### L4 -- Time-Series Integrity
 
 **Violation:** Look-ahead bias, survivorship bias, or temporal leakage.
 
@@ -225,7 +225,7 @@ See `04b-rubrics-logical.md` for the full L1-L10 detailed rubrics. Loaded when C
 
 ---
 
-### L5 — Position / Portfolio Arithmetic
+### L5 -- Position / Portfolio Arithmetic
 
 **Violation:** Arithmetic that doesn't conserve value or violates accounting identity.
 
@@ -237,7 +237,7 @@ See `04b-rubrics-logical.md` for the full L1-L10 detailed rubrics. Loaded when C
 
 ---
 
-### L6 — Statistical Validity
+### L6 -- Statistical Validity
 
 **Violation:** Statistical method applied incorrectly or assumption violated.
 
@@ -254,7 +254,7 @@ See `04b-rubrics-logical.md` for the full L1-L10 detailed rubrics. Loaded when C
 
 ---
 
-### L7 — Backtesting Integrity
+### L7 -- Backtesting Integrity
 
 **Violation:** Backtest result not reproducible or inflated by leakage.
 
@@ -270,7 +270,7 @@ See `04b-rubrics-logical.md` for the full L1-L10 detailed rubrics. Loaded when C
 
 ---
 
-### L8 — Risk / Position Sizing Logic
+### L8 -- Risk / Position Sizing Logic
 
 **Violation:** Sizing or risk math doesn't conserve capital or violates Kelly/optimal-f.
 
@@ -284,22 +284,22 @@ See `04b-rubrics-logical.md` for the full L1-L10 detailed rubrics. Loaded when C
 
 ---
 
-### L9 — Performance Metric Correctness
+### L9 -- Performance Metric Correctness
 
 **Violation:** Metric computed wrong or interpreted incorrectly.
 
 | Metric | Common Bug |
 |---|---|
-| **Sharpe** | `mean(daily_ret) / std(daily_ret) * √252` — but `std` uses `ddof=0` (population) not `ddof=1` (sample) |
+| **Sharpe** | `mean(daily_ret) / std(daily_ret) * √252` -- but `std` uses `ddof=0` (population) not `ddof=1` (sample) |
 | **Sortino** | Downside deviation uses `min(ret, 0)` not `min(ret - MAR, 0)` |
 | **Calmar** | `max_drawdown` computed on equity curve with `expanding().max()` but reset not handled |
-| **Win rate** | `winning_trades / total_trades` — but breakeven trades counted as losers |
-| **Profit factor** | `Σ wins / Σ losses` — but `losses = 0` → `inf` not handled |
+| **Win rate** | `winning_trades / total_trades` -- but breakeven trades counted as losers |
+| **Profit factor** | `Σ wins / Σ losses` -- but `losses = 0` → `inf` not handled |
 | **Annualized return** | `(1 + total_ret)^(252/n) - 1` but `n` = trading days not calendar days |
 
 ---
 
-### L10 — Strategy Logic / State Machine
+### L10 -- Strategy Logic / State Machine
 
 **Violation:** Strategy enters invalid state or generates contradictory signals.
 
@@ -319,4 +319,4 @@ See `04b-rubrics-logical.md` for the full L1-L10 detailed rubrics. Loaded when C
 - Apply all L1-L10 to every chunk when trading/statistical files are in scope, unless explicitly excluded in the checklist.
 - Flag all applicable L-items in the REVIEW phase. L-items are hard-tier: a confirmed violation blocks PLAN until accepted or excluded with justification in the REVIEW decision section.
 - L-items appear in REVIEW findings as `L1`, `L2`, etc. with the same format as H/S items.
-- Mitigations block uses the standard 2-3 option format with recommended option first as `**A. option**`.
+- Mitigations block uses the standard 2-3 option format with recommended option first as `**A. option text**`.

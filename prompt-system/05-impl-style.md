@@ -74,21 +74,14 @@ The ladder runs after full comprehension, never instead of it: read the task and
 - Bug fix = root cause, not symptom: grep the callers of the function you touch and fix the shared function once; one guard in the shared function is a smaller diff than a guard in every caller.
 - The shortest working diff wins, but only once the problem is understood; the smallest change in the wrong place is a second bug, not laziness.
 
-## Stepdown rule (S14)
+## Clean-Code heuristics (S14-S17)
 
-Functions read top-to-bottom. Each function calls functions one level of abstraction below it. At the design level, this means each function should decompose into one level of abstraction below the function's primary responsibility; the example that follows illustrates this decomposition. A function whose first line is a high-level call (`fetchUser()`) and whose next line is a low-level call (`parseJwt(token)`) without a named intermediate is a stepdown violation. The body of every function should be readable as a single sentence at one level of abstraction; the supporting helpers carry the next level down. (Martin, *Clean Code* ch. 3 "One Level of Abstraction per Function" / ch. 11 "The Stepdown Rule".)
+`prompt-system/04-rubrics.md` is the sole authority for the S14-S17 definitions; this section carries only the implementation-facing summary.
 
-## Newspaper order (S15)
-
-A file reads like a newspaper article: headline first, then increasingly fine-grained detail as you scroll. The public API sits at the top, private helpers follow, and the reader never has to scroll up to find a called function. A file that places a public function below the private helper it calls, or splits a related group of functions across the top and bottom, is a newspaper-order violation. (Martin, *Clean Code* ch. 5 "The Purpose of Formatting" / ch. 11 "The Newspaper Metaphor".)
-
-## Flag arguments and output arguments (S16)
-
-A boolean flag argument almost always means the function does two things; split it. An output argument (a function that mutates an argument passed by reference) is a hidden side effect; return a value instead. The only acceptable uses are integration with APIs that require a mutable handle (rare) and fluent builders that return `this` (handled by S17's exception). (Martin, *Clean Code* ch. 3 / ch. 8 "Function Arguments" - Flag Arguments and Output Arguments.)
-
-## Tell, don't ask - Law of Demeter (S17)
-
-A method should not reach through another object to access its parts. `customer.wallet.balance.currency` exposes the wallet's internals; the behavior belongs on the wallet, called from the customer. Tell the wallet to do something; don't ask the wallet for its balance and decide yourself. A chain of more than one dot is a Demeter violation unless the chain is a fluent-builder return value or a known data-transfer object. (Martin, *Clean Code* ch. 6 / ch. 12 "Objects and Data Structures".)
+- **Stepdown (S14):** functions read top-to-bottom; each function calls functions one level of abstraction below it; a body mixes high-level orchestration with low-level operations without a named intermediate is a stepdown violation (Martin, *Clean Code* ch. 3 / ch. 11).
+- **Newspaper order (S15):** files read headline first, then fine detail; a public function below the private helper it calls, or a related group split across the top and bottom, is a newspaper-order violation (Martin, *Clean Code* ch. 5 / ch. 11).
+- **No flag/output arguments (S16):** a boolean flag argument means the function does two things; split it. Mutating an argument instead of returning a value is a hidden side effect; return a value instead (Martin, *Clean Code* ch. 3 / ch. 8).
+- **Tell, don't ask / Law of Demeter (S17):** no reaching through another object's parts (`customer.wallet.balance.currency`); the behavior belongs on the inner object. Chains of more than one dot are violations unless fluent-builder return values or DTOs (Martin, *Clean Code* ch. 6 / ch. 12).
 
 ## Minimal verification floor
 

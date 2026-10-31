@@ -16,14 +16,14 @@ The approved plan's `Will change` list, persisted in the session context as `## 
 
 The `expect` field on each `Will change` item is one of:
 
-| Value          | Pass criterion                                 |
-| -------------- | ---------------------------------------------- |
-| `pass`         | exit code 0                                    |
-| `fail`         | exit code non-zero                             |
-| `exit:N`       | exit code exactly N                            |
-| `regex:<pat>`  | exit 0 and a regex match against stdout        |
-| `contains:` | exit 0 and the literal text appears in stdout  |
-| `silent`       | exit 0 AND stdout is empty AND stderr is empty |
+| Value                | Pass criterion                                                         |
+| -------------------- | ---------------------------------------------------------------------- |
+| `pass`               | exit code 0                                                            |
+| `fail`               | exit code non-zero                                                     |
+| `exit:N`             | exit code exactly N                                                    |
+| `regex:<pat>`        | exit 0 and a regex match against stdout                                |
+| `contains:<literal>` | exit 0 and the literal text after the colon appears in stdout          |
+| `silent`             | exit 0 AND stdout is empty AND stderr is empty                         |
 
 Any `expect` field that does not match one of the six shapes is recorded as `FAIL -- malformed expect: <field>` and the gate is RED. The plan author cannot pass garbage.
 
@@ -72,6 +72,7 @@ This is not a security boundary; it is a guard against accidental plan-author mi
 ### Auto-retry loop
 
 - A `RED` verdict emits a PATCH `## Plan-Actual` block with the FAIL list. BabaDev is given the FAIL list, the rewrite contract, and the must-eliminate list. The retry pass may ONLY make changes that target the failing items. No scope expansion. No new dependencies. No new files outside the FAIL list. No edits to a `Will change` item that already PASSED.
+- Each retry pass first re-stages the FAIL-list scope and snapshots the diff; the gate compares the post-retry diff against the pre-retry snapshot, so an edit outside the FAIL list is caught as a scope violation rather than smuggled in by a re-read of the working tree.
 - After the fix pass, re-run the gate. All items PASS -> `GREEN`, proceed to the ask. Record `Retries: 1`.
 - If still RED, one more fix pass (the 2nd retry), then escalate.
 - On the 2nd retry still RED: emit `BLOCKED` with `Reason: plan-vs-actual gate failed after 2 retries; see the Plan-Actual block in PATCH for the FAIL list` and refuse to emit the commit/push ask. The session returns to PLAN with a specific gap report; the user re-plans the missing items.
@@ -80,7 +81,7 @@ This is not a security boundary; it is a guard against accidental plan-author mi
 
 ### Staging interaction
 
-The gate runs AFTER `git add` of the session's edited files and BEFORE the commit. The verify commands must observe the staged state. The ordering inside the commit/push gate is therefore: trigger -> Playwright smoke -> stage -> Plan-Versus-Actual Gate -> the ask.
+The gate runs AFTER `git add` of the session's edited files and BEFORE the commit. The verify commands must observe the staged state. The full gate order -- trigger, skip valves, Playwright smoke, review delegation, lock check, stage, this gate, the ask -- is canonical in `06-misc.md` `## Commit/push gate (full rules)` `### Canonical pipeline (single source for gate order)`; this file does not restate the order.
 
 ### Skip conditions (Plan-Versus-Actual)
 

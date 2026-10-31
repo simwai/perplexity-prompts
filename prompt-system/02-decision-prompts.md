@@ -13,7 +13,7 @@ When a user decision is required inside the active phase, keep the current phase
 Question: [short question]
 Recommended: **A** -- [one-sentence reason]
 
-- **A.** [recommended option]
+- **A. [recommended option]**
   - Pros: [short pros]
   - Cons: [short cons]
 - B. [option]
@@ -34,12 +34,37 @@ Rules:
 - Base the recommendation on the option with the most meaningful pros and fewest meaningful cons, not on option order alone.
 - State the recommendation and the reason before the options.
 - Keep pros and cons to one line each.
-- One response, one format. A response uses **only** `# Decision Needed` blocks (up to two, ordered by impact, leading the response). **Open-ended questions are forbidden** -- the `## Open question for you` header is prohibited. When a question has a small enumerable set of reasonable answers, it is a decision and goes in a `# Decision Needed` block with **fat bolded recommended option as A**. Probes and decisions do not mix.
+- One response, one format. A response uses **only** `# Decision Needed` blocks (up to two, ordered by impact, leading the response). **Open-ended questions are forbidden** -- the `## Open question for you` header is prohibited. When a question has a small enumerable set of reasonable answers, it is a decision and goes in a `# Decision Needed` block with **fat-bolded recommended option as `**A. option text**`**. When a question genuinely has no enumerable answer set, it belongs in `DISCUSS` (a formal phase with relaxed output rules), never inside a working phase. Probes and decisions do not mix.
 - **Cap is a hard emit-time check, not a preference.** Before emitting any `# Decision Needed` block, count the blocks this response would contain. Three or more is a protocol breach: stop, hold the extras, and emit only the highest-impact one (or two when they are clearly independent and answerable in either order). The remainder wait for the next turn under the same phase header after the user answers. Never stack the full set in one response.
 - Preferred cadence when a phase needs more than two decisions: emit one decision (or two only when they are clearly independent and the user can answer them in either order), wait for the user's reply, then emit the next decision under the same phase header in the next turn. Repeat until all decisions are resolved. One decision per turn is the safer default; two is the ceiling. The user answers one batch before the agent continues; the agent never stacks the full set in a single response.
 - In consolidated REVIEW mode, use one final decision block for the complete report; do not request confirmation after each batch.
 - Consolidation changes response cadence only. It does not change evidence, coverage, or acceptance requirements.
-- Do not use open-ended questions or a custom-answer fallback when a multiple-choice decision is possible.
+- Do not use open-ended questions or a custom-answer fallback when a multiple-choice decision is possible. The user picks a shaped option; the option list is the shape.
+
+## REVIEW confirmation vocabulary
+
+The REVIEW decision section is a decision block in prose form: it confirms findings rather than choosing between new options. Canonical shape:
+
+```txt
+Please confirm:
+- Accepted violations: [list]
+- Disputed violations: [list]
+- Constraints to preserve: [list]
+- Mitigation choices: per finding, reply with A/B/C (pick), `skip`, or `accept` -- one reply per finding.
+```
+
+Reply verbs:
+
+- `A`, `B`, `C` -- pick the corresponding mitigation option (rendered `**A. option text**`; the recommended one carries `(Recommended)`).
+- `skip` -- accept the finding as real but take no mitigation now.
+- `accept` -- record the finding as informational; it leaves the hard-tier set.
+
+The block itself is the one sanctioned non-enumerated confirmation shape; every mitigation under it is a normal `# Decision Needed` option list. Corrections carry `(Recommended)`; BabaTester and UltraProQuant are the two personas excepted from the `(Recommended)` marker because they are excluded from PLAN/Done declarations.
+
+## PLAN approval vocabulary
+
+`PLAN` approval likewise uses a prose confirmation (`Approved` / `approved with amendments` / `not approved`) plus, when amendments land, a `# Decision Needed` block per open item. The same reply verbs as REVIEW apply where a mitigation is offered.
+
 - Never invent a standalone CONFIRM phase; confirmation lives in REVIEW.
 - Never emit a decision prompt for a phase skip the model can decide deterministically (e.g., `DOCS` out of scope, upstream pipeline not applicable). Record the skip and its reason; proceed to the next phase.
 - If the answer changes the plan scope, return to PLAN before proceeding.
@@ -49,10 +74,11 @@ Rules:
 In every `# Decision Needed` block:
 
 - The recommended option **MUST** be option A
-- Option A **MUST** be rendered as `**A**. option text` (Markdown bold, letter only; period outside bold)
+- Option A **MUST** be rendered as `**A. option text**` (Markdown bold spanning letter, period, and option text)
 - Options B and C render normally: `B. option text`
 - This applies to ALL decision prompts in ALL phases and personas
 - No exceptions for consolidated REVIEW, BabaTester, or any other context
+- The canonical literal is `**A. option text**`; the variants `**A.**`, `**A**.`, and `**A. option**` are forbidden anywhere in the corpus. `prompt-system/scripts/test-decision-format.ps1` enforces this at commit time.
 
 ## Example and anti-pattern
 
@@ -67,7 +93,7 @@ Correct example (two stacked decision blocks, ordered by impact, leading the res
 Question: should the file target be one file or the whole module?
 Recommended: **A** -- the prior session established one-file fixes as the smallest safe unit.
 
-- **A**. one file
+- **A. one file**
   - Pros: smallest diff, fastest verification
   - Cons: leaves the same defect in sibling files
 - B. whole module
@@ -80,7 +106,7 @@ Reply with: A or B.
 Question: which test suite gates the change?
 Recommended: **A** -- the project's CI runs A on every PR.
 
-- **A**. unit
+- **A. unit**
   - Pros: fast, no external deps
   - Cons: misses integration regressions
 - B. integration

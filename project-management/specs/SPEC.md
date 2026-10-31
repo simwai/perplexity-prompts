@@ -93,7 +93,7 @@ See "Do not" section in the brief - all items there are explicitly out of scope.
 ## Open questions
 
 1. **RESOLVED (A)**: Load-scope annotations use formal enum: `[core]`, `[review]`, `[on-demand]`, `[stack]`, `[designer]`, `[doc]` (exact values, case-sensitive).
-2. **RESOLVED**: Keep `system_evidence` as temporary artifact (populated by Discovery Protocol during CHECKLIST, discarded after REVIEW). H14-H40 keep their `system_evidence` triggers.
+2. **RESOLVED**: Keep `system_evidence` as temporary artifact (populated by Discovery Protocol during CHECKLIST, discarded after REVIEW). H13-H38 keep their `system_evidence` triggers.
 3. **RESOLVED (A)**: No dependency field — tasks ordered in TASKS.md, "first unchecked" executes; spec author orders correctly.
 4. **RESOLVED (A)**: Keep `08-plan-actual-gate.md` separate, added to 00-system.md Load order with `[review]` scope.
 5. **RESOLVED (A + C)**: STYLE_POLICY.md auto-trigger fires first in spec session (BabaSensei asks during spec authoring if project has AGENTS.md but no STYLE_POLICY.md; recorded in SPEC.md). Fallback: planning session asks if missed.

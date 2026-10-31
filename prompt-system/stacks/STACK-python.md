@@ -24,7 +24,7 @@
   - `typecheck` - `pyrefly check`  (only if pyrefly is a declared dependency in `pyproject.toml`)
   - `test` - `pytest`
   - `dev` - `python -m src.index`
-- Checks run through the detected runner regardless of tool: `lint` (`ruff check src`), `format` (`ruff format src`), `typecheck` (`pyrefly check` — **only if pyrefly is a declared dependency** in `pyproject.toml` under `[project].dependencies` or `[project].optional-dependencies`), `test` (`pytest`) - e.g., `pdm run test`, `poetry run pytest`, `uv run pytest`, or `<venv>\Scripts\python.exe -m pytest` for a bare venv.
+- Checks run through the detected runner regardless of tool: `lint` (`ruff check src`), `format` (`ruff format src`), `typecheck` (`pyrefly check` -- **only if pyrefly is a declared dependency** in `pyproject.toml` under `[project].dependencies` or `[project].optional-dependencies`), `test` (`pytest`) - e.g., `pdm run test`, `poetry run pytest`, `uv run pytest`, or `<venv>\Scripts\python.exe -m pytest` for a bare venv.
 - Tool role split (Pylance / Pyrefly / Ruff) so the three tools do not duplicate work or fight each other in the editor or CI:
   - **Pylance** is the language server / IntelliSense. Configure in the target repo's `.vscode/settings.json`: `python.languageServer: "Pylance"`, `python.analysis.typeCheckingMode: "strict"`. Do not enable Pylance's own type checker when Pyrefly is in use; Pyrefly is the single source of type errors.
   - **Pyrefly** is the type checker. Configure in `pyproject.toml [tool.pyrefly]`; CLI entry point is `pyrefly check`. **Only runs if pyrefly is a declared dependency** in `pyproject.toml` under `[project].dependencies` or `[project].optional-dependencies`. Run on save in the editor; full check in CI and pre-commit (when present).
@@ -62,4 +62,4 @@
   - Testing: **pytest** + **pytest-asyncio**.
   - Prefer libs that ship `py.typed` marker or have typeshed stubs over untyped alternatives.
 - Linting: `ruff` (lint + format) or `black + isort + flake8`; pre-commit hooks run them on save.
-- Circular import detection: **pycycle**. Run in pre-commit (whole project) and CI. Install via `pdm add --dev pycycle` (preferred), `poetry add --dev pycycle`, or `uv add --dev pycycle`. Run with `pycycle --here --ignore .venv,venv,build,dist,tests,__pycache__`. Configure via `pyproject.toml [tool.pycycle]` if needed (exclude test files, allow specific patterns). Note: may miss cycles in `src/` layout projects — verify manually if output seems unreliable.
+- Circular import detection: **pycycle**. Run in pre-commit (whole project) and CI. Install via `pdm add --dev pycycle` (preferred), `poetry add --dev pycycle`, or `uv add --dev pycycle`. Run with `pycycle --here --ignore .venv,venv,build,dist,tests,__pycache__`. Configure via `pyproject.toml [tool.pycycle]` if needed (exclude test files, allow specific patterns). Note: may miss cycles in `src/` layout projects -- verify manually if output seems unreliable.

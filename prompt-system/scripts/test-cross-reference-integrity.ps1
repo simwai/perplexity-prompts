@@ -15,6 +15,13 @@ $ErrorActionPreference = 'Stop'
 $systemRoot = Join-Path $PSScriptRoot '..'
 $repoRoot = (Resolve-Path (Join-Path $systemRoot '..')).Path
 
+# Structural manifest: the machine-readable registry of load-order files and
+# baseline allowlists. Required since the remediation's Phase 1; the suites
+# and the manifest must move together.
+$manifestPath = Join-Path $systemRoot 'system-manifest.json'
+Assert-FileExists -Path $manifestPath -Description 'system manifest (system-manifest.json)'
+$manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+
 function Get-NormalizedHeadings {
     param([string]$Path)
 
@@ -96,6 +103,21 @@ Get-ChildItem -Path $repoRoot -Filter '*.md' -File |
     Where-Object { $_.Name -ne 'CHANGELOG_ARCHIVE.md' } |
     ForEach-Object { $files += $_ }
 
+# ── Load-order existence ────────────────────────────────────────────────────
+# Every file the manifest's load order names must exist. The citation checks
+# below only see files somebody cites; a renamed load-order file that nothing
+# cites (AGENTS.md, 04b, 09, 10, the stacks) would otherwise pass silently.
+$tierFiles = @()
+$tierFiles += @($manifest.loadOrder.always)
+$tierFiles += @($manifest.loadOrder.reviewPatch)
+$tierFiles += @($manifest.loadOrder.conditional)
+foreach ($rel in $tierFiles) {
+    $p = Join-Path $repoRoot ($rel -replace '/', '\')
+    if (-not (Test-Path -LiteralPath $p -PathType Leaf)) {
+        Add-TestFailure "LOAD ORDER MISSING: manifest lists '$rel' but the file does not exist"
+    }
+}
+
 foreach ($file in $files) {
     $rel = $file.FullName.Substring($repoRoot.Length).TrimStart('\', '/')
     $text = [System.IO.File]::ReadAllText($file.FullName)
@@ -139,7 +161,11 @@ foreach ($file in $files) {
     foreach ($h in $headingCache[$file.FullName]) { [void]$allHeadings.Add($h) }
 }
 
+$bareAllow = @()
+if ($manifest.bareAnchorAllowlist) { $bareAllow = @($manifest.bareAnchorAllowlist) }
+
 $orphans = New-Object System.Collections.Generic.List[string]
+$allowedOrphans = 0
 foreach ($file in $files) {
     $text = [System.IO.File]::ReadAllText($file.FullName)
     $own = $headingCache[$file.FullName]
@@ -147,16 +173,18 @@ foreach ($file in $files) {
         $anchor = ($m.Groups[1].Value -replace '`', '').Trim().ToLowerInvariant()
         if (Test-AnchorResolves -Headings $own -Anchor $anchor) { continue }
         if (Test-AnchorResolves -Headings $allHeadings -Anchor $anchor) { continue }
+        if ($bareAllow -contains $anchor) { $allowedOrphans++; continue }
         $orphans.Add("$($file.Name) -> ``$anchor``")
     }
 }
 
 if ($orphans.Count -gt 0) {
-    Write-Warning "  $($orphans.Count) bare ``## anchor`` citations resolve to no heading in any scanned file."
-    Write-Warning "  These are advisory only -- session-context fields such as ``## Edited Files`` are not headings."
-    $orphans | Sort-Object -Unique | Select-Object -First 20 | ForEach-Object { Write-Warning "    $_" }
-    if ($orphans.Count -gt 20) { Write-Warning "    ... and $($orphans.Count - 20) more" }
+    Write-Warning "  $($orphans.Count) bare ``## anchor`` citations resolve to no heading in any scanned file and are not allowlisted:"
+    $orphans | Sort-Object -Unique | ForEach-Object { Write-Warning "    $_" }
+    foreach ($o in ($orphans | Sort-Object -Unique)) {
+        Add-TestFailure "PHANTOM ANCHOR: $o -- add a real heading, fix the citation, or (session-context fields only) extend bareAnchorAllowlist in system-manifest.json"
+    }
 }
 
-Write-Host "  checked $checked file+anchor citations across $($files.Count) files ($($orphans.Count) advisory bare-anchor orphans)"
+Write-Host "  checked $checked file+anchor citations across $($files.Count) files ($($orphans.Count) phantom, $allowedOrphans allowlisted bare-anchor orphans)"
 exit (Complete-TestRun -SuiteName 'cross-reference integrity')

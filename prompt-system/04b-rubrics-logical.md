@@ -160,4 +160,4 @@ label = ret.gt(min_ret) & risk.lt(max_mae) & (rr.gt(min_reward_risk) | risk.eq(0
 - Apply all L1-L10 to every chunk when trading/statistical files are in scope, unless explicitly excluded in the checklist.
 - Flag all applicable L-items in the REVIEW phase. L-items are hard-tier: a confirmed violation blocks PLAN until accepted or excluded with justification in the REVIEW decision section.
 - L-items appear in REVIEW findings as `L1`, `L2`, etc. with the same format as H/S items.
-- Mitigations block uses the standard 2-3 option format with recommended option first as `**A. option**`.
+- Mitigations block uses the standard 2-3 option format with recommended option first as `**A. option text**`.

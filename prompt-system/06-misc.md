@@ -99,7 +99,7 @@ For each item in `Must route through`:
 For each item in `Must not duplicate`:
 
 - verify: `rg "<pattern>" <target_file>`
-- expect: `silent` (exit 0, no matches)
+- expect: `fail` (exit 1: no match is the pass state; exit >= 2 means the command itself failed and is a FAIL, never a "no match")
 - Record: PASS or FAIL with sanitized rg output
 
 For each item in `Must use available library`:
@@ -111,10 +111,10 @@ For each item in `Must use available library`:
 For each item in `Must follow layer`:
 
 - verify: `rg "<forbidden_pattern>" <target_file>`
-- expect: `silent` (exit 0, no matches)
+- expect: `fail` (exit 1: no match is the pass state; exit >= 2 means the command itself failed and is a FAIL, never a "no match")
 - Record: PASS or FAIL with sanitized rg output
 
-Gate result: ALL PASS required. Any FAIL -> return to PLAN with specific constraint violation.
+Gate result: ALL PASS required. Any FAIL -> return to PLAN with specific constraint violation. Absence checks use `expect: fail` per `08-plan-actual-gate.md` `### Absence checks use expect: fail`; `silent` is never the absent-match state for `rg` (it exits 1 on no match), so an earlier `silent` here would have looped the session forever.
 
 ### Self-review verification
 
@@ -174,6 +174,25 @@ Applies only on a confirmed `READ_ONLY` host. `00-system.md` `## Read-only host`
 
 The commit/push gate is the final step of PATCH when the session made file edits. It exists to prevent silent file mutations, unsanitized remote URLs in transcripts, and untracked large file commits.
 
+### Canonical pipeline (single source for gate order)
+
+The gate runs in this order, every time. Sub-sections below are details for each step; the order itself lives here alone.
+
+1. **Trigger check** -- the session context has a non-empty `## Edited Files` section. On a confirmed `READ_ONLY` host the gate never triggers: no ask is emitted and no mutating git step runs.
+2. **Skip-valve classification** -- classify the edit set before spending verification cost:
+   - UI-bearing edit, or a web-app entry point exists -> **full path**: Playwright smoke required.
+   - Code or test edit, non-UI -> **standard path**: smoke `SKIPPED: playwright-smoke -- no web-app entry point or UI-bearing edit detected`; delegation still runs on the code/test files.
+   - Docs-only edit (`.md` only) -> **light path**: smoke `SKIPPED` as above and delegation `SKIPPED: review-delegation -- no code or test files in the edited set`. Plan-Actual still runs when `Will change` items exist. Governance edits under `prompt-system/` are **not** docs-only: the integrity suites run before the ask via `pre-commit.ps1`, and delegation targets the scripts.
+3. **Playwright smoke** (T-14) unless the skip valve applies.
+4. **Pre-commit review delegation** (baba-sensei / baba-tester) unless the skip valve applies.
+5. **Lock contention check** -- `Get-BlockingPeersForPaths` over the edited set.
+6. **Stage** -- explicit paths from `## Edited Files` only; `git status --short` must show exactly the edited set.
+7. **Plan-Versus-Actual Gate** (T-16) -- canonical protocol in `08-plan-actual-gate.md`, running against the staged tree.
+8. **The ask** -- one `# Decision Needed` block (A/B/C).
+9. **Lock release** after the commit (or commit-only decision), then **auto-close** (T-18).
+
+Steps 3-5 are skippable only via the step-2 classification, each recording its `SKIPPED:` line with the exact reason. Steps 6-8 are never skippable on a triggered gate.
+
 ### Trigger
 
 - The gate applies only when the session context has a non-empty `## Edited Files` section (one path per edit step, appended by the per-edit lint-gate recording points).
@@ -204,8 +223,8 @@ Before staging, delegate the session's work for a final quality check. This is a
 - **Code review -> baba-sensei**: spawn a   ask sub-session with subagent_type: baba-sensei over the session's ## Edited Files (code files only). The reviewer returns a verdict (MERGE BLOCKED / APPROVED WITH FIXES / LGTM) plus any hard/soft-tier findings.
 - **Test review -> baba-tester**: spawn a   ask sub-session with subagent_type: baba-tester over the session's test files (and the code files they cover). The tester returns regression-risk, edge-case, and coverage findings, classified BINDING / STRONG HINT / WEAK HINT.
 - **Gate rule**: any MERGE BLOCKED verdict or any BINDING tester item blocks the commit. The session returns to PLAN with the findings before staging. APPROVED WITH FIXES / STRONG HINT items are recorded and may be deferred explicitly with rationale; LGTM / WEAK HINT items proceed.
-- **READ_ONLY host**: record SKIPPED: review-delegation -- gate trigger is false on a read-only host and skip.
-- **No code/test files edited** (e.g., docs-only session): skip delegation and record SKIPPED: review-delegation -- no code or test files in the edited set.
+- **READ_ONLY host**: record `SKIPPED: review-delegation -- gate trigger is false on a read-only host` and skip.
+- **No code/test files edited** (e.g., docs-only session): skip delegation and record `SKIPPED: review-delegation -- no code or test files in the edited set`.
 - Record the outcome (sensei_verdict,   ester_binding_items, deferred_items) in the session context ## Commit/Push Gate section and in the PATCH template's # Commit/Push Gate block.
 
 ### Lock contention check (before staging)
@@ -256,7 +275,7 @@ After the commit lands (or after commit-only decision), release dependency locks
 - For each path in `## Edited Files`:
   - Call `Exit-DependencyLock -RepoRelativePath <path>`
   - On `Skipped` (READ_ONLY): record `SKIPPED: file-edit -- READ_ONLY host`
-  - On `Refused` (peer owns lock): record warning but do not block — log "lock on <path> owned by <peer>, not released"
+  - On `Refused` (peer owns lock): record warning but do not block -- log "lock on <path> owned by <peer>, not released"
   - On `Success`: record release
 
 ### Auto-close after commit/push

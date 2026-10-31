@@ -6,16 +6,19 @@
 
   // Guarantees the system core is in every opencode session without relying
   // on the model choosing to read it. Mirrors the AGENTS.md startup instruction.
-  // The system is merged; it was 39 files (bootstrap.txt + 38 modules) before the
-  // 2026-08-31 cycle-removal pass. Entries here are explicit paths, never globs.
+  // Entries here are explicit paths, never globs.
   // AGENTS.md is the sole entry point; prompt-system/ files follow its load order.
   //
-  // This array pins the always-load [core] set plus the load-on-PATCH [review] set.
-  // 11-triggers.md is core and must stay pinned: it holds every canonical trigger
-  // definition, so omitting it silently disables T-01..T-23 routing.
-  // Conditional additions (stacks/, designer, doc, logical) are deliberately NOT
-  // pinned -- they are diligence-loaded per 00-system.md's load order, so pinning
-  // them would load the whole corpus into every session.
+  // This array pins ONLY the always-load [core] tier:
+  // AGENTS.md + prompt-system/00-system.md, 11-triggers.md, 01-personas.md,
+  // 02-decision-prompts.md, 03-output-and-state.md, 04-rubrics.md, 05-impl-style.md.
+  // The full tier list lives in prompt-system/system-manifest.json (loadOrder.always).
+  //
+  // Conditional tiers ([review], [stack], [designer], [doc], [logical], [domain])
+  // are deliberately NOT pinned -- they are loaded just-in-time at phase entry
+  // per 00-system.md's load order, so pinning them would load the whole corpus
+  // into every session. 11-triggers.md stays pinned: it holds every canonical
+  // trigger definition (T-01..T-27), so omitting it silently disables routing.
   "instructions": [
     "AGENTS.md",
     "prompt-system/00-system.md",
@@ -24,10 +27,7 @@
     "prompt-system/02-decision-prompts.md",
     "prompt-system/03-output-and-state.md",
     "prompt-system/04-rubrics.md",
-    "prompt-system/05-impl-style.md",
-    "prompt-system/06-misc.md",
-    "prompt-system/07-protocols.md",
-    "prompt-system/08-plan-actual-gate.md"
+    "prompt-system/05-impl-style.md"
   ],
 
   // Prefer the read-only BabaSensei planning path by default. The native Build
@@ -71,11 +71,12 @@
 // which reads only the plural key and silently drops the singular one.
 // `@latest` is fine for personal/dev use; pin a version when
 // reproducibility matters.
+// V2 plugins (translated from V1 npm packages) - loaded instead of V1 originals.
 "plugins": [
-    "opencode-vibeguard@latest",
-    "opencode-adaptive-thinking@latest",
-    "opencode-pty",
-    "opencode-autotitle@latest",
+    ".opencode/plugins/vibeguard-v2.ts",
+    ".opencode/plugins/adaptive-thinking-v2.ts",
+    ".opencode/plugins/pty-v2.ts",
+    ".opencode/plugins/autotitle-v2.ts",
     ".opencode/plugins/baba-prompt-system-loader.ts",
     ".opencode/plugins/baba-protocol-enforce.ts",
     ".opencode/plugins/baba-system-reminder-override.ts",

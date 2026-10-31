@@ -1,6 +1,6 @@
 # 09-design-guidelines
 
-Design Guidelines — owned by BabaDesigner. Loaded when BabaDesigner is active. Frontend work should route through DESIGN_PLAN before implementation so UI choices are decided in one place, not invented during PATCH.
+Design Guidelines -- owned by BabaDesigner. Loaded when BabaDesigner is active. Frontend work should route through DESIGN_PLAN before implementation so UI choices are decided in one place, not invented during PATCH.
 
 Greenfield projects adopt these as binding conventions; existing projects apply them through `STYLE_POLICY.md` (`preserve-local` or `upgrade-house-style`). Override per project via the `Stack/Style:` field or `STYLE_POLICY.md`. Accessibility and SEO rules are governed by the existing rubric IDs `S21`-`S24`; this section does not duplicate them.
 
