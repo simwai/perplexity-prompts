@@ -564,3 +564,104 @@ function Get-LockStatus {
     }
     return @{ SessionId = $SessionId; LockRoot = $lockRoot; Locks = @($locks) }
 }
+
+function Get-LiveLockCount {
+    param(
+        [int]$TtlMinutes = $script:LockTtlMinutes,
+        [string]$RepoRoot
+    )
+
+    $repoRoot = Resolve-RepoRoot $RepoRoot
+    $lockRoot = Get-LockRoot $repoRoot
+    $count = 0
+    if (Test-Path -LiteralPath $lockRoot) {
+        foreach ($dir in Get-ChildItem -LiteralPath $lockRoot -Directory -Filter '*.lock' -ErrorAction SilentlyContinue) {
+            $info = Read-LockInfo $dir.FullName
+            if (Test-LockLive $info.AcquiredAt $TtlMinutes) {
+                $count++
+            }
+        }
+    }
+    return $count
+}
+
+function Test-LockGateEngaged {
+    param(
+        [int]$TtlMinutes = $script:LockTtlMinutes,
+        [string]$RepoRoot
+    )
+    $liveCount = Get-LiveLockCount -TtlMinutes $TtlMinutes -RepoRoot $RepoRoot
+    return ($liveCount -ge 1)
+}
+
+function Get-LockGateEvaluation {
+    param(
+        [string[]]$StagedPaths,
+        [string]$SessionId = $env:SESSION_ID,
+        [int]$TtlMinutes = $script:LockTtlMinutes,
+        [string]$RepoRoot
+    )
+
+    if (Test-ReadOnlyHost) {
+        return @{ Engaged = $false; Skipped = $true; Reason = 'READ_ONLY host' }
+    }
+
+    $repoRoot = Resolve-RepoRoot $RepoRoot
+    $engaged = Test-LockGateEngaged -TtlMinutes $TtlMinutes -RepoRoot $repoRoot
+
+    if (-not $engaged) {
+        return @{ Engaged = $false; Skipped = $false; ShouldBlock = $false }
+    }
+
+    if (-not $SessionId) {
+        return @{
+            Engaged = $true
+            Skipped = $false
+            ShouldBlock = $true
+            Reason = 'engaged: no SESSION_ID set for attributed commit'
+            Type = 'Unattributed'
+        }
+    }
+
+    $conflicts = @(Get-BlockingPeersForPaths -RepoRelativePaths $StagedPaths -SessionId $SessionId -TtlMinutes $TtlMinutes -RepoRoot $repoRoot)
+    if ($conflicts.Count -gt 0) {
+        return @{
+            Engaged = $true
+            Skipped = $false
+            ShouldBlock = $true
+            Reason = 'engaged: staged files held by live peer session locks'
+            Type = 'PeerConflict'
+            Conflicts = $conflicts
+        }
+    }
+
+    # In engaged state, require coverage - all staged paths must be covered by locks held by this session
+    $lockRoot = Get-LockRoot $repoRoot
+    $uncovered = @()
+    foreach ($path in ($StagedPaths | Where-Object { $_ })) {
+        $flat = ConvertTo-FlatName $path
+        $lockPath = Get-LockPath -RepoRoot $repoRoot -FlatName $flat
+        if (-not (Test-Path -LiteralPath $lockPath)) {
+            $uncovered += $path
+            continue
+        }
+        $info = Read-LockInfo $lockPath
+        if ($info.Owner -ne $SessionId -or -not (Test-LockLive $info.AcquiredAt $TtlMinutes)) {
+            $uncovered += $path
+            continue
+        }
+    }
+
+    if ($uncovered.Count -gt 0) {
+        return @{
+            Engaged = $true
+            Skipped = $false
+            ShouldBlock = $true
+            Reason = 'engaged: unattributed/uncovered staged paths'
+            Type = 'Uncovered'
+            Uncovered = $uncovered
+        }
+    }
+
+    return @{ Engaged = $true; Skipped = $false; ShouldBlock = $false }
+}

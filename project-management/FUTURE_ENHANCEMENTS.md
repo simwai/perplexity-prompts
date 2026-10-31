@@ -68,10 +68,7 @@ never fired in practice.
 
 ### Current limitation
 
-The commit gate **blocks only when `SESSION_ID` is set**. Without it the gate
-cannot distinguish a session's own lock from a peer's, so it degrades to
-advisory. Two-session mode is therefore opt-in via that variable rather than
-automatic. See `prompt-system/07-protocols.md` `## Session file locks`.
+The commit gate **blocks when engaged (>=1 live lock) and `SESSION_ID` is set**. In engaged mode, all staged paths must be covered by locks held by the committing session (unattributed/uncovered commits are refused). When no live locks exist (non-engaged), lockless commits pass with zero ceremony. Two-session mode is opt-in via `SESSION_ID` and auto-engaged on lock presence. See `prompt-system/07-protocols.md` `## Session file locks`.
 
 ## OpenCode Capability Gap
 

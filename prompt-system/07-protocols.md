@@ -491,7 +491,7 @@ Do not adopt the candidate without an explicit exception when it is archived or 
 
 ## API architecture & design
 
-Cross-cutting protocol for REST/HTTP APIs. Loaded when a session touches a service boundary: a new endpoint, a contract change, a versioning decision, a rate-limit policy, or an OpenAPI document. Complements `## Library selection` and `## Cross-team requirements`; overlaps with `## Database` (parameterized queries, transactions) and `## Security defaults`.
+Cross-cutting protocol for REST/HTTP APIs. Loaded when a session touches a service boundary: a new endpoint, a contract change, a versioning decision, a rate-limit policy, or an OpenAPI document. Complements `## Library selection` and `## Cross-team requirements`; overlaps with `05-impl-style.md` `## Security defaults` (parameterized queries, transactions).
 
 ### Resource modeling
 
@@ -814,6 +814,8 @@ One file, one writer. Two sessions editing one checkout must not silently bundle
 Loaded for any phase in which file writes may occur. On a `READ_ONLY` host every entry point returns `Skipped` instead of touching the filesystem.
 
 Implementation: `prompt-system/scripts/session-locks.ps1` (dot-source it). Regression suite: `prompt-system/scripts/test-session-locks.ps1`.
+
+**Engagement semantics:** Auto-engage coverage enforcement when >= 1 live lock exists in `.session-locks/`. In engaged state: hard refusal for unattributed commits (no SESSION_ID) or uncovered staged paths; peer conflicts still refuse. Non-engaged (no locks present): lockless commits pass (cooperative, zero ceremony for single-session use). TTL is 30 minutes (reclaim-based expiry, self-refresh on re-entry).
 
 ### Hard rules
 

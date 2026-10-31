@@ -122,22 +122,16 @@ Write-Host "`n[1/$totalSteps] Checking session locks..." -ForegroundColor Yellow
 # commit that is going to be refused must not first have its tree auto-fixed by
 # this hook.
 #
-# Two-session mode needs SESSION_ID to tell my own lock from a peer's. Without
-# it every live lock is ambiguous -- including locks this same session holds --
-# so the check degrades to a warning rather than refusing a legitimate commit.
-# Set SESSION_ID to opt into the blocking check.
+# Engaged when >= 1 live lock exists in .session-locks/. In engaged state:
+# hard refusal for unattributed commits (no SESSION_ID) or uncovered staged paths;
+# peer conflicts still refuse. Non-engaged (no locks present): lockless commits
+# pass (cooperative, zero ceremony for single-session use).
 
 $locksScript = Join-Path $repoRoot 'prompt-system\scripts\session-locks.ps1'
 
 if (-not (Test-Path -LiteralPath $locksScript -PathType Leaf)) {
     Write-Warning "  session-locks.ps1 not found -- lock gate SKIPPED"
 } else {
-    $lockStrict = [bool]$env:SESSION_ID
-
-    if (-not $lockStrict) {
-        Write-Host "  SESSION_ID unset -- lock check is advisory only (set it to enable the blocking gate)"
-    }
-
     $stagedForLocks = @(& git -C $repoRoot diff --cached --name-only --diff-filter=ACM 2>$null)
 
     if (-not $stagedForLocks) {
@@ -145,29 +139,37 @@ if (-not (Test-Path -LiteralPath $locksScript -PathType Leaf)) {
     } else {
         . $locksScript
 
-        # An empty owner makes every live lock foreign, which is exactly the
-        # ambiguity that $lockStrict is about.
-        $lockOwner = if ($lockStrict) { $env:SESSION_ID } else { '' }
-        $lockConflicts = @(Get-BlockingPeersForPaths -RepoRelativePaths $stagedForLocks -SessionId $lockOwner -RepoRoot $repoRoot)
+        $gateEval = Get-LockGateEvaluation -StagedPaths $stagedForLocks -RepoRoot $repoRoot
 
-        if ($lockConflicts.Count -gt 0) {
-            $lockReport = @($lockConflicts | ForEach-Object {
-                $owners = @($_.Peers | ForEach-Object { "$($_.Owner) ($($_.Type))" }) -join ', '
-                "  $($_.Path) -- held by $owners"
-            })
-
-            if ($lockStrict) {
+        if ($gateEval.Skipped) {
+            Write-Warning "  Lock gate skipped: $($gateEval.Reason)"
+        } elseif (-not $gateEval.Engaged) {
+            Write-Host "  No live locks present -- lockless commits allowed (non-engaged)" -ForegroundColor Green
+        } elseif ($gateEval.ShouldBlock) {
+            if ($gateEval.Type -eq 'Unattributed') {
+                Write-Error $gateEval.Reason
+                Write-Error "  Set SESSION_ID to enable attribution (e.g. . ./scripts/enter-session.ps1)"
+                exit 1
+            } elseif ($gateEval.Type -eq 'PeerConflict') {
+                $lockReport = @($gateEval.Conflicts | ForEach-Object {
+                    $owners = @($_.Peers | ForEach-Object { "$($_.Owner) ($($_.Type))" }) -join ', '
+                    "  $($_.Path) -- held by $owners"
+                })
                 Write-Error "Staged files are held by a live peer session lock:"
                 $lockReport | ForEach-Object { Write-Error $_ }
                 Write-Error "Wait for the peer to commit or release, or skip the path. This hook never steals a lock."
                 exit 1
+            } elseif ($gateEval.Type -eq 'Uncovered') {
+                Write-Error $gateEval.Reason
+                $gateEval.Uncovered | ForEach-Object { Write-Error "  Uncovered: $_" }
+                Write-Error "In engaged mode, all staged paths must be covered by locks held by this session."
+                exit 1
+            } else {
+                Write-Error $gateEval.Reason
+                exit 1
             }
-
-            Write-Warning "Live session locks touch staged files (cannot tell own from peer -- SESSION_ID unset):"
-            $lockReport | ForEach-Object { Write-Warning $_ }
-            Write-Warning "  Advisory only. Set SESSION_ID to make this a blocking gate."
         } else {
-            Write-Host "  No peer session locks on staged files" -ForegroundColor Green
+            Write-Host "  Lock gate passed (engaged)" -ForegroundColor Green
         }
     }
 }
@@ -235,14 +237,18 @@ if (-not (Test-Path -LiteralPath $mermaidScript -PathType Leaf)) {
     }
 }
 
-# ── 5. Prompt-system integrity suites ───────────────────────────────────────
+# ── 4. Prompt-system integrity suites ───────────────────────────────────────
 Write-Host "`n[4/$totalSteps] Running prompt-system integrity suites..." -ForegroundColor Yellow
 
 $integritySuites = @(
     'prompt-system\scripts\test-rubric-id-integrity.ps1',
     'prompt-system\scripts\test-session-locks.ps1',
     'prompt-system\scripts\test-cross-reference-integrity.ps1',
-    'prompt-system\scripts\test-self-review-protocol.ps1'
+    'prompt-system\scripts\test-self-review-protocol.ps1',
+    'prompt-system\scripts\test-phase-graph.ps1',
+    'prompt-system\scripts\test-decision-format.ps1',
+    'prompt-system\scripts\test-registry-drift.ps1',
+    'prompt-system\scripts\test-manifest-io.ps1'
 )
 
 $integrityFailed = $false
@@ -267,7 +273,7 @@ if ($integrityFailed) {
     exit 1
 }
 
-# ── 3. File hygiene (staged files) ──────────────────────────────────────────
+# ── 5. File hygiene (staged files) ──────────────────────────────────────────
 Write-Host "`n[5/$totalSteps] Checking file hygiene..." -ForegroundColor Yellow
 
 $stagedText = @(Get-StagedFiles -Extensions @('.md', '.yaml', '.yml', '.json', '.toml', '.ps1', '.psd1', '.psm1', '.txt'))
@@ -332,7 +338,7 @@ if (-not $stagedText) {
     }
 }
 
-# ── 4. Secret scanning (staged files) ───────────────────────────────────────
+# ── 6. Secret scanning (staged files) ───────────────────────────────────────
 Write-Host "`n[6/$totalSteps] Scanning staged files for secrets..." -ForegroundColor Yellow
 
 $secretPatterns = @(
@@ -372,7 +378,7 @@ if ($secrets) {
 }
 Write-Host "  No secrets detected in staged files" -ForegroundColor Green
 
-# ── 5. Markdown lint (staged files) ──────────────────────────────────────────
+# ── 7. Markdown lint (staged files) ─────────────────────────────────────────
 Write-Host "`n[7/$totalSteps] Linting staged Markdown..." -ForegroundColor Yellow
 
 $stagedMd = @(Get-StagedFiles -Extensions @('.md'))
@@ -409,7 +415,7 @@ if (-not $stagedMd) {
     Write-Host "  Markdown lint passed ($($stagedMd.Count) staged file(s))" -ForegroundColor Green
 }
 
-# ── 6. PowerShell Script Analyzer (staged files) ────────────────────────────
+# ── 8. PowerShell Script Analyzer (staged files) ────────────────────────────
 Write-Host "`n[8/$totalSteps] Analyzing staged PowerShell..." -ForegroundColor Yellow
 
 $stagedPs = @(Get-StagedFiles -Extensions @('.ps1'))

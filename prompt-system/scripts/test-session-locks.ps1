@@ -165,15 +165,43 @@ try {
     $depRelease = Exit-DependencyLock -RepoRelativePath 'src/a/index.ts' -SessionId 'session-D' -RepoRoot $fixture
     Assert-True ($depRelease.Success) 'the owning session must release a dependency lock'
 
-    # ── Expired lock does not block ──────────────────────────────────────────
+    # ── Gate evaluation ──────────────────────────────────────────────────────
 
-    $expiredLockDir = Join-Path $fixture '.session-locks/expired--file.ts.lock'
-    New-Item -ItemType Directory -Path $expiredLockDir -Force | Out-Null
-    [System.IO.File]::WriteAllText((Join-Path $expiredLockDir 'owner'), 'session-GHOST')
-    [System.IO.File]::WriteAllText((Join-Path $expiredLockDir 'acquired_at'), (Get-Date).ToUniversalTime().AddMinutes(-120).ToString('o'))
+    # Create a fresh fixture for gate tests
+    $gateFixture = Join-Path ([System.IO.Path]::GetTempPath()) ("session-locks-gate-" + [guid]::NewGuid().ToString('N'))
+    try {
+        New-Item -ItemType Directory -Path $gateFixture -Force | Out-Null
+        . $LocksPath
 
-    $afterExpiry = Enter-FileLock -RepoRelativePath 'expired/file.ts' -SessionId 'session-H' -RepoRoot $fixture
-    Assert-True ($afterExpiry.Success) 'an expired peer lock must not block a new acquisition'
+        # Non-engaged when no locks
+        $eval1 = Get-LockGateEvaluation -StagedPaths @('src/x.ts') -SessionId 'session-X' -RepoRoot $gateFixture
+        Assert-True (-not $eval1.Engaged -and -not $eval1.ShouldBlock) 'gate must not be engaged with no live locks'
+
+        # Engaged with locks, no SESSION_ID -> block
+        $env:SESSION_ID = 'session-A'
+        [void](Enter-FileLock -RepoRelativePath 'src/a.ts' -SessionId 'session-A' -RepoRoot $gateFixture)
+        Remove-Item Env:\SESSION_ID
+        $eval2 = Get-LockGateEvaluation -StagedPaths @('src/a.ts') -SessionId $null -RepoRoot $gateFixture
+        Assert-True ($eval2.Engaged -and $eval2.ShouldBlock -and $eval2.Type -eq 'Unattributed') 'engaged with no SESSION_ID must block as unattributed'
+
+        # Engaged, same session, covered
+        $env:SESSION_ID = 'session-A'
+        $eval3 = Get-LockGateEvaluation -StagedPaths @('src/a.ts') -SessionId 'session-A' -RepoRoot $gateFixture
+        Assert-True ($eval3.Engaged -and -not $eval3.ShouldBlock) 'engaged with covered session lock must pass'
+        Remove-Item Env:\SESSION_ID
+
+        # Engaged, different session, peer conflict
+        $env:SESSION_ID = 'session-B'
+        $eval4 = Get-LockGateEvaluation -StagedPaths @('src/a.ts') -SessionId 'session-B' -RepoRoot $gateFixture
+        Assert-True ($eval4.ShouldBlock -and $eval4.Type -eq 'PeerConflict') 'engaged with peer lock must block as conflict'
+        Remove-Item Env:\SESSION_ID
+
+        [void](Exit-FileLock -RepoRelativePath 'src/a.ts' -SessionId 'session-A' -RepoRoot $gateFixture)
+    } finally {
+        if (Test-Path -LiteralPath $gateFixture) {
+            Remove-Item -LiteralPath $gateFixture -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
 
     # ── READ_ONLY host is inert ──────────────────────────────────────────────
 
