@@ -201,6 +201,8 @@ Steps 3-5 are skippable only via the step-2 classification, each recording its `
 
 ### Pre-ask functional verification (Playwright MCP)
 
+Trigger: T-14 (UI-bearing edit in `## Edited Files`, or web-app entry point detected by filesystem search). Fires at both REVIEW verdict time and commit/push gate time -- the aggregate-level H11 check for UI-bearing sessions. Runs once per gate; re-run only after a state change.
+
 Before the ask, when the gate triggers, run a Playwright MCP functional smoke of the session's work. This is the gate's verification step: REVIEW already expects a Playwright e2e smoke (H11); this step carries the same expectation onto the commit path.
 
 - **Trigger (any of):**

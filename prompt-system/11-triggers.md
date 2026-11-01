@@ -117,13 +117,17 @@ Effect: before edit: apply `05-impl-style.md` defaults + local conventions; afte
 Invokes: Pre-commit order and formatter/linter rules -- `07-protocols.md` `## Pre-commit behavior`; per-edit gate procedure -- `06-misc.md` `### Per-edit lint gate`.
 Dedup/record: command + real output recorded in session context per step.
 
-## T-14 -- Playwright gate smoke trigger
+## T-14 -- Playwright e2e smoke trigger
 
-Detection: commit gate triggers AND (web-app entry point detected by filesystem search -- `package.json` dev/start script serving a browser UI, frontend dev workflow, or documented localhost URL -- OR a UI-bearing edit in `## Edited Files`: path matches `*.html|*.vue|*.tsx|*.jsx|*.svelte|*.css|*.scss` or is under `components/|views/|pages/|app/routes/|src/routes/` AND contains markup/template/JSX/component syntax or styles).
-Fires at: inside the commit/push gate, after the verification gate passes and before the ask.
-Effect: start app per documented entry point, navigate, click key flows touched by edits, capture snapshot/screenshot; one smoke pass per gate, re-run only after a state change. FAIL holds the ask; report FAIL and return to fix. SKIPPED branches: neither trigger condition; READ_ONLY host (trigger false); MCP server not preflighted.
+Detection: per response, when any of the following hold: (1) the session's `## Edited Files` contains a UI-bearing path: `*.html`, `*.vue`, `*.tsx`, `*.jsx`, `*.svelte`, `*.css`, `*.scss`, or any path under `components/`, `views/`, `pages/`, `app/routes/`, `src/routes/` -- AND the file contains markup/template/JSX/component syntax or styles; (2) a web-app entry point exists in the repo: `package.json` dev/start script serving a browser UI, frontend dev workflow, or documented localhost URL -- detected by filesystem search (`rg`), never assumed, never invented.
+
+Fires at: REVIEW verdict phase and commit/push gate — as a standalone gate step in each, not nested inside another gate. Runs once per gate; re-run only after a state change.
+
+Effect: run a Playwright MCP functional smoke of the session's work — start app per documented entry point, navigate, click key flows touched by edits (or the app's primary flows when edits are not UI-specific), capture snapshot/screenshot. FAIL holds progression; report FAIL and return to fix before advancing. SKIPPED branches: neither trigger condition met; READ_ONLY host (trigger false); MCP server not preflighted (`not_checked`/`unavailable`).
+
 Invokes: MCP tool matrix and safe-tools rule -- `00-system.md` `## MCP tool selection`; full gate procedure -- `06-misc.md` `### Pre-ask functional verification (Playwright MCP)`.
-Dedup/record: outcome recorded in session `## Commit/Push Gate` (`playwright_smoke`) and PATCH template Verification section.
+
+Dedup/record: outcome recorded in session `## Commit/Push Gate` (`playwright_smoke`), PATCH template Verification section, and REVIEW verdict `Playwright e2e smoke` row.
 
 ## T-15 -- Commit/push gate trigger
 

@@ -420,7 +420,8 @@ Build: PASS|FAIL|SKIPPED -- [command] -- [note]
 Smoke: PASS|FAIL|SKIPPED -- [command] -- [note]
 Functional suite: PASS|FAIL|SKIPPED -- [command] -- [note]
 Playwright e2e smoke: PASS|FAIL|SKIPPED -- [command] -- [note] (navigate + click key flows; uses MCP playwright server from fallback ladder)
-Playwright e2e smoke is aggregate-level (H11): it runs once at verdict time, not per batch.
+
+Trigger: fires when T-14 conditions hold (UI-bearing edit in `## Edited Files`, or web-app entry point detected by filesystem search). Runs once at REVIEW verdict time, not per batch -- this is the aggregate-level H11 check for UI-bearing sessions. Mandatory when triggered; SKIPPED only with reason (no web-app entry point, no UI-bearing edit, READ_ONLY host, or MCP server unavailable).
 Do not invent commands. If none exist, record SKIPPED with reason.
 
 # Decision Needed
