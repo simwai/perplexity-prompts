@@ -120,6 +120,57 @@ $folders = @('prompt-system', '.opencode', '.opencode/agents', '.claude', '.clau
     # Bootstrap the global reference pool if not already present.
     & (Join-Path $scriptDir 'prompt-system\scripts\init-reference-pool.ps1')
 
+    # ── Prerequisite checks (machine-level, run once per sync) ───────────────
+    # EXA_API_KEY (Exa MCP, Tier 2) -- warn if missing; never hardcode the value.
+    if (-not $env:EXA_API_KEY) {
+        Write-Host '  PREREQ  EXA_API_KEY not set -- Exa MCP (Tier 2) will be unavailable. Set it as a user/machine env var.' -ForegroundColor Yellow
+    } else {
+        Write-Host '  PREREQ  EXA_API_KEY present' -ForegroundColor Green
+    }
+
+    # KILO_API_KEY (multi-model consensus plugin) -- warn if missing; never hardcode the value.
+    if (-not $env:KILO_API_KEY) {
+        Write-Host '  PREREQ  KILO_API_KEY not set -- consensus plugin falls back to anonymous free-tier models (nemotron only). Set it as a user/machine env var.' -ForegroundColor Yellow
+    } else {
+        Write-Host '  PREREQ  KILO_API_KEY present' -ForegroundColor Green
+    }
+
+    # Playwright browsers (g-search / playwright MCP) -- install chromium if missing.
+    $playwrightCache = Join-Path $env:LOCALAPPDATA 'ms-playwright'
+    $chromiumPresent = (Test-Path $playwrightCache) -and (Get-ChildItem -Path $playwrightCache -Filter 'chromium*' -ErrorAction SilentlyContinue)
+    if (-not $chromiumPresent) {
+        Write-Host '  PREREQ  installing Playwright chromium (npx playwright install chromium)...' -ForegroundColor Cyan
+        $npxCommand = $null
+        try { $npxCommand = (Get-Command npx).Source } catch { $null }
+        if (-not $npxCommand) { $npxCommand = 'C:\Program Files\nodejs\npx.cmd' }
+        if (Test-Path $npxCommand) {
+            & $npxCommand playwright install chromium 2>&1 | Out-Null
+            if ($LASTEXITCODE -eq 0) {
+                Write-Host '  PREREQ  Playwright chromium installed' -ForegroundColor Green
+            } else {
+                Write-Warning '  PREREQ  Playwright chromium install failed -- run "npx playwright install chromium" manually'
+            }
+        } else {
+            Write-Warning '  PREREQ  npx not found -- install Node.js, then run "npx playwright install chromium" manually'
+        }
+    } else {
+        Write-Host '  PREREQ  Playwright chromium present' -ForegroundColor Green
+    }
+
+    # uvx (arxiv MCP) -- check availability; run ensure-uvx.ps1 if present.
+    $uvxCommand = Get-Command uvx -ErrorAction SilentlyContinue
+    if (-not $uvxCommand) {
+        $ensureUvx = Join-Path $scriptDir 'prompt-system\scripts\ensure-uvx.ps1'
+        if (Test-Path $ensureUvx) {
+            Write-Host '  PREREQ  running ensure-uvx.ps1...' -ForegroundColor Cyan
+            & $ensureUvx
+        } else {
+            Write-Warning '  PREREQ  uvx not found and ensure-uvx.ps1 missing -- install uv (https://docs.astral.sh/uv/) for arxiv MCP'
+        }
+    } else {
+        Write-Host '  PREREQ  uvx present' -ForegroundColor Green
+    }
+
     $selected = $Targets.GetEnumerator() | Where-Object { $_.Value } | ForEach-Object { $_.Key }
 
     if (-not $selected) {

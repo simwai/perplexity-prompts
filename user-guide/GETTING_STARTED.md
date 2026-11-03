@@ -91,6 +91,7 @@ the variable already exported.
 | Service | Where to Get | Tier |
 |---|---|---|
 | **Exa** | exa.ai → Dashboard | Tier 2 (optional) |
+| **Kilo** | kilo.ai → API settings | Consensus plugin (optional; free-tier fallback without it) |
 | **Context7** | No key needed | Tier 1 (always) |
 | **Playwright** | No key (Node 20+) | Tier 1 (always) |
 | **Trello** | One-time OAuth consent | OAuth (optional) |

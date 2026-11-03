@@ -132,6 +132,7 @@ Combine all Tier 1 + Tier 2 + Trello blocks above. Omit any Tier 2 servers whose
 | Variable      | Server | Required                |
 |---------------|--------|-------------------------|
 | `EXA_API_KEY` | Exa    | No (g-search fallback when unset) |
+| `KILO_API_KEY` | multi-model consensus plugin | No (anonymous free-tier fallback when unset) |
 | `SESSION_ID`  | session locks / commit gate | No (per-process fallback; required for two-session mode) |
 | `BABA_READ_ONLY` | read-only host detection | No (set `1`/`true`/`yes` on read-only hosts) |
 | `MEMORY_WORTH_DB` / `MEMORY_WORTH_HOME` | memory-worth | No (defaults to `%LOCALAPPDATA%\memory-worth\memory.db`) |

@@ -1,18 +1,26 @@
 /**
- * Multi-Model Consensus plugin for opencode (V2)
+ * Multi-Model Consensus plugin for opencode (V3)
  *
- * Runs a text-only draft through two free models for self-critique and merges
- * the results with a judge model. Off by default; `/consensus on` enables it
- * per session. The tool skips any turn where other tools already ran, so a
- * tool-calling turn is never presented as text-only.
+ * Runs a text-only draft through two discovered models for self-critique and
+ * merges the results with a judge model. Off by default; `/consensus on`
+ * enables it per session. The tool skips any turn where other tools already
+ * ran, so a tool-calling turn is never presented as text-only.
  *
- * V2 changes:
- *   - `command.execute.before` has no V2 global hook. The plugin owns the
- *     `consensus` command, so it is registered through `ctx.command.transform`.
- *   - `tool.execute.after` became `ctx.tool.hook("execute.after")`, which reads
- *     `event.tool` and `event.sessionID`.
- *   - `experimental.chat.system.transform` became `ctx.session.hook("context")`
- *     appending to `event.system` (SystemPart objects, not bare strings).
+ * V3 changes:
+ *   - Model roles are auto-discovered from the Kilo gateway catalog
+ *     (`GET /models`) instead of hardcoded IDs. Free models always qualify;
+ *     paid models from the preferred families join the pool when
+ *     `KILO_API_KEY` is set (the key is the opt-in) under a price ceiling.
+ *   - Authorization comes from the `KILO_API_KEY` env var when set, falling
+ *     back to the anonymous bearer. The key is never hardcoded.
+ *   - Calls carry a clamped `max_tokens` (default 16384) and suppress
+ *     reasoning where the catalog advertises a toggle or an `none` effort so
+ *     critique answers are not stranded inside a reasoning budget.
+ *   - A 404 from a chat call invalidates the catalog cache, so a removed
+ *     model heals on the next turn instead of failing forever.
+ *   - V2 API surface unchanged: `ctx.command.transform` owns the `consensus`
+ *     command, `ctx.tool.hook("execute.after")` tracks tool use,
+ *     `ctx.session.hook("context")` appends the mode notice.
  */
 
 import { Plugin } from "@opencode/plugin";
@@ -20,13 +28,45 @@ import { createDebug } from "../lib/baba-debug";
 import { subscribeToEvents } from "../lib/baba-session-id";
 
 const KILO_BASE_URL = "https://api.kilo.ai/api/gateway";
-const FLASH_MODEL = "stepfun/step-3.7-flash:free";
-const ULTRA_MODEL = "nvidia/nemotron-3-ultra-550b-a55b:free";
-const REQUEST_TIMEOUT_MS = 90000;
-const TOOL_SKIP_WINDOW_MS = 60000;
 
-const enabledSessions = new Map<string, boolean>();
-const lastToolUse = new Map<string, number>();
+function readEnvInt(name: string, fallback: number): number {
+  const raw = process.env[name];
+  const parsed = raw ? Number.parseInt(raw, 10) : NaN;
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function readEnvFloat(name: string, fallback: number): number {
+  const raw = process.env[name];
+  const parsed = raw ? Number.parseFloat(raw) : NaN;
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
+}
+
+const CATALOG_TTL_MS = readEnvInt("CONSENSUS_CATALOG_TTL_MS", 30 * 60_000);
+const CATALOG_TIMEOUT_MS = readEnvInt("CONSENSUS_CATALOG_TIMEOUT_MS", 15_000);
+const REQUEST_TIMEOUT_MS = readEnvInt("CONSENSUS_REQUEST_TIMEOUT_MS", 180_000);
+const MAX_TOKENS_DESIRED = readEnvInt("CONSENSUS_MAX_TOKENS", 16_384);
+const TOOL_SKIP_WINDOW_MS = readEnvInt("CONSENSUS_TOOL_SKIP_WINDOW_MS", 60_000);
+const MAX_PROMPT_PRICE = readEnvFloat("CONSENSUS_MAX_PROMPT_PRICE", 0.000001);
+const FAMILY_PREFERENCE = (process.env.CONSENSUS_FAMILIES ?? "nemotron,glm,step")
+  .split(",")
+  .map((s) => s.trim().toLowerCase())
+  .filter(Boolean);
+const EXPLICIT_JUDGE = process.env.CONSENSUS_JUDGE?.trim() || undefined;
+const EXPLICIT_CRITICS = (process.env.CONSENSUS_CRITICS ?? "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+const KILO_API_KEY = process.env.KILO_API_KEY?.trim() || undefined;
+
+// Known family aliases map catalog vendors onto preference names; a family
+// name with no alias is matched as a vendor prefix instead.
+const FAMILY_PATTERNS: Array<[string, RegExp]> = [
+  ["nemotron", /^nvidia\/nemotron/i],
+  ["glm", /^(z-ai|zhipuai)\//i],
+  ["step", /^stepfun\//i],
+];
+// Classifier and router endpoints are in the catalog but are not chat models.
+const NON_CHAT_MODEL = /content.?safety|switchyard|guardrail/i;
 
 type KiloMessage = {
   role: string;
@@ -37,17 +77,181 @@ type KiloResponse = {
   choices?: { message?: { content?: unknown } }[];
 };
 
-async function callKilo(model: string, messages: KiloMessage[]): Promise<string> {
+type CatalogModel = {
+  id: string;
+  isFree: boolean;
+  promptPrice: number;
+  contextLength: number;
+  maxCompletionTokens: number;
+  reasoningSupport: boolean;
+  reasoningToggle: boolean;
+  reasoningEffortNone: boolean;
+};
+
+type RoleSet = {
+  judge: string;
+  critics: string[];
+  byId: Map<string, CatalogModel>;
+  source: string;
+};
+
+const enabledSessions = new Map<string, boolean>();
+const lastToolUse = new Map<string, number>();
+let catalogCache: { at: number; models: CatalogModel[] } | null = null;
+let lastGoodRoles: RoleSet | null = null;
+
+function invalidateCatalog(): void {
+  catalogCache = null;
+}
+
+function familyOf(id: string): string | undefined {
+  for (const [name, pattern] of FAMILY_PATTERNS) {
+    if (pattern.test(id)) return name;
+  }
+  const vendor = id.split("/")[0]?.toLowerCase();
+  return vendor && FAMILY_PREFERENCE.includes(vendor) ? vendor : undefined;
+}
+
+function inPreferredFamily(id: string): boolean {
+  const family = familyOf(id);
+  return family !== undefined && FAMILY_PREFERENCE.includes(family);
+}
+
+// Parses the parameter count embedded in model IDs ("...-550b-a55b" -> 550)
+// as a capability proxy for ranking; context length breaks ties.
+function paramBillion(id: string): number {
+  const match = id.match(/(\d+(?:\.\d+)?)b/i);
+  return match ? Number.parseFloat(match[1]) : 0;
+}
+
+async function fetchCatalog(log: ReturnType<typeof createDebug>): Promise<CatalogModel[]> {
+  if (catalogCache && Date.now() - catalogCache.at < CATALOG_TTL_MS) {
+    return catalogCache.models;
+  }
+  const res = await fetch(`${KILO_BASE_URL}/models`, {
+    headers: { Authorization: KILO_API_KEY ? `Bearer ${KILO_API_KEY}` : "Bearer anonymous" },
+    signal: AbortSignal.timeout(CATALOG_TIMEOUT_MS),
+  });
+  if (!res.ok) {
+    throw new Error(`catalog HTTP ${res.status}`);
+  }
+  const data = (await res.json()) as { data?: unknown };
+  const models: CatalogModel[] = [];
+  for (const entry of Array.isArray(data?.data) ? data.data : []) {
+    const m = entry as Record<string, any>;
+    if (typeof m?.id !== "string") continue;
+    const pricing = m.pricing as Record<string, unknown> | undefined;
+    const topProvider = m.top_provider as Record<string, unknown> | undefined;
+    const supported = Array.isArray(m.supported_parameters) ? (m.supported_parameters as unknown[]) : [];
+    const reasoningOptions = (m.opencode as Record<string, any> | undefined)?.reasoning_options;
+    const effortValues = Array.isArray(reasoningOptions?.values) ? reasoningOptions.values : [];
+    models.push({
+      id: m.id,
+      isFree: m.isFree === true,
+      promptPrice: Number.parseFloat(String(pricing?.prompt ?? "0")) || 0,
+      contextLength: Number(topProvider && "context_length" in topProvider ? topProvider.context_length : m.context_length) || 0,
+      maxCompletionTokens: Number(topProvider?.max_completion_tokens) || 0,
+      reasoningSupport: supported.includes("reasoning"),
+      reasoningToggle: reasoningOptions?.type === "toggle",
+      reasoningEffortNone: effortValues.includes("none"),
+    });
+  }
+  catalogCache = { at: Date.now(), models };
+  void log.debug("catalog fetched", { count: models.length });
+  return models;
+}
+
+function rankModels(a: CatalogModel, b: CatalogModel): number {
+  return paramBillion(b.id) - paramBillion(a.id) || b.contextLength - a.contextLength;
+}
+
+function pickRoles(models: CatalogModel[]): RoleSet {
+  const usable = models.filter(
+    (m) =>
+      !NON_CHAT_MODEL.test(m.id) &&
+      inPreferredFamily(m.id) &&
+      (m.isFree || (KILO_API_KEY !== undefined && m.promptPrice <= MAX_PROMPT_PRICE)),
+  );
+  const byId = new Map<string, CatalogModel>();
+  let pool = [...usable].sort(rankModels);
+  if (pool.length < 3) {
+    // Not enough preferred-family models (e.g. no API key): widen with free
+    // models from other vendors rather than failing the role assignment.
+    const known = new Set(pool.map((m) => m.id));
+    const extra = models
+      .filter((m) => !NON_CHAT_MODEL.test(m.id) && m.isFree && !known.has(m.id))
+      .sort(rankModels);
+    pool = [...pool, ...extra];
+  }
+  for (const m of pool) byId.set(m.id, m);
+
+  const judge = EXPLICIT_JUDGE ?? pool[0]?.id;
+  if (!judge) {
+    throw new Error("no usable models in catalog for the preferred families");
+  }
+  const rest = pool.filter((m) => m.id !== judge);
+  const criticA = EXPLICIT_CRITICS[0] ?? rest.find((m) => familyOf(m.id) !== familyOf(judge))?.id ?? rest[0]?.id;
+  if (!criticA) {
+    throw new Error("no critic models available alongside the judge");
+  }
+  const remaining = rest.filter((m) => m.id !== criticA);
+  const criticB =
+    EXPLICIT_CRITICS[1] ?? remaining.find((m) => familyOf(m.id) !== familyOf(criticA))?.id ?? remaining[0]?.id;
+  if (!criticB) {
+    throw new Error("no second critic model available");
+  }
+  return {
+    judge,
+    critics: [criticA, criticB],
+    byId,
+    source: EXPLICIT_JUDGE || EXPLICIT_CRITICS.length > 0 ? "override+discovery" : "discovery",
+  };
+}
+
+async function resolveRoles(log: ReturnType<typeof createDebug>): Promise<RoleSet> {
+  try {
+    const roles = pickRoles(await fetchCatalog(log));
+    lastGoodRoles = roles;
+    void log.debug("roles resolved", { judge: roles.judge, critics: roles.critics, source: roles.source });
+    return roles;
+  } catch (e) {
+    if (lastGoodRoles) {
+      await log.warn("catalog refresh failed, using last known roles", { error: String(e) });
+      return lastGoodRoles;
+    }
+    throw e;
+  }
+}
+
+async function callKilo(
+  model: string,
+  messages: KiloMessage[],
+  info?: CatalogModel,
+): Promise<string> {
+  const body: Record<string, unknown> = {
+    model,
+    messages,
+    temperature: 0.3,
+    max_tokens: Math.min(MAX_TOKENS_DESIRED, info?.maxCompletionTokens || MAX_TOKENS_DESIRED),
+  };
+  // Reasoning models spend the completion budget on hidden deliberation and
+  // can return empty content; suppress it where the catalog advertises how.
+  if (info?.reasoningSupport && (info.reasoningToggle || info.reasoningEffortNone)) {
+    body.reasoning = info.reasoningToggle ? { enabled: false } : { enabled: true, effort: "none" };
+  }
   const res = await fetch(`${KILO_BASE_URL}/chat/completions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: "Bearer anonymous",
+      Authorization: KILO_API_KEY ? `Bearer ${KILO_API_KEY}` : "Bearer anonymous",
     },
-    body: JSON.stringify({ model, messages, temperature: 0.3 }),
+    body: JSON.stringify(body),
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
   if (!res.ok) {
+    if (res.status === 404) {
+      invalidateCatalog();
+    }
     throw new Error(`Kilo ${model} HTTP ${res.status}`);
   }
   const data = (await res.json()) as KiloResponse;
@@ -58,22 +262,33 @@ async function callKilo(model: string, messages: KiloMessage[]): Promise<string>
   return text.trim();
 }
 
-function selfCritique(model: string, prompt: string, original: string): Promise<string> {
+function selfCritique(
+  model: string,
+  info: CatalogModel | undefined,
+  prompt: string,
+  original: string,
+): Promise<string> {
   return callKilo(model, [
     {
       role: "user",
       content: `Question:\n${prompt}\n\nDraft answer:\n${original}\n\nConstructively critique the draft, then return only the improved answer.`,
     },
-  ]);
+  ], info);
 }
 
-function judgeMerge(prompt: string, a: string, b: string): Promise<string> {
-  return callKilo(ULTRA_MODEL, [
+function judgeMerge(
+  model: string,
+  info: CatalogModel | undefined,
+  prompt: string,
+  a: string,
+  b: string,
+): Promise<string> {
+  return callKilo(model, [
     {
       role: "user",
       content: `Question:\n${prompt}\n\nAnswer A:\n${a}\n\nAnswer B:\n${b}\n\nCompare both improved answers. Where they disagree on facts you cannot verify, present both views labeled instead of guessing. Merge into one final answer and return only that answer.`,
     },
-  ]);
+  ], info);
 }
 
 function readStringField(input: unknown, key: string): string | undefined {
@@ -99,9 +314,12 @@ export default Plugin.define({
     void log.debug("plugin initialized", {
       config: {
         kiloBaseUrl: KILO_BASE_URL,
-        flashModel: FLASH_MODEL,
-        ultraModel: ULTRA_MODEL,
+        apiKeyConfigured: KILO_API_KEY !== undefined,
+        familyPreference: FAMILY_PREFERENCE,
+        maxPromptPrice: MAX_PROMPT_PRICE,
+        maxTokensDesired: MAX_TOKENS_DESIRED,
         requestTimeoutMs: REQUEST_TIMEOUT_MS,
+        catalogTtlMs: CATALOG_TTL_MS,
         toolSkipWindowMs: TOOL_SKIP_WINDOW_MS,
       },
     });
@@ -151,7 +369,7 @@ export default Plugin.define({
       editor.add({
         name: "consensus_review",
         description:
-          "Run multi-model consensus over a text-only draft answer. Call this when consensus mode is on (/consensus on) and the turn needs no tools: pass the user prompt and the draft answer, then present the returned text as the final answer.",
+          "Run multi-model consensus over a text-only draft answer. Call this when consensus mode is on (/consensus on) and the turn needs no tools: pass the user prompt and the draft answer, then present the returned text as the final answer. Models are auto-discovered from the Kilo gateway catalog.",
         input: {
           type: "object",
           properties: {
@@ -185,14 +403,25 @@ export default Plugin.define({
                 "Consensus skipped: other tools ran recently, so this turn is not text-only. Keep the original answer.",
             };
           }
+
+          let roles: RoleSet;
+          try {
+            roles = await resolveRoles(log);
+          } catch (e) {
+            await log.error("model discovery failed", { session: sessionID, error: String(e) });
+            return { output: "Error: model discovery failed; keep the original answer." };
+          }
           await log.info("starting consensus process", {
             session: sessionID,
-            models: [FLASH_MODEL, ULTRA_MODEL],
+            judge: roles.judge,
+            critics: roles.critics,
+            source: roles.source,
           });
 
+          const [criticA, criticB] = roles.critics;
           const settled = await Promise.allSettled([
-            selfCritique(FLASH_MODEL, prompt, original),
-            selfCritique(ULTRA_MODEL, prompt, original),
+            selfCritique(criticA, roles.byId.get(criticA), prompt, original),
+            selfCritique(criticB, roles.byId.get(criticB), prompt, original),
           ]);
           const improved = settled
             .filter((r): r is PromiseFulfilledResult<string> => r.status === "fulfilled")
@@ -205,13 +434,12 @@ export default Plugin.define({
           if (improved.length === 1) {
             await log.warn("only one model succeeded, returning its result", {
               session: sessionID,
-              model: improved.length,
             });
             return { output: improved[0] };
           }
           try {
-            await log.debug("merging results with judge model", { session: sessionID, judgeModel: ULTRA_MODEL });
-            return { output: await judgeMerge(prompt, improved[0], improved[1]) };
+            await log.debug("merging results with judge model", { session: sessionID, judgeModel: roles.judge });
+            return { output: await judgeMerge(roles.judge, roles.byId.get(roles.judge), prompt, improved[0], improved[1]) };
           } catch (e) {
             await log.warn("judge merge failed, returning first improved", {
               session: sessionID,
@@ -230,9 +458,10 @@ export default Plugin.define({
           properties: {
             action: {
               type: "string",
-              enum: ["state", "enabled", "lastTool"],
+              enum: ["state", "roles", "enabled", "lastTool"],
               default: "state",
-              description: "What to dump: state (all), enabled (mode state), lastTool (tracked tool usage)",
+              description:
+                "What to dump: state (all), roles (discover model roles now), enabled (mode state), lastTool (tracked tool usage)",
             },
           },
         },
@@ -244,14 +473,38 @@ export default Plugin.define({
           if (action === "lastTool") {
             return { output: JSON.stringify({ lastToolUse: Object.fromEntries(lastToolUse) }, null, 2) };
           }
+          if (action === "roles") {
+            try {
+              const roles = await resolveRoles(log);
+              const describe = (id: string) => {
+                const info = roles.byId.get(id);
+                return { id, isFree: info?.isFree ?? null, promptPrice: info?.promptPrice ?? null };
+              };
+              return {
+                output: JSON.stringify(
+                  { source: roles.source, judge: describe(roles.judge), critics: roles.critics.map(describe) },
+                  null,
+                  2,
+                ),
+              };
+            } catch (e) {
+              return { output: `Error: role discovery failed: ${String(e)}` };
+            }
+          }
           await log.stateDump("multi-model-consensus", {
             enabledSessions: Object.fromEntries(enabledSessions),
             lastToolUse: Object.fromEntries(lastToolUse),
+            lastGoodRoles: lastGoodRoles
+              ? { judge: lastGoodRoles.judge, critics: lastGoodRoles.critics, source: lastGoodRoles.source }
+              : null,
             config: {
               kiloBaseUrl: KILO_BASE_URL,
-              flashModel: FLASH_MODEL,
-              ultraModel: ULTRA_MODEL,
+              apiKeyConfigured: KILO_API_KEY !== undefined,
+              familyPreference: FAMILY_PREFERENCE,
+              maxPromptPrice: MAX_PROMPT_PRICE,
+              maxTokensDesired: MAX_TOKENS_DESIRED,
               requestTimeoutMs: REQUEST_TIMEOUT_MS,
+              catalogTtlMs: CATALOG_TTL_MS,
               toolSkipWindowMs: TOOL_SKIP_WINDOW_MS,
             },
           });
@@ -273,7 +526,9 @@ export default Plugin.define({
         {
           type: "text",
           text:
-            `CONSENSUS MODE (${state}): the multi-model-consensus plugin provides a consensus_review tool (Kilo step-3.7-flash:free + nemotron-ultra:free self-critique, nemotron judge-merge). ` +
+            `CONSENSUS MODE (${state}): the multi-model-consensus plugin provides a consensus_review tool ` +
+            `(two auto-discovered Kilo models from families ${FAMILY_PREFERENCE.join(", ")} self-critique, then a judge model merges; ` +
+            `free models always qualify, paid models in those families require the KILO_API_KEY env var). ` +
             `When the mode is on and the turn is text-only (no tool calls needed), call consensus_review with the user prompt and the draft answer, then present the returned text as the final answer. ` +
             `Toggle with /consensus on|off. Never present tool-call turns as text-only.`,
         },
@@ -283,6 +538,8 @@ export default Plugin.define({
     return () => {
       enabledSessions.clear();
       lastToolUse.clear();
+      invalidateCatalog();
+      lastGoodRoles = null;
     };
   },
 });
