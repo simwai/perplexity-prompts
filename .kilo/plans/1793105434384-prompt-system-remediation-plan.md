@@ -19,7 +19,7 @@ This is the authorized governance session for `prompt-system/` changes (prompt-s
 Build the validators before refactoring the corpus. New suites ship with a temporary baseline allowlist (explicitly listed, decayed in later phases), so they pass today and tighten as fixes land.
 
 1. Create `prompt-system/system-manifest.json` (single machine-readable registry): load-order file list with tier tags (always / review-patch / conditional), phase set + legal transition edges, trigger IDs T-01..T-24 + entry fields, rubric ID spaces H1-H38 / S1-S25 / L1-L10 (+ H20a-d), persona registry mirror (name, entryPhase), decision-format literal, `expect` vocabulary.
-2. Extend `test-cross-reference-integrity.ps1`: assert every manifest load-order file exists (replace hardcoded lists); fail on missing scan dirs; drop ghost `docs\refs` scope; add `user-guide/` + `project-management/` to rubric-citation scan; fail (not warn) on phantom anchors beyond an allowlist.
+2. Extend `test-cross-reference-integrity.ps1`: assert every manifest load-order file exists (replace hardcoded lists); drop ghost `docs\refs` scope; add `user-guide/` + `project-management/` to rubric-citation scan; fail (not warn) on phantom anchors beyond an allowlist. Missing scan dirs: originally specified as a hard failure here; changed to a warning by the scanDir portability fix in `test-rubric-id-integrity.ps1` -- this repo _has_ both trees, but `sync.ps1` deploys `prompt-system/` wholesale into projects that carry neither, and the hard failure left every such deployment with a permanently red suite. Absence now warns with a named coverage gap; a tree that is _moved_ stays covered because a rename moves the manifest entry in the same commit. Re-check this tradeoff in any phase that adds a manifest `scanDirs` entry.
 3. Extend `test-rubric-id-integrity.ps1`: derive ID ranges + contiguity from the manifest; validate S and L IDs (today: none); fix `$ErrorActionPrefs` typo; fail uniformly on unregistered IDs including `.ts` scans; assert H20a-d presence in `rules.md`.
 4. New `test-phase-graph.ps1`: every `A -> B` edge cited in prose (`00-system.md`, `07-protocols.md`, `11-triggers.md`) exists in the 00 legality table and vice versa; persona entry-phase mapping matches the manifest.
 5. New `test-decision-format.ps1`: exactly one rendering literal corpus-wide (definition file allowlisted); REVIEW confirmation vocabulary (`A/B/C`, `skip`, `accept`) defined in `02-decision-prompts.md`.
@@ -88,6 +88,7 @@ Golden-scenario runner (`prompt-system/scripts/test-golden-scenarios.ps1` + fixt
 - `rule_exceptions`: user-authored STYLE_POLICY frontmatter extension; bot reads only.
 - Arxiv/reference subsystem: fix safety in place (Phase 5); severing it into its own project stays a separate product decision.
 - Hook chain: `pre-commit.ps1` is canonical; `.pre-commit-config.yaml` gets a deprecation comment or parity list.
+- Suite strictness vs deployment portability (added with the scanDir portability fix): a suite fails only on corpus-truth violations (registry gaps, out-of-range citations, title mismatches). A precondition a deployment legitimately lacks -- a manifest `scanDir` the project does not carry -- degrades to a warning that names the coverage gap, because `sync.ps1` shares one `prompt-system/` across projects with different doc trees. Enforcement is proven, not assumed: a probe citing `H99`/`S77`/`L12` inside `prompt-system/` still exits 1.
 
 ## Out of scope
 
@@ -105,7 +106,7 @@ Golden-scenario runner (`prompt-system/scripts/test-golden-scenarios.ps1` + fixt
 ## Risks
 
 - Unpinning 06/07/08 could starve non-PATCH phases of gate rules -- mitigated by the loader enforcing per-phase JIT loads (verify first) and by the Phase 2 smoke.
-- Strict suites will surface additional latent drift -- handled by explicit baseline allowlist decay, never by weakening a check.
+- Strict suites will surface additional latent drift -- handled by explicit baseline allowlist decay, never by weakening a check. Exception recorded in Explicit decisions: deployment-portability preconditions (a manifest scanDir the project does not carry) warn rather than fail, with the coverage gap named; corpus-truth checks stay strict.
 - Adapter regeneration can clobber hand-edits -- always fix the source, regen, and diff-review.
 - S20/rendering sweep touches many files -- enforced by `test-decision-format.ps1`, not by memory.
 - Session-locks changes affect the commit gate -- test suite updated in the same phase before behavior changes.

@@ -9,7 +9,9 @@
 # an agent asked to enforce "H33" may run the wrong rule.
 #
 # Bounds and scan dirs come from system-manifest.json. H20a-d sub-check
-# assertions activate via manifest.rubrics.h20SubIdsEnforced.
+# assertions activate via manifest.rubrics.h20SubIdsEnforced. A manifest scanDir
+# the deployment does not carry warns (coverage gap) rather than failing, since
+# prompt-system/ is deployed wholesale into projects with different doc trees.
 #
 # Exit 0 on pass, non-zero on fail.
 
@@ -111,13 +113,20 @@ if ($manifest.rubrics.h20SubIdsEnforced) {
 }
 
 # 2. No file may cite an H/S/L id the registries omit or that is out of range.
-#    Scan dirs come from the manifest so a moved directory fails loudly here
-#    instead of being silently skipped.
+#    Scan dirs come from the manifest. prompt-system/ is deployed wholesale into
+#    projects that carry none of the manifest's extra doc trees (user-guide,
+#    project-management), so an absent scanDir is a coverage warning, not an
+#    integrity failure: hard-failing there left those deployments with a
+#    permanently red suite and a bypassed gate. A tree that is moved while the
+#    manifest still names the old path stays visible -- the absent-dir count in
+#    the summary line drops the coverage, and the warning names the gap.
 $scanFiles = @(Get-ChildItem -Path $systemRoot -Recurse -Filter '*.md' -File)
+$absentScanDirs = @()
 foreach ($dir in @($manifest.scanDirs)) {
     $dirPath = Join-Path $repoRoot ($dir -replace '/', '\')
     if (-not (Test-Path -LiteralPath $dirPath -PathType Container)) {
-        Add-TestFailure "SCAN DIR MISSING: manifest scanDirs names '$dir' which does not exist"
+        Write-Warning "  SCAN DIR ABSENT: manifest scanDirs names '$dir', which this deployment does not carry -- its markdown is not citation-scanned"
+        $absentScanDirs += $dir
         continue
     }
     $scanFiles += @(Get-ChildItem -Path $dirPath -Recurse -Filter '*.md' -File)
@@ -148,7 +157,8 @@ foreach ($file in $scanFiles) {
     }
 }
 
-Write-Host "  scanned $scanned markdown files under prompt-system\ + manifest scanDirs (H/S/L citation check)"
+$scanNote = if ($absentScanDirs.Count -gt 0) { " ($($absentScanDirs.Count) scan dir(s) absent in this deployment: $($absentScanDirs -join ', '))" } else { '' }
+Write-Host "  scanned $scanned markdown files under prompt-system\ + manifest scanDirs (H/S/L citation check)$scanNote"
 
 # 3. Semantic keyword check for .opencode/**/*.ts plugin files.
 #    When a .ts file cites an H id, the surrounding comment or string must

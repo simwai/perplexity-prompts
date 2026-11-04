@@ -1,5 +1,5 @@
 {
-    "_comment":  "Machine-readable registry of prompt-system structural invariants. Consumed by prompt-system/scripts/test-*.ps1 suites. When you add a trigger, rubric, phase, persona, or system file, update this manifest in the same edit; the suites enforce corpus \u003c-\u003e manifest agreement. Field notes: loadOrder tiers mirror 00-system.md ## Load order; legal phase transitions live in 00-system.md ### Transition rules (that table is the authority) -- this manifest carries only the baseline allowlist of prose-cited edges not yet in the table; flags named *_aligned / *_defined start false and are flipped to true as the corresponding remediation phase lands, which is how baseline allowlists decay to zero. Load tiers [domain]: 12-api-architecture.md (T-25), 13-library-selection.md (T-26), 14-app-lifecycle.md (T-27) extracted from 07-protocols.md on 2026-10-30.",
+    "_comment":  "Machine-readable registry of prompt-system structural invariants. Consumed by prompt-system/scripts/test-*.ps1 suites. When you add a trigger, rubric, phase, persona, or system file, update this manifest in the same edit; the suites enforce corpus \u003c-\u003e manifest agreement. Field notes: loadOrder tiers mirror 00-system.md ## Load order; legal phase transitions live in 00-system.md ### Transition rules (that table is the authority) -- this manifest carries only the baseline allowlist of prose-cited edges not yet in the table; flags named *_aligned / *_defined start false and are flipped to true as the corresponding remediation phase lands, which is how baseline allowlists decay to zero; flags named *_Enforced gate a suite's assertions on (false) or off (true) once the corpus implements what the assertion checks, so a suite never fails on a precondition it does not yet have. Load tiers [domain]: 12-api-architecture.md (T-25), 13-library-selection.md (T-26), 14-app-lifecycle.md (T-27) extracted from 07-protocols.md on 2026-10-30.",
     "loadOrder":  {
                       "patch":  [
                                     "prompt-system/06-misc.md",
@@ -108,7 +108,7 @@
                                       "H20c",
                                       "H20d"
                                   ],
-                    "h20SubIdsEnforced":  false
+                    "h20SubIdsEnforced":  true
                 },
     "scanDirs":  [
                      "user-guide",
