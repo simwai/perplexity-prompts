@@ -87,7 +87,7 @@ Golden-scenario runner (`prompt-system/scripts/test-golden-scenarios.ps1` + fixt
 - BabaCEO: integrate, not cut.
 - `rule_exceptions`: user-authored STYLE_POLICY frontmatter extension; bot reads only.
 - Arxiv/reference subsystem: fix safety in place (Phase 5); severing it into its own project stays a separate product decision.
-- Hook chain: `pre-commit.ps1` is canonical; `.pre-commit-config.yaml` gets a deprecation comment or parity list.
+- Hook chain: `pre-commit.ps1` is canonical; `.pre-commit-config.yaml` gets a deprecation comment or parity list. `sync.ps1` now ships the gates to deployments (pre-commit.ps1, pre-push.ps1, scripts/ copied additively) and prints the `install-hooks.ps1` command instead of writing `.git/hooks` itself -- wiring the hook in a target stays the owner's call, and no target's own scripts/ content is ever mirrored away.
 - Suite strictness vs deployment portability (added with the scanDir portability fix): a suite fails only on corpus-truth violations (registry gaps, out-of-range citations, title mismatches). A precondition a deployment legitimately lacks -- a manifest `scanDir` the project does not carry -- degrades to a warning that names the coverage gap, because `sync.ps1` shares one `prompt-system/` across projects with different doc trees. Enforcement is proven, not assumed: a probe citing `H99`/`S77`/`L12` inside `prompt-system/` still exits 1.
 
 ## Out of scope

@@ -111,8 +111,12 @@ function Sync-Targets {
     )
 
 $source  = $scriptDir
-$files   = @('AGENTS.md', 'opencode.jsonc', '.mcp.json', 'kilo.json')
+$files   = @('AGENTS.md', 'opencode.jsonc', '.mcp.json', 'kilo.json', 'pre-commit.ps1', 'pre-push.ps1')
 $folders = @('prompt-system', '.opencode', '.opencode/agents', '.claude', '.claude/agents', '.claude/skills', '.kilo', '.kilo/agent', '.kilo/command', '.kilo/skills')
+# Deployment tooling (verify-system, test-mermaid, install-hooks, ensure-uvx) is
+# copied ADDITIVELY, never mirrored: six targets own a scripts/ folder of their
+# own, so /MIR here would delete files this sync has no business touching.
+$copyOnlyFolders = @('scripts')
     $synced     = 0
     $skipped    = 0
     $pushFailed = 0
@@ -221,6 +225,36 @@ $folders = @('prompt-system', '.opencode', '.opencode/agents', '.claude', '.clau
                 }
                 Write-Host "    OK  $folder\" -ForegroundColor Green
             }
+        }
+
+        # Additive copy: adds and updates the target's scripts/ without removing
+        # anything that already lives there (see $copyOnlyFolders above).
+        foreach ($folder in $copyOnlyFolders) {
+            $src = Join-Path $source $folder
+            if (-not (Test-Path -LiteralPath $src -PathType Container)) { continue }
+            if ($DryRun) {
+                Write-Host "    [DRY] $folder\ (additive)" -ForegroundColor Gray
+                continue
+            }
+            $robocopyArgs = @(
+                $src, (Join-Path $target $folder),
+                '/E', '/NFL', '/NDL', '/NJH', '/NJS',
+                '/R:2', '/W:2',
+                '/XD', 'node_modules'
+            )
+            & robocopy @robocopyArgs
+            if ($LASTEXITCODE -ge 8) {
+                Write-Error "robocopy failed for $folder (exit code $LASTEXITCODE)"
+                return
+            }
+            Write-Host "    OK  $folder\ (additive)" -ForegroundColor Green
+        }
+
+        # The gates live in the shipped pre-commit.ps1 / pre-push.ps1, but
+        # .git\hooks is not tracked by git and is never written by this sync --
+        # wiring them is the target owner's call, one explicit command.
+        if (-not $DryRun -and (Test-Path (Join-Path $target 'scripts\install-hooks.ps1'))) {
+            Write-Host "    hook: run 'pwsh -File scripts\install-hooks.ps1' in the target to wire the pre-commit/pre-push gates" -ForegroundColor DarkGray
         }
 
         Ensure-GitignoreEntries -TargetPath $target
@@ -513,7 +547,7 @@ function Update-GitTarget {
     }
 
 if ($DryRun) {
-        Write-Host '    [DRY] git add AGENTS.md opencode.jsonc kilo.json prompt-system/ .opencode/ .kilo/' -ForegroundColor Gray
+        Write-Host '    [DRY] git add AGENTS.md opencode.jsonc kilo.json pre-commit.ps1 pre-push.ps1 prompt-system/ .opencode/ .kilo/ scripts/' -ForegroundColor Gray
         Write-Host '    [DRY] git commit + git push origin <branch>' -ForegroundColor Gray
         return
     }
@@ -529,7 +563,7 @@ if ($DryRun) {
         return
     }
 
-$paths = @('AGENTS.md', 'opencode.jsonc', 'kilo.json', 'prompt-system', '.opencode', '.kilo') |
+$paths = @('AGENTS.md', 'opencode.jsonc', 'kilo.json', 'pre-commit.ps1', 'pre-push.ps1', 'prompt-system', '.opencode', '.kilo', 'scripts') |
         Where-Object { Test-Path (Join-Path $repoRoot $_) }
     if (-not $paths) { return }
 
