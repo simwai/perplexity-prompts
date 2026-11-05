@@ -1,6 +1,6 @@
 ---
 description: Mutation-capable Build agent for builds, checks, and functional verification (same agent the /verify command routes to).
-agent: build
+agent: baba-dev
 subtask: true
 ---
 

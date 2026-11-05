@@ -1,6 +1,6 @@
 ---
 description: Draft a high-engagement Reddit post for the project by researching top-performing posts in the best subreddits.
-agent: code
+agent: general
 subtask: true
 ---
 

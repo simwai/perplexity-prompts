@@ -1,6 +1,6 @@
 ---
 description: Check for blockers across all sprints. Identifies blocked stories, stalled items, and risks. Uses Trello MCP or project-management/ folder.
-agent: code
+agent: general
 subtask: true
 ---
 

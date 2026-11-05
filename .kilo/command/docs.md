@@ -1,6 +1,6 @@
 ---
 description: Enter the DOCS phase to record dependency evidence (name, version, URL, changelog impact).
-agent: code
+agent: general
 subtask: true
 ---
 

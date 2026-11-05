@@ -1,6 +1,6 @@
 ---
 description: Switch REVIEW cadence to interactive mode for per-batch confirmation.
-agent: code
+agent: general
 subtask: true
 ---
 

@@ -1,6 +1,6 @@
 ---
 description: Enter the CHECKLIST phase with file inventory, rubric coverage, and relevance discovery.
-agent: code
+agent: general
 subtask: true
 ---
 

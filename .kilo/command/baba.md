@@ -1,6 +1,6 @@
 ---
 description: Activate a Baba persona with the core stack attached and let adaptive routing choose direct or structured execution.
-agent: code
+agent: general
 subtask: true
 ---
 

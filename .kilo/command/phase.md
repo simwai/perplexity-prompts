@@ -1,6 +1,6 @@
 ---
 description: Enter structured Baba phase execution (e.g. /phase REVIEW).
-agent: code
+agent: general
 subtask: true
 ---
 

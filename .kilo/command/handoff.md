@@ -1,6 +1,6 @@
 ---
 description: Emit a complete Baba persona handoff contract and record it in session context.
-agent: code
+agent: general
 subtask: true
 ---
 

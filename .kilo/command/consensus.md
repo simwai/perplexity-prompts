@@ -1,6 +1,6 @@
 ---
 description: Toggle multi-model consensus mode (self-critique plus judge merge over auto-discovered Kilo models) for text-only turns.
-agent: code
+agent: general
 subtask: true
 ---
 

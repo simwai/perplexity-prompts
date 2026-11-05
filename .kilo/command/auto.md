@@ -1,6 +1,6 @@
 ---
 description: Let the agent choose direct or structured execution by task risk.
-agent: code
+agent: general
 subtask: true
 ---
 

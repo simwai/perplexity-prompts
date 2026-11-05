@@ -1,6 +1,6 @@
 ---
 description: Check sprint progress. Reports story completion, task counts, and phase status across sprints. Uses Trello MCP or project-management/ folder.
-agent: code
+agent: general
 subtask: true
 ---
 

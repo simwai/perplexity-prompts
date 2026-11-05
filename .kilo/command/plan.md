@@ -1,6 +1,6 @@
 ---
 description: Read-only planning agent; constructs the fix plan and stops for user approval before any PATCH.
-agent: plan
+agent: baba-sensei
 subtask: true
 ---
 

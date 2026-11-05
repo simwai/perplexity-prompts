@@ -1,6 +1,6 @@
 ---
 description: Close the current session and run a final evaluation via a task sub-session to baba-reviewer.
-agent: code
+agent: general
 subtask: true
 ---
 

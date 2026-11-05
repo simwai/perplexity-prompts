@@ -1,6 +1,6 @@
 ---
 description: Use direct execution for a clear low-risk task without phase templates.
-agent: code
+agent: general
 subtask: true
 ---
 

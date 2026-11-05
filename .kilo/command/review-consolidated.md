@@ -1,6 +1,6 @@
 ---
 description: Switch REVIEW cadence to consolidated mode for auto-aggregated findings.
-agent: code
+agent: general
 subtask: true
 ---
 

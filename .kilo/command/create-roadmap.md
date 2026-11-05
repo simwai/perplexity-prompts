@@ -1,6 +1,6 @@
 ---
 description: Create a new project roadmap. Uses Trello MCP if configured, otherwise writes to project-management/ folder.
-agent: code
+agent: general
 subtask: true
 ---
 

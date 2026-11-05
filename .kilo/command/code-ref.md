@@ -1,6 +1,6 @@
 ---
 description: Look up a high-quality code reference from the curated global pool, or cache a new one.
-agent: code
+agent: general
 subtask: true
 ---
 

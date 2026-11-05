@@ -1,6 +1,6 @@
 ---
 description: Edit an existing roadmap. Adds, removes, or updates phases and items. Uses Trello MCP or project-management/ folder.
-agent: code
+agent: general
 subtask: true
 ---
 

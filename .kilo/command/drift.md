@@ -1,6 +1,6 @@
 ---
 description: Enter the DRIFT phase to compare SPEC.md against code (verified/diverged/orphaned/code-exceeds-spec claims).
-agent: code
+agent: general
 subtask: true
 ---
 

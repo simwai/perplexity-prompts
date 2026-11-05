@@ -536,7 +536,10 @@ if (Test-Path -LiteralPath $opencodeAgentSrc -PathType Container) {
 # ═══════════════════════════════════════════════════════════════════════════
 # 9. Generate .kilo/command/ from adapters/opencode/commands/ (transform frontmatter)
 #    Kilo Code commands use the same body content as OpenCode; only the
-#    frontmatter differs: + agent/subtask, - argument-hint.
+#    frontmatter differs: + agent/subtask, - argument-hint. The `agent:` value
+#    is remapped from OpenCode/Claude primary-mode names onto registered Kilo
+#    subagents (see the mapping inside the loop) and unregistered names abort
+#    generation instead of shipping a command that cannot spawn.
 # ═══════════════════════════════════════════════════════════════════════════
 
 $opencodeCmdSrc = Join-Path $repoRoot 'adapters\opencode\commands'
@@ -572,13 +575,43 @@ if (Test-Path -LiteralPath $opencodeCmdSrc -PathType Container) {
         $newFrontmatter = $frontmatter
         $newFrontmatter = $newFrontmatter -replace '(?m)^\s*argument-hint:\s*.*(\r?\n)?$', ''
         $existingAgent = ''
-        if ($newFrontmatter -match '(?m)^\s*agent:\s*(\S*)\s*$') {
+        if ($newFrontmatter -match '(?m)^\s*agent:\s*(.+?)\s*$') {
             $existingAgent = $matches[1]
         }
         $newFrontmatter = $newFrontmatter -replace '(?m)^\s*agent:\s*.*(\r?\n)?$', ''
 
-        $agentName = 'code'
-        if ($existingAgent) { $agentName = $existingAgent }
+        # Kilo commands spawn a subtask, so `agent:` must name a REGISTERED
+        # subagent. The OpenCode and Claude template defaults are primary agent
+        # MODES, which are not spawnable: `code` (the old silent default),
+        # `build`, and `plan` all failed at invocation with "primary agent,
+        # not a subagent" -- which took down /smoke, /verify, /plan and every
+        # command with no explicit `agent:` line. Map the mode names onto their
+        # Kilo subagent equivalents, and refuse anything unregistered rather
+        # than emitting frontmatter that cannot run.
+        $kiloAgentMap = @{
+            'code'  = 'general'      # shared default mode -> Kilo general subagent
+            'build' = 'baba-dev'     # mutation-capable mode -> BabaDev: a registered agent
+                                     # whose edit/bash/webfetch permissions are declared in
+                                     # .kilo\agent\baba-dev.md, unlike the general built-in
+                                     # whose permissions no repo file establishes
+            'plan'  = 'baba-sensei'  # planning mode -> Kilo review/plan persona
+        }
+        $kiloSubagents = @(
+            'baba-ceo', 'baba-designer', 'baba-dev', 'baba-reviewer',
+            'baba-scrum', 'baba-sensei', 'baba-tester', 'ultra-pro-quant',
+            'explore', 'general'
+        )
+
+        $agentName = if ($existingAgent) { $existingAgent } else { 'code' }
+        if ($kiloAgentMap.ContainsKey($agentName)) { $agentName = $kiloAgentMap[$agentName] }
+        if ($kiloSubagents -notcontains $agentName) {
+            # Loud failure, not a silent fallback: an unrecognized `agent:`
+            # means the source template names an agent Kilo cannot spawn.
+            # Write-Error is terminating under $ErrorActionPreference='Stop',
+            # so it aborts the whole run -- one bad template must not ship
+            # partially generated output.
+            Write-Error "generate-adapters: '$destName' routes to agent '$agentName', which is not a registered Kilo subagent. Register the agent under .kilo\agent\ (frontmatter with 'mode: subagent') and add its name to `$kiloSubagents, or fix the agent: line in its source template."
+        }
 
         # Collapse blank lines, then inject agent/subtask after description
         $lines = $newFrontmatter -split "\r?\n" | Where-Object { $_.Trim() -ne '' }
@@ -596,7 +629,10 @@ if (Test-Path -LiteralPath $opencodeCmdSrc -PathType Container) {
         if ($newFrontmatter) {
             $expanded = "---`n$newFrontmatter`n---`n$body"
         } else {
-            $expanded = "---`nagent: code`nsubtask: true`n---`n$body"
+            # No frontmatter at all: emit the same computed default rather than
+            # a second hardcoded name, so a future map change cannot leave the
+            # fallback disagreeing with the checked path.
+            $expanded = "---`nagent: $agentName`nsubtask: true`n---`n$body"
         }
 
         # Template token substitution (baba command)

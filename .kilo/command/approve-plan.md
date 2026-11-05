@@ -1,6 +1,6 @@
 ---
 description: Explicitly approve the current Baba PLAN and record approval + rewrite contract in session context.
-agent: code
+agent: general
 subtask: true
 ---
 

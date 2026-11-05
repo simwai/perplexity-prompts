@@ -1,6 +1,6 @@
 ---
 description: Edit an existing sprint phase plan. Add stories, update tasks, change status, or mark items done. Uses Trello MCP or project-management/ folder.
-agent: code
+agent: general
 subtask: true
 ---
 

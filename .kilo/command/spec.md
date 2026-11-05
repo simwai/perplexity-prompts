@@ -1,6 +1,6 @@
 ---
 description: Enter the SPEC phase to author or review a SPEC.md artifact.
-agent: code
+agent: general
 subtask: true
 ---
 

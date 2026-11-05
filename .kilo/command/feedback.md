@@ -1,6 +1,6 @@
 ---
 description: Give feedback to adjust generation parameters
-agent: code
+agent: general
 subtask: true
 ---
 

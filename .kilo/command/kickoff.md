@@ -1,6 +1,6 @@
 ---
 description: Bootstrap full PM pipeline from a raw goal - roadmap, sprint, reverse-engineered stories, ICE scores, task card. One consolidated approval at the end.
-agent: code
+agent: general
 subtask: true
 ---
 

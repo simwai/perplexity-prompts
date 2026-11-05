@@ -1,6 +1,6 @@
 ---
 description: Use the full structured Baba phase model.
-agent: code
+agent: general
 subtask: true
 ---
 

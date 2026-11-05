@@ -1,6 +1,6 @@
 ---
 description: Enter DISCUSS mode for exploratory conversation without phase-gated output.
-agent: code
+agent: general
 subtask: true
 ---
 

@@ -1,6 +1,6 @@
 ---
 description: Verify an approved patch using the mutation-capable Build agent; record verification in the session context.
-agent: build
+agent: baba-dev
 subtask: true
 ---
 

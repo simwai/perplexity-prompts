@@ -1,6 +1,6 @@
 ---
 description: Create a sprint phase plan from an existing roadmap. Generates a sprint file or Trello board with stories and tasks.
-agent: code
+agent: general
 subtask: true
 ---
 

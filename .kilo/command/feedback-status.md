@@ -1,6 +1,6 @@
 ---
 description: Show current adaptive feedback state
-agent: code
+agent: general
 subtask: true
 ---
 

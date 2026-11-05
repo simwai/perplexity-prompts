@@ -1,6 +1,6 @@
 ---
 description: Generate a full arXiv-ready paper PDF for the current project, using either a provided reference arXiv paper or auto-discovered high-cited readable papers.
-agent: code
+agent: general
 subtask: true
 ---
 
