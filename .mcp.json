@@ -20,7 +20,8 @@
         "-y",
         "@playwright/mcp@0.0.80",
         "--headless"
-      ]
+      ],
+      "timeout": 30000
     },
     "g-search": {
       "type": "stdio",
@@ -28,14 +29,16 @@
       "args": [
         "-y",
         "g-search-mcp"
-      ]
+      ],
+      "timeout": 30000
     },
     "arxiv": {
       "type": "stdio",
       "command": "uvx",
       "args": [
         "arxiv-mcp-server"
-      ]
+      ],
+      "timeout": 30000
     },
     "memory-worth": {
       "type": "stdio",
@@ -50,7 +53,7 @@
       "type": "http",
       "url": "https://mcp.exa.ai/mcp",
       "headers": {
-        "x-api-key": "{env:EXA_API_KEY}"
+        "x-api-key": "${EXA_API_KEY}"
       }
     },
     "trello": {

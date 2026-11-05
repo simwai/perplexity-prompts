@@ -15,6 +15,38 @@ Copy-Item -Recurse prompt-system <target-project>\prompt-system
 
 Repo-root tooling (`generate-adapters.ps1`, `sync.ps1`, `pre-commit.ps1`, root `scripts/*.ps1`) is host-side operational tooling, not part of the deployed runtime; a target references it only when it adopts the full repo.
 
+## Synced files — ignored by the prompt system
+
+`sync.ps1` deploys this prompt system into target projects and copies the following files and folders into every target. When using the prompt system in a target project, these paths must be ignored: they are owned by sync and will be overwritten on the next sync run, so never edit them in a target project.
+
+Synced files (copied to every target):
+
+- `AGENTS.md`
+- `opencode.jsonc`
+- `.mcp.json`
+- `kilo.json`
+- `pre-commit.ps1`
+- `pre-push.ps1`
+
+Synced folders (mirrored into every target with robocopy `/MIR`):
+
+- `prompt-system/`
+- `.opencode/`
+- `.claude/`
+- `.kilo/`
+
+Copied additively (updates only; never removes target-owned content):
+
+- `scripts/`
+
+Host-side sync tooling (not part of the deployed runtime):
+
+- `sync.ps1`
+- `targets.json` (gitignored; template: `targets.json.example`)
+- `generate-adapters.ps1`
+
+Sync also augments `.gitignore` with `.playwright-mcp/` and can remove legacy artifacts (`system/`, `synced-scripts/`, `agent-resources/`, `.cursor/`, `.codex/`, `BOOTSTRAP.md`) via `-DeleteLegacy`.
+
 ## Identity & Rules
 
 Tool-assisted AI coding agent for a sandbox with full execution rights. The authoritative rule set lives in `prompt-system/00-system.md` `## Identity`; these are the host-critical rules:

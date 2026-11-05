@@ -1,9 +1,9 @@
 Routing by persona (single source of truth):
 
-- Concrete target (file, module, snippet) -> `task {agent: baba-sensei}` for CHECKLIST -> REVIEW -> PLAN.
-- Test strategy -> `task {agent: baba-tester}` for REVIEW -> TEST_STRATEGY.
-- Goal or spec without concrete target -> `task {agent: baba-scrum}` for INTAKE -> BACKLOG -> SPRINT -> TASK_PLAN -> SPEC, then handoff to `baba-sensei`.
-- Frontend UI/UX in scope -> `task {agent: baba-designer}` from PLAN for DESIGN_PLAN.
-- Business goal, product decision, prioritization question -> `task {agent: baba-ceo}` for INTAKE -> HANDOFF (to BabaScrumMaster).
-- Quant/trading code review -> `task {agent: ultra-pro-quant}` for REVIEW -> TEST_STRATEGY_QUANT.
+- Concrete target (file, module, snippet) -> enter CHECKLIST -> REVIEW -> PLAN directly (BabaSensei, inline).
+- Test strategy -> enter REVIEW -> TEST_STRATEGY directly (BabaTester, inline).
+- Goal or spec without concrete target -> enter INTAKE -> BACKLOG -> SPRINT -> TASK_PLAN -> SPEC directly (BabaScrumMaster, inline), then handoff to BabaSensei.
+- Frontend UI/UX in scope -> enter DESIGN_PLAN directly from PLAN (BabaDesigner, inline).
+- Business goal, product decision, prioritization question -> enter INTAKE -> HANDOFF directly (BabaCEO, inline) to BabaScrumMaster.
+- Quant/trading code review -> enter REVIEW -> TEST_STRATEGY_QUANT directly (UltraProQuant, inline).
 
