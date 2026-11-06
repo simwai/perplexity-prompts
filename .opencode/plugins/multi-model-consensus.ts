@@ -13,9 +13,11 @@
  *     `KILO_API_KEY` is set (the key is the opt-in) under a price ceiling.
  *   - Authorization comes from the `KILO_API_KEY` env var when set, falling
  *     back to the anonymous bearer. The key is never hardcoded.
- *   - Calls carry a clamped `max_tokens` (default 16384) and suppress
- *     reasoning where the catalog advertises a toggle or an `none` effort so
- *     critique answers are not stranded inside a reasoning budget.
+ *   - Calls carry a clamped `max_tokens` (default 16384) and enable reasoning
+ *     at the highest effort the catalog advertises ("max"/"xhigh"/"high"/...
+ *     for effort-type models, a plain toggle for on/off models).
+ *   - Free models rank above paid ones in role selection; paid models from
+ *     the preferred families only fill roles the free pool cannot cover.
  *   - A 404 from a chat call invalidates the catalog cache, so a removed
  *     model heals on the next turn instead of failing forever.
  *   - V2 API surface unchanged: `ctx.command.transform` owns the `consensus`
@@ -67,6 +69,9 @@ const FAMILY_PATTERNS: Array<[string, RegExp]> = [
 ];
 // Classifier and router endpoints are in the catalog but are not chat models.
 const NON_CHAT_MODEL = /content.?safety|switchyard|guardrail/i;
+// Reasoning-effort ladder, strongest first; "none" is deliberately absent so
+// effort selection never degrades thinking on models that offer it.
+const EFFORT_RANK = ["max", "xhigh", "high", "medium", "low", "minimal"] as const;
 
 type KiloMessage = {
   role: string;
@@ -85,7 +90,7 @@ type CatalogModel = {
   maxCompletionTokens: number;
   reasoningSupport: boolean;
   reasoningToggle: boolean;
-  reasoningEffortNone: boolean;
+  reasoningEfforts: string[];
 };
 
 type RoleSet = {
@@ -153,7 +158,7 @@ async function fetchCatalog(log: ReturnType<typeof createDebug>): Promise<Catalo
       maxCompletionTokens: Number(topProvider?.max_completion_tokens) || 0,
       reasoningSupport: supported.includes("reasoning"),
       reasoningToggle: reasoningOptions?.type === "toggle",
-      reasoningEffortNone: effortValues.includes("none"),
+      reasoningEfforts: effortValues.filter((v: unknown): v is string => typeof v === "string"),
     });
   }
   catalogCache = { at: Date.now(), models };
@@ -162,7 +167,11 @@ async function fetchCatalog(log: ReturnType<typeof createDebug>): Promise<Catalo
 }
 
 function rankModels(a: CatalogModel, b: CatalogModel): number {
-  return paramBillion(b.id) - paramBillion(a.id) || b.contextLength - a.contextLength;
+  // Free first: the key unlocks paid fallbacks, but free models win every
+  // role the free pool can cover; size then context break ties.
+  return Number(b.isFree) - Number(a.isFree)
+    || paramBillion(b.id) - paramBillion(a.id)
+    || b.contextLength - a.contextLength;
 }
 
 function pickRoles(models: CatalogModel[]): RoleSet {
@@ -234,10 +243,15 @@ async function callKilo(
     temperature: 0.3,
     max_tokens: Math.min(MAX_TOKENS_DESIRED, info?.maxCompletionTokens || MAX_TOKENS_DESIRED),
   };
-  // Reasoning models spend the completion budget on hidden deliberation and
-  // can return empty content; suppress it where the catalog advertises how.
-  if (info?.reasoningSupport && (info.reasoningToggle || info.reasoningEffortNone)) {
-    body.reasoning = info.reasoningToggle ? { enabled: false } : { enabled: true, effort: "none" };
+  // Reasoning-capable endpoints think at the highest effort the catalog
+  // advertises; on/off ("toggle") models just get thinking enabled.
+  if (info?.reasoningSupport) {
+    const effort = EFFORT_RANK.find((e) => info.reasoningEfforts.includes(e));
+    if (info.reasoningToggle) {
+      body.reasoning = { enabled: true };
+    } else if (effort) {
+      body.reasoning = { enabled: true, effort };
+    }
   }
   const res = await fetch(`${KILO_BASE_URL}/chat/completions`, {
     method: "POST",
