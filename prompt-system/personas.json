@@ -6,9 +6,9 @@
       "description": "Wise senior engineer for review and plan approval - teaching moments, no patches",
       "entryPhase": "PLAN",
       "routing": {
-        "claudePlan": "Concrete target (file, module, snippet) -> `task {agent: baba-sensei}` for CHECKLIST -> REVIEW -> PLAN.",
-        "opencodePlan": "Concrete target (file, module, snippet) -> `task {agent: baba-sensei}` for CHECKLIST -> REVIEW -> PLAN.",
-        "kiloPlan": "Concrete target (file, module, snippet) -> `task baba-sensei` for CHECKLIST -> REVIEW -> PLAN.",
+        "claudePlan": "Concrete target (file, module, snippet) -> delegate to subagent BabaSensei for CHECKLIST -> REVIEW -> PLAN.",
+        "opencodePlan": "Concrete target (file, module, snippet) -> delegate to subagent BabaSensei for CHECKLIST -> REVIEW -> PLAN.",
+        "kiloPlan": "Concrete target (file, module, snippet) -> delegate to subagent BabaSensei for CHECKLIST -> REVIEW -> PLAN.",
         "build": null,
         "generalTable": "Code review → baba-sensei"
       },
@@ -29,7 +29,7 @@
         "claudePlan": null,
         "opencodePlan": null,
         "kiloPlan": null,
-        "build": "Approved plan + complete rewrite contract -> `task {agent: baba-dev}` for PATCH (per-edit lint gate, compliance audit, constraint verification, verification gate).",
+        "build": "Approved plan + complete rewrite contract -> delegate to subagent BabaDev for PATCH (per-edit lint gate, compliance audit, constraint verification, verification gate).",
         "generalTable": "Implementation → baba-dev"
       },
       "babaCommand": {
@@ -46,10 +46,10 @@
       "description": "Adversarial QA - edge cases, failure modes, test strategy",
       "entryPhase": "TEST_STRATEGY",
       "routing": {
-        "claudePlan": "Test strategy -> `task {agent: baba-tester}` for REVIEW -> TEST_STRATEGY.",
-        "opencodePlan": "Test strategy -> `task {agent: baba-tester}` for REVIEW -> TEST_STRATEGY.",
-        "kiloPlan": "Test strategy -> `task baba-tester` for REVIEW -> TEST_STRATEGY.",
-        "build": "Test strategy needed -> `task {agent: baba-tester}` for TEST_STRATEGY first; classify items as BINDING / STRONG HINT / WEAK HINT before PATCH.",
+        "claudePlan": "Test strategy -> delegate to subagent BabaTester for REVIEW -> TEST_STRATEGY.",
+        "opencodePlan": "Test strategy -> delegate to subagent BabaTester for REVIEW -> TEST_STRATEGY.",
+        "kiloPlan": "Test strategy -> delegate to subagent BabaTester for REVIEW -> TEST_STRATEGY.",
+        "build": "Test strategy needed -> delegate to subagent BabaTester for TEST_STRATEGY; classify items as BINDING / STRONG HINT / WEAK HINT before PATCH.",
         "generalTable": "Test strategy → baba-tester"
       },
       "babaCommand": {
@@ -86,9 +86,9 @@
       "description": "Pragmatic delivery lead - goal intake, ICE backlog, sprints, task cards",
       "entryPhase": "INTAKE",
       "routing": {
-        "claudePlan": "Goal or spec without concrete target -> `task {agent: baba-scrum}` for INTAKE -> BACKLOG -> SPRINT -> TASK_PLAN -> SPEC, then handoff to `baba-sensei`.",
-        "opencodePlan": "Goal or spec without concrete target -> `task {agent: baba-scrum}` for INTAKE -> BACKLOG -> SPRINT -> TASK_PLAN -> SPEC, then handoff to `baba-sensei`.",
-        "kiloPlan": "Goal or spec without concrete target -> `task baba-scrum` for INTAKE -> BACKLOG -> SPRINT -> TASK_PLAN -> SPEC, then handoff to `baba-sensei`.",
+        "claudePlan": "Goal or spec without concrete target -> delegate to subagent BabaScrumMaster for INTAKE -> BACKLOG -> SPRINT -> TASK_PLAN -> SPEC, then handoff to BabaSensei.",
+        "opencodePlan": "Goal or spec without concrete target -> delegate to subagent BabaScrumMaster for INTAKE -> BACKLOG -> SPRINT -> TASK_PLAN -> SPEC, then handoff to BabaSensei.",
+        "kiloPlan": "Goal or spec without concrete target -> delegate to subagent BabaScrumMaster for INTAKE -> BACKLOG -> SPRINT -> TASK_PLAN -> SPEC, then handoff to BabaSensei.",
         "build": null,
         "generalTable": "Sprint planning → baba-scrum"
       },
@@ -106,10 +106,10 @@
       "description": "Frontend design planning - palette, typography, iconography, a11y, SEO",
       "entryPhase": "DESIGN_PLAN",
       "routing": {
-        "claudePlan": "Frontend UI/UX in scope -> `task {agent: baba-designer}` from PLAN for DESIGN_PLAN.",
-        "opencodePlan": "Frontend UI/UX in scope -> `task {agent: baba-designer}` from PLAN for DESIGN_PLAN.",
-        "kiloPlan": "Frontend UI/UX in scope -> `task baba-designer` from PLAN for DESIGN_PLAN.",
-        "build": "Design questions mid-implementation -> `task {agent: baba-designer}`; never invent UI choices during PATCH.",
+        "claudePlan": "Frontend UI/UX in scope -> delegate to subagent BabaDesigner from PLAN for DESIGN_PLAN.",
+        "opencodePlan": "Frontend UI/UX in scope -> delegate to subagent BabaDesigner from PLAN for DESIGN_PLAN.",
+        "kiloPlan": "Frontend UI/UX in scope -> delegate to subagent BabaDesigner from PLAN for DESIGN_PLAN.",
+        "build": "Design questions mid-implementation -> delegate to subagent BabaDesigner; never invent UI choices during PATCH.",
         "generalTable": "Design decisions → baba-designer"
       },
       "babaCommand": {
@@ -126,10 +126,10 @@
       "description": "CEO / Product Owner for product vision, goal framing, success criteria, and prioritization input",
       "entryPhase": "INTAKE",
       "routing": {
-        "claudePlan": "Business goal, product decision, prioritization question -> `task {agent: baba-ceo}` for INTAKE -> HANDOFF (to BabaScrumMaster).",
-        "opencodePlan": "Business goal, product decision, prioritization question -> `task {agent: baba-ceo}` for INTAKE -> HANDOFF (to BabaScrumMaster).",
-        "kiloPlan": "Business goal, product decision, prioritization question -> `task baba-ceo` for INTAKE -> HANDOFF (to BabaScrumMaster).",
-        "build": "Product framing needed mid-implementation -> `task {agent: baba-ceo}`; never invent product decisions during PATCH.",
+        "claudePlan": "Business goal, product decision, prioritization question -> delegate to subagent BabaCEO for INTAKE -> HANDOFF (to BabaScrumMaster).",
+        "opencodePlan": "Business goal, product decision, prioritization question -> delegate to subagent BabaCEO for INTAKE -> HANDOFF (to BabaScrumMaster).",
+        "kiloPlan": "Business goal, product decision, prioritization question -> delegate to subagent BabaCEO for INTAKE -> HANDOFF (to BabaScrumMaster).",
+        "build": "Product framing needed mid-implementation -> delegate to subagent BabaCEO; never invent product decisions during PATCH.",
         "generalTable": "Product framing → baba-ceo"
       },
       "babaCommand": {
@@ -146,10 +146,10 @@
       "description": "Master quant/algo trader - alpha logic, risk math, backtest integrity, microstructure, asymmetric structures",
       "entryPhase": "TEST_STRATEGY_QUANT",
       "routing": {
-        "claudePlan": "Quant/trading code review -> `task {agent: ultra-pro-quant}` for REVIEW -> TEST_STRATEGY_QUANT.",
-        "opencodePlan": "Quant/trading code review -> `task {agent: ultra-pro-quant}` for REVIEW -> TEST_STRATEGY_QUANT.",
-        "kiloPlan": "Quant/trading code review -> `task ultra-pro-quant` for REVIEW -> TEST_STRATEGY_QUANT.",
-        "build": "Quant review needed -> `task {agent: ultra-pro-quant}` for TEST_STRATEGY_QUANT first; classify items as BINDING / STRONG HINT / WEAK HINT before PATCH.",
+        "claudePlan": "Quant/trading code review -> delegate to subagent UltraProQuant for REVIEW -> TEST_STRATEGY_QUANT.",
+        "opencodePlan": "Quant/trading code review -> delegate to subagent UltraProQuant for REVIEW -> TEST_STRATEGY_QUANT.",
+        "kiloPlan": "Quant/trading code review -> delegate to subagent UltraProQuant for REVIEW -> TEST_STRATEGY_QUANT.",
+        "build": "Quant review needed -> delegate to subagent UltraProQuant for TEST_STRATEGY_QUANT; classify items as BINDING / STRONG HINT / WEAK HINT before PATCH.",
         "generalTable": "Quant review → ultra-pro-quant"
       },
       "babaCommand": {

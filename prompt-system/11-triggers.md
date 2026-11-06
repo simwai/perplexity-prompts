@@ -157,7 +157,7 @@ Dedup/record: audit result reported in the PATCH gate output.
 
 Detection: commit/push gate completed with a user decision (A/B/C) AND the session made file edits.
 Fires at: immediately after the gate decision.
-Effect: record `closed_at`, `closed_by: automatic`, `mode_at_close`, `final_commit`, `working_tree`, `note` in session `## Session Close`; spawn evaluation via `task` with `subagent_type: baba-reviewer` (see T-21); append verdict; announce close (session ID, final commit, one-line summary). No edits -> no auto-close; user closes explicitly via `/close`.
+Effect: record `closed_at`, `closed_by: automatic`, `mode_at_close`, `final_commit`, `working_tree`, `note` in session `## Session Close`; delegate evaluation to subagent baba-reviewer (see T-21); append verdict; announce close (session ID, final commit, one-line summary). No edits -> no auto-close; user closes explicitly via `/close`.
 Invokes: Session evaluation prompt -- `03-output-and-state.md` `## Session evaluation prompt`; auto-close procedure -- `06-misc.md` `### Auto-close after commit/push`.
 Dedup/record: close record + evaluation verdict appended to session `## Session Close`.
 
@@ -179,7 +179,7 @@ Dedup/record: last valid phase and failed phase recorded in session state.
 
 ## T-21 -- Subagent bootstrap trigger
 
-Detection: a session is spawned via `task`.
+Detection: a session is spawned via delegate to subagent.
 Fires at: subagent session start.
 Effect: fresh in-memory state carrier per receiving persona's entry phase (baba-sensei -> PLAN DIRECT; baba-dev -> PATCH DIRECT; baba-tester -> TEST_STRATEGY DIRECT; ultra-pro-quant -> TEST_STRATEGY_QUANT DIRECT; baba-reviewer -> REVIEW DIRECT; baba-ceo -> INTAKE DIRECT; baba-scrum -> INTAKE DIRECT; baba-designer -> DESIGN_PLAN DIRECT; explore/general -> DIRECT). Parent phase not inherited; parent's read-only constraints not forwarded. Carrier is the single source of truth for the subagent's phase and mode.
 Invokes: Entry-phase mapping and carrier contents -- `00-system.md` `## Subagent bootstrap`; handoff contract fields -- `01-personas.md` `## Handoff contract`.

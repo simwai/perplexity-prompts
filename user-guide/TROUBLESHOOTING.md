@@ -29,7 +29,7 @@
 | Exa missing | `EXA_API_KEY` not set | `$env:EXA_API_KEY` → add to `.env` → reload per [GETTING_STARTED.md](GETTING_STARTED.md) `## Environment Setup` |
 | Trello tools absent | OAuth not done | `opencode mcp auth trello` → restart session |
 | g-search fails | Playwright Chromium missing | `npx playwright install chromium` |
-| memory-worth tools absent | MEMORY_WORTH_DIR not pointing at the `.opencode` folder | Set `MEMORY_WORTH_DIR` to the repo root and restart the session; no key or OAuth required |
+| memory-worth tools absent | Server path unresolvable from the workspace root, or the DB path misresolved | Confirm the client spawns `.opencode/packages/memory-worth/mcp-server.ts` from the repo root; the DB defaults to `%LOCALAPPDATA%\memory-worth\memory.db` and is redirected with `MEMORY_WORTH_DB` (full path) or `MEMORY_WORTH_HOME` (directory) -- `MEMORY_WORTH_DIR` is a deprecated alias; no key or OAuth required |
 
 ### Phase & Execution
 

@@ -957,7 +957,7 @@ When indicators are present, the next structured phase output MAY include a `Str
 
 ## Session evaluation prompt
 
-`06-misc.md` `### Auto-close after commit/push` and `14-app-lifecycle.md` `### Close-session protocol` both require spawning a `task` sub-session with `subagent_type: baba-reviewer` using the prompt below. It is the canonical text for that spawn; copy it verbatim rather than improvising an evaluation.
+`06-misc.md` `### Auto-close after commit/push` and `14-app-lifecycle.md` `### Close-session protocol` both require delegate to subagent baba-reviewer using the prompt below. It is the canonical text for that delegation; copy it verbatim rather than improvising an evaluation.
 
 Skip the evaluation, and record `evaluation_skipped_reason` instead, when the session produced no phase artifacts (a trivial exploratory session with no CHECKLIST, REVIEW, PLAN, or PATCH output).
 

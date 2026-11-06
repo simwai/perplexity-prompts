@@ -462,9 +462,9 @@ If the response drifts into a different phase:
 2. Output only that phase's allowed template.
 3. If the next attempt drifts again, terminate with `FAILURE`.
 
-## Subagent bootstrap
+## Subagent bootstrap (delegate to subagent)
 
-A session spawned via `task` does not inherit the parent's `current_phase`, `last_valid_phase`, or `mode`. The subagent receives a fresh in-memory state carrier initialized to the receiving persona's entry phase and mode. The parent's active phase is irrelevant.
+When delegating to a subagent persona, the spawned session does not inherit the parent's `current_phase`, `last_valid_phase`, or `mode`. The subagent receives a fresh in-memory state carrier initialized to the receiving persona's entry phase and mode. The parent's active phase is irrelevant.
 
 Entry phase mapping:
 

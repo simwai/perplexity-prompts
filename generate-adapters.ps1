@@ -187,6 +187,7 @@ $babaCommandInstructions = ($babaCommandInstructions -join "`n")
 $targets = @{
     '.claude\agents'       = Join-Path $repoRoot '.claude\agents'
     '.claude\skills'       = Join-Path $repoRoot '.claude\skills'
+    '.claude\hooks'        = Join-Path $repoRoot '.claude\hooks'
     '.opencode\agents'     = Join-Path $repoRoot '.opencode\agents'
     '.opencode\commands'   = Join-Path $repoRoot '.opencode\commands'
     '.kilo\agent'          = Join-Path $repoRoot '.kilo\agent'
@@ -294,6 +295,30 @@ if (Test-Path -LiteralPath $settingsTemplate -PathType Leaf) {
 }
 
 # ═══════════════════════════════════════════════════════════════════════════
+# 4b. Copy the Claude Code hook scripts that settings.json references.
+#     The settings template wires PreToolUse handlers to files under
+#     .claude/hooks/; a hook entry whose script is never generated fails on
+#     every matched tool call. The Read full-comprehension guard shipped
+#     referenced-but-absent, so each Read fired a failing hook instead of the
+#     guard running.
+
+$claudeHooksSrc = Join-Path $repoRoot 'adapters\claude\hooks'
+$claudeHooksDst = Join-Path $repoRoot '.claude\hooks'
+
+if (Test-Path -LiteralPath $claudeHooksSrc -PathType Container) {
+    if (-not (Test-Path -LiteralPath $claudeHooksDst -PathType Container)) {
+        New-Item -ItemType Directory -Path $claudeHooksDst -Force | Out-Null
+    }
+    $hookFiles = Get-ChildItem -Path $claudeHooksSrc -File
+    foreach ($file in $hookFiles) {
+        Copy-Item -Path $file.FullName -Destination (Join-Path $claudeHooksDst $file.Name) -Force
+    }
+    Write-Ok "Generated $($hookFiles.Count) Claude Code hook scripts"
+} else {
+    Write-Warn "Claude hook templates not found at $claudeHooksSrc"
+}
+
+# ═══════════════════════════════════════════════════════════════════════════
 # 5. Generate .mcp.json by translating opencode.jsonc mcp block
 # ═══════════════════════════════════════════════════════════════════════════
 
@@ -307,6 +332,18 @@ if (Test-Path -LiteralPath $opencodeConfigPath -PathType Leaf) {
     
     try {
         $config = $cleaned | ConvertFrom-Json
+
+        # opencode interpolates {env:VAR} in remote headers; Claude Code does
+        # not -- it expands ${VAR} and ${VAR:-default} only. Left untranslated,
+        # a {env:VAR} value reaches the server as a literal string, which sent
+        # the exa x-api-key header as "{env:EXA_API_KEY}" and 401'd every
+        # Claude Code search. Translate on the way out so both clients auth.
+
+        $claudeEnvRefPattern = '\{env:([A-Za-z_][A-Za-z0-9_]*)\}'
+        # '$$' emits a literal dollar sign, then '$1' substitutes the group, so
+        # the replacement renders ${NAME} rather than a .NET group reference.
+        $claudeEnvRefReplacement = '$${$1}'
+
         # Ordered, not a plain hashtable: hashtable enumeration is hash-seeded per
         # process, so a plain @{} emits the servers in a different order on every
         # run and leaves .mcp.json permanently dirty after a commit.
@@ -341,14 +378,37 @@ if (Test-Path -LiteralPath $opencodeConfigPath -PathType Leaf) {
                 }
                 
                 # Copy headers/env/oauth if present
-                if ($val.headers) { $mcpEntry.headers = $val.headers }
+                if ($val.headers) {
+                    $claudeHeaders = [ordered]@{}
+                    foreach ($header in $val.headers.PSObject.Properties) {
+                        $claudeHeaders[$header.Name] = [regex]::Replace(
+                            [string]$header.Value, $claudeEnvRefPattern, $claudeEnvRefReplacement)
+                    }
+                    $mcpEntry.headers = $claudeHeaders
+                }
                 if ($val.env) { $mcpEntry.env = $val.env }
                 if ($val.oauth) { $mcpEntry.oauth = $val.oauth }
-                
+
+                # Claude Code also expands ${VAR} inside command, args, and url;
+                # translate those so no opencode-only reference survives.
+                if ($mcpEntry.url) {
+                    $mcpEntry.url = [regex]::Replace(
+                        [string]$mcpEntry.url, $claudeEnvRefPattern, $claudeEnvRefReplacement)
+                }
+                if ($mcpEntry.command) {
+                    $mcpEntry.command = [regex]::Replace(
+                        [string]$mcpEntry.command, $claudeEnvRefPattern, $claudeEnvRefReplacement)
+                }
+                if ($mcpEntry.args) {
+                    $mcpEntry.args = @($mcpEntry.args | ForEach-Object {
+                        [regex]::Replace([string]$_, $claudeEnvRefPattern, $claudeEnvRefReplacement)
+                    })
+                }
+
                 $mcpServers[$name] = $mcpEntry
             }
         }
-        
+
         $mcpOutput = ConvertTo-StableJson -Value ([ordered]@{ mcpServers = $mcpServers })
         Write-Utf8NoBom -Path $mcpJsonPath -Content $mcpOutput
         Write-Ok "Generated .mcp.json ($($mcpServers.Count) servers)"
@@ -768,6 +828,7 @@ Write-Host "Generated files:" -ForegroundColor Gray
 Write-Host "  .claude/agents/    - Claude Code subagent definitions" -ForegroundColor Gray
 Write-Host "  .claude/skills/    - Claude Code slash commands as skills" -ForegroundColor Gray
 Write-Host "  .claude/settings.json - Project-scoped settings" -ForegroundColor Gray
+Write-Host "  .claude/hooks/       - Claude Code hook scripts referenced by settings.json" -ForegroundColor Gray
 Write-Host "  .mcp.json          - MCP server configuration" -ForegroundColor Gray
 Write-Host "  .opencode/agents/  - OpenCode agent definitions" -ForegroundColor Gray
 Write-Host "  .opencode/commands/- OpenCode slash commands" -ForegroundColor Gray

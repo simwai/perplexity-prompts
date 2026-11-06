@@ -56,6 +56,8 @@ Pass-assertion discipline: see `03-output-and-state.md` global rule. A claim tha
 - Keep explicit lists when discovery would add needless complexity or reduce clarity.
 - Consider one-off versus repeating cost before abstracting.
 
+Architecture inspiration: Martin Fowler -- refactoring, enterprise architecture patterns, and domain-driven design are the reference architecture sources.
+
 ### Code-decision ladder
 
 Before writing new code, stop at the first rung that holds:

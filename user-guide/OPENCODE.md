@@ -64,6 +64,8 @@ opencode loads config once at startup. After editing `opencode.jsonc`, `.opencod
 
 opencode uses `{env:VAR}`, not `${VAR}`. The `exa` server header is `{env:EXA_API_KEY}`; remove the `exa` entry if the key is absent.
 
+`generate-adapters.ps1` translates those references when it writes `.mcp.json`: Claude Code expands only `${VAR}` (and `${VAR:-default}`), so the generated exa header is `"x-api-key": "${EXA_API_KEY}"`. Without that translation the literal text `{env:EXA_API_KEY}` is sent as the key and every Claude Code search 401s. The env table in [AGENTS.md](../../AGENTS.md) applies unchanged: an unset `EXA_API_KEY` falls back to `g-search`.
+
 ### memory-worth MCP server
 
 The memory-worth package exposes its memory tools over MCP (plus a
@@ -89,7 +91,11 @@ memories go to the shared `global` scope.
 
 ### Trello OAuth
 
-Run `opencode mcp auth trello` once, then restart the session.
+One-time browser consent (workspace-scoped, no API key), per client:
+
+- OpenCode: `opencode mcp auth trello`, then restart the session.
+- Claude Code: `claude mcp login trello` (or `/mcp` -> Authenticate), then restart the session.
+- Kilo Code: the `trello` entry carries `"oauth": {}`, so Kilo runs the browser consent flow on first connect; if the tools stay absent, reconnect the server from Kilo's MCP panel and restart.
 
 ### Native Plan → Build
 

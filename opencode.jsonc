@@ -110,15 +110,21 @@
     },
     "playwright-headless": {
       "type": "local",
-      "command": ["npx", "-y", "@playwright/mcp@0.0.80", "--headless"]
+      "command": ["npx", "-y", "@playwright/mcp@0.0.80", "--headless"],
+      // Without an explicit timeout the client falls back to its 5s default,
+      // which a first-run package download (uvx/npx) cannot beat -- the server
+      // is reported as failed before it finishes starting.
+      "timeout": 30000
     },
     "g-search": {
       "type": "local",
-      "command": ["npx", "-y", "g-search-mcp"]
+      "command": ["npx", "-y", "g-search-mcp"],
+      "timeout": 30000
     },
     "arxiv": {
       "type": "local",
-      "command": ["uvx", "arxiv-mcp-server"]
+      "command": ["uvx", "arxiv-mcp-server"],
+      "timeout": 30000
     },
     // memory-worth: the same 12 memory tools exposed over MCP so any MCP
     // client can call them. Stdio transport; MEMORY_WORTH_DIR selects the

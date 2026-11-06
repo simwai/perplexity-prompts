@@ -67,7 +67,7 @@ When any close trigger fires:
   - Structured sessions with phase artifacts (CHECKLIST onward) -> run evaluation.
   - Trivial exploratory sessions with no phase artifacts -> skip evaluation; record `evaluation_skipped_reason`.
 
-- Run the close-session evaluation by spawning a `task` sub-session with `subagent_type: baba-reviewer` using the evaluation prompt from `prompt-system/03-output-and-state.md` `## Session evaluation prompt`.
+- Run the close-session evaluation by delegating to subagent baba-reviewer using the evaluation prompt from `prompt-system/03-output-and-state.md` `## Session evaluation prompt`.
 
 - Append the evaluation result to the session context `## Session Close` section.
 
