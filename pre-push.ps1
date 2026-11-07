@@ -18,7 +18,7 @@ param()
 $ErrorActionPreference = 'Stop'
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$repoRoot = if (Test-Path (Join-Path $scriptDir 'generate-adapters.ps1')) { $scriptDir } else { Split-Path -Parent $scriptDir }
+$repoRoot = if (Test-Path (Join-Path $scriptDir '.git') -PathType Container) { $scriptDir } elseif (Test-Path (Join-Path $scriptDir 'generate-adapters.ps1') -PathType Leaf) { $scriptDir } elseif (Test-Path (Join-Path $scriptDir 'prompt-system') -PathType Container) { $scriptDir } else { Split-Path -Parent $scriptDir }
 
 Write-Host "Running pre-push checks..." -ForegroundColor Cyan
 

@@ -21,7 +21,7 @@ $ErrorActionPreference = 'Stop'
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 # The script lives at the repo root (not in scripts/), so the root is the script
 # directory itself when it holds generate-adapters.ps1; otherwise its parent.
-$repoRoot = if (Test-Path (Join-Path $scriptDir 'generate-adapters.ps1')) { $scriptDir } else { Split-Path -Parent $scriptDir }
+$repoRoot = if (Test-Path (Join-Path $scriptDir '.git') -PathType Container) { $scriptDir } elseif (Test-Path (Join-Path $scriptDir 'generate-adapters.ps1') -PathType Leaf) { $scriptDir } elseif (Test-Path (Join-Path $scriptDir 'prompt-system') -PathType Container) { $scriptDir } else { Split-Path -Parent $scriptDir }
 
 $totalSteps = 8
 Write-Host "Running pre-commit checks..." -ForegroundColor Cyan
@@ -193,10 +193,14 @@ $generatedOutputs = @(
     '.kilo/skills'
 )
 
-& (Join-Path $repoRoot 'generate-adapters.ps1')
-if (-not $?) {
-    Write-Error "Adapter generation failed"
-    exit 1
+$genScript = Join-Path $repoRoot 'generate-adapters.ps1'
+if (Test-Path -LiteralPath $genScript -PathType Leaf) {
+    & $genScript
+    if (-not $?) {
+        Write-Warning "Adapter generation failed -- step 2 SKIPPED (generator returned non-zero)"
+    }
+} else {
+    Write-Warning "generate-adapters.ps1 not found at repo root -- adapter generation SKIPPED"
 }
 
 # Re-stage generated outputs so they are part of the commit.

@@ -172,21 +172,16 @@ Combine all Tier 1 + Tier 2 + Trello blocks above. Omit any Tier 2 servers whose
 
 ---
 
-<HIGH_PRIO>
-!!!
-
 ## Loading the System (MANDATORY - immediate, before any other action)
 
-AGENTS.md is the sole entry point. The system lives in `prompt-system/`.
+AGENTS.MD IS THE SOLE ENTRY POINT. THE SYSTEM LIVES IN `PROMPT-SYSTEM/`.
 
-**Immediately after reading this file (no exceptions):**
+**IMMEDIATELY AFTER READING THIS FILE (NO EXCEPTIONS):**
 
-1. Read `AGENTS.md` in full (largest window; continue with offset reads until EOF).
-2. Read `prompt-system/00-system.md` in full the same way -- it contains the authoritative `## Load order`.
-3. Load the always-load [core] tier from that load order in full across offset chunks.
-4. **Record completion** in session state `## Startup Verification` (or conversation carrier on READ_ONLY).
-5. Conditional tiers ([review], [stack], [designer], [doc], [logical], [domain]) load just-in-time at phase entry per the load order -- never pre-loaded wholesale.
+1. READ `AGENTS.MD` IN FULL (LARGEST WINDOW; CONTINUE WITH OFFSET READS UNTIL EOF).
+2. READ `PROMPT-SYSTEM/00-SYSTEM.MD` IN FULL THE SAME WAY -- IT CONTAINS THE AUTHORITATIVE `## LOAD ORDER`.
+3. LOAD THE ALWAYS-LOAD [CORE] TIER FROM THAT LOAD ORDER IN FULL ACROSS OFFSET CHUNKS.
+4. **RECORD COMPLETION** IN SESSION STATE `## STARTUP VERIFICATION` (OR CONVERSATION CARRIER ON READ_ONLY).
+5. CONDITIONAL TIERS ([REVIEW], [STACK], [DESIGNER], [DOC], [LOGICAL], [DOMAIN]) LOAD JUST-IN-TIME AT PHASE ENTRY PER THE LOAD ORDER -- NEVER PRE-LOADED WHOLESALE.
 
-All always-load files must be fully read (EOF reached) before ANY other action. This is not optional, not conditional. If loading is incomplete, the agent must not proceed -- output `BLOCKED` with reason "STARTUP incomplete".
-
-</HIGH_PRIO>
+ALL ALWAYS-LOAD FILES MUST BE FULLY READ (EOF REACHED) BEFORE ANY OTHER ACTION. THIS IS NOT OPTIONAL, NOT CONDITIONAL. IF LOADING IS INCOMPLETE, THE AGENT MUST NOT PROCEED -- OUTPUT `BLOCKED` WITH REASON "STARTUP INCOMPLETE"!

@@ -6,9 +6,9 @@ Operational protocol: PATCH behavior, commit/push gate. Cross-cutting protocol d
 
 Prerequisites: explicit user plan approval; complete rewrite contract.
 
-<MUST>Explicit user plan approval is required before PATCH.</MUST>
+EXPLICIT USER PLAN APPROVAL IS REQUIRED BEFORE PATCH!
 
-<MUST>Complete rewrite contract is required before PATCH.</MUST>
+COMPLETE REWRITE CONTRACT IS REQUIRED BEFORE PATCH!
 
 Rewrite contract fields (all required):
 
@@ -54,7 +54,7 @@ At the same recording step, append each edited path to the session context `## E
 
 ### Bug-fix regression protocol
 
-<MUST>For each confirmed bug, the patch must record a missed-coverage root cause, add a regression test, run baseline verification (expected FAIL), and run post-fix verification (expected PASS).</MUST>
+FOR EACH CONFIRMED BUG, THE PATCH MUST RECORD A MISSED-COVERAGE ROOT CAUSE, ADD A REGRESSION TEST, RUN BASELINE VERIFICATION (EXPECTED FAIL), AND RUN POST-FIX VERIFICATION (EXPECTED PASS)!
 A confirmed bug entering PATCH triggers this protocol. A "confirmed bug" is any defect accepted for correction from REVIEW, production feedback, a security finding, an edge-case report, or a failing test surfaced inside the PATCH handoff. The protocol is canonical here; persona obligations in `01-personas.md` and template rows in `03-output-and-state.md` are specializations and must not duplicate this text.
 
 For each confirmed bug, the patch must, in order:
@@ -78,11 +78,11 @@ The loop interacts with the Plan-Actual retry logic as follows: Plan-Actual retr
 
 ### Compliance audit
 
-<MUST>After every patch, emit a compliance audit section. For each must-preserve item: PASS or FAIL. For each must-eliminate item: PASS or FAIL. For each forbidden token: PASS or FAIL. If any audit item is FAIL, do not emit the patch. Return to PLAN phase.</MUST>
+AFTER EVERY PATCH, EMIT A COMPLIANCE AUDIT SECTION. FOR EACH MUST-PRESERVE ITEM: PASS OR FAIL. FOR EACH MUST-ELIMINATE ITEM: PASS OR FAIL. FOR EACH FORBIDDEN TOKEN: PASS OR FAIL. IF ANY AUDIT ITEM IS FAIL, DO NOT EMIT THE PATCH. RETURN TO PLAN PHASE!
 
 ### Constraint verification
 
-<MUST>After the compliance audit, verify all system-derived constraints mechanically. This is a non-negotiable gate; a single FAIL returns to PLAN.</MUST>
+AFTER THE COMPLIANCE AUDIT, VERIFY ALL SYSTEM-DERIVED CONSTRAINTS MECHANICALLY. THIS IS A NON-NEGOTIABLE GATE; A SINGLE FAIL RETURNS TO PLAN!
 
 For each item in `Must use`:
 
@@ -118,7 +118,7 @@ Gate result: ALL PASS required. Any FAIL -> return to PLAN with specific constra
 
 ### Self-review verification
 
-<MUST>After the constraint verification, verify the agent's self-review claims from the PATCH template. This is a non-negotiable gate; a single FALSE claim returns to PLAN.</MUST>
+AFTER THE CONSTRAINT VERIFICATION, VERIFY THE AGENT'S SELF-REVIEW CLAIMS FROM THE PATCH TEMPLATE. THIS IS A NON-NEGOTIABLE GATE; A SINGLE FALSE CLAIM RETURNS TO PLAN!
 
 For each item in `## Self-Review`:
 
@@ -127,7 +127,7 @@ For each item in `## Self-Review`:
 - Evidence: [rg command output or "n/a"]
 - Result: [TRUE|FALSE]
 
-<MUST>Gate result: ALL TRUE required. Any FALSE -> return to PLAN with specific self-review violation.</MUST>
+GATE RESULT: ALL TRUE REQUIRED. ANY FALSE -> RETURN TO PLAN WITH SPECIFIC SELF-REVIEW VIOLATION!
 
 ### Subagent dispatch guidance
 
@@ -151,7 +151,7 @@ A PATCH addresses exactly one problem. "Unrelated" means the changes do not shar
 
 ## Verification gate
 
-<MUST>After a successful compliance audit, inspect the resulting diff. Run the project's relevant checks when available (lint, typecheck, tests, or documented equivalents). The Playwright smoke is the functional verification and runs once inside the commit gate, after this gate passes; it is referenced here, not executed here; its PASS|FAIL|SKIPPED outcome is recorded in the gate outcome and the session context. When `.md` files are created or changed, run the project's configured Markdown lint check against them when available and honor the repository configuration. Do not invent commands. If none exist, record SKIPPED with reason. Write verification results to the PATCH template and the session context. If a required check fails, report FAIL and return to PLAN unless the failure is outside scope and explicitly accepted.</MUST>
+AFTER A SUCCESSFUL COMPLIANCE AUDIT, INSPECT THE RESULTING DIFF. RUN THE PROJECT'S RELEVANT CHECKS WHEN AVAILABLE (LINT, TYPECHECK, TESTS, OR DOCUMENTED EQUIVALENTS). THE PLAYWRIGHT SMOKE IS THE FUNCTIONAL VERIFICATION AND RUNS ONCE INSIDE THE COMMIT GATE, AFTER THIS GATE PASSES; IT IS REFERENCED HERE, NOT EXECUTED HERE; ITS PASS|FAIL|SKIPPED OUTCOME IS RECORDED IN THE GATE OUTCOME AND THE SESSION CONTEXT. WHEN `.MD` FILES ARE CREATED OR CHANGED, RUN THE PROJECT'S CONFIGURED MARKDOWN LINT CHECK AGAINST THEM WHEN AVAILABLE AND HONOR THE REPOSITORY CONFIGURATION. DO NOT INVENT COMMANDS. IF NONE EXIST, RECORD SKIPPED WITH REASON. WRITE VERIFICATION RESULTS TO THE PATCH TEMPLATE AND THE SESSION CONTEXT. IF A REQUIRED CHECK FAILS, REPORT FAIL AND RETURN TO PLAN UNLESS THE FAILURE IS OUTSIDE SCOPE AND EXPLICITLY ACCEPTED!
 
 For partial-scope patches, the verification gate checks only the scoped items. Pending review items are not verified and remain untouched in the working tree.
 
@@ -160,7 +160,7 @@ When the patch contains a confirmed bug, the verification gate runs two extra ro
 - **Regression baseline (expected FAIL):** PASS|FAIL/SKIPPED -- <command or n/a> -- <note or SKIPPED reason>.
 - **Regression post-fix (expected PASS):** PASS|FAIL/SKIPPED -- <command or n/a> -- <note or SKIPPED reason>.
 
-<MUST>Each row is mandatory for every confirmed bug in the patch. A row with `SKIPPED` must carry a concrete reason and the nearest feasible substitute; an unjustified `SKIPPED` is a gate FAIL. A full-suite result is not accepted in either row; the row must name the targeted regression test.</MUST>
+EACH ROW IS MANDATORY FOR EVERY CONFIRMED BUG IN THE PATCH. A ROW WITH `SKIPPED` MUST CARRY A CONCRETE REASON AND THE NEAREST FEASIBLE SUBSTITUTE; AN UNJUSTIFIED `SKIPPED` IS A GATE FAIL. A FULL-SUITE RESULT IS NOT ACCEPTED IN EITHER ROW; THE ROW MUST NAME THE TARGETED REGRESSION TEST!
 
 ### Commit/push gate (PATCH trigger)
 
@@ -320,12 +320,12 @@ A session with no file edits does not auto-close; the user closes it explicitly 
 
 ### Hard rules (commit/push)
 
-<MUST>No commit or push without the ask when edits were made (breach).</MUST>
+NO COMMIT OR PUSH WITHOUT THE ASK WHEN EDITS WERE MADE (BREACH)!
 Do not stage files outside the session's edited-file set (H9).
 Do not print or log remote URLs unless sanitized (credentials redacted and verified absent); remote names only (H1).
 Do not force-push (H3: destructive ops).
 Do not run `git clean`, `git reset --hard`, `git checkout --`, `git restore`, or `git stash` (H9: destroys work).
-<MUST>The gate is not a phase: it runs inside PATCH after verification and inside DIRECT before completion. The pre-ask smoke above is a gate-internal verification step, never a phase and never a second REVIEW pass.</MUST>
+THE GATE IS NOT A PHASE: IT RUNS INSIDE PATCH AFTER VERIFICATION AND INSIDE DIRECT BEFORE COMPLETION. THE PRE-ASK SMOKE ABOVE IS A GATE-INTERNAL VERIFICATION STEP, NEVER A PHASE AND NEVER A SECOND REVIEW PASS!
 
 ## Leftover Handling
 
@@ -350,4 +350,4 @@ Before commit gate, delete repo-local temp files not in PATCH edited-file set. O
 
 4. **Gate** -- the PATCH verification gate reports PASS only if the audit completes (leftovers found and deleted, or none found). A failure to run the audit is a gate FAIL.
 
-<MUST>No PATCH conclusion while the leftover audit fails. The PATCH verification gate must complete the leftover audit (detect and auto-delete repo-local temp files per this section) before concluding. A missing or failed audit is a gate FAIL.</MUST>
+NO PATCH CONCLUSION WHILE THE LEFTOVER AUDIT FAILS. THE PATCH VERIFICATION GATE MUST COMPLETE THE LEFTOVER AUDIT (DETECT AND AUTO-DELETE REPO-LOCAL TEMP FILES PER THIS SECTION) BEFORE CONCLUDING. A MISSING OR FAILED AUDIT IS A GATE FAIL!

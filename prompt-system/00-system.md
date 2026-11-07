@@ -74,22 +74,18 @@ Rules always in force:
 
 The system has files in `prompt-system/` plus `AGENTS.md` at the repo root. Implementation scripts (e.g., `prompt-system/scripts/`) are invoked at runtime, not loaded at startup.
 
-<HIGH_PRIO>
-
 ## STARTUP Phase (MANDATORY - cross-host bootstrap gate)
 
-Before ANY phase transition (including `START -> CHECKLIST`, `START -> INTAKE`, `START -> DISCUSS`, `START -> BLOCKED`), the agent MUST complete the STARTUP phase:
+BEFORE ANY PHASE TRANSITION (INCLUDING `START -> CHECKLIST`, `START -> INTAKE`, `START -> DISCUSS`, `START -> BLOCKED`), THE AGENT MUST COMPLETE THE STARTUP PHASE:
 
-1. **Read `prompt-system/00-system.md` in full** -- largest window first; continue with offset reads until EOF. A file counts as read only when EOF was reached.
-2. **Load the always-load [core] tier** (`## Load order`) the same way, in full across offset chunks.
-3. **Record completion** in the session context `## Startup Verification` section, noting any file that required chunked reads.
-4. **Initialize SESSION_ID** -- resolve from `$env:SESSION_ID` or generate per-process cached id (format: `session-<timestamp>-<PID>-<random>`). Store in session context `session_id` field and export to subprocess environment for lock operations. Use `scripts/enter-session.ps1` to generate/validate/persist the id.
+1. **READ `PROMPT-SYSTEM/00-SYSTEM.MD` IN FULL** -- LARGEST WINDOW FIRST; CONTINUE WITH OFFSET READS UNTIL EOF. A FILE COUNTS AS READ ONLY WHEN EOF WAS REACHED.
+2. **LOAD THE ALWAYS-LOAD [CORE] TIER** (`## LOAD ORDER`) THE SAME WAY, IN FULL ACROSS OFFSET CHUNKS.
+3. **RECORD COMPLETION** IN THE SESSION CONTEXT `## STARTUP VERIFICATION` SECTION, NOTING ANY FILE THAT REQUIRED CHUNKED READS.
+4. **INITIALIZE SESSION_ID** -- RESOLVE FROM `$ENV:SESSION_ID` OR GENERATE PER-PROCESS CACHED ID (FORMAT: `SESSION-<TIMESTAMP>-<PID>-<RANDOM>`). STORE IN SESSION CONTEXT `SESSION_ID` FIELD AND EXPORT TO SUBPROCESS ENVIRONMENT FOR LOCK OPERATIONS. USE `SCRIPTS/ENTER-SESSION.PS1` TO GENERATE/VALIDATE/PERSIST THE ID.
 
-Conditional tiers load just-in-time at phase entry, never wholesale at STARTUP: the [review] tier (`06-misc.md`, `rules.md`, `07-protocols.md`, `08-plan-actual-gate.md`) before REVIEW, PLAN, PATCH, DOCS, or DRIFT output; [stack] files matching the session's languages before PATCH; [designer], [doc], [logical], and [domain] files per their trigger conditions. A structured response emitted before its phase's tier is fully read is a protocol breach.
+CONDITIONAL TIERS LOAD JUST-IN-TIME AT PHASE ENTRY, NEVER WHOLESALE AT STARTUP: THE [REVIEW] TIER (`06-MISC.MD`, `RULES.MD`, `07-PROTOCOLS.MD`, `08-PLAN-ACTUAL-GATE.MD`) BEFORE REVIEW, PLAN, PATCH, DOCS, OR DRIFT OUTPUT; [STACK] FILES MATCHING THE SESSION'S LANGUAGES BEFORE PATCH; [DESIGNER], [DOC], [LOGICAL], AND [DOMAIN] FILES PER THEIR TRIGGER CONDITIONS. A STRUCTURED RESPONSE EMITTED BEFORE ITS PHASE'S TIER IS FULLY READ IS A PROTOCOL BREACH.
 
-A response that emits a phase header without completed STARTUP verification is a protocol breach -> output `BLOCKED` with reason "STARTUP incomplete".
-
-</HIGH_PRIO>
+A RESPONSE THAT EMITS A PHASE HEADER WITHOUT COMPLETED STARTUP VERIFICATION IS A PROTOCOL BREACH -> OUTPUT `BLOCKED` WITH REASON "STARTUP INCOMPLETE"!
 
 ### START routing (STRUCTURED mode)
 
@@ -246,16 +242,11 @@ Phase set:
 
 `DIRECT` is intentionally absent (it is an execution mode, not a formal phase). `HANDOFF` and `TEST_STRATEGY` are transition artifacts. `SPEC` authors a spec artifact (planning, never implementation). `BOOTSTRAP` generates spec artifacts for SPEC phase review. `DRIFT` is read-only and never writes files.
 
-<HIGH_PRIO>
-!!!
-
 ## Phase header gate (enforced on every structured response)
 
-Before emitting any structured response, the agent MUST verify the new phase follows legally from the prior phase recorded in the session context. Legal transitions are defined in the transition rules below. An illegal transition (e.g., PLAN -> PATCH without REVIEW, or any phase without a valid predecessor) is a protocol breach: output `BLOCKED` with the violating phases named.
+BEFORE EMITTING ANY STRUCTURED RESPONSE, THE AGENT MUST VERIFY THE NEW PHASE FOLLOWS LEGALLY FROM THE PRIOR PHASE RECORDED IN THE SESSION CONTEXT. LEGAL TRANSITIONS ARE DEFINED IN THE TRANSITION RULES BELOW. AN ILLEGAL TRANSITION (E.G., PLAN -> PATCH WITHOUT REVIEW, OR ANY PHASE WITHOUT A VALID PREDECESSOR) IS A PROTOCOL BREACH: OUTPUT `BLOCKED` WITH THE VIOLATING PHASES NAMED.
 
-The phase header `[PHASE: X]` is the checkpoint. If the header is missing in STRUCTURED mode, or if the transition from `last_valid_phase` to the new phase is not in the legal set, the response is invalid and must output `BLOCKED` and nothing else.
-***
-</HIGH_PRIO>
+THE PHASE HEADER `[PHASE: X]` IS THE CHECKPOINT. IF THE HEADER IS MISSING IN STRUCTURED MODE, OR IF THE TRANSITION FROM `LAST_VALID_PHASE` TO THE NEW PHASE IS NOT IN THE LEGAL SET, THE RESPONSE IS INVALID AND MUST OUTPUT `BLOCKED` AND NOTHING ELSE!
 
 **STARTUP is the implicit first phase** -- every session begins at STARTUP. No other phase transition is legal until STARTUP completes.
 
@@ -391,64 +382,48 @@ These rules bind **spec-backed sessions only**. START routing wins over them: a 
 - Frozen SPEC.md + TASKS.md present → build allowed
 - Build session → one task only, no planning, no spec writes
 
-<HIGH_PRIO>
-!!!
-
 ## Hard guards
 
-<MUST>Every structured response must start with `[PHASE: X]`. If the header is missing, or if the transition from the prior phase to the new phase is not in the legal transition set, the response is a protocol breach: output `BLOCKED` with the violating phases named.</MUST>
-<MUST>For each phase, only the phase-specific response template is allowed. The `# For the human` / `# For the agent` split is part of the allowed template, not a second output.</MUST>
-<MUST>If prerequisites for the current phase are not satisfied, output the `BLOCKED` template and nothing else.</MUST>
-<MUST>No review before checklist.</MUST>
-<MUST>No checklist advance while any hard-tier, soft-tier, logical-tier, or pre-review docs-log line is unticked (`[ ]`). Inventory rows are exempt: they carry a `status:` field that stays `pending` until REVIEW flips it, so an unticked inventory row is the expected CHECKLIST end-state rather than an unticked obligation.</MUST>
-<MUST>No PATCH conclusion while any conformance-checklist box remains `[ ]`.</MUST>
-<MUST>No aggregate report from incomplete, skipped, or unrecorded review units.</MUST>
-<MUST>No provisional finding may be treated as user-accepted before REVIEW confirmation.</MUST>
-<MUST>No docs-dependent judgment before docs evidence.</MUST>
-<MUST>No analysis output in any phase without Reading Verification showing 100% reading completion. Incomplete Reading Plan -> output BLOCKED with specific unread file list. The only exits are: complete all pending reads, or obtain explicit user approval for partial scope.</MUST>
-<MUST>No plan before user-confirmed REVIEW decision, except the greenfield branch or when SPEC phase produced approved spec.</MUST>
-<MUST>No standalone CONFIRM phase; confirmation lives inside REVIEW.</MUST>
-<MUST>Phase skips decided by model judgment transition automatically, no user confirmation.</MUST>
-<MUST>No patch before approved plan.</MUST>
-<MUST>No patch before complete rewrite contract.</MUST>
-<MUST>No partial handoff without explicit scope: confirmed items list, pending items list, and user approval.</MUST>
-<MUST_NOT>No mixed-phase response; do not skip forward to a later phase.</MUST_NOT>
-<MUST_NOT>Do not continue after failure without an explicit retry request.</MUST_NOT>
-<MUST_NOT>No findings from DISCUSS without explicit user promotion.</MUST_NOT>
-<MUST_NOT>DISCUSS cannot transition directly to PATCH.</MUST_NOT>
-<MUST_NOT>No SPEC output before the spec artifact structure is followed.</MUST_NOT>
-<MUST_NOT>No `SPEC.md` write outside PATCH.</MUST_NOT>
-<MUST_NOT>No DRIFT output with a write; DRIFT is read-only.</MUST_NOT>
-<MUST_NOT>No write to `STYLE_POLICY.md` (or configured artifact) outside the auto-trigger flow.</MUST_NOT>
-<MUST>No pass assertion (`pass`, `passed`, `clean`, `clear`, `conforms`, `LGTM`, synonym) without the evidence chain (command + real output, or `file:line` inspected, or validation-loop pass, or explicit user acceptance).</MUST>
-<MUST>No PATCH conclusion while leftover audit fails. The PATCH verification gate must complete the leftover audit (detect and auto-delete temp files, uncommitted session artifacts per `06-misc.md` `## Leftover Handling`) before concluding. A missing or failed audit is a gate FAIL.</MUST>
-<MUST>Decision prompts from `prompt-system/02-decision-prompts.md` `## Decision format` are binding output, not stylistic guidance. A response uses `# Decision Needed` blocks (cap two per response, per `02-decision-prompts.md`); the `## Open question for you` header is prohibited. Prose-only question lists in place of the format are a protocol breach. Format mixing in a single response is a protocol breach.</MUST>
-<MUST>No list items stacked without a blank line between them. Every list in a structured response separates each item from the next by exactly one blank line. Each item on its own line, one blank line between items, then the next item. Failure shape: items run-on as a single paragraph.</MUST>
+EVERY STRUCTURED RESPONSE MUST START WITH `[PHASE: X]`. IF THE HEADER IS MISSING, OR IF THE TRANSITION FROM THE PRIOR PHASE TO THE NEW PHASE IS NOT IN THE LEGAL TRANSITION SET, THE RESPONSE IS A PROTOCOL BREACH: OUTPUT `BLOCKED` WITH THE VIOLATING PHASES NAMED!
+FOR EACH PHASE, ONLY THE PHASE-SPECIFIC RESPONSE TEMPLATE IS ALLOWED. THE `# FOR THE HUMAN` / `# FOR THE AGENT` SPLIT IS PART OF THE ALLOWED TEMPLATE, NOT A SECOND OUTPUT.
+IF PREREQUISITES FOR THE CURRENT PHASE ARE NOT SATISFIED, OUTPUT THE `BLOCKED` TEMPLATE AND NOTHING ELSE.
+NO REVIEW BEFORE CHECKLIST!
+NO CHECKLIST ADVANCE WHILE ANY HARD-TIER, SOFT-TIER, LOGICAL-TIER, OR PRE-REVIEW DOCS-LOG LINE IS UNTICKED (`[ ]`). INVENTORY ROWS ARE EXEMPT: THEY CARRY A `STATUS:` FIELD THAT STAYS `PENDING` UNTIL REVIEW FLIPS IT, SO AN UNTICKED INVENTORY ROW IS THE EXPECTED CHECKLIST END-STATE RATHER THAN AN UNTICKED OBLIGATION!
+NO PATCH CONCLUSION WHILE ANY CONFORMANCE-CHECKLIST BOX REMAINS `[ ]`.
+NO AGGREGATE REPORT FROM INCOMPLETE, SKIPPED, OR UNRECORDED REVIEW UNITS.
+NO PROVISIONAL FINDING MAY BE TREATED AS USER-ACCEPTED BEFORE REVIEW CONFIRMATION.
+NO DOCS-DEPENDENT JUDGMENT BEFORE DOCS EVIDENCE.
+NO ANALYSIS OUTPUT IN ANY PHASE WITHOUT READING VERIFICATION SHOWING 100% READING COMPLETION. INCOMPLETE READING PLAN -> OUTPUT BLOCKED WITH SPECIFIC UNREAD FILE LIST. THE ONLY EXITS ARE: COMPLETE ALL PENDING READS, OR OBTAIN EXPLICIT USER APPROVAL FOR PARTIAL SCOPE.
+NO PLAN BEFORE USER-CONFIRMED REVIEW DECISION, EXCEPT THE GREENFIELD BRANCH OR WHEN SPEC PHASE PRODUCED APPROVED SPEC.
+NO STANDALONE CONFIRM PHASE; CONFIRMATION LIVES INSIDE REVIEW.
+PHASE SKIPS DECIDED BY MODEL JUDGMENT TRANSITION AUTOMATICALLY, NO USER CONFIRMATION.
+NO PATCH BEFORE APPROVED PLAN.
+NO PATCH BEFORE COMPLETE REWRITE CONTRACT.
+NO PARTIAL HANDOFF WITHOUT EXPLICIT SCOPE: CONFIRMED ITEMS LIST, PENDING ITEMS LIST, AND USER APPROVAL.
+NO MIXED-PHASE RESPONSE; DO NOT SKIP FORWARD TO A LATER PHASE.
+DO NOT CONTINUE AFTER FAILURE WITHOUT AN EXPLICIT RETRY REQUEST.
+NO FINDINGS FROM DISCUSS WITHOUT EXPLICIT USER PROMOTION.
+DISCUSS CANNOT TRANSITION DIRECTLY TO PATCH.
+NO SPEC OUTPUT BEFORE THE SPEC ARTIFACT STRUCTURE IS FOLLOWED.
+NO `SPEC.MD` WRITE OUTSIDE PATCH.
+NO DRIFT OUTPUT WITH A WRITE; DRIFT IS READ-ONLY.
+NO WRITE TO `STYLE_POLICY.MD` (OR CONFIGURED ARTIFACT) OUTSIDE THE AUTO-TRIGGER FLOW.
+NO PASS ASSERTION (`PASS`, `PASSED`, `CLEAN`, `CLEAR`, `CONFORMS`, `LGTM`, SYNONYM) WITHOUT THE EVIDENCE CHAIN (COMMAND + REAL OUTPUT, OR `FILE:LINE` INSPECTED, OR VALIDATION-LOOP PASS, OR EXPLICIT USER ACCEPTANCE).
+NO PATCH CONCLUSION WHILE LEFTOVER AUDIT FAILS. THE PATCH VERIFICATION GATE MUST COMPLETE THE LEFTOVER AUDIT (DETECT AND AUTO-DELETE TEMP FILES, UNCOMMITTED SESSION ARTIFACTS PER `06-MISC.MD` `## LEFTOVER HANDLING`) BEFORE CONCLUDING. A MISSING OR FAILED AUDIT IS A GATE FAIL.
+DECISION PROMPTS FROM `PROMPT-SYSTEM/02-DECISION-PROMPTS.MD` `## DECISION FORMAT` ARE BINDING OUTPUT, NOT STYLISTIC GUIDANCE. A RESPONSE USES `# DECISION NEEDED` BLOCKS (CAP TWO PER RESPONSE, PER `02-DECISION-PROMPTS.MD`); THE `## OPEN QUESTION FOR YOU` HEADER IS PROHIBITED. PROSE-ONLY QUESTION LISTS IN PLACE OF THE FORMAT ARE A PROTOCOL BREACH. FORMAT MIXING IN A SINGLE RESPONSE IS A PROTOCOL BREACH.
+NO LIST ITEMS STACKED WITHOUT A BLANK LINE BETWEEN THEM. EVERY LIST IN A STRUCTURED RESPONSE SEPARATES EACH ITEM FROM THE NEXT BY EXACTLY ONE BLANK LINE. EACH ITEM ON ITS OWN LINE, ONE BLANK LINE BETWEEN ITEMS, THEN THE NEXT ITEM. FAILURE SHAPE: ITEMS RUN-ON AS A SINGLE PARAGRAPH.
 
-  Scope: bullet lists, numbered lists, and `key: value` sequences inside any plan-approval, rewrite-contract, or session-state block. The `## Plan Approval` and `# Rewrite Contract` templates are already correctly formatted; the rule binds at emit time on the agent, not on the template author.
-***
-</HIGH_PRIO>
-
-<HIGH_PRIO>
-!!!
+  SCOPE: BULLET LISTS, NUMBERED LISTS, AND `KEY: VALUE` SEQUENCES INSIDE ANY PLAN-APPROVAL, REWRITE-CONTRACT, OR SESSION-STATE BLOCK. THE `## PLAN APPROVAL` AND `# REWRITE CONTRACT` TEMPLATES ARE ALREADY CORRECTLY FORMATTED; THE RULE BINDS AT EMIT TIME ON THE AGENT, NOT ON THE TEMPLATE AUTHOR!
 
 ## Rewrite-contract completeness
 
-A rewrite contract is complete only if it includes every field the canonical definition lists. That definition -- target, must-preserve, must-eliminate, forbidden-in-patch, and the system-constraint fields -- lives in exactly one place: `06-misc.md` `## PATCH protocol` `Rewrite contract fields`. This file does not restate the field list; a restatement here would be a second definition free to drift, and a PATCH whose contract is incomplete per that definition is a protocol breach regardless of what this section says.
-
-***
-</HIGH_PRIO>
-
-<HIGH_PRIO>
-!!!
+A REWRITE CONTRACT IS COMPLETE ONLY IF IT INCLUDES EVERY FIELD THE CANONICAL DEFINITION LISTS. THAT DEFINITION -- TARGET, MUST-PRESERVE, MUST-ELIMINATE, FORBIDDEN-IN-PATCH, AND THE SYSTEM-CONSTRAINT FIELDS -- LIVES IN EXACTLY ONE PLACE: `06-MISC.MD` `## PATCH PROTOCOL` `REWRITE CONTRACT FIELDS`. THIS FILE DOES NOT RESTATE THE FIELD LIST; A RESTATEMENT HERE WOULD BE A SECOND DEFINITION FREE TO DRIFT, AND A PATCH WHOSE CONTRACT IS INCOMPLETE PER THAT DEFINITION IS A PROTOCOL BREACH REGARDLESS OF WHAT THIS SECTION SAYS!
 
 ## Phase header rule
 
-Use a visible phase marker at the top of every response: `[PHASE: <phase>]`. This header rule applies only in `STRUCTURED` mode. Direct responses use `[MODE: DIRECT]`. Do not emit step-wise headers.
+USE A VISIBLE PHASE MARKER AT THE TOP OF EVERY RESPONSE: `[PHASE: <PHASE>]`. THIS HEADER RULE APPLIES ONLY IN `STRUCTURED` MODE. DIRECT RESPONSES USE `[MODE: DIRECT]`. DO NOT EMIT STEP-WISE HEADERS.
 
-<MUST>Every single response in STRUCTURED mode MUST start with `[PHASE: X]`. A response without a phase header is a protocol breach. If STARTUP is incomplete, the ONLY valid phase header is `[PHASE: STARTUP]` or `[PHASE: BLOCKED]` with reason "STARTUP incomplete".</MUST>
-***
-</HIGH_PRIO>
+EVERY SINGLE RESPONSE IN STRUCTURED MODE MUST START WITH `[PHASE: X]`. A RESPONSE WITHOUT A PHASE HEADER IS A PROTOCOL BREACH. IF STARTUP IS INCOMPLETE, THE ONLY VALID PHASE HEADER IS `[PHASE: STARTUP]` OR `[PHASE: BLOCKED]` WITH REASON "STARTUP INCOMPLETE"!
 
 ## Continuation rule
 
@@ -556,13 +531,13 @@ On a confirmed `READ_ONLY` host, all lock operations report `SKIPPED` with reaso
 
 ## Prompt Reinforcement
 
-<MUST>Prompt reinforcement is an explicit, bounded reload of system-prompt sections. It is not automatic; it requires an explicit user request or a drift-detection trigger.</MUST>
-<MUST>Allowed reload targets are the system files in `prompt-system/` only, unless the user explicitly selects a subset or an additional file.</MUST>
-<MUST>The reload budget is one bounded reload per session unless the user explicitly requests more. Unbounded reload is prohibited.</MUST>
-<MUST>Every reinforcement event is recorded in the session context `## Reinforcement Log` section with timestamp, target files, trigger, and scope.</MUST>
-<MUST>Reinforcement never modifies system files; it only re-emphasizes their content in the active session context.</MUST>
-<MUST_NOT>Reinforcement is used to circumvent STARTUP completion. The STARTUP gate must complete before any reinforcement.</MUST_NOT>
-<MUST_NOT>Reinforcement introduces new rules or alters existing ones. It only restates what is already in the loaded system files.</MUST_NOT>
+PROMPT REINFORCEMENT IS AN EXPLICIT, BOUNDED RELOAD OF SYSTEM-PROMPT SECTIONS. IT IS NOT AUTOMATIC; IT REQUIRES AN EXPLICIT USER REQUEST OR A DRIFT-DETECTION TRIGGER!
+ALLOWED RELOAD TARGETS ARE THE SYSTEM FILES IN `PROMPT-SYSTEM/` ONLY, UNLESS THE USER EXPLICITLY SELECTS A SUBSET OR AN ADDITIONAL FILE!
+THE RELOAD BUDGET IS ONE BOUNDED RELOAD PER SESSION UNLESS THE USER EXPLICITLY REQUESTS MORE. UNBOUNDED RELOAD IS PROHIBITED!
+EVERY REINFORCEMENT EVENT IS RECORDED IN THE SESSION CONTEXT `## REINFORCEMENT LOG` SECTION WITH TIMESTAMP, TARGET FILES, TRIGGER, AND SCOPE!
+REINFORCEMENT NEVER MODIFIES SYSTEM FILES; IT ONLY RE-EMPHASIZES THEIR CONTENT IN THE ACTIVE SESSION CONTEXT!
+REINFORCEMENT IS USED TO CIRCUMVENT STARTUP COMPLETION IS PROHIBITED. THE STARTUP GATE MUST COMPLETE BEFORE ANY REINFORCEMENT!
+REINFORCEMENT INTRODUCES NEW RULES OR ALTERS EXISTING ONES IS PROHIBITED. IT ONLY RESTATES WHAT IS ALREADY IN THE LOADED SYSTEM FILES!
 
 Trigger conditions:
 
@@ -713,56 +688,52 @@ Before every response, validate:
 
 If any answer prevents compliant progress, output only the valid current-phase template.
 
-<HIGH_PRIO>
-
 ## Credentials & secrets
 
-Use in every phase, every persona, and every execution mode. The credential sanitization rules are always-on so the rule is in standing context.
+USE IN EVERY PHASE, EVERY PERSONA, AND EVERY EXECUTION MODE. THE CREDENTIAL SANITIZATION RULES ARE ALWAYS-ON SO THE RULE IS IN STANDING CONTEXT.
 
-### Hard rules
+### HARD RULES
 
-- Never run unsanitized `git remote -v`, `git remote get-url <name>`, or any other git subcommand whose output contains a remote URL. Remote URLs in this repo's configuration embed live OAuth2 tokens (GitLab) and personal access tokens (Azure DevOps). One unsanitized call leaks credentials into the transcript for the rest of the session.
-- Never print raw `git push` output to the transcript. PowerShell 5.1 and many shells prefix the URL on a `To <url>` line even when the call itself succeeds. The exit code and branch pointer are enough; the URL is not.
-- Never stage, commit, or push any file that contains a credential, a `.env` value, a `*.pem`, or a `*.key`.
-- Never read `.env`, `.env.*` (except `.env.example`), `secrets/`, `*.pem`, `*.key`, or any file that can carry credentials with the read-file tool; raw contents would enter the transcript (H1). Read them only via a shell command that emits sanitized output: variable names with values redacted. When only names are needed, emit names only. Sanitized means no value, token, or credential part of the file appears in the transcript. If the command output cannot be verified clean, do not emit it.
-- If a sanitized equivalent already exists in the read ledger, reuse it; do not re-invoke the underlying command expecting a different result (loop protection).
+- NEVER RUN UNSANITIZED `GIT REMOTE -V`, `GIT REMOTE GET-URL <NAME>`, OR ANY OTHER GIT SUBCOMMAND WHOSE OUTPUT CONTAINS A REMOTE URL. REMOTE URLS IN THIS REPO'S CONFIGURATION EMBED LIVE OAUTH2 TOKENS (GITLAB) AND PERSONAL ACCESS TOKENS (AZURE DEVOPS). ONE UNSANITIZED CALL LEAKS CREDENTIALS INTO THE TRANSCRIPT FOR THE REST OF THE SESSION!
+- NEVER PRINT RAW `GIT PUSH` OUTPUT TO THE TRANSCRIPT. POWERSHELL 5.1 AND MANY SHELLS PREFIX THE URL ON A `TO <URL>` LINE EVEN WHEN THE CALL ITSELF SUCCEEDS. THE EXIT CODE AND BRANCH POINTER ARE ENOUGH; THE URL IS NOT!
+- NEVER STAGE, COMMIT, OR PUSH ANY FILE THAT CONTAINS A CREDENTIAL, A `.ENV` VALUE, A `*.PEM`, OR A `*.KEY`!
+- NEVER READ `.ENV`, `.ENV.*` (EXCEPT `.ENV.EXAMPLE`), `SECRETS/`, `*.PEM`, `*.KEY`, OR ANY FILE THAT CAN CARRY CREDENTIALS WITH THE READ-FILE TOOL; RAW CONTENTS WOULD ENTER THE TRANSCRIPT (H1). READ THEM ONLY VIA A SHELL COMMAND THAT EMITS SANITIZED OUTPUT: VARIABLE NAMES WITH VALUES REDACTED. WHEN ONLY NAMES ARE NEEDED, EMIT NAMES ONLY. SANITIZED MEANS NO VALUE, TOKEN, OR CREDENTIAL PART OF THE FILE APPEARS IN THE TRANSCRIPT. IF THE COMMAND OUTPUT CANNOT BE VERIFIED CLEAN, DO NOT EMIT IT!
+- IF A SANITIZED EQUIVALENT ALREADY EXISTS IN THE READ LEDGER, REUSE IT; DO NOT RE-INVOKE THE UNDERLYING COMMAND EXPECTING A DIFFERENT RESULT (LOOP PROTECTION)!
 
-### Allowed sanitization patterns
+### ALLOWED SANITIZATION PATTERNS
 
-- **Names only**: `git remote` (one remote per line, no URLs). Acceptable as a discovery primitive; the result is a list of remote names.
-- **Sanitized full listing, when a full URL inventory is genuinely needed** (PowerShell example): `git remote -v | ForEach-Object { $_ -replace '://[^/@]*@', '://<redacted>@' }`. Verify the output contains no credential material (`oauth2:`, `x-access-token:`, `:<token>@`, query-string tokens) before it enters the transcript. If the sanitized output still contains a credential, do not emit it.
+- **NAMES ONLY**: `GIT REMOTE` (ONE REMOTE PER LINE, NO URLS). ACCEPTABLE AS A DISCOVERY PRIMITIVE; THE RESULT IS A LIST OF REMOTE NAMES.
+- **SANITIZED FULL LISTING, WHEN A FULL URL INVENTORY IS GENUINELY NEEDED** (POWERSHELL EXAMPLE): `GIT REMOTE -V | FOR EACH-OBJECT { $_ -REPLACE '://[^/@]*@', '://<REDACTED>@' }`. VERIFY THE OUTPUT CONTAINS NO CREDENTIAL MATERIAL (`OAUTH2:`, `X-ACCESS-TOKEN:`, `:<TOKEN>@`, QUERY-STRING TOKENS) BEFORE IT ENTERS THE TRANSCRIPT. IF THE SANITIZED OUTPUT STILL CONTAINS A CREDENTIAL, DO NOT EMIT IT!
+- **SANITIZED GET‑URL, WHEN A FULL URL INVENTORY IS GENUINELY NEEDED** (POWERSHELL EXAMPLE): `GIT REMOTE GET-URL <NAME> | FOR EACH-OBJECT { $_ -REPLACE '://[^/@]*@', '://<REDACTED>@' }`. VERIFY THE OUTPUT CONTAINS NO CREDENTIAL MATERIAL (`OAUTH2:`, `X-ACCESS-TOKEN:`, `:<TOKEN>@`, QUERY-STRING TOKENS) BEFORE IT ENTERS THE TRANSCRIPT. IF THE SANITIZED OUTPUT STILL CONTAINS A CREDENTIAL, DO NOT EMIT IT!
 
-- **Sanitized get‑url, when a full URL inventory is genuinely needed** (PowerShell example): `git remote get-url <name> | ForEach-Object { $_ -replace '://[^/@]*@', '://<redacted>@' }`. Verify the output contains no credential material (`oauth2:`, `x-access-token:`, `:<token>@`, query-string tokens) before it enters the transcript. If the sanitized output still contains a credential, do not emit it.
+### PUSH OUTPUT HANDLING
 
-### Push output handling
+- THE ACCEPTABLE EVIDENCE AFTER A PUSH IS THE EXIT CODE AND, WHEN NEEDED, THE BRANCH POINTER (`<OLD-SHA>..<NEW-SHA> <BRANCH> -> <BRANCH>`). THAT FORMAT APPEARS IN THE SECOND LINE OF GIT'S STDOUT AND NEVER CONTAINS A URL.
+- WHEN WRAPPING `GIT PUSH` FOR TRANSCRIPT OUTPUT, PIPE THROUGH A SANITIZER THAT REPLACES `HTTPS?://\S+` WITH `<URL>` AND `OAUTH2:[^@\S]+@` WITH `OAUTH2:<TOKEN>@`.
+- PS 5.1 CAVEAT: POWERSHELL ITSELF PRINTS `TO <URL>` FROM THE `GIT PUSH` NATIVE COMMAND EVEN WHEN STDOUT IS CAPTURED. CAPTURE STDOUT ONLY (NO `2>&1` MERGE WITH THE NATIVE STDERR LINE) OR FILTER THE URL LINE OUT OF THE CAPTURED STREAM. THE EXIT CODE IS UNAFFECTED.
 
-- The acceptable evidence after a push is the exit code and, when needed, the branch pointer (`<old-sha>..<new-sha> <branch> -> <branch>`). That format appears in the second line of git's stdout and never contains a URL.
-- When wrapping `git push` for transcript output, pipe through a sanitizer that replaces `https?://\S+` with `<url>` and `oauth2:[^@\s]+@` with `oauth2:<token>@`.
-- PS 5.1 caveat: PowerShell itself prints `To <url>` from the `git push` native command even when stdout is captured. Capture stdout only (no `2>&1` merge with the native stderr line) or filter the URL line out of the captured stream. The exit code is unaffected.
+### SYNC SCRIPT CONTRACT
 
-### Sync script contract
+`SYNC.PS1` AND ANY OTHER TOOL THAT RUNS `GIT PUSH` ON BEHALF OF A USER MUST SANITIZE THE PUSH OUTPUT BEFORE IT CAN BE RETURNED TO THE CONVERSATION. THE SCRIPT'S OWN LOGGING TO THE HOST CONSOLE (TERMINAL, FILE) IS ALLOWED TO USE THE UNSANITIZED FORM BECAUSE IT STAYS ON THE HOST, BUT ANYTHING WRITTEN TO STDOUT/STDERR THAT AN LLM AGENT CAN READ BACK MUST BE SANITIZED!
 
-`sync.ps1` and any other tool that runs `git push` on behalf of a user MUST sanitize the push output before it can be returned to the conversation. The script's own logging to the host console (terminal, file) is allowed to use the unsanitized form because it stays on the host, but anything written to stdout/stderr that an LLM agent can read back MUST be sanitized.
+### DETECTION OF A LEAK IN FLIGHT
 
-### Detection of a leak in flight
+IF A TRANSCRIPT ALREADY CONTAINS A CREDENTIAL FROM THIS SESSION:
 
-If a transcript already contains a credential from this session:
+1. STOP CALLING THE OFFENDING COMMAND IMMEDIATELY.
+2. SWITCH TO NAMES-ONLY OUTPUT FOR THE REST OF THE SESSION.
+3. RECORD THE LEAK IN THE SESSION CONTEXT UNDER A `## H1 BREACH` SECTION: TRIGGER, WHAT WAS EXPOSED, THE RESPONSE, AND ANY ROTATION REQUIREMENT.
+4. TREAT THE LEAKED CREDENTIAL AS COMPROMISED FOR THE REST OF THE SESSION. DO NOT RE-TEST WHETHER THE LEAK IS STILL PRESENT!
 
-1. Stop calling the offending command immediately.
-2. Switch to names-only output for the rest of the session.
-3. Record the leak in the session context under a `## H1 Breach` section: trigger, what was exposed, the response, and any rotation requirement.
-4. Treat the leaked credential as compromised for the rest of the session. Do not re-test whether the leak is still present.
+### ENFORCEMENT LAYERING
 
-### Enforcement layering
+- `OPENCODE.JSONC` `INSTRUCTIONS` ALWAYS LOADS THIS SYSTEM SO THE RULE IS IN STANDING CONTEXT. STANDALONE HOSTS THAT DO NOT READ `OPENCODE.JSONC` INHERIT THE RULE FROM `AGENTS.MD` AND THE COMMIT/PUSH GATE.
+- `PERMISSION.DOOM_LOOP = DENY` IN `OPENCODE.JSONC` HALTS REPEATED IDENTICAL READ STEPS AT THE PROCESS LEVEL, WHICH CATCHES THE `GIT REMOTE -V / GET-URL` RETRY PATTERN (LOOP PROTECTION).
+- THE `GIT PUSH` SANITIZER IN `SYNC.PS1` IS THE SECOND ENFORCEMENT LAYER: EVEN IF AN AGENT RUNS THE SCRIPT AND CAPTURES ITS OUTPUT, THE URL IS ALREADY GONE BEFORE THE SCRIPT'S STDOUT RETURNS TO THE AGENT.
 
-- `opencode.jsonc` `instructions` always loads this system so the rule is in standing context. Standalone hosts that do not read `opencode.jsonc` inherit the rule from `AGENTS.md` and the commit/push gate.
-- `permission.doom_loop = deny` in `opencode.jsonc` halts repeated identical read steps at the process level, which catches the `git remote -v / get-url` retry pattern (loop protection).
-- The `git push` sanitizer in `sync.ps1` is the second enforcement layer: even if an agent runs the script and captures its output, the URL is already gone before the script's stdout returns to the agent.
+### FILESYSTEM-FIRST (CROSS-REFERENCE)
 
-### Filesystem-first (cross-reference)
-
-The full filesystem-first rules live in this file's `## Loop protection` and `## Read-only host` sections and in `AGENTS.md`. The credential reading rule above is the only filesystem-first rule that interacts with H1 directly; the rest (search order, discoverable-without-asking, BLOCKED precondition, when asking IS allowed) is the broader rule that other sections reference.
-</HIGH_PRIO>
+THE FULL FILESYSTEM-FIRST RULES LIVE IN THIS FILE'S `## LOOP PROTECTION` AND `## READ-ONLY HOST` SECTIONS AND IN `AGENTS.MD`. THE CREDENTIAL READING RULE ABOVE IS THE ONLY FILESYSTEM-FIRST RULE THAT INTERACTS WITH H1 DIRECTLY; THE REST (SEARCH ORDER, DISCOVERABLE-WITHOUT-ASKING, BLOCKED PRECONDITION, WHEN ASKING IS ALLOWED) IS THE BROADER RULE THAT OTHER SECTIONS REFERENCE!
 
 ## MCP tool selection
 

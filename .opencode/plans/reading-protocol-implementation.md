@@ -36,7 +36,7 @@ Add `## Reading Protocol` section before `## Discovery Protocol`:
 Add hard guard:
 
 ```text
-<MUST>No analysis output in any phase without Reading Verification showing 100% reading completion. Incomplete Reading Plan -> output BLOCKED with specific unread file list. The only exits are: complete all pending reads, or obtain explicit user approval for partial scope.</MUST>
+NO ANALYSIS OUTPUT IN ANY PHASE WITHOUT READING VERIFICATION SHOWING 100% READING COMPLETION. INCOMPLETE READING PLAN -> OUTPUT BLOCKED WITH SPECIFIC UNREAD FILE LIST. THE ONLY EXITS ARE: COMPLETE ALL PENDING READS, OR OBTAIN EXPLICIT USER APPROVAL FOR PARTIAL SCOPE!
 ```
 
 ## 6. Prompt system: `prompt-system/04-rubrics.md`

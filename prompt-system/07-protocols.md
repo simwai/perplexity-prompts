@@ -515,17 +515,17 @@ Implementation: `prompt-system/scripts/session-locks.ps1` (dot-source it). Regre
 
 ### Hard rules
 
-<MUST>A session must hold a lock on a path before writing that path.</MUST>
+A SESSION MUST HOLD A LOCK ON A PATH BEFORE WRITING THAT PATH!
 
-<MUST>A session must not hold a lock on any path outside its `## Edited Files` ledger.</MUST>
+A SESSION MUST NOT HOLD A LOCK ON ANY PATH OUTSIDE ITS `## EDITED FILES` LEDGER!
 
-<MUST>Lock acquisition is required on first write, not only in PATCH. Reads never acquire locks. The cost of this choice is a read-then-write race, which the commit gate re-checks at staging time.</MUST>
+LOCK ACQUISITION IS REQUIRED ON FIRST WRITE, NOT ONLY IN PATCH. READS NEVER ACQUIRE LOCKS. THE COST OF THIS CHOICE IS A READ-THEN-WRITE RACE, WHICH THE COMMIT GATE RE-CHECKS AT STAGING TIME!
 
-<MUST_NOT>Auto-steal a live peer lock. Contention always surfaces a user-owned decision set; the library returns options and never selects one.</MUST_NOT>
+AUTO-STEAL A LIVE PEER LOCK. CONTENTION ALWAYS SURFACES A USER-OWNED DECISION SET; THE LIBRARY RETURNS OPTIONS AND NEVER SELECTS ONE!
 
-<MUST_NOT>Release a lock whose `owner` is not this session id. Releasing a peer's lock is refused rather than repaired, because it would erase an ownership record while that session is still writing.</MUST_NOT>
+RELEASE A LOCK WHOSE `OWNER` IS NOT THIS SESSION ID. RELEASING A PEER'S LOCK IS REFUSED RATHER THAN REPAIRED, BECAUSE IT WOULD ERASE AN OWNERSHIP RECORD WHILE THAT SESSION IS STILL WRITING!
 
-<MUST_NOT>Treat an expired lock as live. A lock older than the TTL is abandoned and may be reclaimed, which is not auto-stealing: no live session can be holding it.</MUST_NOT>
+TREAT AN EXPIRED LOCK AS LIVE. A LOCK OLDER THAN THE TTL IS ABANDONED AND MAY BE RECLAIMED, WHICH IS NOT AUTO-STEALING: NO LIVE SESSION CAN BE HOLDING IT!
 
 ### Where enforcement lives
 
