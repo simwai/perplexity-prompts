@@ -59,6 +59,7 @@ Rules always in force:
 - `prompt-system/12-api-architecture.md` (REST/HTTP API design protocol; activated by T-25)
 - `prompt-system/13-library-selection.md` (third-party library adoption protocol; activated by T-26)
 - `prompt-system/14-app-lifecycle.md` (long-running app start/smoke/shutdown protocol; activated by T-27)
+- `prompt-system/15-project-documentation.md` (project documentation protocol: `project-management/` scaffold, phase-artifact gate, session-close record; activated by T-28)
 
 **Load when BabaDesigner active [designer]**
 
@@ -268,6 +269,7 @@ Conditional rules:
 - Run the upstream pipeline only when the user supplies a goal or project spec without a concrete target.
 - Greenfield branch: an explicit from-scratch request, or a target repo with no existing source files, records CHECKLIST and REVIEW as deterministic greenfield skips; PLAN establishes conventions from the INTAKE `Stack/Style:` field, PATCH scaffolds.
 - Skip `SPRINT` on explicit user request; see `07-protocols.md` `## Scrum planning` for the canonical pipeline shape.
+- Upstream-phase artifact gate: when the upstream pipeline runs (or SPEC is entered), an upstream phase may not complete its transition until its artifact is written into `project-management/` (or `SKIPPED`-delivered per the READ_ONLY host contract); the gate table is canonical in `prompt-system/15-project-documentation.md` `## Phase-to-artifact gate` (T-28). The gate is inert when the pipeline is skipped (concrete target at session start, greenfield): the skip and its one-line reason are recorded.
 - Skip `SPEC` when the user supplied a concrete target without asking for a spec artifact, or when the goal carries no spec-authoring need.
 - Skip `DESIGN_PLAN` when the target has no frontend UI/UX work and the user did not request a design review; proceed `PLAN -> HANDOFF -> PATCH`.
 - Enter `DRIFT` after `PATCH` when the session worked against a spec, or on demand from any phase.
@@ -320,11 +322,11 @@ Skip: CHECKLIST, DOCS, BLOCKED, FAILURE, INTAKE, BACKLOG, SPRINT, TASK_PLAN, SPE
 - `STARTUP -> BOOTSTRAP`: target is a codebase with no SPEC.md, or explicit `/bootstrap` command.
 - `STARTUP -> DISCUSS`: user input is exploratory.
 - `STARTUP -> BLOCKED`: STARTUP incomplete (system files not loaded).
-- `INTAKE -> BACKLOG`: goal and at least one success criterion recorded.
-- `BACKLOG -> SPRINT`: backlog non-empty, every item sized and ICE-scored.
-- `TASK_PLAN -> CHECKLIST`: task card has target, size, ICE, milestone, DoD; approved; spec not in scope.
-- `TASK_PLAN -> SPEC`: spec-authoring in scope.
-- `SPEC -> CHECKLIST`: spec artifact complete (title, status, version, story with GWT, FR, SC) and approved.
+- `INTAKE -> BACKLOG`: goal and at least one success criterion recorded; roadmap artifact written (`project-management/ROADMAP_<YYYY-MM>.md` plus the `ROADMAPS.md` index), or SKIPPED-delivered on READ_ONLY.
+- `BACKLOG -> SPRINT`: backlog non-empty, every item sized and ICE-scored; `BACKLOG.md` artifact written or SKIPPED-delivered.
+- `TASK_PLAN -> CHECKLIST`: task card has target, size, ICE, milestone, DoD; approved; spec not in scope; task card appended to the sprint file.
+- `TASK_PLAN -> SPEC`: spec-authoring in scope; task card appended to the sprint file.
+- `SPEC -> CHECKLIST`: spec artifact complete (title, status, version, story with GWT, FR, SC) and approved; `specs/SPEC.md` artifact written.
 - `BOOTSTRAP -> SPEC`: bootstrap generated Draft spec artifacts, ready for human review and promotion.
 - `CHECKLIST -> DOCS`: docs-sensitive judgment in scope.
 - `CHECKLIST -> REVIEW`: docs out of scope, every checklist checkbox ticked.
@@ -352,8 +354,8 @@ Skip: CHECKLIST, DOCS, BLOCKED, FAILURE, INTAKE, BACKLOG, SPRINT, TASK_PLAN, SPE
 - `START -> INTAKE`: goal or project spec without a concrete target.
 - `START -> DISCUSS`: user input is exploratory.
 - `START -> BLOCKED`: required inputs missing; BLOCKED is valid only after a filesystem search failed to locate the input.
-- `SPRINT -> TASK_PLAN`: explicit user request to skip SPRINT (`INTAKE -> BACKLOG -> TASK_PLAN`).
-- `BACKLOG -> TASK_PLAN`: explicit user request to skip SPRINT.
+- `SPRINT -> TASK_PLAN`: sprint plan approved (selected items, board, stories, ICE, completion criteria); `SPRINT_<NNN>.md` plus the `SPRINTS.md` index row written or SKIPPED-delivered.
+- `BACKLOG -> TASK_PLAN`: explicit user request to skip SPRINT; `BACKLOG.md` artifact written or SKIPPED-delivered.
 - `TASK_PLAN -> HANDOFF`: approved task card when spec-authoring is out of scope (ScrumMaster -> CHECKLIST handoff route).
 - `SPEC -> HANDOFF`: approved spec artifact; handoff to spec review (BabaSensei route).
 - `INTAKE -> HANDOFF`: BabaCEO route -- goal framing complete, handoff to BabaScrumMaster.
@@ -406,6 +408,7 @@ NO FINDINGS FROM DISCUSS WITHOUT EXPLICIT USER PROMOTION.
 DISCUSS CANNOT TRANSITION DIRECTLY TO PATCH.
 NO SPEC OUTPUT BEFORE THE SPEC ARTIFACT STRUCTURE IS FOLLOWED.
 NO `SPEC.MD` WRITE OUTSIDE PATCH.
+NO UPSTREAM-PHASE TRANSITION (INTAKE -> BACKLOG, BACKLOG -> SPRINT, BACKLOG -> TASK_PLAN, SPRINT -> TASK_PLAN, TASK_PLAN -> SPEC, TASK_PLAN -> CHECKLIST, SPEC -> CHECKLIST) WITHOUT ITS ARTIFACT WRITTEN, OR `SKIPPED`-DELIVERED ON A READ_ONLY HOST, PER `PROMPT-SYSTEM/15-PROJECT-DOCUMENTATION.MD` `## PHASE-TO-ARTIFACT GATE` (T-28).
 NO DRIFT OUTPUT WITH A WRITE; DRIFT IS READ-ONLY.
 NO WRITE TO `STYLE_POLICY.MD` (OR CONFIGURED ARTIFACT) OUTSIDE THE AUTO-TRIGGER FLOW.
 NO PASS ASSERTION (`PASS`, `PASSED`, `CLEAN`, `CLEAR`, `CONFORMS`, `LGTM`, SYNONYM) WITHOUT THE EVIDENCE CHAIN (COMMAND + REAL OUTPUT, OR `FILE:LINE` INSPECTED, OR VALIDATION-LOOP PASS, OR EXPLICIT USER ACCEPTANCE).

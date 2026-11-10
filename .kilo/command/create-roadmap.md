@@ -10,15 +10,15 @@ Before acting:
 
 1. Read `prompt-system/00-system.md` (orchestrator + routing + execution modes).
 2. Read the session context from the conversation carrier (resolved per `prompt-system/03-output-and-state.md` `## Session State (In-Session Only)`).
-3. Read `project-management/config.md` to determine the active backend (`file` or `trello`).
+3. Read `project-management/CONFIG.md` to determine the active backend (`file` or `trello`).
 
 Then:
 
 ## File-based backend (`backend: file`)
 
-1. Determine the next roadmap number: scan `project-management/roadmap-*.md`, increment the highest sequence.
+1. Determine the roadmap period: the current `YYYY-MM`. If `project-management/ROADMAP_<YYYY-MM>.md` already exists, emit `[PHASE: BLOCKED]` with: "roadmap for this period exists; edit it with /edit-roadmap."
 2. Read `prompt-system/03-output-and-state.md` `## SPEC` template for the artifact structure.
-3. Write `project-management/roadmap-YYYY-MM.md` with this structure:
+3. Write `project-management/ROADMAP_<YYYY-MM>.md` with this structure:
 
 ```markdown
 ---
@@ -47,14 +47,14 @@ phases:
 - **Done**: No items yet.
 ```
 
-1. Emit confirmation: roadmap created at `project-management/roadmap-NNN.md`.
+1. Emit confirmation: roadmap created at `project-management/ROADMAP_<YYYY-MM>.md`.
 
 ## Trello backend (`backend: trello`)
 
 1. Call `list_boards` to check for existing roadmaps and get board IDs.
 2. Call `add_list_to_board` (or create a new board via the Trello API) with phase names as lists: `Backlog`, `Planned`, `In Progress`, `Done`.
 3. Create a summary card in the first list with the roadmap title and description.
-4. Record the board ID and list IDs in `project-management/config.md` under a `roadmaps` section.
+4. Record the board ID and list IDs in `project-management/CONFIG.md` under a `roadmaps` section.
 5. Emit confirmation with the Trello board URL and list IDs.
 
 ## Common

@@ -9,7 +9,7 @@ Enter DISCUSS mode. $ARGUMENTS is the topic or question to discuss; when empty, 
 
 Before acting:
 
-1. Read `prompt-system/00-system.md` `## Discuss mode`.
+1. Read `prompt-system/07-protocols.md` `## Discuss mode`.
 2. Read the conversation history for session state, including `prior_phase` if entering DISCUSS from an active phase.
 
 Then:

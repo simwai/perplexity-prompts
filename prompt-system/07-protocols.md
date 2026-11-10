@@ -19,6 +19,8 @@ Categories and canonical examples:
 - **Scratch and WIP files**: `*.tmp`, `*.bak`, `*.orig`, `scratch/`, `todo.md`, `WIP.md` at repo root.
 - **OS temp directory**: the only allowed throwaway location is the OS temp directory (`$env:TEMP` on Windows, `/tmp` on Unix). Do not create repo-local temp directories for scratch work; use the OS temp directory instead.
 
+`project-management/` files are source-of-truth documentation, not artifacts: they are tracked, committed, and never gitignored or auto-deleted by the leftover audit. The scaffold and its write rules live in `prompt-system/15-project-documentation.md` `## Write rules`.
+
 ### Review rule
 
 During REVIEW, flag any of the following as a soft-tier finding (S-artifact):
@@ -717,7 +719,7 @@ On exit:
 
 ## Scrum planning
 
-Scrum planning covers the optional upstream pipeline (INTAKE, BACKLOG, SPRINT, TASK_PLAN, SPEC) owned by BabaScrumMaster.
+Scrum planning covers the optional upstream pipeline (INTAKE, BACKLOG, SPRINT, TASK_PLAN, SPEC) owned by BabaScrumMaster. Each phase persists its artifact into the `project-management/` scaffold before its transition fires, per `prompt-system/15-project-documentation.md` `## Phase-to-artifact gate` (T-28): INTAKE the roadmap, BACKLOG the backlog file, SPRINT the sprint file, TASK_PLAN the task card in the sprint file, SPEC the spec artifact.
 
 ### Optionality routing
 
@@ -770,6 +772,10 @@ Every backlog item carries one milestone tag. A milestone is reached when all ta
 - MVP-first precedence: MVP ordering applies WITHIN a story. Across stories, ICE remains the deterministic pull order (then size, then milestone date).
 - Test-first flag: a plan-level ordering signal that test work precedes implementation for that task. It is never a test-authoring grant: tests are authored only on user request or via the BabaTester / UltraProQuant handoff.
 - Split rule still applies: a grouped card at L size, or with multiple independent deliverables, MUST be split (or carry an explicit one-line rationale).
+
+## Project documentation
+
+The project-documentation protocol (canonical `project-management/` scaffold, phase-to-artifact gate, lazy scaffold initialization, session-close record, memory-worth write) lives in `prompt-system/15-project-documentation.md` (load on demand when the session runs the upstream pipeline, authors a spec, or closes; T-28). Cross-team requirement mechanics remain in this file (`## Cross-team requirements`).
 
 ## App lifecycle
 

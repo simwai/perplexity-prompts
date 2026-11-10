@@ -70,11 +70,11 @@ flowchart TD
 | Phase | Purpose | Template | Key Output |
 |---|---|---|---|
 | `STARTUP` | Load system, verify files loaded | — | Loaded files |
-| `INTAKE` | Goal, stack, scope, criteria, milestones | `INTAKE` | Approved intake → BACKLOG |
-| `BACKLOG` | ICE-prioritized items by milestone | `BACKLOG` | Backlog → SPRINT |
-| `SPRINT` | Selected items, board, criteria | `SPRINT` | Sprint plan → TASK_PLAN |
-| `TASK_PLAN` | Single task card with DoD | `TASK_PLAN` | Task card → CHECKLIST/SPEC |
-| `SPEC` | Author spec artifact at `SPEC.md` | `SPEC` | Spec artifact → CHECKLIST |
+| `INTAKE` | Goal, stack, scope, criteria, milestones | `INTAKE` | Approved intake + roadmap artifact → BACKLOG |
+| `BACKLOG` | ICE-prioritized items by milestone | `BACKLOG` | `BACKLOG.md` → SPRINT |
+| `SPRINT` | Selected items, board, criteria | `SPRINT` | `SPRINT_NNN.md` → TASK_PLAN |
+| `TASK_PLAN` | Single task card with DoD | `TASK_PLAN` | Task card in sprint file → CHECKLIST/SPEC |
+| `SPEC` | Author spec artifact at `project-management/specs/SPEC.md` | `SPEC` | Spec artifact → CHECKLIST |
 | `CHECKLIST` | File inventory, criteria, docs log | `CHECKLIST` | Inventory + verdict → DOCS/REVIEW |
 | `DOCS` | Version/evidence for judgments | `DOCS` | Verified evidence → REVIEW |
 | `REVIEW` | Score findings, mitigations, decision | `REVIEW` | Confirmed items → PLAN |
@@ -100,6 +100,23 @@ flowchart TD
 | `SPRINT` | Explicit user request | Skip reason recorded |
 
 **Rule:** Model-decided skips auto-advance; never pause for confirmation.
+
+---
+
+## Project Documentation Gate
+
+When the upstream pipeline runs (a goal without a concrete target), each phase writes its artifact into `project-management/` before its transition fires; a missing artifact blocks the transition with `BLOCKED` naming the path. On a READ_ONLY host the write reports `SKIPPED: file-edit -- READ_ONLY host` and the complete contents are delivered. The scaffold initializes lazily and idempotently when `project-management/` is missing (adopt-and-extend when present), and session close appends `EVALUATIONS.md` plus one grounded memory-worth entry.
+
+| Phase | Artifact |
+|---|---|
+| `INTAKE` | `project-management/ROADMAP_<YYYY-MM>.md` |
+| `BACKLOG` | `project-management/BACKLOG.md` |
+| `SPRINT` | `project-management/SPRINT_<NNN>.md` |
+| `TASK_PLAN` | task card appended to the sprint file |
+| `SPEC` | `project-management/specs/SPEC.md` |
+| session close | `project-management/EVALUATIONS.md` + memory-worth entry |
+
+Protocol: [`prompt-system/15-project-documentation.md`](../prompt-system/15-project-documentation.md)
 
 ---
 

@@ -42,10 +42,10 @@ This section defines which fields in each phase template are required and which 
 Template field requirements:
 
 - `BLOCKED`: `Reason` [required]; `Needed now` [required]; `Next required user action` [required]; `Status` [required].
-- `INTAKE`: `Goal` [required]; `Stack/Style` [required]; `Scope` [required]; `Target repo` [required]; `Success criteria` [required]; `Milestones` [required]; `Open questions` [optional]; `Status` [required].
-- `BACKLOG`: `Milestone map` [required]; `Items` [required]; `Split candidates` [optional]; `Allowed next move` [required].
-- `SPRINT`: `Sprint` [required]; `Serves milestone` [required]; `Selected items` [required]; `Board` [required]; `Completion criteria` [required]; `Allowed next move` [required].
-- `TASK_PLAN`: `Task` [required]; `Target` [required]; `Type` [required]; `Scope` [required]; `Size` [required]; `ICE` [required]; `Milestone` [required]; `Story` [optional]; `MVP` [optional]; `Test-first` [optional]; `Definition of done` [required]; `Allowed next move` [required].
+- `INTAKE`: `Goal` [required]; `Stack/Style` [required]; `Scope` [required]; `Target repo` [required]; `Success criteria` [required]; `Milestones` [required]; `Open questions` [optional]; `Artifact` [required]; `Status` [required].
+- `BACKLOG`: `Milestone map` [required]; `Items` [required]; `Split candidates` [optional]; `Artifact` [required]; `Allowed next move` [required].
+- `SPRINT`: `Sprint` [required]; `Serves milestone` [required]; `Selected items` [required]; `Board` [required]; `Completion criteria` [required]; `Artifact` [required]; `Allowed next move` [required].
+- `TASK_PLAN`: `Task` [required]; `Target` [required]; `Type` [required]; `Scope` [required]; `Size` [required]; `ICE` [required]; `Milestone` [required]; `Story` [optional]; `MVP` [optional]; `Test-first` [optional]; `Definition of done` [required]; `Artifact` [required]; `Allowed next move` [required].
 - `CHECKLIST`: `Target scope` [required]; `Focus` [required]; `Scope` [required]; `File inventory` [required]; `Pre-review docs log` [required]; `Hard tier` [required]; `Soft tier` [required]; `Logical tier` [optional]; `Verification` [required]; `Batch log` [optional]; `Verdict` [required].
 - `SPEC`: `Path` [required]; `Status` [required]; `User Stories` [required]; `Functional Requirements` [required]; `Success Criteria` [required]; `Assumptions` [optional]; `Open Questions` [optional]; `Allowed next move` [required].
 - `DOCS`: `In scope` [required]; `Verified evidence` [required]; `Status` [required].
@@ -119,6 +119,7 @@ Milestones:
 - [id] -- [name] -- [target] -- [definition of done]
 Open questions:
 - [question]
+Artifact: [project-management path] -- [written | delivered | skipped: READ_ONLY host]
 Status: Ready for backlog / Blocked pending input
 ```
 
@@ -136,6 +137,8 @@ Items (sorted by ICE, highest first):
 
 Split candidates (L size or multiple deliverables):
 - [id] -- [proposed split]
+
+Artifact: [project-management/BACKLOG.md] -- [written | delivered | skipped: READ_ONLY host]
 
 Allowed next move:
 - Approve backlog
@@ -163,6 +166,8 @@ Board:
 Completion criteria:
 - [criterion]
 
+Artifact: [project-management/SPRINT_NNN.md] -- [written | delivered | skipped: READ_ONLY host]
+
 Allowed next move:
 - Approve sprint / Pull first task
 ```
@@ -187,6 +192,8 @@ MVP: [core|supporting] -- [mvp-first ordering within the story]
 Test-first: [yes|no] -- [plan-level ordering signal; never a test-authoring grant]
 Definition of done:
 - [criterion]
+
+Artifact: [task card appended to project-management/SPRINT_NNN.md] -- [written | delivered | skipped: READ_ONLY host]
 
 Allowed next move:
 - Approve task -> enter SPEC (when spec-authoring is in scope) or CHECKLIST
@@ -903,30 +910,25 @@ Retry: Reply with "retry" to resume at the last valid phase.
 
 Four-session workflow for spec-first development:
 
-### 1. Spec Session (BabaSensei / BabaScrumMaster) → SPEC.md
+### 1. Spec Session (BabaSensei / BabaScrumMaster) → spec artifact
 
-
-Goal → spec session produces `SPEC.md` at repo root with frontmatter: `status: draft`, `version`, `frozen_at`. Contains: Overview, Scope (in/out), Interfaces, Data, Security, Failure modes, Open questions, Task list.
+Goal → spec session produces `project-management/specs/SPEC.md` with frontmatter: `status: draft`, `version`, `frozen_at`. Contains: Overview, Scope (in/out), Interfaces, Data, Security, Failure modes, Open questions, Task list.
 
 ### 2. Spec Review Session (BabaReviewer) → frozen SPEC.md
 
-
-BabaReviewer reviews spec against rubrics, produces frozen `SPEC.md` with `status: frozen`. Freezes scope, interfaces, data models.
+BabaReviewer reviews spec against rubrics, produces frozen `project-management/specs/SPEC.md` with `status: frozen`. Freezes scope, interfaces, data models.
 
 ### 3. Planning Session → TASKS.md
 
-
-Planning session reads frozen `SPEC.md`, produces `TASKS.md` table: #, Task, Spec § (by section id), ≤LOC, Acceptance, Done. Tasks ordered, unique id, spec-section reference, ≤500 LOC, one-line acceptance. If task unsizable → spec bug, stop planning.
+Planning session reads frozen `project-management/specs/SPEC.md`, produces `project-management/specs/TASKS.md` table: #, Task, Spec § (by section id), ≤LOC, Acceptance, Done. Tasks ordered, unique id, spec-section reference, ≤500 LOC, one-line acceptance. If task unsizable → spec bug, stop planning.
 
 ### 4. Build Session (BabaDev) → one task
 
-
-BabaDev reads `SPEC.md` + `TASKS.md`, executes one task per build session. Smallest architecturally sound fix. Runs verification gates.
+BabaDev reads `specs/SPEC.md` + `specs/TASKS.md`, executes one task per build session. Smallest architecturally sound fix. Runs verification gates.
 
 ### `/close` command → EVALUATIONS.md
 
-
-User types `/close`, agent appends entry to `EVALUATIONS.md` (creates with header "# Session Evaluations" if missing). Entry format: timestamp, session type, task, files changed, verification, outcome, notes.
+User types `/close`, agent appends entry to `project-management/EVALUATIONS.md` (creates with header "# Session Evaluations" if missing) per the session-close protocol in `prompt-system/15-project-documentation.md` `## Session-close protocol`. Entry format: timestamp, session id, session type, task, files changed, verification, outcome, evaluation verdict, artifact paths.
 
 ## Session State (In-Session Only)
 
@@ -970,6 +972,7 @@ closed_by: [user request|automatic]
 mode_at_close: [DIRECT|STRUCTURED]
 final_commit: [sha|none]
 working_tree: [clean|dirty: paths]
+Artifacts reviewed: [project-management/ paths or "none"]
 
 Dimensions:
 

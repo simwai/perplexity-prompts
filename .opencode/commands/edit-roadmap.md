@@ -8,16 +8,16 @@ Before acting:
 
 1. Read `prompt-system/00-system.md` (orchestrator + routing + execution modes).
 2. Read the session context from the conversation carrier (resolved per `prompt-system/03-output-and-state.md` `## Session State (In-Session Only)`).
-3. Read `project-management/config.md` to determine the active backend.
+3. Read `project-management/CONFIG.md` to determine the active backend.
 
 Then:
 
 ## File-based backend (`backend: file`)
 
-1. Locate the roadmap file: `project-management/roadmap-NNN.md` matching the ID or title in `$ARGUMENTS`.
+1. Locate the roadmap file: `project-management/ROADMAP_<YYYY-MM>.md`, or the `ROADMAP_*.md` file matching the ID or title in `$ARGUMENTS`.
 2. If not found, emit `[PHASE: BLOCKED]` with: "roadmap not found. Use /create-roadmap to make a new one."
 3. Parse the roadmap frontmatter and current phases/items.
-4. Read `project-management/roadmap-NNN.md` in full to get current state.
+4. Read the located roadmap file in full to get current state.
 5. Apply the edit action from `$ARGUMENTS`:
    - Add phase: append a new phase entry to the frontmatter and markdown body.
    - Add item: add an item to the specified phase's items array.

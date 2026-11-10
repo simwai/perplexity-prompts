@@ -10,23 +10,22 @@ Before acting:
 
 1. Read `prompt-system/00-system.md` (orchestrator + routing + execution modes).
 2. Read the session context from the conversation carrier (resolved per `prompt-system/03-output-and-state.md` `## Session State (In-Session Only)`).
-3. Read `project-management/config.md` to determine the active backend.
+3. Read `project-management/CONFIG.md` to determine the active backend.
 4. Read `prompt-system/07-protocols.md` `## Scrum planning` for blocker and risk conventions.
 
 Then:
 
 ## File-based backend (`backend: file`)
 
-1. Scan all `project-management/sprint-*.md` files. If none found, emit `[PHASE: BLOCKED]` with: "no sprints found. Create one with /create-sprint-phase-plan."
+1. Scan all `project-management/SPRINT_*.md` files. If none found, emit `[PHASE: BLOCKED]` with: "no sprints found. Create one with /create-sprint-phase-plan."
 2. For each sprint file:
    - Read the file in full.
-   - Parse stories and their blockers arrays.
-   - Parse tasks and their status fields.
+   - Parse the `## Stories`, `## Board`, and `## Task card` sections.
    - Identify:
-     - Stories with `blockers: []` that are non-empty in the blockers array
-     - Tasks marked as blocked or stalled
-     - Stories that are "In Progress" for longer than expected (no completion date, no recent updates)
-     - Stories with size S/M/L but ICE below a threshold (e.g., ICE < 20) suggesting risk
+     - Items flagged with a blocker in the board or on a story line
+     - Task cards marked as blocked or stalled
+     - Items that are "In progress" for longer than expected (no completion criterion met, no recent updates)
+     - Selected items with no `## ICE` line, or ICE below a threshold (e.g., ICE < 20) suggesting risk
 3. Categorize each blocker by severity:
     - **Blocking**: story cannot proceed, downstream tasks depend on it
     - **Advisory**: risk or potential delay, but work can continue around it
@@ -38,20 +37,20 @@ Blocker Report
 ==============
 
 ## Blocking
-- [Sprint-NNN] [Story-US-001] <description>
+- [SPRINT_<NNN>] [ST-XX] <description>
   - Blocker: <reason>
   - Impact: <what's affected>
   - Recommended action: <suggestion>
 
 ## Advisory
-- [Sprint-NNN] [Story-US-002] <description>
+- [SPRINT_<NNN>] [ST-XX] <description>
   - Risk: <description>
   - Mitigation: <suggestion>
 
 ## Summary
 - X blocking, Y advisory blockers across Z sprints
 - Stalled items: <count>
-- Unsized stories: <count>
+- Unsized items: <count>
 ```
 
 1. If no blockers found, emit: "No blockers found. All sprints are clear."

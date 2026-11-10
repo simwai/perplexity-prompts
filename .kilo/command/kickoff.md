@@ -15,7 +15,7 @@ Before acting:
 1. Read `prompt-system/00-system.md` (orchestrator + routing).
 2. Read `prompt-system/07-protocols.md` `## Scrum planning` (ICE, size bands, split rule, milestones, task-card enrichment).
 3. Read `prompt-system/01-personas.md` § BabaScrumMaster.
-4. Read `project-management/config.md` for the active backend (`file` or `trello`).
+4. Read `project-management/CONFIG.md` for the active backend (`file` or `trello`).
 5. Read the session context from the conversation carrier; on `target`/`spec_version` mismatch, start a fresh session.
 6. Exit if target repo is greenfield with no visible architecture — `INTAKE` already carries `Stack/Style:`; kickoff still runs, against planned file set.
 
@@ -25,14 +25,14 @@ Emit an abbreviated `[PHASE: INTAKE]` block covering: Goal, Stack/Style, Scope (
 
 ## Stage 2 — Roadmap bootstrap (`/create-roadmap` inline)
 
-Write `project-management/roadmap-YYYY-MM.md` (or Trello board per config) with:
+Write `project-management/ROADMAP_<YYYY-MM>.md` (or Trello board per config) with:
 
 - Backlog lane: decompose the goal into candidate items (aim 4–8 items, one sentence each, tag with milestone). Discovery protocol supplies initial size signals: `rg` counts of referenced modules, estimated LOC band per item.
 - Planned / In Progress / Done lanes: empty.
 
 ## Stage 3 — Sprint bootstrap (`/create-sprint-phase-plan` inline)
 
-Write `project-management/sprint-NNN.md`. Select items from Backlog into the sprint by raw goal order AND explicit size signals. Assign sprint goal and target date default `sprint duration = 2 weeks from today`.
+Write `project-management/SPRINT_<NNN>.md`. Select items from Backlog into the sprint by raw goal order AND explicit size signals. Assign sprint goal and target date default `sprint duration = 2 weeks from today`.
 
 ## Stage 4 — Stories reverse-engineered from sprint items
 
@@ -55,8 +55,8 @@ END the kickoff with ONE `# Decision Needed` block:
 
 # Kickoff Summary
 Goal: <goal>
-Roadmap: project-management/roadmap-YYYY-MM.md (N items)
-Sprint: project-management/sprint-NNN.md (N stories)
+Roadmap: project-management/ROADMAP_<YYYY-MM>.md (N items)
+Sprint: project-management/SPRINT_<NNN>.md (N stories)
 
 # Decision Needed
 Question: approve this bootstrap and enter CHECKLIST with the top-ICE task?

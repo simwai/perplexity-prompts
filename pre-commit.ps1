@@ -253,7 +253,8 @@ $integritySuites = @(
     'prompt-system\scripts\test-decision-format.ps1',
     'prompt-system\scripts\test-registry-drift.ps1',
     'prompt-system\scripts\test-kilo-command-agents.ps1',
-    'prompt-system\scripts\test-manifest-io.ps1'
+    'prompt-system\scripts\test-manifest-io.ps1',
+    'prompt-system\scripts\test-project-documentation.ps1'
 )
 
 $integrityFailed = $false

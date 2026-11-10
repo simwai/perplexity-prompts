@@ -8,7 +8,7 @@ Enter the SPEC phase. `$ARGUMENTS` is optional context; when empty, proceed with
 
 Before acting:
 
-1. Read `prompt-system/00-system.md` `### Prompt-level BLOCKED rules (spec pipeline enforcement)` and `## SPEC phase` rules.
+1. Read `prompt-system/00-system.md` `### Prompt-level BLOCKED rules (spec pipeline enforcement)` and `prompt-system/00-system.md` `## Phase model`.
 2. Read `prompt-system/01-personas.md` `## BabaSensei` for spec-authoring behavior.
 3. Read `prompt-system/03-output-and-state.md` `## SPEC template`.
 4. Verify `startup_verified: true` in session context; if missing, emit `[PHASE: BLOCKED]` with reason "STARTUP incomplete".

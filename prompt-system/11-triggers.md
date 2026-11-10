@@ -232,3 +232,11 @@ Fires at: PATCH verification gate, REVIEW (H11), or on demand from any phase.
 Effect: load `prompt-system/14-app-lifecycle.md` and run the start/wait_ready/smoke/stop lifecycle with recorded evidence; on a READ_ONLY host every step reports `SKIPPED -- <reason>` instead.
 Invokes: App lifecycle protocol -- `prompt-system/14-app-lifecycle.md`; verification gate -- `06-misc.md` `## Verification gate`.
 Dedup/record: smoke outcome recorded once per commit gate (PATCH template Verification section); a re-run requires a state change.
+
+## T-28 -- Project documentation persistence
+
+Detection: session state. The session runs the optional upstream pipeline (full mode: a goal or project spec without a concrete target), enters the SPEC phase, or reaches session close (T-18 auto-close or `/close`) after a full-mode run.
+Fires at: INTAKE entry (after the project style policy auto-trigger resolves), SPEC entry, and session close.
+Effect: load `prompt-system/15-project-documentation.md`; the `project-management/` scaffold initializes at INTAKE when absent and is adopted as-is when present; an upstream phase may not complete its transition until its artifact is written to disk (or SKIPPED-delivered on a READ_ONLY host); session close appends the `EVALUATIONS.md` entry and writes one grounded memory-worth entry.
+Invokes: Project documentation protocol -- `prompt-system/15-project-documentation.md` `## Canonical scaffold`, gate table -- `prompt-system/15-project-documentation.md` `## Phase-to-artifact gate`, scaffold init -- `prompt-system/scripts/init-project-management.ps1`, close protocol -- `06-misc.md` `### Auto-close after commit/push`.
+Dedup/record: fires once per session; scaffold init is idempotent; when the pipeline is not entered (concrete target at session start, greenfield) the gate is inert and the skip reason is recorded.

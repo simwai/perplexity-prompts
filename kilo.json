@@ -35,7 +35,8 @@
         "-y",
         "@playwright/mcp@0.0.80"
       ],
-      "timeout": 30000
+      "timeout": 30000,
+      "disabled": true
     },
     "playwright-headless": {
       "type": "local",
@@ -47,7 +48,8 @@
         "@playwright/mcp@0.0.80",
         "--headless"
       ],
-      "timeout": 30000
+      "timeout": 30000,
+      "disabled": true
     },
     "g-search": {
       "type": "local",
@@ -58,7 +60,8 @@
         "-y",
         "g-search-mcp"
       ],
-      "timeout": 30000
+      "timeout": 30000,
+      "disabled": true
     },
     "arxiv": {
       "type": "local",
@@ -77,7 +80,8 @@
         "tsx",
         ".opencode/packages/memory-worth/mcp-server.ts"
       ],
-      "timeout": 30000
+      "timeout": 30000,
+      "disabled": true
     },
     "exa": {
       "type": "remote",

@@ -10,52 +10,54 @@ Before acting:
 
 1. Read `prompt-system/00-system.md` (orchestrator + routing + execution modes).
 2. Read the session context from the conversation carrier (resolved per `prompt-system/03-output-and-state.md` `## Session State (In-Session Only)`).
-3. Read `project-management/config.md` to determine the active backend.
+3. Read `project-management/CONFIG.md` to determine the active backend.
 4. Read `prompt-system/07-protocols.md` `## Scrum planning` for sprint conventions (ICE scoring, size bands, milestones, task-card enrichment).
+5. Read `prompt-system/15-project-documentation.md` `## Canonical scaffold` for the scaffold layout and `## Phase-to-artifact gate` for the artifact this command satisfies.
 
 Then:
 
 ## File-based backend (`backend: file`)
 
-1. Locate the source roadmap file: `project-management/roadmap-NNN.md`.
+1. Locate the source roadmap file: `project-management/ROADMAP_<YYYY-MM>.md`, or the `ROADMAP_*.md` file matching the roadmap ID/title in `$ARGUMENTS`.
 2. If not found, emit `[PHASE: BLOCKED]` with: "source roadmap not found. Create or identify a roadmap first with /create-roadmap or /edit-roadmap."
-3. Determine the next sprint number: scan `project-management/sprint-*.md`, increment the highest sequence.
-4. Write `project-management/sprint-NNN.md` with this structure:
+3. Determine the next sprint number: scan `project-management/SPRINT_*.md`, increment the highest sequence.
+4. Write `project-management/SPRINT_<NNN>.md` with this structure (the SPRINT template shape from `prompt-system/03-output-and-state.md`; do not invent a second schema):
 
 ```markdown
----
-id: sp-NNN
-roadmap_id: rm-NNN
-sprint_name: <sprint name from $ARGUMENTS or auto-generated>
-target_date: YYYY-MM-DD
-status: active
-stories:
-  - id: US-001
-    goal: |
-    features: []
-    tasks: []
-    blockers: []
-    size: S
-    ice: 0
-    milestone: ""
-    definition_of_done: ""
----
+# Sprint NNN - <sprint name from $ARGUMENTS or auto-generated>
 
-## Sprint Goal
-<sprint goal from $ARGUMENTS>
+Roadmap: [ROADMAP_<YYYY-MM>.md](ROADMAP_<YYYY-MM>.md)
+Sprint goal: <sprint goal from $ARGUMENTS>
+Target date: YYYY-MM-DD.
 
-## Stories
-<!-- Add stories with /edit-sprint-phase-plan -->
+## Selected items (from Backlog, in pull order)
 
-## Milestones
-<!-- Add milestones here -->
+- RM-XX -- <description> [<milestone>] [<size>]
 
-## Definition of Done
-<!-- Add DoD criteria -->
+## Board
 
-## ICE Scoring Framework
+- To do: <item ids>
+- In progress: none
+- Done: none
 
-Each story is scored using ICE = Impact * Confidence * Ease:
+## Stories (parent item tagged, MVP tagged)
+
+- ST-XX [P<n>] <GWT story sentence>. (parent RM-XX, core|supporting)
+
+## ICE (I*C*E, Ease from size band: XS 8-10, S 6-8, M 4-6, L 1-4)
+
+- RM-XX: <impact>*<confidence>*<ease> = <score> (<size>, Ease <e>)
+
+## Completion criteria
+
+- <observable, testable criterion>
+
+## Task card
+
+<!-- /edit-sprint-phase-plan appends the next task card here -->
+```
+
+Each story is scored using `ICE = Impact * Confidence * Ease`:
 
 | Factor | Definition | Scale |
 |---|---|---|
@@ -74,19 +76,7 @@ Size-to-Ease mapping:
 
 Ties are broken by size (smaller first), then by milestone target date.
 
-Each story in the sprint file must include these fields:
-- `size` (XS/S/M/L)
-- `ice` (calculated: impact * confidence * ease)
-- `impact` (1-10)
-- `confidence` (1-10)
-- `milestone` (the milestone tag this story serves)
-- `definition_of_done` (what "reached" means for this story)
-
-## Blockers
-<!-- Track blockers here -->
-```
-
-1. Populate stories from the roadmap's phases/items.
+1. Populate stories from the roadmap's phases/items, then score each story's ICE before finalizing.
 2. Emit confirmation with the sprint file path and story count.
 
 ## Trello backend (`backend: trello`)
@@ -95,7 +85,7 @@ Each story in the sprint file must include these fields:
 2. Create a new board or list for the sprint via `add_list_to_board`.
 3. For each roadmap item, create a card via `add_card_to_list` with the story goal as the card description.
 4. Add labels for priority/size/phase.
-5. Record the sprint board ID in `project-management/config.md`.
+5. Record the sprint board ID in `project-management/CONFIG.md`.
 6. Emit confirmation with the Trello board URL.
 
 ## Common

@@ -10,36 +10,36 @@ Before acting:
 
 1. Read `prompt-system/00-system.md` (orchestrator + routing + execution modes).
 2. Read the session context from the conversation carrier (resolved per `prompt-system/03-output-and-state.md` `## Session State (In-Session Only)`).
-3. Read `project-management/config.md` to determine the active backend.
+3. Read `project-management/CONFIG.md` to determine the active backend.
 
 Then:
 
 ## File-based backend (`backend: file`)
 
-1. If `$ARGUMENTS` specifies a sprint ID/name, locate `project-management/sprint-NNN.md`. Otherwise, scan all `project-management/sprint-*.md` files.
+1. If `$ARGUMENTS` specifies a sprint ID/name, locate `project-management/SPRINT_<NNN>.md`. Otherwise, scan all `project-management/SPRINT_*.md` files.
 2. If no sprints found, emit `[PHASE: BLOCKED]` with: "no sprints found. Create one with /create-sprint-phase-plan."
 3. For each sprint:
    - Read the file in full.
-   - Parse stories and their statuses.
-   - Count: total stories, done stories, in-progress stories, not-started stories.
-   - Count tasks and blockers.
-   - Calculate completion percentage: done_stories / total_stories * 100.
-   - Check ICE scores and note if any story is unsized.
+   - Parse the `## Selected items`, `## Board`, and `## Stories` sections.
+   - Count: selected items, done items (Done lane), in-progress items, not-started items.
+   - Count task cards and flagged blockers.
+   - Calculate completion percentage: done_items / selected_items * 100.
+   - Check the `## ICE` lines and note if any selected item is unsized.
 4. Emit a summary:
 
 ```text
 Sprint Progress Report
 ======================
 < Sprint Name >
-  Target: YYYY-MM-DD | Status: active | Completion: NN%
-  Stories: X total, Y done, Z in progress, W not started
-  Tasks: A done, B pending
+  Target: YYYY-MM-DD | Completion: NN%
+  Items: X selected, Y done, Z in progress, W not started
+  Task cards: A done, B pending
   Blockers: N (list them)
   ICE average: <value>
 ```
 
 1. For all sprints, list them in order with the summary above.
-2. Flag any sprint with 0% completion or all stories unsized as `NEEDS ATTENTION`.
+2. Flag any sprint with 0% completion or with unsized items in `## ICE` as `NEEDS ATTENTION`.
 
 ## Trello backend (`backend: trello`)
 

@@ -244,6 +244,7 @@ Before staging, run `Get-BlockingPeersForPaths` on each path in the session's `#
 - Stage explicit paths from the session's `Edited Files` set only.
 - Never use `git add -A`, `git add -u`, `git add .`, or `git add -f`.
 - Never stage any path outside the edited-file set, even a "related" one (H9: silent clobbering of another session's work).
+- `project-management/` scaffold files are ordinary tracked documentation and ordinary edited files: when the session wrote them they are staged here like any other path, and they are never artifacts for `07-protocols.md` `## Artifact handling` purposes.
 - Staging is self-verifying: `git status --short` must show exactly the session's edited files staged and nothing else before committing.
 
 ### The ask
@@ -282,11 +283,11 @@ After the commit lands (or after commit-only decision), release dependency locks
 
 ### Auto-close after commit/push
 
-When the commit/push gate completes with a user decision (A/B/C) and the session made file edits, the session closes automatically:
+When the commit/push gate completes with a user decision (A/B/C) and the session made file edits, the session closes automatically. When the session ran the upstream pipeline or authored a spec, the documentation close steps in `prompt-system/15-project-documentation.md` `## Session-close protocol` run before step 2: append the `project-management/EVALUATIONS.md` entry and write the one grounded memory-worth entry (both `SKIPPED: file-edit -- READ_ONLY host` with delivered contents on a read-only host).
 
-1. Record `closed_at`, `closed_by: automatic`, `mode_at_close`, `final_commit`, `working_tree`, and `note` in the session context `## Session Close` section.
-2. Delegate to subagent baba-reviewer using the evaluation prompt from `prompt-system/03-output-and-state.md` `## Session evaluation prompt`.
-3. Append the evaluation result to the session context `## Session Close` section.
+1. Record `closed_at`, `closed_by: automatic`, `mode_at_close`, `final_commit`, `working_tree`, `artifact_paths`, and `note` in the session context `## Session Close` section.
+2. Delegate to subagent baba-reviewer using the evaluation prompt from `prompt-system/03-output-and-state.md` `## Session evaluation prompt`, passing `artifact_paths` so the reviewer audits the artifact trail rather than conversation context alone.
+3. Append the evaluation result to the session context `## Session Close` section and to `project-management/EVALUATIONS.md`.
 4. Announce close to the user: session ID, final commit, evaluation verdict, and one-line summary.
 
 A session with no file edits does not auto-close; the user closes it explicitly via `/close` or natural language.

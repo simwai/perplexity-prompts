@@ -9,10 +9,9 @@ Enter the CHECKLIST phase. $ARGUMENTS may name a target scope (file, directory, 
 
 Before acting:
 
-1. Read `prompt-system/00-system.md` `## Checklist` template and `## Discovery Protocol`.
-2. Read `prompt-system/03-output-and-state.md` `## CHECKLIST template`.
-3. Verify `startup_verified: true` in session context; if missing, emit `[PHASE: BLOCKED]` with reason "STARTUP incomplete".
-4. Verify the target scope is known; if the target is a directory or feature area, run relevance discovery (max 15 `rg`/`glob` invocations, max 100 hits) per `07-protocols.md` `## Relevance Discovery`.
+1. Read `prompt-system/03-output-and-state.md` `## CHECKLIST template` and `prompt-system/07-protocols.md` `## Discovery Protocol`.
+2. Verify `startup_verified: true` in session context; if missing, emit `[PHASE: BLOCKED]` with reason "STARTUP incomplete".
+3. Verify the target scope is known; if the target is a directory or feature area, run relevance discovery (max 15 `rg`/`glob` invocations, max 100 hits) per `07-protocols.md` `## Relevance Discovery`.
 
 Then:
 

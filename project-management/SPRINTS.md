@@ -1,42 +1,25 @@
 # SPRINTS
 
-> **Sprint plans** — Index of the sprint plans.
+> **Sprint plans** -- Index of the sprint plans.
 
 ---
 
-## Sprint 001
+## Sprint 001 -- Trust real + proven live
 
 | Field | Value |
 |---|---|
 | Sprint | 001 |
+| File | [SPRINT_001.md](SPRINT_001.md) |
 | Duration | 2 weeks |
-| Goal | Documentation restructuring and optimization |
-
-### Board
-
-| Status | Items |
-|---|---|
-| ✅ Done | Documentation restructuring, SNAKE_UPPER_CASE naming, dark+purple styling, glossary, pre-commit TOC hook |
-| In progress | — |
-| To do | — |
-
-### Completion Criteria
-
-- [x] All new docs files created with SNAKE_UPPER_CASE naming
-- [x] Dark + purple styling applied to Mermaid diagrams
-- [x] Glossary created and embedded in architecture
-- [x] Pre-commit TOC generation configured
-- [x] Old docs files deleted
-- [x] Validation complete
-
----
+| Goal | make trust labels real in retrieval and prove the plugin live against a temp database |
+| Roadmap | [ROADMAP_2026_09.md](ROADMAP_2026_09.md) |
+| Target date | 2026-10-05 |
+| Board | To do: RM-01, RM-02, RM-03 -- In progress: none -- Done: none |
 
 ## Related
 
+- Backlog: [BACKLOG.md](BACKLOG.md)
+
 - Roadmaps: [ROADMAPS.md](ROADMAPS.md)
-
-- Trello integration: [TRELLO_INTEGRATION.md](TRELLO_INTEGRATION.md)
-
-- Backend config: [CONFIG.md](CONFIG.md)
 
 - Overview: [README.md](README.md)

@@ -80,3 +80,21 @@ tool-independent because the core system is a specification, not an application.
       session_id + spec_version match, and a version-drift HALT invalidates
       live Plan Approval (`prompt-system/03-output-and-state.md` `## Session State (In-Session Only)`,
       `prompt-system/07-protocols.md` `## Drift detection`).
+- [x] Upstream-phase artifacts are mandatory: INTAKE, BACKLOG, SPRINT, TASK_PLAN, and
+      SPEC may not complete their transitions until their `project-management/` artifact is
+      written, or `SKIPPED: file-edit -- READ_ONLY host` with the complete contents delivered;
+      the gate table lives in `prompt-system/15-project-documentation.md` `## Phase-to-artifact gate`
+      and is wired as a hard guard and transition prerequisite in `prompt-system/00-system.md`.
+- [x] Session close records the trail: the T-18 auto-close and `/close` append the entry to
+      `project-management/EVALUATIONS.md` and pass `artifact_paths` into the baba-reviewer
+      evaluation, so the audit reads evidence rather than conversation context alone
+      (`prompt-system/03-output-and-state.md` `## Session evaluation prompt`,
+      `prompt-system/06-misc.md` `### Auto-close after commit/push`).
+- [x] Cross-session recall is grounded: one memory-worth `memory_write` per closed session,
+      grounded to the final commit and `project-management/EVALUATIONS.md`, searched before
+      written so an existing entry is updated over duplicated
+      (`prompt-system/15-project-documentation.md` `## Session-close protocol`).
+- [x] The `project-management/` scaffold initializes lazily and idempotently (adopt-and-extend,
+      never overwrites), and the slash-command sources match the scaffold naming (`CONFIG.md`,
+      `ROADMAP_<YYYY-MM>.md`, `SPRINT_<NNN>.md`) and the SPRINT phase-template schema;
+      `prompt-system/scripts/test-project-documentation.ps1` gates the wiring in the commit gate.

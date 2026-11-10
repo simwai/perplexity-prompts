@@ -103,6 +103,53 @@ Get-ChildItem -Path $repoRoot -Filter '*.md' -File |
     Where-Object { $_.Name -ne 'CHANGELOG_ARCHIVE.md' } |
     ForEach-Object { $files += $_ }
 
+# Host adapter surfaces are scanned too. Skills, commands, and agent files
+# under .kilo\, .opencode\, .claude\, and the adapter templates that generate
+# them (adapters\) carry the same load-bearing `file.md` `## Anchor` citations
+# -- these are the pointers the agent follows at runtime. The discuss skill
+# cited `00-system.md` `## Discuss mode`, which lives in 07-protocols.md, and
+# the suites above could not see it because none of these directories were in
+# scope. Optional-if-exists per directory: a deployed target may ship none of
+# them, and the suite must stay runnable from a partial tree (same contract as
+# AGENTS.md above).
+$hostScopes = @('.kilo', '.opencode', '.claude', 'adapters')
+$hostScopeCounts = @{}
+foreach ($scopeName in $hostScopes) {
+    $scopeRoot = Join-Path $repoRoot $scopeName
+    if (-not (Test-Path -LiteralPath $scopeRoot -PathType Container)) { continue }
+    $scopeFiles = @(Get-ChildItem -Path $scopeRoot -Recurse -Filter '*.md' -File)
+    # Two filters, both against the scope-relative path (never the absolute
+    # FullName: an ancestor directory named "plans" must not silently exclude
+    # a whole scope) and both separator-agnostic (so they still match when
+    # pwsh/Linux FullNames use '/').
+    # Vendored and generated subtrees: .gitignore:26 declares node_modules/
+    # and .opencode\ ships a full dependency tree. Unfiltered, the sweep read
+    # ~1100 files outside the repo's control, the suite's verdict depended on
+    # the machine (clean clone vs installed tree), and one vendored README
+    # citation could fail the commit gate on third-party content
+    # (07-protocols.md ## Artifact handling).
+    # Frozen-history stores (plans\ subdirectories): the same carve-out
+    # CHANGELOG_ARCHIVE.md gets -- plan documents cite files and anchors that
+    # have since moved, and rewriting history is not this suite's job.
+    # .kilo\plans\1793105664727-command-skill-rationalization.md:38 carries a
+    # known stale `## Session State` citation; .opencode\plans\ holds the same
+    # class, so the exclusion is symmetric across scopes.
+    $scopeFiles = @($scopeFiles | Where-Object {
+        $rel = $_.FullName.Substring($scopeRoot.Length).TrimStart('\', '/')
+        $rel -notmatch '(^|[\\/])(node_modules|\.cache|dist|build)([\\/]|$)' -and $rel -notmatch '(^|[\\/])plans([\\/]|$)'
+    })
+    $files += $scopeFiles
+    $hostScopeCounts[$scopeName] = $scopeFiles.Count
+    # A present scope that contributes nothing means the mechanism that covers
+    # this surface is broken (a deleted append, a renamed directory) -- the
+    # same silent-hole class the file's own comment describes at the docs\
+    # incident above. An ABSENT scope stays a silent skip; only present-but-
+    # empty fails.
+    if ($scopeFiles.Count -eq 0) {
+        Add-TestFailure "SCOPE EMPTY: host scope '$scopeName' exists but contributed no markdown files after exclusions -- the scan mechanism covering this surface is broken"
+    }
+}
+
 # ── Load-order existence ────────────────────────────────────────────────────
 # Every file the manifest's load order names must exist. The citation checks
 # below only see files somebody cites; a renamed load-order file that nothing
@@ -143,15 +190,17 @@ foreach ($file in $files) {
     }
 }
 
-# ── Bare-anchor audit (advisory, non-blocking) ──────────────────────────────
+# ── Bare-anchor audit (blocking) ────────────────────────────────────────────
 # A backticked `## Anchor` with no preceding `file.md` is ambiguous: it may mean
 # this file, another system file, or a session-context field (`## Edited Files`,
-# `## Plan Approval`) that is not a heading anywhere. Those session-state fields
-# make this check far too noisy to gate on, so it reports and does not fail.
-#
-# It exists because a phantom section is otherwise invisible: `## Loop protection`
-# was cited four times, resolved nowhere, and the blocking pass above could not see
-# it -- two of those citations are self-references with no `file.md` token to pair.
+# `## Plan Approval`) that is not a heading anywhere. The audit gates: an orphan
+# that is neither a real heading anywhere in the corpus nor an allowlisted
+# session-state field name is a phantom pointer, and a phantom pointer is
+# exactly the silent breakage this suite exists to catch -- `## Loop protection`
+# was cited four times, resolved nowhere, while the paired-citation pass above
+# could not see it (two of those citations are self-references with no `file.md`
+# token to pair). Session-state field names live in system-manifest.json
+# bareAnchorAllowlist so the gate stays actionable on system content only.
 $barePattern = [regex]'`#{2,4}\s+([^`]+)`'
 $allHeadings = New-Object 'System.Collections.Generic.HashSet[string]'
 foreach ($file in $files) {
@@ -186,5 +235,6 @@ if ($orphans.Count -gt 0) {
     }
 }
 
-Write-Host "  checked $checked file+anchor citations across $($files.Count) files ($($orphans.Count) phantom, $allowedOrphans allowlisted bare-anchor orphans)"
+$hostScopeSummary = ($hostScopeCounts.Keys | Sort-Object | ForEach-Object { "$($_): $($hostScopeCounts[$_])" }) -join ' | '
+Write-Host "  checked $checked file+anchor citations across $($files.Count) files (host scopes: $hostScopeSummary; $($orphans.Count) phantom, $allowedOrphans allowlisted bare-anchor orphans)"
 exit (Complete-TestRun -SuiteName 'cross-reference integrity')

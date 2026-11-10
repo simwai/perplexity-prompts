@@ -10,26 +10,26 @@ Before acting:
 
 1. Read `prompt-system/00-system.md` (orchestrator + routing + execution modes).
 2. Read the session context from the conversation carrier (resolved per `prompt-system/03-output-and-state.md` `## Session State (In-Session Only)`).
-3. Read `project-management/config.md` to determine the active backend.
+3. Read `project-management/CONFIG.md` to determine the active backend.
 4. Read `prompt-system/07-protocols.md` `## Scrum planning` for sprint conventions (ICE scoring, size bands, milestones, task-card enrichment).
 
 Then:
 
 ## File-based backend (`backend: file`)
 
-1. Locate the sprint file: `project-management/sprint-NNN.md` matching the ID or title in `$ARGUMENTS`.
+1. Locate the sprint file: `project-management/SPRINT_<NNN>.md` matching the ID or title in `$ARGUMENTS`.
 2. If not found, emit `[PHASE: BLOCKED]` with: "sprint not found. Use /create-sprint-phase-plan to create a new one."
 3. Read the sprint file in full.
-4. Parse the frontmatter and current stories/tasks/blockers.
+4. Parse the sprint file's sections (selected items, board, stories, ICE, completion criteria, task cards).
 5. Apply the edit action from `$ARGUMENTS`:
-   - Add story: append a new story entry to the stories array with the goal, features, tasks, blockers, size, and ICE fields. Score ICE using the framework below.
-   - Add task: add a task to a specific story's tasks array.
+   - Add story: append a story line under `## Stories` with its parent item tag, MVP tag, and GWT sentence. Score ICE using the framework below.
+   - Add task: append a task line under the story's parent item.
    - Update task: modify a task's status or details.
    - Move story: reorder stories or move between milestones. Ties broken by size (smaller first), then by milestone target date.
-   - Mark done: update a story or task status to done.
-   - Add blocker: append to the blockers array and mark the relevant story.
-   - Recalculate ICE: after any edit that changes impact, confidence, or size, recalculate `ice = impact * confidence * ease`.
-6. Write the updated file back, preserving the frontmatter format.
+   - Mark done: move the item id between the `## Board` lanes and check its completion criterion.
+   - Add blocker: note the blocker on the affected item and flag it in the board.
+   - Recalculate ICE: after any edit that changes impact, confidence, or size, recalculate the item's ICE line (`impact * confidence * ease`).
+6. Write the updated file back, preserving the section structure.
 7. Emit confirmation with what changed and the updated story/task counts.
 
 ## Trello backend (`backend: trello`)

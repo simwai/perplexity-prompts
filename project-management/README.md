@@ -14,11 +14,19 @@ Files in this directory are `UPPER_SNAKE_CASE`, matching the repository naming r
 |---|---|
 | [CONFIG.md](CONFIG.md) | Backend selection and Trello board settings |
 | [ROADMAPS.md](ROADMAPS.md) | Index of roadmaps |
-| `ROADMAP_YYYY_MM.md` | One roadmap per active period |
+| `ROADMAP_<YYYY-MM>.md` | One roadmap per active period |
+| [BACKLOG.md](BACKLOG.md) | Milestone map and ICE-scored backlog items |
 | [SPRINTS.md](SPRINTS.md) | Index of sprint plans |
-| `SPRINT_NNN.md` | One sprint plan per sprint |
+| `SPRINT_<NNN>.md` | One sprint plan per sprint |
+| `specs/SPEC.md` | Spec artifact (SPEC phase) |
+| `specs/TASKS.md` | Task table (planning session) |
+| [EVALUATIONS.md](EVALUATIONS.md) | Append-only session log (session close) |
 | [TRELLO_INTEGRATION.md](TRELLO_INTEGRATION.md) | Trello backend configuration |
 | [FUTURE_ENHANCEMENTS.md](FUTURE_ENHANCEMENTS.md) | Deferred work and re-enablement conditions |
+
+## Phase-artifact gate
+
+Every upstream phase writes its artifact into this scaffold before its transition fires (INTAKE the roadmap, BACKLOG the backlog file, SPRINT the sprint file, TASK_PLAN the task card, SPEC the spec artifact), per `prompt-system/15-project-documentation.md`. Files in this directory are source-of-truth documentation per `prompt-system/07-protocols.md` `## Artifact handling`: tracked, committed, never gitignored.
 
 Note the filename casing: `CONFIG.md` is uppercase. A reference to `config.md` breaks on any case-sensitive filesystem.
 

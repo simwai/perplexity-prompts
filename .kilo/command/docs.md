@@ -8,7 +8,7 @@ Enter the DOCS phase. `$ARGUMENTS` may name a dependency to document; when empty
 
 Before acting:
 
-1. Read `prompt-system/00-system.md` `## MCP tool selection` and `## Deep-read ladder`.
+1. Read `prompt-system/00-system.md` `## MCP tool selection`.
 2. Read `prompt-system/03-output-and-state.md` `## DOCS template`.
 3. Read dependency names and versions from repo manifests and lockfiles — never ask the user for them.
 4. Verify `startup_verified: true` in session context; if missing, emit `[PHASE: BLOCKED]` with reason "STARTUP incomplete".
