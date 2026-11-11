@@ -394,6 +394,27 @@ if (-not $stagedMd) {
 } elseif (-not (Get-Command node -ErrorAction SilentlyContinue)) {
     Write-Warning "  Node.js not found -- markdownlint SKIPPED (no linter available)"
 } else {
+    # Sync-owned Markdown (prompt-system modules, generated adapters, AGENTS.md)
+    # only passes under this repo's tolerant lint config; target-authored files
+    # must follow the target's own rules. Partition by path prefix and lint the
+    # two sets with separate configs -- a single --config cannot express
+    # per-path rules, and consuming an ignore file from the gate would add a
+    # CWD-pinning plus missing-file (ENOENT) hazard. Source of truth for the
+    # prefixes: sync.ps1 $files/$folders (sync.ps1:114-119); update this list
+    # in the same change as those.
+    $syncOwnedPrefixes = @('^AGENTS\.md$', '^prompt-system/', '^\.opencode/', '^\.kilo/', '^\.claude/')
+
+    $syncOwned = @()
+    $targetOwned = @()
+    foreach ($mdPath in $stagedMd) {
+        $rel = $mdPath.Substring($repoRoot.Length).TrimStart('\', '/') -replace '\\', '/'
+        $isSyncOwned = $false
+        foreach ($prefix in $syncOwnedPrefixes) {
+            if ($rel -match $prefix) { $isSyncOwned = $true; break }
+        }
+        if ($isSyncOwned) { $syncOwned += $mdPath } else { $targetOwned += $mdPath }
+    }
+
     # Warn-only would let auto-fixable issues reach the tree, which the per-edit
     # lint gate forbids. This is a blocking gate.
     #
@@ -402,17 +423,58 @@ if (-not $stagedMd) {
     $batchSize = 40
     $lintFailures = @()
 
-    for ($i = 0; $i -lt $stagedMd.Count; $i += $batchSize) {
-        $end = [Math]::Min($i + $batchSize, $stagedMd.Count)
-        $batch = $stagedMd[$i..($end - 1)]
-        $lintResult = & npx markdownlint-cli --config "$repoRoot\.markdownlint.jsonc" @batch 2>&1
-        if ($LASTEXITCODE -ne 0) {
-            $lintFailures += ,@($batch, $lintResult)
+    # Config chain: the target's own root config wins for its files; sync-owned
+    # files fall back to the shipped copy in prompt-system/. A missing config
+    # must degrade to a warning, never a markdownlint-cli config-read failure
+    # (which exits 4 and would block every commit in a config-less tree).
+    $rootConfig = Join-Path $repoRoot '.markdownlint.jsonc'
+    $fallbackConfig = Join-Path $repoRoot 'prompt-system\.markdownlint.jsonc'
+    $targetConfig = $null
+    $syncConfig = $null
+    if (Test-Path -LiteralPath $rootConfig -PathType Leaf) {
+        $targetConfig = $rootConfig
+        $syncConfig = $rootConfig
+    } elseif (Test-Path -LiteralPath $fallbackConfig -PathType Leaf) {
+        $syncConfig = $fallbackConfig
+    }
+
+    $lintSets = @()
+    if ($targetOwned.Count -gt 0) {
+        if (-not $targetConfig) {
+            Write-Warning "  markdownlint config not found; using CLI defaults for target-authored files"
+        }
+        $lintSets += ,@($targetOwned, $targetConfig)
+    }
+    if ($syncOwned.Count -gt 0) {
+        if ($syncConfig) {
+            $lintSets += ,@($syncOwned, $syncConfig)
+        } else {
+            Write-Warning "  No markdownlint config for sync-owned files (expected prompt-system\.markdownlint.jsonc) -- sync-owned lint SKIPPED"
+        }
+    }
+
+    foreach ($lintSet in $lintSets) {
+        $setFiles = $lintSet[0]
+        $setConfig = $lintSet[1]
+        for ($i = 0; $i -lt $setFiles.Count; $i += $batchSize) {
+            $end = [Math]::Min($i + $batchSize, $setFiles.Count)
+            $batch = $setFiles[$i..($end - 1)]
+            $lintArgs = @()
+            if ($setConfig) { $lintArgs += @('--config', $setConfig) }
+            # Pinned: markdownlint-cli 0.50 stopped enforcing the style rules
+            # (MD013/MD033/MD012) even when a config sets them, so an unpinned
+            # npx silently weakens this gate. Targets have no package.json, so
+            # the hook carries its own version; bump it deliberately, together
+            # with the config.
+            $lintResult = & npx --yes markdownlint-cli@0.49.1 @lintArgs @batch 2>&1
+            if ($LASTEXITCODE -ne 0) {
+                $lintFailures += ,@($batch, $lintResult)
+            }
         }
     }
 
     if ($lintFailures) {
-        Write-Error "Markdown lint failed on staged files (auto-fix with 'npx markdownlint-cli --fix --config .markdownlint.jsonc'):"
+        Write-Error "Markdown lint failed on staged files (auto-fix with 'npx markdownlint-cli@0.49.1 --fix --config .markdownlint.jsonc'):"
         foreach ($failure in $lintFailures) {
             $failure[1] | ForEach-Object { Write-Error "  $_" }
         }

@@ -13,7 +13,7 @@
          - test-cross-reference-integrity.ps1
          - test-self-review-protocol.ps1
          - test-session-locks.ps1
-      5. Markdown lint passes on AGENTS.md and every prompt-system/*.md (when
+      5. Markdown lint passes on AGENTS.md and every user-guide/*.md (when
          npx + .markdownlint.jsonc are available).
       6. The pre-commit gate scripts exist (pre-commit.ps1, pre-push.ps1).
 
@@ -140,7 +140,13 @@ if ($SkipLint) {
             $mdFiles = @("AGENTS.md") + (Get-ChildItem -LiteralPath (Join-Path $repoRoot "user-guide") -Filter "*.md" -ErrorAction SilentlyContinue | ForEach-Object { "user-guide\$($_.Name)" })
             $failed = $false
             foreach ($f in $mdFiles) {
-                & npx --yes markdownlint-cli --config .markdownlint.jsonc $f 2>&1 | Out-Null
+                # Absolute config + file paths: both arguments must resolve
+                # regardless of the caller's working directory (a CWD-relative
+                # config read fails with exit 4 from a subdirectory). The
+                # linter is pinned for the same reason as pre-commit.ps1 step 7
+                # (markdownlint-cli 0.50 no longer enforces configured style
+                # rules such as MD013).
+                & npx --yes markdownlint-cli@0.49.1 --config $mdlintConfig (Join-Path $repoRoot $f) 2>&1 | Out-Null
                 if ($LASTEXITCODE -ne 0) {
                     $failed = $true
                     Add-Failure "markdownlint failed: $f"

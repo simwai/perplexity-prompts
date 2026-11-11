@@ -258,6 +258,8 @@ $copyOnlyFolders = @('scripts')
         }
 
         Ensure-GitignoreEntries -TargetPath $target
+        Ensure-MarkdownlintIgnoreEntries -TargetPath $target -DryRun:$DryRun
+        Ensure-MarkdownlintCli2Ignores -TargetPath $target -DryRun:$DryRun
 
         # Install npm plugins declared in opencode.jsonc
         if (Test-Path (Join-Path $target '.opencode')) {
@@ -401,6 +403,127 @@ if ($modified) {
         $content | Set-Content -LiteralPath $gitignorePath -Encoding UTF8 -NoNewline
         Write-Host "    OK  .gitignore augmented" -ForegroundColor Green
     }
+}
+
+# Sync-owned Markdown roots (mirrors $files/$folders above, sync.ps1:114-119).
+# The two ensure-functions below derive their patterns from this one list so
+# .markdownlintignore and .markdownlint-cli2.jsonc cannot drift. Update this
+# list in the same change as $files/$folders when a Markdown-bearing path is
+# added.
+$syncOwnedMdDirs = @('prompt-system', '.opencode', '.kilo', '.claude')
+$syncOwnedMdRootFiles = @('AGENTS.md')
+
+function Ensure-MarkdownlintIgnoreEntries {
+    param(
+        [string]$TargetPath,
+        [switch]$DryRun
+    )
+
+    # Root-anchored gitignore globs: the leading '/' keeps a target's own
+    # same-named subtree (e.g. docs/prompt-system/) out of the match; '**'
+    # covers every file below the directory. Append-only merge: target-owned
+    # lines are never deleted or reordered.
+    $managedLines = @('# --- baba prompt-system sync: machine-managed content, linted upstream (managed by sync.ps1) ---')
+    foreach ($rootFile in $syncOwnedMdRootFiles) { $managedLines += "/$rootFile" }
+    foreach ($dir in $syncOwnedMdDirs) { $managedLines += "/$dir/**" }
+
+    $ignorePath = Join-Path $TargetPath '.markdownlintignore'
+    $content = ''
+    if (Test-Path -LiteralPath $ignorePath -PathType Leaf) {
+        $content = Get-Content -LiteralPath $ignorePath -Raw -Encoding UTF8
+    }
+
+    $existingLines = @($content -split "`r?`n" | ForEach-Object { $_.Trim() })
+    $missing = @()
+    foreach ($line in $managedLines) {
+        if ($existingLines -notcontains $line) { $missing += $line }
+    }
+    if (-not $missing) { return }
+
+    if ($DryRun) {
+        Write-Host "    [DRY] .markdownlintignore merge" -ForegroundColor Gray
+        return
+    }
+
+    # BOM-less UTF-8 via .NET: PS 5.1 Set-Content -Encoding UTF8 emits a BOM,
+    # and a BOM before the first ignore pattern corrupts its match (same
+    # encoding hazard documented in pre-commit.ps1 Get/Set-TextUtf8).
+    $trimmed = $content.TrimEnd()
+    $newContent = if ($trimmed) { $trimmed + "`n" + ($missing -join "`n") + "`n" } else { ($managedLines -join "`n") + "`n" }
+    [System.IO.File]::WriteAllText($ignorePath, $newContent, (New-Object System.Text.UTF8Encoding($false)))
+    Write-Host "    OK  .markdownlintignore merged" -ForegroundColor Green
+}
+
+function Ensure-MarkdownlintCli2Ignores {
+    param(
+        [string]$TargetPath,
+        [switch]$DryRun
+    )
+
+    # The VS Code markdownlint extension (>= 0.56) and markdownlint-cli2 read
+    # exclusions from .markdownlint-cli2.jsonc "ignores". cli2 discovery uses
+    # the first config file it finds, so a jsonc added next to another variant
+    # would shadow theirs -- skip with a pointer instead of writing.
+    $cli2Variants = @(
+        '.markdownlint-cli2.json',
+        '.markdownlint-cli2.yaml',
+        '.markdownlint-cli2.yml',
+        '.markdownlint-cli2.cjs',
+        '.markdownlint-cli2.mjs'
+    )
+    foreach ($variant in $cli2Variants) {
+        if (Test-Path -LiteralPath (Join-Path $TargetPath $variant) -PathType Leaf) {
+            Write-Warning "    SKIP .markdownlint-cli2.jsonc merge: $variant exists in the target (would be shadowed); merge the ignores entries manually"
+            return
+        }
+    }
+
+    # minimatch-style globs matched against repo-relative paths; the '**/'
+    # prefix matches at any depth including the root (plain directory names do
+    # NOT match -- markdownlint-cli2 issue #1).
+    $managedIgnores = @('AGENTS.md')
+    foreach ($dir in $syncOwnedMdDirs) { $managedIgnores += "**/$dir/**" }
+
+    $cli2ConfigPath = Join-Path $TargetPath '.markdownlint-cli2.jsonc'
+    if (Test-Path -LiteralPath $cli2ConfigPath -PathType Leaf) {
+        $raw = Get-Content -LiteralPath $cli2ConfigPath -Raw -Encoding UTF8
+        # Full-line // comments are valid JSONC but not valid JSON for
+        # ConvertFrom-Json; strip them first (same idiom as Install-Plugins).
+        # Full merge (plan decision B) rewrites the file and drops such
+        # comments -- accepted trade-off.
+        $cleaned = ($raw -split "`n" | Where-Object { $_.TrimStart() -notmatch '^//' }) -join "`n"
+        try {
+            $config = $cleaned | ConvertFrom-Json
+        } catch {
+            Write-Warning "    SKIP .markdownlint-cli2.jsonc merge: unparseable JSON -- $($_.Exception.Message)"
+            return
+        }
+        if ($null -eq $config -or $config -isnot [pscustomobject]) {
+            Write-Warning "    SKIP .markdownlint-cli2.jsonc merge: unexpected JSON root (object expected)"
+            return
+        }
+    } else {
+        $config = [pscustomobject]@{}
+    }
+
+    $existingIgnores = @()
+    if ($config.PSObject.Properties.Name -contains 'ignores' -and $null -ne $config.ignores) {
+        $existingIgnores = @($config.ignores | ForEach-Object { [string]$_ })
+    }
+
+    $missingIgnores = @($managedIgnores | Where-Object { $existingIgnores -notcontains $_ })
+    if (-not $missingIgnores) { return }
+
+    if ($DryRun) {
+        Write-Host "    [DRY] .markdownlint-cli2.jsonc ignores merge" -ForegroundColor Gray
+        return
+    }
+
+    $config | Add-Member -NotePropertyName 'ignores' -NotePropertyValue ($existingIgnores + $missingIgnores) -Force
+    # BOM-less UTF-8 via .NET (see Ensure-MarkdownlintIgnoreEntries above).
+    $json = $config | ConvertTo-Json -Depth 10
+    [System.IO.File]::WriteAllText($cli2ConfigPath, $json + "`n", (New-Object System.Text.UTF8Encoding($false)))
+    Write-Host "    OK  .markdownlint-cli2.jsonc ignores merged" -ForegroundColor Green
 }
 
 function Ensure-VibeguardConfig {
