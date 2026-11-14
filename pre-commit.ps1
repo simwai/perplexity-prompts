@@ -53,6 +53,19 @@ function Set-TextUtf8 {
     [System.IO.File]::WriteAllText($Path, $Content, (New-Object System.Text.UTF8Encoding($false)))
 }
 
+# Emit gate-failure messages without $ErrorActionPreference='Stop'
+# terminating on the first Write-Error -- that used to hide every
+# per-finding line after the summary (observed: a step 7 lint failure
+# printed the header only, never the findings). The preference is set at
+# function scope, so the script's Stop behavior is untouched.
+function Write-GateFailure {
+    param([string[]]$Messages)
+    $ErrorActionPreference = 'Continue'
+    foreach ($message in $Messages) {
+        Write-Error $message
+    }
+}
+
 # Absolute paths for every Markdown / PowerShell file currently staged.
 function Get-StagedFiles {
     param([string[]]$Extensions)
@@ -147,25 +160,21 @@ if (-not (Test-Path -LiteralPath $locksScript -PathType Leaf)) {
             Write-Host "  No live locks present -- lockless commits allowed (non-engaged)" -ForegroundColor Green
         } elseif ($gateEval.ShouldBlock) {
             if ($gateEval.Type -eq 'Unattributed') {
-                Write-Error $gateEval.Reason
-                Write-Error "  Set SESSION_ID to enable attribution (e.g. . ./scripts/enter-session.ps1)"
+                Write-GateFailure @($gateEval.Reason, '  Set SESSION_ID to enable attribution (e.g. . ./scripts/enter-session.ps1)')
                 exit 1
             } elseif ($gateEval.Type -eq 'PeerConflict') {
                 $lockReport = @($gateEval.Conflicts | ForEach-Object {
                     $owners = @($_.Peers | ForEach-Object { "$($_.Owner) ($($_.Type))" }) -join ', '
                     "  $($_.Path) -- held by $owners"
                 })
-                Write-Error "Staged files are held by a live peer session lock:"
-                $lockReport | ForEach-Object { Write-Error $_ }
-                Write-Error "Wait for the peer to commit or release, or skip the path. This hook never steals a lock."
+                Write-GateFailure (@('Staged files are held by a live peer session lock:') + $lockReport + @('Wait for the peer to commit or release, or skip the path. This hook never steals a lock.'))
                 exit 1
             } elseif ($gateEval.Type -eq 'Uncovered') {
-                Write-Error $gateEval.Reason
-                $gateEval.Uncovered | ForEach-Object { Write-Error "  Uncovered: $_" }
-                Write-Error "In engaged mode, all staged paths must be covered by locks held by this session."
+                $uncoveredReport = @($gateEval.Uncovered | ForEach-Object { "  Uncovered: $_" })
+                Write-GateFailure (@($gateEval.Reason) + $uncoveredReport + @('In engaged mode, all staged paths must be covered by locks held by this session.'))
                 exit 1
             } else {
-                Write-Error $gateEval.Reason
+                Write-GateFailure @($gateEval.Reason)
                 exit 1
             }
         } else {
@@ -330,16 +339,14 @@ if (-not $stagedText) {
     # Merge conflict markers.
     $conflicts = @($stagedText | Where-Object { (Get-TextUtf8 $_) -match '(?m)^(<<<<<<< |=======$|>>>>>>> )' })
     if ($conflicts) {
-        Write-Error "Staged files with merge conflict markers (must resolve manually):"
-        $conflicts | ForEach-Object { Write-Error "  $_" }
+        Write-GateFailure (@('Staged files with merge conflict markers (must resolve manually):') + @($conflicts | ForEach-Object { "  $_" }))
         exit 1
     }
     Write-Host "  No merge conflict markers" -ForegroundColor Green
 
     # A hygiene fix that is not staged is a silently half-applied commit.
     if ($dirty.Count + $eofDirty.Count -gt 0) {
-        Write-Error "Hygiene auto-fixes changed files. Re-stage them and commit again:"
-        ($dirty + $eofDirty) | Sort-Object -Unique | ForEach-Object { Write-Error "  $_" }
+        Write-GateFailure (@('Hygiene auto-fixes changed files. Re-stage them and commit again:') + @(($dirty + $eofDirty) | Sort-Object -Unique | ForEach-Object { "  $_" }))
         exit 1
     }
 }
@@ -474,10 +481,11 @@ if (-not $stagedMd) {
     }
 
     if ($lintFailures) {
-        Write-Error "Markdown lint failed on staged files (auto-fix with 'npx markdownlint-cli@0.49.1 --fix --config .markdownlint.jsonc'):"
+        $messages = @("Markdown lint failed on staged files (auto-fix with 'npx markdownlint-cli@0.49.1 --fix --config .markdownlint.jsonc'):")
         foreach ($failure in $lintFailures) {
-            $failure[1] | ForEach-Object { Write-Error "  $_" }
+            $failure[1] | ForEach-Object { $messages += "  $_" }
         }
+        Write-GateFailure $messages
         exit 1
     }
     Write-Host "  Markdown lint passed ($($stagedMd.Count) staged file(s))" -ForegroundColor Green
@@ -500,8 +508,8 @@ if (-not $stagedPs) {
         if ($fileIssues) { $issues += $fileIssues }
     }
     if ($issues) {
-        Write-Error "PSScriptAnalyzer found errors in staged files:"
-        $issues | Format-Table RuleName, Severity, Line, Message, ScriptName -AutoSize | Out-Host
+        $analyzerReport = @($issues | Format-Table RuleName, Severity, Line, Message, ScriptName -AutoSize | Out-String)
+        Write-GateFailure (@('PSScriptAnalyzer found errors in staged files:') + $analyzerReport)
         exit 1
     }
     Write-Host "  PowerShell analysis passed ($($stagedPs.Count) staged file(s))" -ForegroundColor Green
