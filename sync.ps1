@@ -210,12 +210,18 @@ $copyOnlyFolders = @('scripts')
                 Write-Host "    [DRY] $folder\" -ForegroundColor Gray
             } else {
                 # Exclude node_modules and local package node_modules to avoid sync issues
+                # Exclude plan directories, same category as $copyOnlyFolders above: Kilo
+                # writes session plans to <repo>/.kilo/plans/ and OpenCode-era plans to
+                # <repo>/.opencode/plan/ -- target-owned session state inside a mirrored
+                # tree. /MIR purges it (observed loss: dussel .kilo/plans/*, Pinescript
+                # .kilo/plans/*), and this repo's own plans must not propagate either.
                 $robocopyArgs = @(
                     $src, $dst,
                     '/MIR', '/NFL', '/NDL', '/NJH', '/NJS',
                     '/R:2', '/W:2',
                     '/XD', 'node_modules',
                     '/XD', 'packages\memory-worth\node_modules',
+                    '/XD', 'plans', '/XD', 'plan',
                     '/XF', '*.test.ts', '*.spec.ts'
                 )
                 & robocopy @robocopyArgs
