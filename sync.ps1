@@ -692,7 +692,7 @@ if ($DryRun) {
         return
     }
 
-$paths = @('AGENTS.md', 'opencode.jsonc', 'kilo.json', 'pre-commit.ps1', 'pre-push.ps1', 'prompt-system', '.opencode', '.kilo', 'scripts') |
+$paths = @('AGENTS.md', 'opencode.jsonc', 'kilo.json', 'pre-commit.ps1', 'pre-push.ps1', 'prompt-system', '.opencode', '.kilo', 'scripts', '.markdownlintignore', '.markdownlint-cli2.jsonc') |
         Where-Object { Test-Path (Join-Path $repoRoot $_) }
     if (-not $paths) { return }
 
