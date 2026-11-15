@@ -30,8 +30,8 @@ $repoRoot = (Resolve-Path (Join-Path $systemRoot '..')).Path
 # (this suite, the generator's abort on unknown names) goes blind.
 $kiloSubagents = @(
     'baba-ceo', 'baba-designer', 'baba-dev', 'baba-reviewer',
-    'baba-scrum', 'baba-sensei', 'baba-tester', 'ultra-pro-quant',
-    'explore', 'general'
+    'baba-scrum', 'baba-sensei', 'baba-supervisor', 'baba-tester',
+    'explore', 'general', 'ultra-pro-quant'
 )
 
 # Primary agent MODES are not subagents. Any of these in an `agent:` line is

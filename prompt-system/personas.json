@@ -159,6 +159,26 @@
       "kilo": {
         "color": "#f9e2af"
       }
+    },
+    {
+      "id": "baba-supervisor",
+      "display": "BabaSupervisor",
+      "description": "Subagent supervisor - middleman between user and the Baba subagent fleet; routes, dispatches, and consolidates",
+      "entryPhase": "DISCUSS",
+      "routing": {
+        "claudePlan": null,
+        "opencodePlan": null,
+        "kiloPlan": "Single entry point -> route to the matching Baba subagent via /supervisor middleman.",
+        "build": null,
+        "generalTable": "Subagent dispatch → baba-supervisor"
+      },
+      "babaCommand": {
+        "keywords": ["supervisor"],
+        "instruction": "Find your persona in `.kilo/agent/baba-supervisor.md` and read its section."
+      },
+      "kilo": {
+        "color": "#89b4fa"
+      }
     }
   ]
 }

@@ -10,4 +10,5 @@ Routing by persona (single source of truth):
 | Design decisions | baba-designer |
 | Product framing | baba-ceo |
 | Quant review | ultra-pro-quant |
+| Subagent dispatch | baba-supervisor |
 

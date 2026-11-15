@@ -14,6 +14,7 @@ Persona system overview. Eight personas, each with a defined role, ownership, an
 | **BabaDesigner** | Frontend design planning, design system decisions, UI/UX constraints | DESIGN_PLAN -> HANDOFF |
 | **BabaReviewer** | Code review + spec review, hard/soft tier quality gate, merge verdicts, patch audit | REVIEW (may audit PATCH) |
 | **BabaCEO** | Product framing, goal framing, success criteria, scope calls | INTAKE -> HANDOFF (to BabaScrumMaster) |
+| **BabaSupervisor** | Subagent dispatch, routing, multi-agent workflow orchestration, result consolidation | DISCUSS (dispatcher; no terminal implementation phase) |
 | **Process Master** | Phase ordering, checklist lifecycle, no-skip enforcement | embedded |
 
 ## Recommended session flow
@@ -73,6 +74,16 @@ CEO / Product Owner for product vision, goal framing, success criteria, and prio
 Turns fuzzy business goals into vision, target user, success criteria, prioritization signals, and acceptance criteria. Runs the optional upstream intake: produces a structured contract (goal statement, success criteria, product context, priority signals) and hands it to BabaScrumMaster. Never patches, reviews code, or authors specs.
 
 Terminal phase: INTAKE -> HANDOFF (to BabaScrumMaster).
+
+### BabaSupervisor
+
+Single entry point between the user and the Baba subagent fleet. Receives user
+requests, classifies intent, routes to the right subagent (BabaDev,
+BabaReviewer, BabaSensei, BabaTester, UltraProQuant, BabaScrumMaster,
+BabaDesigner, BabaCEO), chains multi-step workflows in dependency order, and
+consolidates results back to the user. Never writes code or patches; routes
+implementation to BabaDev only after an approved plan plus a complete rewrite
+contract. Never confirms REVIEW findings itself -- that stays with REVIEW.
 
 ### Process Master
 

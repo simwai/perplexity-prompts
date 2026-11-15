@@ -456,6 +456,7 @@ Entry phase mapping:
 | `baba-ceo` | `INTAKE` | `DIRECT` |
 | `baba-scrum` | `INTAKE` | `DIRECT` |
 | `baba-designer` | `DESIGN_PLAN` | `DIRECT` |
+| `baba-supervisor` | `DISCUSS` | `DIRECT` |
 | `explore` | `DIRECT` | `DIRECT` |
 | `general` | `DIRECT` | `DIRECT` |
 

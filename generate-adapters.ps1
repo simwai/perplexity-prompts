@@ -388,6 +388,9 @@ if (Test-Path -LiteralPath $opencodeConfigPath -PathType Leaf) {
                 }
                 if ($val.env) { $mcpEntry.env = $val.env }
                 if ($val.oauth) { $mcpEntry.oauth = $val.oauth }
+                if ($val.PSObject.Properties.Name -contains 'disabled') {
+                    $mcpEntry.disabled = $val.disabled
+                }
 
                 # Claude Code also expands ${VAR} inside command, args, and url;
                 # translate those so no opencode-only reference survives.
@@ -658,8 +661,8 @@ if (Test-Path -LiteralPath $opencodeCmdSrc -PathType Container) {
         }
         $kiloSubagents = @(
             'baba-ceo', 'baba-designer', 'baba-dev', 'baba-reviewer',
-            'baba-scrum', 'baba-sensei', 'baba-tester', 'ultra-pro-quant',
-            'explore', 'general'
+            'baba-scrum', 'baba-sensei', 'baba-supervisor', 'baba-tester',
+            'explore', 'general', 'ultra-pro-quant'
         )
 
         $agentName = if ($existingAgent) { $existingAgent } else { 'code' }
@@ -802,6 +805,15 @@ if (Test-Path -LiteralPath $opencodeConfigPath -PathType Leaf) {
                 if ($val.headers) { $mcpEntry.headers = $val.headers }
                 if ($val.env) { $mcpEntry.env = $val.env }
                 if ($val.oauth) { $mcpEntry.oauth = $val.oauth }
+                # Kilo Desktop on Windows respawn-loops local stdio MCP servers
+                # (kilo.exe launches cmd /c npx ... per restart attempt, opening
+                # a new terminal window each time). Disable them in kilo.json only
+                # -- OpenCode is unaffected and keeps them enabled via opencode.jsonc.
+                # See kilocode#6045, #5781/#5897.
+                $kiloDisabledServers = @('playwright', 'playwright-headless', 'g-search', 'memory-worth')
+                if ($mcpEntry.type -eq 'local' -and $kiloDisabledServers -contains $name) {
+                    $mcpEntry.disabled = $true
+                }
                 
                 $mcpServers[$name] = $mcpEntry
             }

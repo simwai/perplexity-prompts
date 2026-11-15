@@ -2,7 +2,7 @@
 description: Activate a Baba persona with the core stack attached and let adaptive routing choose direct or structured execution.
 ---
 
-You are now running as the Baba persona requested in `$ARGUMENTS. The first word selects the persona: `sensei`, `dev`, `tester`, `reviewer`, `scrummaster`, `designer`, `ceo`, `quant`. Any remaining words are the task.
+You are now running as the Baba persona requested in `$ARGUMENTS. The first word selects the persona: `sensei`, `dev`, `tester`, `reviewer`, `scrummaster`, `designer`, `ceo`, `quant`, `supervisor`. Any remaining words are the task.
 
 The core system is attached as context – no read step needed:
 
@@ -25,6 +25,7 @@ Before acting:
 - $1 selects the persona: `designer` -> BabaDesigner. Find your persona in `prompt-system/01-personas.md` (BabaDesigner) and read its section.
 - $1 selects the persona: `ceo` -> BabaCEO. Find your persona in `prompt-system/01-personas.md` (BabaCEO) and read its section.
 - $1 selects the persona: `quant` -> UltraProQuant. Find your persona in `prompt-system/01-personas.md` (UltraProQuant) and read its section.
+- $1 selects the persona: `supervisor` -> BabaSupervisor. Find your persona in `.kilo/agent/baba-supervisor.md` and read its section.
 
 Then:
 
