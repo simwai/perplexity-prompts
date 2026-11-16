@@ -20,6 +20,19 @@ $ErrorActionPreference = 'Stop'
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $repoRoot = if (Test-Path (Join-Path $scriptDir '.git') -PathType Container) { $scriptDir } elseif (Test-Path (Join-Path $scriptDir 'generate-adapters.ps1') -PathType Leaf) { $scriptDir } elseif (Test-Path (Join-Path $scriptDir 'prompt-system') -PathType Container) { $scriptDir } else { Split-Path -Parent $scriptDir }
 
+# Emit gate-failure messages without $ErrorActionPreference='Stop'
+# terminating on the first Write-Error -- that used to hide every
+# per-finding line after the summary (observed: a typecheck failure
+# printed one tsc line, never the rest). Function-scoped preference,
+# so the script's Stop behavior is untouched.
+function Write-GateFailure {
+    param([string[]]$Messages)
+    $ErrorActionPreference = 'Continue'
+    foreach ($message in $Messages) {
+        Write-Error $message
+    }
+}
+
 Write-Host "Running pre-push checks..." -ForegroundColor Cyan
 
 # Read stdin for ref updates
@@ -79,11 +92,27 @@ if (-not (Test-Path -LiteralPath $locksScript -PathType Leaf)) {
 # ── 2. TypeScript typecheck ─────────────────────────────────────────────────
 Write-Host "`n[2/2] Running TypeScript typecheck..." -ForegroundColor Yellow
 
-$tscOutput = & npx tsc --noEmit -p .opencode/tsconfig.json 2>&1
-$tscCode = $LASTEXITCODE
+# Prefer the project's own tsc inside .opencode: bare npx from the repo root
+# resolves whatever TypeScript the root can see, and in targets (no root
+# node_modules) that is a downloaded latest version which can disagree with
+# the project's pinned one and fail a typecheck that passes locally.
+$opencodeDir = Join-Path $repoRoot '.opencode'
+$localTsc = Join-Path $opencodeDir 'node_modules\.bin\tsc.cmd'
+if (Test-Path -LiteralPath $localTsc -PathType Leaf) {
+    Push-Location $opencodeDir
+    try {
+        $tscOutput = & $localTsc --noEmit -p tsconfig.json 2>&1
+        $tscCode = $LASTEXITCODE
+    } finally {
+        Pop-Location
+    }
+} else {
+    $tscOutput = & npx tsc --noEmit -p .opencode/tsconfig.json 2>&1
+    $tscCode = $LASTEXITCODE
+}
 if ($tscCode -ne 0) {
-    $tscOutput | ForEach-Object { Write-Error "  $_" }
-    Write-Error "TypeScript typecheck failed"
+    $messages = @('TypeScript typecheck failed') + @($tscOutput | ForEach-Object { "  $_" })
+    Write-GateFailure $messages
     exit 1
 }
 Write-Host "  TypeScript typecheck passed" -ForegroundColor Green

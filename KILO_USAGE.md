@@ -315,6 +315,23 @@ When the spawn fails, the prompt system's inline fallback executes the reviewer 
 
 Check `kilo.json` `mcp` block matches `opencode.jsonc`. Kilo Code uses the same MCP format as OpenCode.
 
+### Disabled local MCP servers (Kilo Desktop only)
+
+The following local (stdio) MCP servers are marked `"disabled": true` in `kilo.json` only:
+
+- `playwright` (`npx -y @playwright/mcp@0.0.80`)
+- `playwright-headless` (`npx -y @playwright/mcp@0.0.80 --headless`)
+- `g-search` (`npx -y g-search-mcp`)
+- `memory-worth` (`npx tsx .opencode/packages/memory-worth/mcp-server.ts`)
+
+**Reason:** On Windows, Kilo Desktop launches stdio MCP servers via `cmd /c npx ...`. These servers repeatedly fail to connect (stderr startup banners are misread as "Not connected", see kilocode#6045 and kilocode#5781/#5897), causing Kilo to spawn a new `cmd.exe` terminal window on every restart attempt. Left enabled, this produces a 24/7 terminal spawning loop with dozens of orphaned `cmd.exe`/`conhost` processes.
+
+This disable is **Kilo-only**. OpenCode reads `opencode.jsonc` directly and keeps all four servers enabled — OpenCode is not affected by the respawn loop. The `disabled` flag is injected during `kilo.json` generation in `generate-adapters.ps1`; `opencode.jsonc` itself is unchanged.
+
+Remote MCP servers (`context7`, `exa`, `trello`) are unaffected and remain enabled in both configs, since they use HTTP/OAuth transport and do not spawn `cmd.exe`.
+
+Re-enable in `kilo.json` only after Kilo ships a fix for the MCP respawn loop, or wrap the stdio server in a stderr-silencing proxy (see kilocode#6045 workaround).
+
 ---
 
 ## Reference

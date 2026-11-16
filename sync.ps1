@@ -548,10 +548,12 @@ function Ensure-VibeguardConfig {
         New-Item -ItemType Directory -Path $targetDir -Force | Out-Null
     }
 
-    if (-not (Test-Path $targetConfig)) {
-        Copy-Item -LiteralPath $sourceConfig -Destination $targetConfig -Force
-        Write-Host "    OK  vibeguard.config.json created" -ForegroundColor Green
-    }
+    # Always overwrite: this file is a source-managed deployment artifact, and
+    # first-write-wins left targets with stale copies (observed: a source-side
+    # invalid-JSON-escape fix never reached targets that already had the file,
+    # where check-json hooks then failed on the broken copy).
+    Copy-Item -LiteralPath $sourceConfig -Destination $targetConfig -Force
+    Write-Host "    OK  vibeguard.config.json synced" -ForegroundColor Green
 }
 
 # ═══════════════════════════════════════════════════════════════════════════
