@@ -98,7 +98,7 @@ Servers are grouped by what works when env keys are missing. Configure the ones 
 }
 ```
 
-**memory-worth** - the memory-worth package's 13 trust-scored memory tools (search, get, write, update, delete, synthesize, wakeup, stats, tune, invalidate, merge, set_status, list_tools), exposed over MCP via stdio. The DB lives at `%LOCALAPPDATA%\memory-worth\memory.db` by default; override with `MEMORY_WORTH_DB` (full path) or `MEMORY_WORTH_HOME` (directory). `MEMORY_WORTH_DIR` is kept as a deprecated alias. Every runtime namespaces MCP tools with the server name, so call them as `memory-worth_memory_search`, `memory-worth_memory_write`, `memory-worth_memory_stats`. (The sample command's `.opencode/packages/memory-worth/mcp-server.ts` path is this repo's bundled copy -- on other hosts point the command at your own checkout or an installed package.)
+**memory-worth** - the memory-worth package's 13 trust-scored memory tools (search, get, write, update, delete, synthesize, wakeup, stats, tune, invalidate, merge, set_status, list_tools), exposed over MCP via stdio. The DB lives at `%LOCALAPPDATA%\memory-worth\memory.db` by default; override with `MEMORY_WORTH_DB` (full path) or `MEMORY_WORTH_HOME` (directory). `MEMORY_WORTH_DIR` is kept as a deprecated alias. Every runtime namespaces MCP tools with the server name, so call them as `memory-worth_memory_search`, `memory-worth_memory_write`, `memory-worth_memory_stats`. (The sample command's `.opencode/packages/memory-worth/mcp-server.ts` path is a placeholder -- on other hosts point the command at your own checkout or an installed package; no `.opencode/` directory exists in this repo.)
 
 **memory-worth** - persistent agent memory with project-scoped routing:
 

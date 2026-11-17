@@ -189,16 +189,7 @@ Status: Waiting.
 
 ## START routing details (STRUCTURED mode)
 
-Route on the first input:
-
-- **Concrete target** (file, module, or code snippet) -> run the project style policy auto-trigger when the trigger condition holds, then `CHECKLIST`.
-- **Directory, glob, or feature-area target** -> run the project style policy auto-trigger when the trigger condition holds, then `CHECKLIST` (relevance discovery runs during CHECKLIST init; sequential review for multi-file inventory).
-- **Goal or project spec without a concrete target** -> full mode -> run the project style policy auto-trigger when the trigger condition holds, then `INTAKE`.
-- **Greenfield target** (explicit from-scratch request, or the target repo has no existing source files) -> full mode -> `INTAKE` with the `Stack/Style:` field recorded; CHECKLIST and REVIEW run as recorded greenfield skips and the session goes PLAN-first with module conventions established. The auto-trigger skip condition "greenfield" applies.
-- **Exploratory question** -> `DISCUSS`.
-- **Explicit drift request** (e.g. "check drift", "run drift") -> `DRIFT` on demand from any phase.
-
-Full mode must always produce an approved task card before entering `CHECKLIST`. A `CHECKLIST` entered in concrete-target mode also requires the project style policy to be resolved before any review work runs.
+Canonical definition lives in `prompt-system/00-system.md` `## START routing` (STRUCTURED mode). This section does not restate routing; it defers to `00-system.md` as the single source of truth to prevent drift between two copies.
 
 In `DIRECT` mode, do not emit a phase template. Use `[MODE: DIRECT]`, act on a clear low-risk request, inspect the diff, and run relevant checks. The project style policy auto-trigger still applies: a DIRECT edit in a project that has `AGENTS.md` but no `STYLE_POLICY.md` artifact must ask the binary question before touching any file. The check runs once per session.
 
@@ -208,24 +199,4 @@ The ScrumMaster phrase "direct mode" for a concrete target means "skip the optio
 
 ## Required inputs by phase (unblock rules)
 
-`BLOCKED -> INTAKE`: user supplied a goal or project spec without a concrete target, and project style policy has been resolved.
-
-`BLOCKED -> BACKLOG`: goal, success criteria, and milestone set recorded.
-
-`BLOCKED -> SPRINT`: backlog non-empty, sized, ICE-scored, milestone-tagged.
-
-`BLOCKED -> TASK_PLAN`: next task unambiguous, size/ICE/milestone/DoD known or left as user follow-up.
-
-`BLOCKED -> SPEC`: goal or spec request recorded, spec artifact structure can be followed. `[NEEDS CLARIFICATION]` markers bounded to 3 per spec; answers use the decision format above.
-
-`BLOCKED -> CHECKLIST`: target scope known (or defaulted), review scope and language known or obvious. When target is a directory, glob, or feature-area description, run relevance discovery per `07-protocols.md` to populate file inventory before proceeding. Greenfield targets: file inventory is the planned file set recorded as a greenfield skip; stack/style captured at INTAKE. Before emitting `BLOCKED` for a missing target, search the filesystem with `rg` and file-listing tools.
-
-`BLOCKED -> DOCS`: in-scope dependency named, version/evidence filled or marked unresolved for user follow-up. Dependency names and versions are read from the repo: manifests, lockfiles, and imports. "Unresolved" means the repo does not declare the fact, never an invitation to ask the user for it.
-
-`BLOCKED -> REVIEW`: current chunk exists, every prerequisite artifact required by the review path already exists. REVIEW also owns the confirmation decision; the response must include accepted violations, disputed violations, and preservation constraints.
-
-`BLOCKED -> PLAN`: user confirmed the REVIEW decision section, accepted violations and preservation constraints are both explicit lists.
-
-`BLOCKED -> PATCH`: approval explicit, rewrite contract contains target/preserve/eliminate/forbidden, project style policy resolved (recorded in `STYLE_POLICY.md`, or greenfield/READ_ONLY skip conditions apply). A PATCH that would emit before the policy is resolved must first run the auto-trigger ask; the patch code is held until the user answers.
-
-`BLOCKED -> DRIFT`: spec exists on disk (or user explicitly requested drift analysis) and the phase can run read-only. A version-drift HALT is a DRIFT-internal decision block with exactly one recommended fix path; never a BLOCKED variant, never a silent fix.
+Canonical definition lives in `prompt-system/00-system.md` `## Required inputs by phase (unblock rules)`. This section does not restate unblock rules; it defers to `00-system.md` as the single source of truth to prevent drift between two copies.

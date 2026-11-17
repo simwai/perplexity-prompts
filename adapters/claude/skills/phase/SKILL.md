@@ -10,6 +10,8 @@ Valid phases: CHECKLIST, DOCS, REVIEW, PLAN, PATCH, DISCUSS, DRIFT, INTAKE, BACK
 
 Before acting:
 
+0. Check `startup_verified: true` in session context; if missing, emit `[PHASE: BLOCKED]` with reason "STARTUP incomplete".
+
 1. Read `prompt-system/00-system.md` for phase order and transition rules.
 2. Read the conversation history for session state.
 3. Verify the requested phase transition is legal from the current phase.

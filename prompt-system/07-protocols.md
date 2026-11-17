@@ -489,7 +489,7 @@ A protocol that enhances CHECKLIST file inventory initialization when the target
 
 ### Hard guards
 
-- Budget: max 5 `rg`/`glob` invocations. Loop protection applies.
+- Budget: max 15 `rg`/`glob` invocations, max 100 hits; `prompt-system/` excluded from search scope. Loop protection applies.
 
 - No content reads -- only search hits and import statements.
 

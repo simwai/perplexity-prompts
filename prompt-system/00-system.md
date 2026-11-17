@@ -73,6 +73,8 @@ Rules always in force:
 
 - `prompt-system/04b-rubrics-logical.md` (L1-L10 detailed rubrics for trading/backtest/strategy targets)
 
+**Conditional-tier existence requirement.** Every conditional-tier file listed above must exist on disk before its phase is entered; a missing file blocks that phase with reason "conditional tier missing: <file>". The [review] tier (`06-misc.md`, `07-protocols.md`, `08-plan-actual-gate.md`) is required before any REVIEW/PLAN/PATCH/DOCS/DRIFT output. The [stack] tier files are required when their stack language is in scope. Missing conditional-tier files are detected by `scripts/verify-system.ps1` section "Referenced script/tool targets exist".
+
 The system has files in `prompt-system/` plus `AGENTS.md` at the repo root. Implementation scripts (e.g., `prompt-system/scripts/`) are invoked at runtime, not loaded at startup.
 
 ## STARTUP Phase (MANDATORY - cross-host bootstrap gate)

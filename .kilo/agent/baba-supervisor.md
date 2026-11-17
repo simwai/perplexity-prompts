@@ -54,7 +54,7 @@ When a routing or workflow choice needs the user:
 Question: <short>
 Recommended: **A** -- <reason>
 
-- **A**. <option> (Recommended)
+- **A. <option> (Recommended)**
   - Pros: <one line>
   - Cons: <one line>
 - B. <option>

@@ -12,7 +12,7 @@ Complete rewrite of the prompt-system to be spec-first, removing session state f
 
 **In:**
 
-- Cut: session locks, session state files, duplicated decision format, fresh-session load mandate duplicates, smallest-request rule duplicate, CHECKLIST rubric enumeration, handoff contract bloat, SPEC-writes-through-PATCH rule
+- Cut: session state files, duplicated decision format, fresh-session load mandate duplicates, smallest-request rule duplicate, CHECKLIST rubric enumeration, handoff contract bloat, SPEC-writes-through-PATCH rule
 - Split: `05-impl-style.md` into core + 4 stack files + design guidelines + doc style
 - Trim: `07-protocols.md` to keep only artifact handling, prompt-system protection, pre-commit
 - Cleanup: `06-misc.md` markers, leftover handling, cross-cutting protocol reference to `07-protocols.md` (remove duplicate section), Plan-Versus-Actual persistence
@@ -38,8 +38,7 @@ Complete rewrite of the prompt-system to be spec-first, removing session state f
 - Including handoff fields requiring cross-session memory
 - Adding pre-session or runtime enforcement scripts
 - Writing enforcement rules depending on agent filesystem inspection at startup
-- Creating one evaluation file per session (single `docs/EVALUATIONS.md` appended)
-- Adding pre-session or runtime enforcement scripts
+- Creating one evaluation file per session (single `project-management/EVALUATIONS.md` appended)
 
 ## Out of scope (explicit from brief)
 
@@ -49,7 +48,7 @@ See "Do not" section in the brief - all items there are explicitly out of scope.
 
 - `project-management/specs/SPEC.md` (frontmatter: status, version, frozen_at)
 - `project-management/specs/TASKS.md` (markdown table with task id, spec ref, LOC bound, acceptance, done checkbox)
-- `docs/EVALUATIONS.md` at repo root (append-only session log)
+- `project-management/EVALUATIONS.md` (append-only session log)
 - Prompt-system files: `00-system.md`, `01-personas.md`, `02-decision-prompts.md`, `03-output-and-state.md`, `04-rubrics.md`, `04b-rubrics-logical.md`, `05-impl-style.md`, `06-misc.md`, `07-protocols.md`, `08-plan-actual-gate.md`, `09-design-guidelines.md`, `10-doc-style.md`, `prompt-system/stacks/STACK-typescript.md`, `prompt-system/stacks/STACK-python.md`, `prompt-system/stacks/STACK-java.md`, `prompt-system/stacks/STACK-frontend.md`, `prompt-system/stacks/STACK-powershell.md`, `prompt-system/stacks/STACK-pinescript.md`, `prompt-system/stacks/STACK-database.md`
 - Load order in `00-system.md` annotated with scope: `[core]`, `[review]`, `[on-demand]`, `[stack]`, `[designer]`, `[doc]`
 - **05-impl-style.md split mapping:**
@@ -96,7 +95,7 @@ See "Do not" section in the brief - all items there are explicitly out of scope.
 2. **RESOLVED**: Keep `system_evidence` as temporary artifact (populated by Discovery Protocol during CHECKLIST, discarded after REVIEW). H13-H38 keep their `system_evidence` triggers.
 3. **RESOLVED (A)**: No dependency field — tasks ordered in TASKS.md, "first unchecked" executes; spec author orders correctly.
 4. **RESOLVED (A)**: Keep `08-plan-actual-gate.md` separate, added to 00-system.md Load order with `[review]` scope.
-5. **RESOLVED (A + C)**: STYLE_POLICY.md auto-trigger fires first in spec session (BabaSensei asks during spec authoring if project has AGENTS.md but no STYLE_POLICY.md; recorded in SPEC.md). Fallback: planning session asks if missed.
+5. **RESOLVED (A + C)**: STYLE_POLICY.md auto-trigger fires first in spec session (BabaSensei asks during spec authoring if project has AGENTS.md but no STYLE_POLICY.md; policy recorded in `STYLE_POLICY.md` frontmatter). Fallback: planning session asks if missed.
 6. **RESOLVED (C)**: BabaSensei writes draft SPEC.md when it has answers for all template sections (Overview, Scope, Interfaces, Data, Security, Failure modes, Open questions, Task list).
 7. **RESOLVED (A)**: Material edit = any change to scope (in/out), interfaces, data models, security requirements, failure modes, task list structure. Wording/typos/formatting are non-material by definition.
 
@@ -114,7 +113,7 @@ Per Part 5 execution order:
    - 1.7 Simplify handoff contract
    - 1.8 Fix `04-rubrics.md` (header S1-S25, rules.md refs → docs/REFERENCE/RULES.md, over-engineering collapse H20/H25/H26/S13 into one rule with sub-checks, L1-L10 detailed rubrics moved verbatim to `04b-rubrics-logical.md`; `04-rubrics.md` keeps one-line pointer); `04b-rubrics-logical.md` created with L1-L10 detailed rubrics copied verbatim from current 04-rubrics.md
    - 1.9 Remove SPEC-writes-through-PATCH rule
-   - 1.10 Split `05-impl-style.md` into 8 files: core (`05-impl-style.md`), design (`09-design-guidelines.md`), doc style (`10-doc-style.md`), 7 stack files (`prompt-system/stacks/STACK-*.md`)
+   - 1.10 Split `05-impl-style.md` into 10 files: core (`05-impl-style.md`), design (`09-design-guidelines.md`), doc style (`10-doc-style.md`), 7 stack files (`prompt-system/stacks/STACK-*.md`)
    - 1.11 Keep Reading Protocol; strip state persistence
    - 1.12 Keep Discovery Protocol; strip state persistence
    - 1.13 Trim `07-protocols.md` (keep: Artifact handling, Prompt-system protection, Pre-commit behavior; collapse .gitignore/.gitattributes authoring to 3-4 lines each; remove session file locks, spec lifecycle, drift detection, discuss mode, scrum planning from intro; collapse pre-commit from ~120 to ~40 lines: keep Husky/Node, pre-commit/Python, no CI pipelines, REVIEW flags, format-before-lint)
@@ -135,11 +134,11 @@ Per Part 5 execution order:
    - 3.2 Spec review session (BabaReviewer) → frozen SPEC.md
    - 3.3 Planning session → TASKS.md (table columns: #, Task, Spec § (by section id, e.g., "1.10"), ≤LOC, Acceptance, Done; tasks ordered, unique id, spec-section reference, ≤500 LOC, one-line acceptance; if task unsizable → spec bug, stop; no dependency field — tasks assumed independent)
    - 3.4 Build session (BabaDev) → one task
-   - 3.5 `/close` command → docs/EVALUATIONS.md (implemented as prompt instruction: user types `/close`, agent appends entry to docs/EVALUATIONS.md; if file missing, create with header "# Session Evaluations"; entry format: timestamp, session type, task, files changed, verification, outcome, notes)
+   - 3.5 `/close` command → `project-management/EVALUATIONS.md` (implemented as prompt instruction: user types `/close`, agent appends entry to `project-management/EVALUATIONS.md`; if file missing, create with header "# Session Evaluations"; entry format: timestamp, session type, task, files changed, verification, outcome, notes)
 
 4. **Part 4 enforcement**
    - Prompt-level rules in 00-system.md (BLOCKED if: no SPEC.md present; status:draft → only spec/spec-review phases; status:frozen → planning allowed; frozen spec + tasks file → build allowed; build session: one task, no planning, no spec writes)
-   - Tool-level injection, human-in-the-loop, prompt-level (weakest)
+   - Enforcement tiers: tool-level (pre-commit/gate scripts), human-in-the-loop (review confirmation), prompt-level (BLOCKED rules, weakest)
    - Delete runtime enforcement sections
 
 5. **Part 5 order of work** (as above); **Migration**: old `SPECS/NNN-name/spec.md` files archived to `docs/ARCHIVED_SPECS/`; root SPEC.md is new single source of truth

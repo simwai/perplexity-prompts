@@ -98,7 +98,8 @@ $suites = @(
     "test-rubric-id-integrity.ps1",
     "test-cross-reference-integrity.ps1",
     "test-self-review-protocol.ps1",
-    "test-session-locks.ps1"
+    "test-session-locks.ps1",
+    "test-decision-format.ps1"
 )
 
 foreach ($suite in $suites) {
@@ -108,9 +109,11 @@ foreach ($suite in $suites) {
         continue
     }
     Write-Host "  run   scripts\$suite" -ForegroundColor Gray
-    & pwsh -NoProfile -File $path 2>&1 | Out-Null
-    if ($LASTEXITCODE -ne 0) {
-        Add-Failure "integrity suite failed: scripts\$suite (exit $LASTEXITCODE)"
+    $p = & pwsh -NoProfile -File $path 2>&1
+    $p | Out-Null
+    $exit = $LASTEXITCODE
+    if ($exit -ne 0) {
+        Add-Failure "integrity suite failed: scripts\$suite (exit $exit)"
     } else {
         Write-Host "  ok    scripts\$suite" -ForegroundColor Green
     }
@@ -121,6 +124,35 @@ Write-Section "4. Gate scripts present"
 
 foreach ($rel in @("pre-commit.ps1", "pre-push.ps1")) {
     Test-FilePresent -RelPath $rel -Label "gate script" | Out-Null
+}
+
+# ---------------------------------------------------------------------------
+Write-Section "4b. Referenced script/tool targets exist"
+
+# Paths that prompt-system markdown cites as scripts or tools; each must exist
+# on disk so gates and skills do not fail at runtime on a missing reference.
+$referencedTargets = @(
+    "prompt-system/scripts/test-rubric-id-integrity.ps1",
+    "prompt-system/scripts/test-cross-reference-integrity.ps1",
+    "prompt-system/scripts/test-self-review-protocol.ps1",
+    "prompt-system/scripts/test-session-locks.ps1",
+    "prompt-system/scripts/test-decision-format.ps1",
+    "prompt-system/scripts/init-project-management.ps1",
+    "prompt-system/scripts/test-project-documentation.ps1",
+    "scripts/ensure-playwright.ps1",
+    "scripts/ensure-uvx.ps1",
+    "scripts/enter-session.ps1",
+    "scripts/install-hooks.ps1",
+    "scripts/verify-plugins.ps1",
+    "scripts/verify-system.ps1",
+    "scripts/test-mermaid.mjs",
+    "scripts/test-mermaid.ps1",
+    "pre-commit.ps1",
+    "pre-push.ps1"
+)
+
+foreach ($rel in $referencedTargets) {
+    Test-FilePresent -RelPath $rel -Label "referenced target" | Out-Null
 }
 
 # ---------------------------------------------------------------------------
@@ -146,8 +178,9 @@ if ($SkipLint) {
                 # linter is pinned for the same reason as pre-commit.ps1 step 7
                 # (markdownlint-cli 0.50 no longer enforces configured style
                 # rules such as MD013).
-                & npx --yes markdownlint-cli@0.49.1 --config $mdlintConfig (Join-Path $repoRoot $f) 2>&1 | Out-Null
-                if ($LASTEXITCODE -ne 0) {
+                & npx --yes markdownlint-cli@0.49.1 --config $mdlintConfig (Join-Path $repoRoot $f) 2>&1
+                $npxOut = $LASTEXITCODE
+                if ($npxOut -ne 0) {
                     $failed = $true
                     Add-Failure "markdownlint failed: $f"
                 }

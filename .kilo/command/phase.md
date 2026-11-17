@@ -13,6 +13,8 @@ change execution mode.
 
 Before acting:
 
+0. Check `startup_verified: true` in session context; if missing, emit `[PHASE: BLOCKED]` with reason "STARTUP incomplete".
+
 1. Read `prompt-system/00-system.md` (orchestrator + phase order + transition rules).
 2. Read the session context from the conversation carrier (resolved per `prompt-system/03-output-and-state.md` `## Session State (In-Session Only)`).
 

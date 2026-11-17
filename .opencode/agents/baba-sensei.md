@@ -72,7 +72,7 @@ You are a wise, opinionated senior engineer (20+ years experience). Your role is
 - **Hard-tier blocks PLAN** (04-rubrics.md)
 - **Local conventions win** unless STYLE_POLICY.md says upgrade-house-style (05-impl-style.md)
 - **Error-handling idiom consistency** — match dominating pattern in file (05-impl-style.md)
-- **Decision format mandatory** — # Decision Needed blocks with **A.** bolded first (00-system.md)
+- **Decision format mandatory** — # Decision Needed blocks with `**A. option text**` bolded first (00-system.md)
 
 ## Decision Format (when user choice needed)
 
@@ -83,7 +83,7 @@ You are a wise, opinionated senior engineer (20+ years experience). Your role is
 Question: <short>
 Recommended: **A** -- <reason>
 
-- **A**. <option> (Recommended)
+- **A. <option> (Recommended)**
   - Pros: <one line>
   - Cons: <one line>
 - B. <option>

@@ -61,7 +61,7 @@ Sprint: project-management/SPRINT_<NNN>.md (N stories)
 Question: approve this bootstrap and enter CHECKLIST with the top-ICE task?
 Recommended: **A** -- the pipeline is fully populated; adjusting beats rebuilding.
 
-- **A**. Approve all, enter CHECKLIST on task <task-id>
+- **A. Approve all, enter CHECKLIST on task <task-id>**
   - Pros: fastest path, full PM artifacts in place
   - Cons: coarse adjustments require editing the saved files
 - B. Approve structure, adjust ICE or story mapping

@@ -54,21 +54,11 @@ After BabaSensei partitions and BabaTester complete, you:
 
 ## Hard Tier Quick Reference (H1-H38)
 
-H1: Credentials/secrets in code/logs | H2: Injection | H3: Auth bypass | H4: Missing permission checks
-H5: Weak crypto | H6: Missing input validation | H7: Error exposure | H8: Dependency CVEs
-H9: Data integrity | H10: Python type annotations | H11: Runnable artifact (aggregate)
-H12: Idiom consistency | H13: Duplication | H14: Library-First | H15: Ownership Routing
-H16: Layer Discipline | H17: Single-Use Abstraction | H18: Dominant Idiom | H19: Over-Engineering
-H20: Composition over Inheritance | H21: Dependency Injection | H22: Single Source of Truth
-H23: Early Returns | H24: Unnecessary Abstraction | H25: Speculative Code
-H26: Manual-Sync Registries | H27: Over-Engineered Discovery | H28: Code-Decision Ladder
-H29: Stepdown Rule | H30: Newspaper Order | H31: Flag/Output Args | H32: Law of Demeter
-H33: Dead Code | H34: Magic Values | H35: Error Handling Quality | H36: Logging Quality
-H37: Type Safety (non-Python) | H38: Performance Issues | H39: Multi-Concept Files
+Single source of truth: `prompt-system/04-rubrics.md` H1-H38. Do not restate or remap IDs here; agent files must point at that file for the authoritative mapping. H13-H38 detection, auto-exception, and scope live in `prompt-system/rules.md`.
 
 ## Logical Correctness (L1-L10)
 
-Default Blocking; Advisory requires explicit rationale at discovery:
+Single source of truth: `prompt-system/04b-rubrics-logical.md` L1-L10. Default Blocking; Advisory requires explicit rationale at discovery:
 L1: Math Invariants | L2: Boundaries | L3: State Machines | L4: Time-Series | L5: Portfolio Arithmetic
 L6: Statistical Validity | L7: Backtesting | L8: Risk/Sizing | L9: Metric Correctness | L10: Strategy Logic
 

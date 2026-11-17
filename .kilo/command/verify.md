@@ -8,6 +8,8 @@ Run BabaDev verification after a patch or before finishing implementation work. 
 
 Before acting:
 
+0. Verify project style policy is resolved: `STYLE_POLICY.md` exists at repo root (or greenfield/READ_ONLY skip applies); if unresolved, emit `[PHASE: BLOCKED]` with reason "STYLE_POLICY.md missing — project style policy must be resolved before PATCH".
+
 1. Read the session context from the conversation carrier (resolved per `prompt-system/03-output-and-state.md` `## Session State (In-Session Only)`).
 2. Inspect `git status` and `git diff`.
 3. Detect available project checks from package scripts, Makefile, pyproject, or docs (lint, typecheck, test).
@@ -16,6 +18,8 @@ Then:
 
 - Summarize the diff at a high level.
 - Run the smallest relevant check set. Do not invent commands.
+- Run the Plan-Versus-Actual gate (T-16): for each approved `Will change` item, execute its `verify` command in declared order; GREEN required before the commit/push ask; max 2 retries on FAIL; RED blocks.
+- Run the leftover audit (T-17): detect and auto-delete repo-local temp files outside the edited-file set before staging; audit must pass.
 - When the repo declares a web-app entry point, invoke the Playwright MCP
   server for a functional smoke (navigate + click key flows) as part of the
   check set before the commit/push gate; a failed smoke is a hard-gate failure.

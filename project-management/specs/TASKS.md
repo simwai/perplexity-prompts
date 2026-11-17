@@ -23,4 +23,4 @@
 | 21 | Enforcement: prompt-level BLOCKED rules in 00-system.md (no SPEC.md→BLOCKED, draft→spec only, frozen→planning, frozen+tasks→build, build→one task), tool-level injection + human-in-the-loop docs, delete runtime enforcement sections | 4.1-4.3 | 100 | 00-system.md has BLOCKED rules; enforcement doc added | [x] |
 | 22 | Migration: archive old SPECS/NNN-name/spec.md to docs/ARCHIVED_SPECS/, root SPEC.md is single source of truth | 5 | 50 | Archived specs moved, SPEC.md at root | [x] |
 
-Total: ~2,550 LOC estimated across 22 tasks (avg ~116 LOC each, all under 500)
+Total: ~2,800 LOC estimated across 22 tasks (avg ~127 LOC each, all under 500)

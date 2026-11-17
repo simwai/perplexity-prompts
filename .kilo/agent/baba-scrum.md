@@ -62,7 +62,7 @@ Required fields:
 
 ### SPEC
 
-- SPEC.md at repo root (frontmatter: status: draft|frozen, version, frozen_at)
+- `project-management/specs/SPEC.md` (frontmatter: status: draft|frozen, version, frozen_at)
 - User Stories (GWT), Functional Requirements (FR-###), Success Criteria (SC-###)
 - Assumptions, Open Questions (max 3 NEEDS CLARIFICATION)
 - Promotion: Draft → RFC → Stable

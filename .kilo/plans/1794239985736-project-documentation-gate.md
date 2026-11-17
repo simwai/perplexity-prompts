@@ -166,7 +166,7 @@ Loaded on T-28. Sections:
   lines, not new edge rows.
 - `test-cross-reference-integrity.ps1` scans `user-guide/` and `project-management/` (`system-manifest.json`
   `scanDirs`): new files must not cite missing anchors.
-- `test-decision-format.ps1` forbids `**A.**`-style variants across the corpus: use no decision blocks in new module
+- `test-decision-format.ps1` enforces `**A. option text**` rendering; `**A.**`-style variants forbidden across corpus: use no decision blocks in new module
   text.
 - `sync.ps1` mirrors `prompt-system/` and the synced root files into targets (MIR), so the new module and fixed commands
   deploy automatically; targets without `project-management/` get the lazy init at their first INTAKE -- verify on one

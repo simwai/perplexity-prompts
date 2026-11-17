@@ -8,7 +8,7 @@ Before acting:
 
 1. Read `prompt-system/00-system.md` `## Drift control` and `## DRIFT` template.
 2. Read `prompt-system/03-output-and-state.md` `## DRIFT template`.
-3. Verify `SPEC.md` exists at repo root with a `version` field; if missing, emit `[PHASE: BLOCKED]` with reason "SPEC.md not found — cannot run DRIFT without a spec on disk".
+3. Verify `project-management/specs/SPEC.md` exists with a `version` field; if missing, emit `[PHASE: BLOCKED]` with reason "SPEC.md not found at project-management/specs/SPEC.md — cannot run DRIFT without a spec on disk".
 4. Check `startup_verified: true` in session context; if missing, emit `[PHASE: BLOCKED]` with reason "STARTUP incomplete".
 
 Then:

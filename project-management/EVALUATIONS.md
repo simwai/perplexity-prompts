@@ -17,6 +17,6 @@ Append-only session log. Entry format per `prompt-system/15-project-documentatio
 - Findings requiring attention:
   - Close steps ran after the evaluation delegation instead of before it; the reviewer had to rely on an ad-hoc evidence appendix. This entry and the memory-worth write close that gap for this session; the ordering defect is recorded, not repaired retroactively.
   - Commit provenance blended: 22 foreign staged files and hook-swept `kilo.json` sit under a subject scoped to this session's work. Disclosed pre-ask and user-accepted; history is pushed, so no amend/force-push remediation was taken (prohibited).
-  - Push-output sanitization near-miss: `To <ssh host:path>` lines entered the transcript (SSH transport paths only, zero credential material); the sanitizer covered `https?://` only.
+  - Push-output sanitization near-miss (remediated): `To <ssh host:path>` lines entered the transcript (SSH transport paths only, zero credential material); the sanitizer originally covered `https?://` only and has been widened to also strip `host:path` SSH transport forms.
 - Pending: this entry is uncommitted after the pushed commit (append-at-close design). Commit it with the next session or on explicit request.
 

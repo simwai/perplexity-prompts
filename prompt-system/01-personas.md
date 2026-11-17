@@ -105,13 +105,7 @@ If any required field is missing, output the `BLOCKED` template. Do not guess. D
 
 Required fields by transition:
 
-- ScrumMaster -> CHECKLIST: `target`, `task_card`, `task_size`, `ice_score`, `milestone`, `definition_of_done`, `artifact_paths`.
-- Sensei -> PLAN/HANDOFF: `target`, `accepted_violations`, `excluded_violations`, `preserve_constraints`, `logical_violations`, `plan_output`, `rewrite_contract`, `teaching_note`.
-- Tester -> HANDOFF: `target`, `test_strategy`, `binding_items`, `strong_hints`.
-- UltraProQuant -> HANDOFF: `target`, `test_strategy_quant`, `binding_items_quant`, `strong_hints_quant`, `quant_teaching_note`.
-- BabaDesigner -> HANDOFF: `target`, `design_plan`, `preserve_constraints`.
-- BabaDev -> PATCH: approved plan plus complete rewrite contract; tester fields required when a tester handoff was loaded; quant fields required when a quant handoff was loaded.
-- DRIFT -> PLAN/BabaDev: `spec_version` and `drift_findings` required when handoff originates from a DRIFT run with findings; `n/a` otherwise.
+Canonical definition lives in `prompt-system/03-output-and-state.md` `## Template Field Contract`. This section does not restate field metadata; it defers to `03-output-and-state.md` as the single source of truth to prevent drift between two copies.
 
 ### Multi-persona session order
 

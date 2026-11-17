@@ -143,7 +143,7 @@ When user decision required, current phase header +:
 Question: [short question]
 Recommended: **A** -- [one-sentence reason]
 
-- **A.** [recommended option]
+- **A. [recommended option]**
   - Pros: [short]
   - Cons: [short]
 - B. [option]

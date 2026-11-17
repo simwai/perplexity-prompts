@@ -5,6 +5,11 @@ subtask: true
 ---
 
 Switch execution mode to `STRUCTURED` using `prompt-system/00-system.md` `## Execution modes`.
+
+Before acting:
+
+1. Check `startup_verified: true` in session context; if missing, emit `[PHASE: BLOCKED]` with reason "STARTUP incomplete".
+
 Resume the saved formal phase when one exists; otherwise route from START.
 Only resume when the saved target and scope match the new request. A mismatch
 starts a fresh structured session and invalidates old approval state.

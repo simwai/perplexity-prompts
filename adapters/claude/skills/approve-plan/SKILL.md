@@ -8,6 +8,8 @@ The user is approving the current plan via $ARGUMENTS (optional notes).
 
 Before acting:
 
+0. Check `startup_verified: true` in session context; if missing, emit `[PHASE: BLOCKED]` with reason "STARTUP incomplete".
+
 1. Read the latest PLAN output from the conversation.
 2. Load `prompt-system/03-output-and-state.md` (PLAN template + handoff contract) and `prompt-system/01-personas.md` `## Handoff contract`.
 
