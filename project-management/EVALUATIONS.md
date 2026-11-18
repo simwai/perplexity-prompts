@@ -20,3 +20,18 @@ Append-only session log. Entry format per `prompt-system/15-project-documentatio
   - Push-output sanitization near-miss (remediated): `To <ssh host:path>` lines entered the transcript (SSH transport paths only, zero credential material); the sanitizer originally covered `https?://` only and has been widened to also strip `host:path` SSH transport forms.
 - Pending: this entry is uncommitted after the pushed commit (append-at-close design). Commit it with the next session or on explicit request.
 
+## 2026-11-18T17:16:29Z -- prevention: consolidate system rules and harden gates
+
+- Session id: kilo-prevention-session-2026-11-18 (no `SESSION_ID` env var set; per-process identity)
+- Mode: STRUCTURED (PLAN -> PATCH; all six prevention batches A-F executed)
+- Session type: governance (prompt-system modification per `prompt-system/07-protocols.md` `## Prompt-system protection`)
+- Task: implement all prevention-measure categories (A-F) from the consolidated baba-sensei project review
+- Commit: `d61a4e3` on `master`, pushed to origin, azure-mirror, github-mirror, gitlab-mirror (all exit 0)
+- Files changed: 57 files, +153/-249 -- 51 prevention files plus 6 decision-format cleanup files staged and committed; pre-commit hook staged generated adapter files (56 total through the gate)
+- Artifacts: `prompt-system/00-system.md`, `prompt-system/01-personas.md`, `prompt-system/02-decision-prompts.md`, `prompt-system/04-rubrics.md`, `prompt-system/07-protocols.md`, `scripts/verify-system.ps1`, `AGENTS.md`, `.kilo/` (agent, command, plans, skills), `adapters/` (claude, kilo, opencode), `project-management/` (EVALUATIONS.md, specs/SPEC.md, specs/TASKS.md), `user-guide/PHASES.md`
+- Verification: verify-system.ps1 PASSED (all 5 integrity suites, path-existence preflight, markdownlint clean); test-decision-format.ps1 PASSED (0 variant occurrences); pre-commit 8/8 exit 0; pre-push TypeScript typecheck passed on all 4 remotes; Playwright SKIPPED (no web-app entry)
+- Outcome: All six prevention batches complete and verified. Single source of truth established for START routing, L1-L10 rubrics, required fields, discovery budget, H-table, SPEC path. Machine-checkable validation added ($LASTEXITCODE capture, test-decision-format, referenced-target preflight). Gate discipline added (startup_verified on 9 entry skills/commands, Plan-Actual T-16, leftover audit T-17, style-policy T-01). Spec hygiene (SPEC.md task count, TASKS.md LOC total, EVALUATIONS.md path). Credential hygiene (SSH host:path sanitizer). Decision format (**A. option text** enforced across 14 files).
+- Evaluation verdict: PASS (all gates green, all verification passed, commit + push to all remotes complete)
+- Findings requiring attention: none pending
+- baba-reviewer evaluation (T-18 auto-close delegate): Verdict PASS -- all seven dimensions PASS on available on-disk evidence; commit d61a4e3 landed and pushed to all four remotes under user-accepted decision A; no findings requiring attention; audit caveat that detailed PATCH gate outputs, PLAN Will-change items, and REVIEW dispositions are not persisted to disk per the session-state rule (gate outputs emitted in PATCH response only).
+
