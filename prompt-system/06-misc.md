@@ -328,6 +328,10 @@ Do not force-push (H3: destructive ops).
 Do not run `git clean`, `git reset --hard`, `git checkout --`, `git restore`, or `git stash` (H9: destroys work).
 THE GATE IS NOT A PHASE: IT RUNS INSIDE PATCH AFTER VERIFICATION AND INSIDE DIRECT BEFORE COMPLETION. THE PRE-ASK SMOKE ABOVE IS A GATE-INTERNAL VERIFICATION STEP, NEVER A PHASE AND NEVER A SECOND REVIEW PASS!
 
+## BabaSensei review-before-commit (explicit)
+
+Every edited file is reviewed by BabaSensei before any commit or push. The commit/push gate runs pre-commit review delegation to baba-sensei (gate step 4); any MERGE BLOCKED verdict blocks the commit and returns the session to PLAN. No commit or push occurs without your explicit ask (A: commit+push / B: commit only / C: skip). This statement codifies existing enforcement: no behavioral change, no gate step reordering.
+
 ## Leftover Handling
 
 Before commit gate, delete repo-local temp files not in PATCH edited-file set. OS temp dir exempt.
