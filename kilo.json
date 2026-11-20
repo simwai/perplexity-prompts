@@ -83,6 +83,17 @@
       "timeout": 30000,
       "disabled": true
     },
+    "firecrawl": {
+      "type": "local",
+      "command": [
+        "cmd",
+        "/c",
+        "npx",
+        "-y",
+        "firecrawl-mcp@3.40.0"
+      ],
+      "timeout": 30000
+    },
     "exa": {
       "type": "remote",
       "url": "https://mcp.exa.ai/mcp",

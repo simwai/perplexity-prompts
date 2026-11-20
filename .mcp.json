@@ -49,6 +49,15 @@
       ],
       "timeout": 30000
     },
+    "firecrawl": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "firecrawl-mcp@3.40.0"
+      ],
+      "timeout": 30000
+    },
     "exa": {
       "type": "http",
       "url": "https://mcp.exa.ai/mcp",
