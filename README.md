@@ -99,7 +99,6 @@ opencode.jsonc         opencode-native config (optional layer, inert for other a
 .opencode/             Generated: agents, commands, plugins, packages, lib, tests
 .mcp.json              Generated MCP server config (shared by both platforms)
 .kilo/                 Generated: agents, commands, kilo.json
-opencode-memory-mw/    Memory middleware research workspace (paper + simulation)
 scripts/               Bootstrap helpers (ensure-playwright, ensure-uvx, verify-plugins)
 sync.ps1               Interactive propagation to target projects
 generate-adapters.ps1  Generates .opencode/, .claude/, and .kilo/ from adapters/

@@ -60,7 +60,7 @@ Runs on Node.js via `npx tsx`. The `runtime/` layer absorbs runtime differences;
 
 ## Sim Harness
 
-The simulation harness lives at `opencode-memory-mw/sim/` as a separate Node-only package.
+The simulation harness lives in a separate external Node-only package.
 
 ## Tools
 

@@ -102,7 +102,6 @@ inventory of the deployed unit.
 │   ├── claude/skills/       # Claude Code skill templates
 │   ├── kilo/agent/          # Kilo Code agent templates
 │   └── kilo/command/        # Kilo Code command templates
-├── opencode-memory-mw/    # Memory middleware research workspace (paper + simulation)
 ├── scripts/               # Bootstrap helpers (playwright, uvx, plugin verify)
 ├── opencode.jsonc         # OpenCode-native config
 ├── .opencode/             # Generated: agents, commands, plugins, packages, lib, tests
@@ -126,7 +125,7 @@ inventory of the deployed unit.
 | [GLOSSARY.md](GLOSSARY.md) | Central terminology reference |
 | [CONFORMANCE.md](CONFORMANCE.md) | Protocol invariants verified before each phase transition |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Layer model and review path |
-| [opencode-memory-mw/](opencode-memory-mw/) | Memory middleware research workspace, not part of the deployed unit |
+
 
 ---
 

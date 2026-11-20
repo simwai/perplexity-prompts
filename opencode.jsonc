@@ -135,6 +135,11 @@
       "timeout": 30000
     },
     // Tier 2 — requires env key; omit if key is not set
+    "firecrawl": {
+      "type": "local",
+      "command": ["npx", "-y", "firecrawl-mcp@3.40.0"],
+      "timeout": 30000
+    },
     "exa": {
       "type": "remote",
       "url": "https://mcp.exa.ai/mcp",

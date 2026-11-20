@@ -115,12 +115,20 @@ Servers are grouped by what works when env keys are missing. Configure the ones 
 **g-search** - Google web search via MCP (no key required; requires Playwright Chromium: `npx playwright install chromium`)
 **arXiv** - academic paper search and local literature management via MCP (no key required; requires `uvx`; bootstrap: `scripts/ensure-uvx.ps1`)
 
+**firecrawl** - web search, scrape, crawl, map, and interact with the live web via MCP (requires `FIRECRAWL_API_KEY`; bootstrap: `npx playwright install chromium` for browser features). Preferred keyed web search; defaults to `g-search` when no API key.
+
 **OpenCode PTY** -- interactive terminal plugin: background processes, multiple sessions, stdin, output regex filter. Auto-installed by OpenCode on next run.
 
 ### Tier 2 - Requires env key
 
 ```json
 {
+  "firecrawl": {
+    "type": "stdio",
+    "command": "npx",
+    "args": ["-y", "firecrawl-mcp@3.40.0"],
+    "timeout": 30000
+  },
   "exa": {
     "type": "remote",
     "url": "https://mcp.exa.ai/mcp",
@@ -129,7 +137,7 @@ Servers are grouped by what works when env keys are missing. Configure the ones 
 }
 ```
 
-> **Note**: Omit this entire block if `EXA_API_KEY` is not set. The agent will use `g-search` as the no-key fallback per `prompt-system/00-system.md` `## MCP tool selection`. Hosts that do not interpolate `{env:VAR}` in headers need the literal key configured at setup time -- never committed.
+> **Note**: Omit the entire block (or individual servers) if the API keys are not set. The agent will use `g-search` as the no-key fallback per `prompt-system/00-system.md` `## MCP tool selection`. Firecrawl is the preferred keyed web search. Hosts that do not interpolate `{env:VAR}` in headers need the literal key configured at setup time -- never committed.
 
 ### Trello - Remote OAuth (no env keys)
 
@@ -149,6 +157,9 @@ Work tracking (cards, boards, lists, tasks, PR/issue/CI status) lives in Trello.
 
 Google web search must never require `GOOGLE_API_KEY` / `GOOGLE_SEARCH_ENGINE_ID`. Default is the `g-search` MCP server when available, with direct curl to Google's URL format as the last resort:
 
+- **Keyed search**: firecrawl (preferred) → exa
+- **No-key fallback**: g-search → direct curl
+
 ```bash
 curl -s "https://www.google.com/search?q=<url-encoded-query>"
 ```
@@ -163,6 +174,7 @@ Combine all Tier 1 + Tier 2 + Trello blocks above. Omit any Tier 2 servers whose
 
 | Variable      | Server | Required                |
 |---------------|--------|-------------------------|
+| `FIRECRAWL_API_KEY` | firecrawl | No (g-search fallback when unset) |
 | `EXA_API_KEY` | Exa    | No (g-search fallback when unset) |
 | `KILO_API_KEY` | multi-model consensus plugin | No (anonymous free-tier fallback when unset) |
 | `SESSION_ID`  | session locks / commit gate | No (per-process fallback; required for two-session mode) |

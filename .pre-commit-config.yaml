@@ -20,7 +20,7 @@ repos:
         language: system
         types: [markdown]
         files: '\.md$'
-        exclude: '^(docs/|node_modules/|opencode-memory-mw/sim/)'
+        exclude: '^(docs/|node_modules/)'
 
       # Static integrity tests. These assert properties of the whole tree rather
       # than of the staged files, so they must not receive filenames.
